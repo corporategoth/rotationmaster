@@ -16,7 +16,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.icyveins',revision=8,
  blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
- nameKey='Default.Retail.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.Retail.Paladin.Protection.IcyVeins.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft order needs the Consecration, Vanguard and Shining Light buffs, which Midnight hides in combat. Consecration before the pull; then Divine Toll, Hammer of Light, Consecration when you are not standing in it, Avenger's Shield with Vanguard, Shield of the Righteous at 3 or more Holy Power, Hammer of Wrath, Judgment, Blessed Hammer or Hammer of the Righteous, Avenger's Shield, Word of Glory with Shining Light, Consecration. Reminders: Avenging Wrath or Sentinel, Holy Bulwark, Sacred Weapon outside Avenging Wrath, defensives, aura, Rebuke.",
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={

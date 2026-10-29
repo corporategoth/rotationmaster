@@ -34,7 +34,7 @@ local stacked=all({type='DEBUFF',unit='target',spell=7386,anyrank=true},{type='D
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.tank',revision=6,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
- nameKey='Default.SoD.Warrior.Tank.Name',descriptionKey='Default.SoD.Warrior.Tank.Description',
+ nameKey="Tank (SoD)",descriptionKey="Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase 8 and simulator. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge, Whirlwind and Devastate; then Shield Slam whenever Defender's Resolve is missing or ending, Revenge, Shield Slam, Shockwave, Execute, Whirlwind at five Gladiator's Cunning stacks, Devastate (Sunder before it), Demoralizing Shout and Thunder Clap on elites, Rend before Shield Slam; Shield Slam and Shield Block only with a shield on. Reminders: Battle and Commanding Shout, Shield Block, Heroic Strike from 50 rage, Cleave from 55, Bloodrage, Rampage, Last Stand, interrupts. Taunt, Shield Wall, Death Wish, Recklessness and Retaliation are listed off; the Gladiator swap for Execute stays with you.",
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
  tags={'tank','melee','leveling','endgame','aoe','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/tank-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Protection Warrior tank rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-09'},

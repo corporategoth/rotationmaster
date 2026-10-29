@@ -32,7 +32,7 @@ local function priority(p,spender)return{
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=8,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
- nameKey='Default.Retail.Mage.FireGuide.Name',descriptionKey='Default.Retail.Mage.FireGuide.Description',
+ nameKey="Reference (Icy Veins, Wowhead and SimulationCraft)",descriptionKey="Reference only, off by default: the guides' Fire priority. Hot Streak, Heating Up, Pyroclasm and Fire Blast charges are hidden in Midnight combat, so it cannot run there. Fire Blast while a cast is finishing to turn Heating Up into Hot Streak; pulls with Pyroblast. Pyroblast (Flamestrike on four or more enemies) on Hyperthermia, Meteor, Pyroblast on Hot Streak, Fire Blast on Heating Up inside Combustion, Pyroblast on Pyroclasm, Scorch on Heat Shimmer or while moving, Fire Blast on Heating Up, then Frostfire Bolt or Fireball. Reminders: Combustion as a hard cast finishes, Blazing Barrier and the utility reminders. Waiting for Firestarter and timing Meteor into Combustion stay with you.",
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'fire','caster','reference','icy-veins','wowhead','simulationcraft'},
  sources={

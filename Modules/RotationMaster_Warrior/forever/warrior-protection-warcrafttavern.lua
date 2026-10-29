@@ -21,7 +21,7 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.protection.warcrafttavern',revision=6,
  blocks={['forever.warrior.boundaries']=3,['forever.warrior.upkeep']=2},
- nameKey='Default.Forever.Warrior.Protection.WarcraftTavern.Name',descriptionKey='Default.Forever.Warrior.Protection.WarcraftTavern.Description',
+ nameKey="Protection, debuff upkeep (Warcraft Tavern)",descriptionKey="Warcraft Tavern's tanking order: Thunder Clap, Demoralizing Shout and five Sunder Armors kept on every target first, then Revenge, Rend and Shield Slam last, with Heroic Strike or Cleave whenever you can afford them (rage is hidden on Forever, so there is no 60-rage threshold). No Shield Block or defensive reminders. Choose it instead of the Icy Veins tank premade if you prefer to keep the debuffs up first. An alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'forever'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/forever/guides/protection-warrior/',title='Warcraft Tavern: Forever Protection Warrior',reviewedAt='2026-10-23'},

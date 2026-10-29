@@ -19,7 +19,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.protection.icyveins',revision=6,
  blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.taunt']=2,['forever.paladin.tank-upkeep']=2},
- nameKey='Default.Forever.Paladin.ProtectionIcyVeins.Name',descriptionKey='Default.Forever.Paladin.ProtectionIcyVeins.Description',
+ nameKey="Protection, Consecration first (Icy Veins)",descriptionKey="Icy Veins' tanking style, an alternative to the recommended Wowhead Protection premade, off by default: enable it and disable that one, or raise its priority. Consecration first whenever you can afford it, on one enemy too; Judgement is kept for taunts (no on-cooldown reminder), with Swift Judgement to reset it; then Holy Strike and Exorcism on Undead and Demons. Same tank reminders otherwise.",
  applicability={families={'forever'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','group','leveling','aoe','icy-veins'},
  sources={

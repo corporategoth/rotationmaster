@@ -16,7 +16,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.balance',revision=6,
  blocks={['tbc.druid.feral-form-target']=2,['tbc.druid.boundaries']=4,['tbc.druid.upkeep']=1},
- nameKey='Default.TBC.Druid.Balance.Name',descriptionKey='Default.TBC.Druid.Balance.Description',
+ nameKey="Balance",descriptionKey="Caster Balance from level 1 to 70, and the default for any Druid no other premade fits. Pulls with Starfire (Wrath before 20), Insect Swarm and Moonfire while moving, Faerie Fire in a group, Hurricane for three or more enemies, Moonfire when it has run out and you have 30% mana, Starfire on Nature's Grace, Wrath against a target in melee, then Starfire (Wrath before it is learned). No advice in Cat, Bear or travel forms. Reminders: Mark of the Wild, Thorns while solo, Omen of Clarity, Moonkin Form, Force of Nature on a long fight, Innervate when low.",
  applicability={families={'tbc'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','balance','caster','single-target','aoe','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/tbc-classic/balance-druid-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Balance Druid rotation',reviewedAt='2026-10-23',revision='2026-01-12'},

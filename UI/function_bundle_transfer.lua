@@ -226,9 +226,17 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
         {
             heading = L['Review source'],
             owner = row.originalName,
-            brief = L['Help.Transfers.source_brief'],
-            sections = { { title = L['Read-only'], text = L['Help.Transfers.source_review'] } },
-            briefs = { close = L['Help.Transfers.source_close'], xClose = L['Help.Transfers.source_close'] },
+            brief = L["Explain this read-only review of imported source."],
+            sections = {
+                {
+                    title = L['Read-only'],
+                    text = L["This view shows the selected imported function or condition source, its original and destination identifiers, and available metadata. For a condition, choose a callback to inspect its text. This view and its Help do not compile, execute, accept, or register the source. Return to the bundle review to decide whether to import it."],
+                },
+            },
+            briefs = {
+                close = L["Close this read-only source view and return to the bundle review."],
+                xClose = L["Close this read-only source view and return to the bundle review."],
+            },
         },
         helpValid
     )
@@ -707,8 +715,8 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
 
     addon:OpenPopup(d, p)
     local briefs = self:TransferHelpBriefs()
-    briefs.review = L['Help.Transfers.bundle_review']
-    briefs.includeDependencies = L['Help.Transfers.bundle_dependencies']
+    briefs.review = L["Validate the pasted bundle and build a proposed import plan. Review does not apply the plan."]
+    briefs.includeDependencies = L["Include referenced custom function dependencies when producing export text."]
     local sourceEvidence = self:CopySettingsData(source)
 
     self:BindTransferHelp(
@@ -716,10 +724,16 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         {
             heading = L['Function dependency bundle'],
             owner = source and source.name or id,
-            brief = L['Help.Transfers.bundle_brief'],
+            brief = L["Explain dependency-bundle export, review, and explicit import."],
             sections = {
-                { title = L['Import/Export'], text = L['Help.Transfers.bundle'] },
-                { title = L['Review source'], text = L['Help.Transfers.source_review'] },
+                {
+                    title = L['Import/Export'],
+                    text = L["Export produces a function or condition bundle, optionally with its custom function dependencies. For import, paste bundle text, choose Review import, inspect the proposed identifiers and conflicts, and review source before applying. Apply import can register trusted Lua source; accept only source you intend to run. Changing the text invalidates the prior plan. Opening Help neither reviews nor applies the bundle."],
+                },
+                {
+                    title = L['Review source'],
+                    text = L["This view shows the selected imported function or condition source, its original and destination identifiers, and available metadata. For a condition, choose a callback to inspect its text. This view and its Help do not compile, execute, accept, or register the source. Return to the bundle review to decide whether to import it."],
+                },
             },
             briefs = briefs,
             valid = function() return d.exportSource == source and addon:SettingsDataEqual(source, sourceEvidence) end,

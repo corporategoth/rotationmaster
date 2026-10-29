@@ -20,7 +20,7 @@ local lowBones=any(negate(buff(195181)),{type='BUFF_REMAIN',unit='player',spell=
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.simc',revision=7,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey='Default.Retail.DeathKnight.BloodSimc.Name',descriptionKey='Default.Retail.DeathKnight.BloodSimc.Description',
+ nameKey="Deathbringer reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Deathbringer list, which spends runic power on Death Strike for damage. Hidden combat data keeps it from running in Midnight combat, and runic power is hidden on Retail, so there is no cap dump. Death and Decay whenever it is down, Reaper's Mark, Marrowrend on Exterminate, Death's Caress for Bone Shield while runes are short (else Marrowrend), Death Strike, Blood Boil, Consumption outside Dancing Rune Weapon, Heart Strike. Reminders: Raise Dead, Dancing Rune Weapon, Vampiric Blood and the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','reference','simulationcraft'},
  sources={

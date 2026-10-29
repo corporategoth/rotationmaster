@@ -23,7 +23,7 @@ local berserker={type='FORM',form=2458}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps.wowhead',revision=6,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
- nameKey='Default.SoD.Warrior.DPS.Wowhead.Name',descriptionKey='Default.SoD.Warrior.DPS.Wowhead.Description',
+ nameKey="Battle Forecaster stance dance (SoD, Wowhead)",descriptionKey="Wowhead's Phase 7/8 rotation for Soul of the Battle Forecaster or the Tier 1 six-piece (which Rotation Master cannot see), an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Stance swaps to keep the forecast buffs up, Heroic Strike almost always, then Bloodthirst, Blood Surge Slam, Whirlwind, Raging Blow and Hamstring; no Rend and no Overpower. Check the swap timing in game before relying on it.",
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
  tags={'dps','melee','endgame','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Warrior DPS rotation (Battle Forecaster, Phase 7/8)',reviewedAt='2026-10-23',revision='2025-04-12'}},

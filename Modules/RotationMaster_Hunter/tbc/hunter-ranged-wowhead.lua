@@ -17,7 +17,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowhead',revision=6,
  blocks={['tbc.hunter.opening']=4,['tbc.hunter.leveling']=2,['tbc.hunter.upkeep']=1},
- nameKey='Default.TBC.Hunter.Ranged.Wowhead.Name',descriptionKey='Default.TBC.Hunter.Ranged.Wowhead.Description',
+ nameKey="Ranged DPS (Wowhead)",descriptionKey="Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee, leveling shots, multi-target Multi-Shot and reminders as the simulator version, but once Steady Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no Arcane Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper reminder. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you. An alternative to the recommended simulator ranged premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'tbc'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','leveling','endgame','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/hunter/dps-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Hunter DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-02-10'},

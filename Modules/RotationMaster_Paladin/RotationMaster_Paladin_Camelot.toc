@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 forever/blocks.lua
 forever/paladin-retribution.lua
 forever/paladin-protection.lua

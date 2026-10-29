@@ -10,7 +10,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival',revision=6,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2},
- nameKey='Default.Retail.Hunter.Survival.Name',descriptionKey='Default.Retail.Hunter.Survival.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Survival. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it calls your pet itself); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Takedown and your racial cooldown in combat, Muzzle on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call.",
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'survival','melee','pet','assisted-combat'},
  sources={

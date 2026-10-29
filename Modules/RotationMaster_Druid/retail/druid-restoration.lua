@@ -18,7 +18,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.restoration',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey='Default.Retail.Druid.Restoration.Name',descriptionKey='Default.Retail.Druid.Restoration.Description',
+ nameKey="Blizzard Assisted with maintenance",descriptionKey="Recommended for Restoration. With an enemy targeted it highlights Blizzard's Assisted Combat suggestion, Blizzard's Restoration damage list in cat or caster form. Otherwise it suggests Icy Veins' maintenance casts on your friendly target (or yourself): Lifebloom, Efflorescence in combat, Swiftmend on a Rejuvenation, Wild Growth in a group in combat, Regrowth on Clearcasting or five Abundance stacks, Rejuvenation when missing. Health and mana are hidden on Retail, so these follow the target you choose, not how hurt anyone is; your heals over time are hidden in Midnight combat, so the steps that read them wait there. Whom to heal, and every healing cooldown, is yours. Reminders: Innervate, Barkskin and your racial cooldown whenever they are ready in combat, Mark of the Wild between pulls.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','assisted-combat','icy-veins'},
  sources={

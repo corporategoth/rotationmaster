@@ -17,7 +17,7 @@ local metaReady={type='BUFF_STACKS',unit='player',spell=1225789,ownbuff=true,ope
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.guide',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey='Default.Retail.DemonHunter.DevourerGuide.Name',descriptionKey='Default.Retail.DemonHunter.DevourerGuide.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: Icy Veins' Annihilator priority. Most of your buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so Void Ray waits only for its cost. Outside Void Metamorphosis: Consume on Soulburst, Reap, Soul Immolation when it is not burning, Voidblade and The Hunt once Void Metamorphosis is ready, Void Metamorphosis, Hungering Slash, Void Ray, Consume. Inside it: Devour on Soulburst, Void Ray, the Void-Scarred strikes if you have them, Collapsing Star, Cull, Devour, Soul Immolation. Rotation Master cannot count Soul Fragments, so Reap and Cull go on cooldown. Reminders: Disrupt and Blur.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'devourer','ranged','reference','icy-veins'},
  sources={

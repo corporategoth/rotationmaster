@@ -12,7 +12,7 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
   ['era.druid.cat']=1,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear']=2,['era.druid.bear-pull']=3,
   ['era.druid.caster']=2,['era.druid.caster-pull']=3},
- nameKey='Default.Era.Druid.Balance.Name',descriptionKey='Default.Era.Druid.Balance.Description',
+ nameKey="Balance",descriptionKey="Balance from level 1 to 60, and the Druid default before talents or when no other premade fits. Starfire as the filler once learned (Wrath before that, Starfire first on a Nature's Grace proc), Moonfire and Insect Swarm kept on targets that will live while your mana is above 30%, Hurricane when three or more enemies are on you, Faerie Fire in a group, instants while moving, melee when out of mana. In Cat or Bear Form it gives the Feral advice instead. Reminders: Mark of the Wild, Thorns when solo, Omen of Clarity, Moonkin Form when you are in no form, Innervate, Nature's Grasp. Downranking Starfire, roots and target choice stay with you.",
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','balance','caster','single-target','aoe','wowhead','warcraft-tavern'},
  sources={

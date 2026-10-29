@@ -27,7 +27,7 @@ local vulnerable={type='DEBUFF',unit='target',spell=22959,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire',revision=7,
  blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=3,['forever.mage.fire-moving']=2,['forever.mage.fire-aoe']=1,['forever.mage.wand']=3,['forever.mage.upkeep']=2},
- nameKey='Default.Forever.Mage.Fire.Name',descriptionKey='Default.Forever.Mage.Fire.Description',
+ nameKey="Fire",descriptionKey="Fire once Fire is your main talent tree with 11 points (Pyroblast's tier). Pulls with Pyroblast on elites, else Frostfire Bolt or Fireball; then Pyroblast at three Heating Up stacks, Ice Lance on Fingers of Frost or a frozen target (Fire/Frost hybrids), Fire Blast on cooldown, Scorch to keep your five Fire Vulnerability stacks on elites, Frostfire Bolt (from 40) or Fireball, wand when solo and you cannot afford a spell. Moving: Fire Blast or Ice Lance. Four or more enemies fighting you: Flamestrike, Blast Wave, Arcane Explosion. Scorch starts the stacks only once you have Improved Scorch; a close-range Scorch is off until you enable it. Reminders: Combustion and Presence of Mind on elites, plus the Mage upkeep reminders.",
  applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','warcraft-tavern','wowhead'},
  sources={

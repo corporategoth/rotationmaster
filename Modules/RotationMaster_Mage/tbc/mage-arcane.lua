@@ -16,7 +16,7 @@ local stacks={type='DEBUFF',unit='player',spell=36032}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.arcane',revision=5,
  blocks={['tbc.mage.boundaries']=3,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=2,['tbc.mage.moving-fire-blast']=2,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
- nameKey='Default.TBC.Mage.Arcane.Name',descriptionKey='Default.TBC.Mage.Arcane.Description',
+ nameKey="Arcane",descriptionKey="Arcane, chosen when Arcane is your main talent tree. Before level 64: Arcane Missiles, with Frostbolt when mana runs low. From 64: Arcane Blast while burning (Arcane Power, Bloodlust or above 35% mana), otherwise three Arcane Blast stacks and Frostbolt until they are about to drop. Arcane Explosion and Cone of Cold for three or more enemies. Reminders include Arcane Power, Presence of Mind, mana gem and Evocation.",
  applicability={families={'tbc'},actionContext='player',class='MAGE'},
  tags={'arcane','leveling','raid','single-target','aoe'},
  sources={

@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
   ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.bear']=2,
   ['sod.druid.caster-pull']=3},
- nameKey='Default.SoD.Druid.Balance.Name',descriptionKey='Default.SoD.Druid.Balance.Description',
+ nameKey="Balance (SoD)",descriptionKey="Season of Discovery Balance from level 1 to 60, and the default for any Druid no other Season of Discovery premade fits. Starsurge whenever its buff is down, Sunfire and Moonfire on targets that will live, Starfire only when Starsurge or Lunar Eclipse empowers it, Wrath as the filler, Hurricane on six or more enemies (four with Gale Winds engraved), Insect Swarm only while moving. Runes are used as you engrave them. In Cat or Bear Form it gives the Feral advice. Reminders: Moonkin Form, Starfall, instant Healing Touch on a dying friend, curse and poison removal, Wild Growth on a hurt group, Innervate. Spreading DoTs to other targets stays with you.",
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','leveling','endgame','balance','caster','single-target','aoe','wowhead'},
  sources={

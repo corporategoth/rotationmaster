@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.elemental',revision=7,
  blocks={['forever.shaman.manual-target']=2,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1,
   ['forever.shaman.caster-aoe']=1,['forever.shaman.stormstrike-hybrid']=1},
- nameKey='Default.Forever.Shaman.Elemental.Name',descriptionKey='Default.Forever.Shaman.Elemental.Description',
+ nameKey="Elemental",descriptionKey="Ranged Elemental once Elemental is your main talent tree with 21 points (Lava Burst's tier), after Icy Veins (before that the Enhancement premade plays the melee hybrid every guide recommends). Pulls with Lightning Bolt (Chain Lightning on a pack), casts only instants while moving, uses Fire Nova and Chain Lightning on three or more enemies, keeps Flame Shock up, Lava Burst on cooldown, Stormstrike and Earth Shock if you know Stormstrike, Fire Nova on Clearcasting in groups, then Lightning Bolt. Reminders: shield, weapon imbue, Searing or Magma Totem, group totems, Elemental Mastery, interrupt. Health and mana are hidden from addons on Forever, so healing yourself and pausing to refill mana are your call. Left to you: Earthbind kiting, Frost Shock, Purge and other totems.",
  applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-forever/elemental-shaman-leveling',title='Icy Veins: Forever Elemental Shaman leveling',reviewedAt='2026-10-23',revision='2026-10-18'},

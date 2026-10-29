@@ -21,7 +21,7 @@ local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE'
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.stacking',revision=6,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3},
- nameKey='Default.SoD.Paladin.Retribution.Stacking.Name',descriptionKey='Default.SoD.Paladin.Retribution.Stacking.Description',
+ nameKey="Retribution, seal stacking (SoD)",descriptionKey="Off by default; enable it with the Soul of the Sealbearer rune or the six-piece set that makes seals linger (Rotation Master cannot see either). Keeps both Seal of Command and Seal of Martyrdom up, Divine Storm at three Holy Power, Crusader Strike, Exorcism, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Consecration, and Judgement while both seals are up.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','raid','retribution','melee','single-target','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin DPS rotation, seal stacking (Phase 8)',reviewedAt='2026-10-23',revision='2025-06-06'},

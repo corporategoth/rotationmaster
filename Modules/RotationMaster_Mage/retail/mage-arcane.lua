@@ -12,7 +12,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane',revision=6,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
- nameKey='Default.Retail.Mage.Arcane.Name',descriptionKey='Default.Retail.Mage.Arcane.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Arcane. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Arcane Surge in combat, Arcane Intellect out of combat, Counterspell on an interruptible cast, Prismatic Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call. Mirror Image, Alter Time, Blink and trinkets stay with you.",
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'arcane','caster','assisted-combat'},
  sources={

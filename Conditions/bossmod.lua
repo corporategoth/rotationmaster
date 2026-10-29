@@ -183,7 +183,7 @@ addon:RegisterCondition("BOSSMOD_ENCOUNTER", runtimeCondition('BOSSMOD_ENCOUNTER
     -- Builds the help page for the BOSSMOD_ENCOUNTER condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.BOSSMOD_ENCOUNTER"]))
+        frame:AddChild(helpers.CreateText(L["True while your enabled boss mod (DBM or BigWigs, chosen on the Integrations page) reports a boss encounter in progress. Leave Encounter ID blank for any encounter, or enter the game's encounter ID, which DBM and BigWigs share, to match one boss; while an encounter is active the editor shows its name and ID. This is the boss mod's report, not game state: it starts when the boss mod engages and ends when it records a win, wipe or reset. Use it as a switch condition for encounter-specific rotations; automatic switching picks it up on its normal re-check interval. Unavailable, never simply false, when no boss mod is enabled or loaded."]))
     end,
 }))
 
@@ -239,7 +239,7 @@ addon:RegisterCondition("BOSSMOD_STAGE", runtimeCondition('BOSSMOD_STAGE', {
     -- Builds the help page for the BOSSMOD_STAGE condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        addon.layout_condition_operatorwidget_help(frame, L["Boss Mod Encounter Stage"], L["Stage"], L["Help.Conditions.BOSSMOD_STAGE"])
+        addon.layout_condition_operatorwidget_help(frame, L["Boss Mod Encounter Stage"], L["Stage"], L["The stage (phase) your boss mod reports for the current encounter. An encounter whose boss mod has not reported a stage counts as stage 1, and some intermissions are reported as half stages such as 1.5. False when no encounter is in progress; unavailable when no boss mod is enabled or loaded."])
     end,
 }))
 
@@ -308,7 +308,7 @@ addon:RegisterCondition("BOSSMOD_TIMER", runtimeCondition('BOSSMOD_TIMER', {
     -- Builds the help page for the BOSSMOD_TIMER condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.BOSSMOD_TIMER"]))
+        frame:AddChild(helpers.CreateText(L["Compares the time left on your boss mod's timer for one boss ability, identified by the ability's spell ID; while timers run, the editor lists them with their IDs. Timers are the boss mod's predictions and can shift, pause or be canceled. When no timer for that ability is running the condition is false, so 'is less than 5 seconds' is only true while a timer is actually counting down. Bars without a spell ID, such as pull or respawn timers, are not tracked. Unavailable when no boss mod is enabled or loaded."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Boss Mod Timer"], L["Seconds"],
             L["Seconds until the boss mod expects the ability. A paused timer keeps its remaining time."])

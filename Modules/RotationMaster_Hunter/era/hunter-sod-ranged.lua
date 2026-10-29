@@ -37,7 +37,7 @@ local viperLow=all(mana('LESSTHAN',.5),any(buff(415423),all({type='SPELL_KNOWN',
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.ranged',revision=6,
  blocks={['era.hunter.boundaries']=3,['sod.hunter.upkeep']=1},
- nameKey='Default.SoD.Hunter.Ranged.Name',descriptionKey='Default.SoD.Hunter.Ranged.Description',
+ nameKey="Ranged (SoD)",descriptionKey="Every ranged Hunter on a Season of Discovery realm, level 1 to 60; runes are used once engraved. Serpent Sting always up and refreshed by Chimera Shot. With the Kill Shot legs rune: Multi-Shot at four Trick Shots, Kill Shot during Rapid Fire and on targets in execute, Chimera Shot, then Explosive Trap and Arcane Shot while Multi-Shot is cooling. Without it: Chimera Shot, Aimed Shot at two Sniper Training stacks (without that rune, right after an Auto Shot), traps just before Chimera Shot is ready (Frost Trap only to feed Lock and Load), Explosive Shot, Steady Shot, Multi-Shot, Arcane Shot. Melee buttons when an enemy is too close, instants while moving, traps, Multi-Shot and Volley on three or more enemies. Reminders: Hawk, Viper below 10% mana, Heart of the Lion, Trueshot Aura, pet care (none with Lone Wolf engraved), Focus Fire at five Frenzy stacks, Rapid Fire, racials and Bestial Wrath on elites and in instances. With Lock and Load engraved, a Frost Trap before the pull. Melee weaving and positioning stay with you.",
  applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
  tags={'dps','ranged','leveling','endgame','season-of-discovery','wowhead'},
  sources={

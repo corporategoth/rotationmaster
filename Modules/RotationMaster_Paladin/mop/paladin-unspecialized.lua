@@ -15,7 +15,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.unspecialized',revision=5,
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2},
- nameKey='Default.MoP.Paladin.Unspecialized.Name',descriptionKey='Default.MoP.Paladin.Unspecialized.Description',
+ nameKey="Before a specialization",descriptionKey="For levels 1 to 9, and any paladin who has not chosen a specialization yet; a specialization's premade takes over as soon as you pick one. Pulls from range with Judgment, then Crusader Strike and Judgment, with Hammer of Justice when you are solo and below half health and Word of Glory below 40%. Reminders: Seal of Command (Seal of Truth from 24) when you are not in it, Blessing of Kings, Rebuke, and Flash of Light out of combat when you are hurt.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'leveling','single-target','icy-veins'},
  sources={

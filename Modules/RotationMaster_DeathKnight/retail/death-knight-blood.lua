@@ -11,7 +11,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey='Default.Retail.DeathKnight.Blood.Name',descriptionKey='Default.Retail.DeathKnight.Blood.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Blood. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Vampiric Blood and Raise Dead in combat, Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call. Active mitigation timing, Anti-Magic Shell, taunts and trinkets stay with you.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','assisted-combat'},
  sources={

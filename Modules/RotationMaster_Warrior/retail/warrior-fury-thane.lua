@@ -20,7 +20,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury.thane',revision=7,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1,['retail.warrior.charge']=3},
- nameKey='Default.Retail.Warrior.Fury.Thane.Name',descriptionKey='Default.Retail.Warrior.Fury.Thane.Description',
+ nameKey="Mountain Thane reference (Icy Veins)",descriptionKey="Reference only, off by default: the Mountain Thane order from SimulationCraft and Icy Veins weaves Thunder Blast and reads buffs Midnight hides in combat. Charge to open; Whirlwind for its buff on two or more; Rampage when Enrage is missing or ending (rage is hidden on Retail, so there is no 100-rage Rampage); Bloodbath in Recklessness; Thunder Blast at two stacks; Crushing Blow; Bloodbath; Rampage in Recklessness; Thunder Blast in Avatar; Raging Blow; Thunder Blast; Rampage; Bloodthirst; Execute; Odyn's Fury; Thunder Clap; Whirlwind. Same reminders as the Slayer reference.",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'fury','melee','reference','mountain-thane','single-target','aoe','icy-veins','simulationcraft'},
  sources={

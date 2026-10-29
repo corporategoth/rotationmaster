@@ -15,7 +15,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.warcrafttavern',revision=6,
  blocks={['era.rogue.boundaries']=3,['era.rogue.opener']=3,['era.rogue.upkeep']=2,['era.rogue.builders']=2},
- nameKey='Default.Era.Rogue.DPS.WarcraftTavern.Name',descriptionKey='Default.Era.Rogue.DPS.WarcraftTavern.Description',
+ nameKey="Melee DPS, five-point finishers (Warcraft Tavern)",descriptionKey="Warcraft Tavern's way, an alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority. Every finisher waits for five combo points so Relentless Strikes refunds it. Slice and Dice is used from its second rank (level 42) when missing or ending, otherwise Eviscerate; no low-point Slice, no near-death Eviscerate and no Expose Armor (a warrior's Sunder covers it). Same openers, builders and reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/pve-combat-rogue/',title='Warcraft Tavern: Classic PvE Combat Rogue',reviewedAt='2026-10-23'},

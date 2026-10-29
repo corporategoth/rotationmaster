@@ -14,7 +14,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental.simulator',revision=5,
  blocks={['era.shaman.manual-target']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.caster-totems']=1},
- nameKey='Default.Era.Shaman.Elemental.Simulator.Name',descriptionKey='Default.Era.Shaman.Elemental.Simulator.Description',
+ nameKey="Elemental, Chain Lightning on cooldown (simulator)",descriptionKey="The simulator Elemental list, an alternative to the recommended Elemental premade, off by default: enable it and disable that one, or raise its priority. Chain Lightning on cooldown even on one target, Earth Shock while Elemental Mastery is up, otherwise Lightning Bolt. Faster but much hungrier for mana than the recommended premade; same interrupt, totems and reminders.",
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','ranged','caster','endgame'},
  sources={},

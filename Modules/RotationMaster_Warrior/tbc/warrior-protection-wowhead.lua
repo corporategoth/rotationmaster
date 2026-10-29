@@ -18,7 +18,7 @@ local demoralized=any(debuff(1160),debuff(99))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.protection.wowhead',revision=6,
  blocks={['tbc.warrior.boundaries']=4,['tbc.warrior.upkeep']=1,['tbc.warrior.prot-upkeep']=1,['tbc.warrior.prot-core']=1,['tbc.warrior.sunder']=1},
- nameKey='Default.TBC.Warrior.Protection.Wowhead.Name',descriptionKey='Default.TBC.Warrior.Protection.Wowhead.Description',
+ nameKey="Tank (Wowhead)",descriptionKey="Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge, Thunder Clap and Demoralizing Shout kept up on elites and bosses, then Devastate or Sunder Armor. On packs: Thunder Clap and Demoralizing Shout first. Reminds you of Shield Block (with a shield equipped) against bosses and higher-level enemies, Heroic Strike or Cleave, Battle Shout, Bloodrage, Shield Bash and emergency Last Stand and Shield Wall. Taunting and other utility stay with you.",
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/warrior/protection/tank-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Protection Warrior tank rotation',reviewedAt='2026-10-23',revision='2026-02-23'},

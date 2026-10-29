@@ -19,7 +19,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance',revision=6,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1,['forever.druid.dots']=2},
- nameKey='Default.Forever.Druid.Balance.Name',descriptionKey='Default.Forever.Druid.Balance.Description',
+ nameKey="Balance",descriptionKey="Balance from level 1 to 60, and the default for any Forever Druid no other premade fits (levels 1–9, untalented casters, solo Restoration). Pulls with Wrath; while moving, refreshes Moonfire, Insect Swarm and, in a group, Faerie Fire. Hurricane when three or more enemies are fighting you, then your own Moonfire and Insect Swarm, Starfire while Eclipse charges or Clearcasting are up, and Wrath; when you cannot afford Wrath it lets you melee. Health and mana are hidden from addons on Forever, so healing yourself and judging whether a target is worth a DoT are your call. Reminders: Mark of the Wild, Thorns while solo, Moonkin Form, a pre-pull Rejuvenation while solo, Nature's Grasp when a mob is on you, Innervate whenever it is ready in combat while solo. Form changes, crowd control, Barkskin and target choice stay with you. Built from level-30 beta guides; level 31–60 steps follow the class design and are untested.",
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'balance','leveling','single-target','aoe','icy-veins'},
  sources={

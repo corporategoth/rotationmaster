@@ -1378,7 +1378,11 @@ function addon:CreateWorkbenchDialogChrome(frame, title, help)
         chrome.help = self:CreateWorkbenchHelpButton(frame, L['Help'])
         chrome.help:SetPoint('TOPRIGHT', -31, -5)
         self:SetUIScript(chrome.help, 'OnClick', function() return addon:OpenWorkbenchHelp(help) end)
-        self:BindWorkbenchHelp(chrome.help, { brief = L['Help.Brief.full'], valid = help.valid })
+
+        self:BindWorkbenchHelp(chrome.help, {
+            brief = L["Open full Help for these controls without applying edits."],
+            valid = help.valid,
+        })
     end
 
     return chrome

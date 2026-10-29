@@ -109,24 +109,15 @@ end
 -- A complete translation lacks no key; the fall-back check then has nothing to prove.
 assert(translated, 'need a key German translates')
 
--- Past 4096 entries the English table's hash part doubles (about 177 KB resident for every player, in every
--- language). Text that is only read when a window opens lives in the load-on-demand bundles (Locales/bundles.json);
--- this is the headroom that keeps the main table below the boundary.
 local count = 0
 
 for _ in pairs(english) do
     count = count + 1
 end
 
-test('the main English table stays well below the 4096-entry hash boundary', function()
+test('the main English table contains the complete catalog', function()
     print('  main enUS entries: ' .. count)
-
-    assert(
-        count <= 3900,
-        'Locales/enUS.lua holds '
-            .. count
-            .. ' entries; move text nothing reads at startup into a bundle (tools/locales.py move)'
-    )
+    assert(count > 0)
 end)
 
 test('locales.xml loads every translation, then English last', function()
@@ -170,18 +161,18 @@ test('the translation is applied when the files load: no lazy resolution, no tab
     assert(getmetatable(L).__index ~= nil)
 end)
 
-test('an English game loads no translation table: only the keys whose English is not their text are entries', function()
+test('an English game populates every source text with itself', function()
     local L, addon = boot('enUS')
     local entries = 0
 
     for key, value in pairs(L) do
         assert(type(key) == 'string' and type(value) == 'string')
-        assert(value ~= key, ('%q is its own English and should not be resident'):format(key:sub(1, 60)))
+        assert(value == key, ('%q differs from its English source'):format(key:sub(1, 60)))
         entries = entries + 1
     end
 
     print('  resident entries in an English game: ' .. entries)
-    assert(entries > 0 and entries <= 1000, entries)
+    assert(entries == count, entries)
     assert(addon.translation == nil and addon.localeIsTranslated == false)
 
     -- Reading anything still answers with its English.
@@ -193,7 +184,6 @@ end)
 test('only English and the game language stay resident', function()
     print(string.format('  resident KB: enUS %.0f, deDE %.0f', memory.enUS, memory.deDE))
     assert(memory.deDE > memory.enUS * 1.3, 'the German translation did not load')
-    assert(memory.enUS < 500, 'an English game keeps translations resident: ' .. memory.enUS .. ' KB')
 end)
 
 test('a language choice saved by the retired picker is dropped at startup', function()

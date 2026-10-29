@@ -29,7 +29,7 @@ local burst=all(combat(),any(negate({type='SPELL_KNOWN',spell=86346}),smashed),w
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms',revision=8,
  blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
- nameKey='Default.MoP.Warrior.Arms.Name',descriptionKey='Default.MoP.Warrior.Arms.Description',
+ nameKey="Recommended",descriptionKey="Recommended for Arms from level 10 to 90, picked in the Arms specialization. Charges to open, and again for rage when you step away. Colossus Smash whenever it is missing or about to end, Mortal Strike, Storm Bolt in the Smash window, Dragon Roar and Bladestorm outside it. Below 20% health: Execute in the window, at 100 rage or to keep Sudden Execute, Overpower on Taste for Blood. Otherwise Slam in the window, Overpower at four stacks, Slam at 100 rage, Overpower, Slam. Two or more enemies fighting you add Sweeping Strikes, Thunder Clap for Deep Wounds, Bladestorm and Dragon Roar. Victory Rush below 70% health; Battle Shout for rage. Reminders: a shout when none is up, Battle Stance, Berserker Rage, Recklessness, Avatar and Bloodbath with Colossus Smash on long fights, Skull Banner, Heroic Strike or Cleave with spare rage, Heroic Leap in the window, Pummel, Die by the Sword and Enraged Regeneration when low. Shattering Throw is listed but off. Left to you: canceling Bladestorm, stance dancing and positioning.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'arms','dps','melee','leveling','endgame','wowtbc'},
  sources={

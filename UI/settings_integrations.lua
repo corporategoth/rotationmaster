@@ -532,7 +532,9 @@ function addon:BuildIntegrationSettings(p)
                 editorAction(row.id, anchor)
             end or nil,
             entry = entry,
-            help = row.id == 'native' and 'Help.Integrations.native_highlighting' or nil,
+            help = row.id == 'native'
+                and "Syntax highlighting applies only to the Native Lua editor. Apply saves this preference for the next source-editor opening; it does not switch a selected external editor. Show line numbers under the editor heading applies to every provider."
+                or nil,
             native = row.id == 'native',
         }
     end

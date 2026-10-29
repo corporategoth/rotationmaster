@@ -11,7 +11,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety',revision=6,
  blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
- nameKey='Default.Retail.Rogue.Subtlety.Name',descriptionKey='Default.Retail.Rogue.Subtlety.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Subtlety in Midnight. Shows Blizzard's Assisted Combat suggestion (it handles the stealth opener, Shadow Blades, Goremaw's Bite, Shadow Dance, Secret Technique and the finishers), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: poisons and Stealth between pulls, Kick on an interruptible cast. Health is hidden on Retail, so Crimson Vial is your call.",
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'subtlety','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

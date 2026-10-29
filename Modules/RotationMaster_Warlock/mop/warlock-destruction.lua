@@ -29,7 +29,7 @@ local backdraft=own(117828)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.destruction',revision=7,
  blocks={['mop.warlock.boundaries']=4,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1},
- nameKey='Default.MoP.Warlock.Destruction.Name',descriptionKey='Default.MoP.Warlock.Destruction.Description',
+ nameKey="Recommended",descriptionKey="For Destruction from level 10 to 90 (chosen in the Destruction specialization). Pre-casts Incinerate, keeps Immolate up, never sits on two Conflagrate charges, spends embers on Chaos Bolt (Shadowburn below 20%) at 3.5 embers or in Dark Soul: Instability, uses Backdraft on Incinerate, and fills with Incinerate; a dying target gets Shadowburn. On three or more enemies: Rain of Fire and Fire and Brimstone on four, then Immolate, Conflagrate and Incinerate, and a cue to switch Fire and Brimstone off when your embers run out. Moving: Shadowburn, Conflagrate, Fel Flame. Reminders: your pet or Grimoire of Sacrifice, Flames of Xoroth, Dark Intent, Dark Soul, Havoc on two or more enemies (cast it on the second target yourself), Doomguard or Infernal, Ember Tap and defensives.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'destruction','dps','caster','ranged','leveling','endgame','warcraft-tavern','method','wowtbc'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-destruction-warlock-rotations-cooldowns/',title='Warcraft Tavern: Destruction Warlock rotation (MoP)',reviewedAt='2026-10-23'},

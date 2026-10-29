@@ -16,7 +16,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian.simc',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey='Default.Retail.Druid.GuardianSimc.Name',descriptionKey='Default.Retail.Druid.GuardianSimc.Description',
+ nameKey="Defensive reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Guardian list, which spends rage on Ironfur first. Hidden combat data keeps it from running in Midnight combat, and rage is hidden on Retail, so its rage thresholds are left out. Ironfur in Berserk; Thrash when missing, about to fall off or under three stacks; Maul on Gory Fur; Thrash on three or more enemies; Mangle while Red Moon ticks; Red Moon; Mangle; Thrash; Moonfire; Swipe. Its cat-form weaving is left out. Reminders: Bear Form, Frenzied Regeneration, Survival Instincts, Berserk or Incarnation, Lunar Beam, Convoke, Skull Bash, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'guardian','tank','reference','simulationcraft'},
  sources={

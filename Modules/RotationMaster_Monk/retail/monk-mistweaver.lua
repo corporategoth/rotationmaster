@@ -12,7 +12,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.monk.mistweaver',revision=6,
  blocks={['retail.monk.heal-boundaries']=2,['retail.monk.utility']=2},
- nameKey='Default.Retail.Monk.Mistweaver.Name',descriptionKey='Default.Retail.Monk.Mistweaver.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default. Blizzard offers no Assisted Combat list for healers, and in Midnight combat your allies' health, Renewing Mist charges, Mana Tea stacks and procs are hidden from addons, so healing advice is not possible; choose your heals yourself. On a hostile target it suggests the fistweaving filler, Rising Sun Kick, Blackout Kick and Tiger Palm; on a friendly target or none it suggests nothing. Reminders: Spear Hand Strike, and Fortifying Brew and your racial cooldown whenever they are ready in combat.",
  applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'mistweaver','healer','reference','icy-veins'},
  sources={

@@ -17,7 +17,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.warcrafttavern',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.stealth-opener']=2,
   ['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear']=2,['era.druid.bear-pull']=3,['era.druid.feral-humanoid']=2},
- nameKey='Default.Era.Druid.Feral.WarcraftTavern.Name',descriptionKey='Default.Era.Druid.Feral.WarcraftTavern.Description',
+ nameKey="Feral (Warcraft Tavern, Rip and Bite)",descriptionKey="Warcraft Tavern's powershifting list, an alternative to the recommended Feral premade, off by default: enable it and disable that one, or raise its priority. Rip at five combo points whenever it is missing, raids included, then Ferocious Bite from four combo points under 63 energy, Shred from behind, powershift when far short of energy. Bear and reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'endgame','raid','feral','melee','tank','single-target','warcraft-tavern'},
  sources={

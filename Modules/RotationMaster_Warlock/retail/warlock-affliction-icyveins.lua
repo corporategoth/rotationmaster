@@ -23,7 +23,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.affliction.icyveins',revision=7,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey='Default.Retail.Warlock.Affliction.IcyVeins.Name',descriptionKey='Default.Retail.Warlock.Affliction.IcyVeins.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft (Soul Harvester) order reads DoT timers, Nightfall and Shard Instability, which Midnight hides in combat. Haunt before the pull; Seed of Corruption on three or more engaged enemies without your Corruption; Haunt; Agony and Corruption or Wither under 3 seconds; Dark Harvest at two shards or fewer; Unstable Affliction at 5 shards; Malefic Grasp, else Shadow Bolt, on two Nightfall; Unstable Affliction on Shard Instability or at 4 shards; Drain Soul; Shadow Bolt. Reminders: Summon Darkglare once Dark Harvest is cooling, Malevolence, your Felhunter, and the shared ones.",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'affliction','ranged','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={

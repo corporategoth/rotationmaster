@@ -24,7 +24,7 @@ local berserk=any(buff(106951),buff(102543))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.feral.guide',revision=7,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey='Default.Retail.Druid.FeralGuide.Name',descriptionKey='Default.Retail.Druid.FeralGuide.Description',
+ nameKey="Reference (Icy Veins and SimulationCraft)",descriptionKey="Reference only, off by default: the guides' Feral priority. Bleeds and procs are hidden in Midnight combat (combo points are not), so it cannot run there; energy is hidden on Retail. Opens with Cat Form, Prowl and Rake. Chomp; Ferocious Bite on Apex Predator's Craving; at five combo points Primal Wrath on two or more enemies, Rip when missing or in its last seconds, else Ferocious Bite, waiting for energy rather than building past five; below five, Rake when missing or about to fall off, Lunar Inspiration Moonfire, Swipe on three or more enemies, Shred. Reminders: Tiger's Fury whenever it is ready in combat, Berserk or Incarnation and Feral or Frantic Frenzy (at two points or fewer) in Tiger's Fury, Convoke in Tiger's Fury and Berserk with Rip up, Skull Bash, Survival Instincts, plus the utility reminders. Snapshotting is left to you.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'feral','melee','reference','icy-veins','simulationcraft'},
  sources={

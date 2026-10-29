@@ -26,7 +26,7 @@ local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution',revision=6,
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
- nameKey='Default.MoP.Paladin.Retribution.Name',descriptionKey='Default.MoP.Paladin.Retribution.Description',
+ nameKey="Recommended",descriptionKey="Recommended for Retribution, from level 10 in the Retribution specialization. Keeps Inquisition up (cast at 3 Holy Power, refreshed in its last 3 seconds; from 81), spends Templar's Verdict at full Holy Power or on a free proc before generating more, then Hammer of Wrath, Crusader Strike, Judgment and Exorcism, and Templar's Verdict at 3 when nothing else is ready. In Avenging Wrath it spends at once and puts Judgment ahead of Crusader Strike. Two or more enemies on you switch to Divine Storm, with Hammer of the Righteous when four are close. Pulls from range with Judgment or Exorcism, and suggests Word of Glory when you are solo and in danger. Reminders: Seal of Truth when another seal is active or none (Seal of Righteousness is kept), Blessing of Kings or Might, Rebuke, Avenging Wrath and Guardian of Ancient Kings with Inquisition up on elites, Holy Avenger in wings, Execution Sentence and Light's Hammer, and Divine Protection and Lay on Hands when low. Seal of Righteousness for packs and glyph choices stay with you.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'retribution','leveling','single-target','aoe','hekili','wowhead','icy-veins'},
  sources={

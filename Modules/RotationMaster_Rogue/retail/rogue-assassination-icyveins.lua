@@ -23,7 +23,7 @@ local bled=all(dot(703),dot(1943))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.assassination.icyveins',revision=6,
  blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
- nameKey='Default.Retail.Rogue.Assassination.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Assassination.IcyVeins.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft order keeps bleeds up by their timers, which Midnight hides in combat; energy is hidden on Retail, so its energy pooling is left out. From stealth Garrote, then Ambush. Garrote in its last 30% while you are not at full combo points, Rupture at 5+ in its last 30%; at 5+ combo points Coup de Grace or Envenom; below, Crimson Tempest on three or more enemies, Fan of Knives on two or more close by, Ambush, Mutilate. Reminders: Deathmark with both bleeds up, Kingsbane alongside it, Vanish with Deathmark ready, Shiv on a Deathstalker's Mark target, Thistle Tea whenever it is ready in combat, plus the shared poison, Stealth and Kick reminders.",
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'assassination','melee','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={

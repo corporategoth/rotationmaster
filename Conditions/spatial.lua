@@ -850,7 +850,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
             L["Count enemies when selected, or non-enemies when cleared."]))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["In Combat"] .. color.RESET .. " - " ..
-            L["Help.Conditions.DISTANCE_COUNT_COMBAT"]))
+            L["Count only units that are in combat. For enemies that is the ones fighting right now, not every enemy whose nameplate is visible. A unit whose combat state the game will not report makes the count unavailable."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Distance Count"], L["Count"],
             L["The number of observed units proven within Distance of you."])

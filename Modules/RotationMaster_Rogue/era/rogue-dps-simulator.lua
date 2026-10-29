@@ -21,7 +21,7 @@ local lasting=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type=
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.simulator',revision=6,
  blocks={['era.rogue.boundaries']=3,['era.rogue.opener']=3,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=2},
- nameKey='Default.Era.Rogue.DPS.Simulator.Name',descriptionKey='Default.Era.Rogue.DPS.Simulator.Description',
+ nameKey="Swords, swing-synced Sinister Strike (simulator)",descriptionKey="The simulator \"sweaty\" Combat order for Sword Specialization, an alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority. Sinister Strike only right after a main-hand swing (2.0 seconds or more to the next one, set for a 2.6–2.8 speed sword; change it in a clone), unless energy is near full or the target is about to die, so the extra sword attack does not delay your swing. Eviscerate at five also waits for Slice and Dice, full energy or a dying target. Otherwise as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','endgame'},
  sources={

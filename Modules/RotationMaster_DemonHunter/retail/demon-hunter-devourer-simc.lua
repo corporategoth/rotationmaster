@@ -19,7 +19,7 @@ local bite=known(1240201)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.simc',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey='Default.Retail.DemonHunter.DevourerSimc.Name',descriptionKey='Default.Retail.DemonHunter.DevourerSimc.Description',
+ nameKey="Reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Annihilator list, which enters Void Metamorphosis as soon as it is ready. Hidden combat data keeps it from running in Midnight combat. Outside: Voidblade with Devourer's Bite on up to three enemies and a full Void Metamorphosis, Void Metamorphosis, Consume on Soulburst, Reap, Void Ray, Soul Immolation on packs, Consume. Inside: Devour on Soulburst against one target, The Hunt and Voidblade with Devourer's Bite, Void Ray on packs, Collapsing Star, Cull, Void Ray, Soul Immolation, Devour. Reminders: Disrupt and Blur.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'devourer','ranged','reference','simulationcraft'},
  sources={

@@ -315,7 +315,11 @@ local function help_action_group(group, singular)
     )))
 
     group:AddChild(Indent(40, CreateText(
-        color.GREEN .. L["Set Mark"] .. color.RESET .. " - " .. L["Help.Rotations.SetMark"]
+        color.GREEN
+            .. L["Set Mark"]
+            .. color.RESET
+            .. " - "
+            .. L["When its conditions match, attempts to set or clear the selected raid marker on the chosen unit, then continues to the next rotation step."]
     )))
 
     group:AddChild(Indent(40, CreateText(

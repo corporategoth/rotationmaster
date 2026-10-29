@@ -17,7 +17,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology',revision=6,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey='Default.Retail.Warlock.Demonology.Name',descriptionKey='Default.Retail.Warlock.Demonology.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Demonology in Midnight. Shows Blizzard's Assisted Combat suggestion (Call Dreadstalkers, Hand of Gul'dan, Demonbolt, Power Siphon and Tyrant), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Demonic Tyrant while the Dreadstalkers you called in the last 12 seconds are out, Grimoire: Imp Lord, Grimoire: Fel Ravager and Summon Doomguard in combat, a Felguard between pulls, Command Demon, Dark Pact, Unending Resolve.",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'demonology','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

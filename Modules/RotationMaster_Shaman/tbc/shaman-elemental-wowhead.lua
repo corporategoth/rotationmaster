@@ -13,7 +13,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.wowhead',revision=5,
  blocks={['tbc.shaman.shield']=1,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.elemental-totems']=1,['tbc.shaman.bloodlust']=1,
   ['tbc.shaman.elemental-opening']=2,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1,['tbc.shaman.elemental-aoe']=1},
- nameKey='Default.TBC.Shaman.Elemental.Wowhead.Name',descriptionKey='Default.TBC.Shaman.Elemental.Wowhead.Description',
+ nameKey="Elemental (Wowhead)",descriptionKey="Wowhead's Elemental, an alternative to the recommended Icy Veins Elemental premade, off by default: enable it and disable that one, or raise its priority. At 70 Chain Lightning on cooldown with Lightning Bolts in between (while leveling only with Elemental Mastery or Clearcasting), Flame Shock only while moving, Earth Shock to finish a target that would die before a cast lands. Same totem, shield and cooldown reminders as the Icy Veins variant.",
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','elemental','caster','single-target','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/shaman/elemental/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Elemental Shaman DPS rotation',reviewedAt='2026-10-23',revision='2026-02-07'},

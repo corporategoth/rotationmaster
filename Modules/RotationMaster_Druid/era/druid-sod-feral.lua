@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.druid.feral',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=2,
   ['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.bear']=2,['era.druid.feral-humanoid']=2},
- nameKey='Default.SoD.Druid.Feral.Name',descriptionKey='Default.SoD.Druid.Feral.Description',
+ nameKey="Feral cat (SoD)",descriptionKey="Season of Discovery cat, chosen when Savage Roar is engraved (or Feral is your main tree without another legs rune). Faerie Fire (Feral) when none is up, Savage Roar, Swipe (Cat) on four or more enemies, the Mangle debuff, Clearcasting on Shred, Rip at five combo points while Savage Roar has 8 seconds left, Rake, Shred from behind or Mangle from the front, powershift with Furor 5/5, Faerie Fire refresh last. In Bear Form it gives the tank advice. Reminders: Tiger's Fury at 60 energy or less, Berserk with Tiger's Fury, Maul, Innervate. Positioning stays with you.",
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','leveling','endgame','feral','melee','single-target','aoe','wowhead','icy-veins'},
  sources={

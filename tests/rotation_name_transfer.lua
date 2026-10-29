@@ -7,7 +7,7 @@
 local F = dofile('tests/fixtures/addon.lua')
 local make = dofile('tests/fixtures/rotation_data.lua')
 local test, finish = F.suite()
-local KEY = 'Default.Retail.Monk.Brewmaster.Name'
+local KEY = "Blizzard Assisted with brews"
 
 -- The real AceLocale keeps its entries raw in the locale table; the fixture keeps them aside. Mirror them.
 local function localize(f, entries)

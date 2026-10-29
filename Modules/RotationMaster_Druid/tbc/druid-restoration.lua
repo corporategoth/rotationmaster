@@ -17,7 +17,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.restoration',revision=5,
  blocks={['tbc.druid.boundaries']=4,['tbc.druid.feral-form-stop']=3,['tbc.druid.upkeep']=1},
- nameKey='Default.TBC.Druid.Restoration.Name',descriptionKey='Default.TBC.Druid.Restoration.Description',
+ nameKey="Restoration",descriptionKey="Healing for the Restoration tree on your friendly target (or yourself): Healing Touch after Nature's Swiftness, Swiftmend a dying target that has your Rejuvenation or Regrowth, three rolling Lifeblooms in combat, Rejuvenation and Regrowth when missing, then Regrowth in Tree of Life or Healing Touch outside it. A hostile target gets Moonfire and Wrath for soloing. Reminders: Mark, Omen, Tree of Life, Nature's Swiftness, Tranquility, Innervate and Rebirth. Choosing whom to heal and downranking stay with you.",
  applicability={families={'tbc'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','restoration','healer','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/tbc-classic/restoration-druid-healer-pve-rotation-cooldowns-abilities',title='Icy Veins: Restoration Druid rotation',reviewedAt='2026-10-23',revision='2026-01-12'},

@@ -24,7 +24,7 @@ local winds=own(466772)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.enhancement.totemic',revision=6,
  blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
- nameKey='Default.Retail.Shaman.Enhancement.Totemic.Name',descriptionKey='Default.Retail.Shaman.Enhancement.Totemic.Description',
+ nameKey="Totemic reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Totemic list reads Flame Shock, Hot Hand, Whirling Fire, Crash Lightning and Doom Winds, which Midnight hides in combat. On three or more engaged enemies: Crash Lightning, Chain Lightning at 5 Maelstrom Weapon. Then Voltaic Blaze or Flame Shock when Flame Shock is missing, Surging Totem, Sundering, Lava Lash with Hot Hand or Whirling Fire, Crash Lightning for its buff, Primordial Storm at 10, Windstrike, Crash Lightning and Stormstrike in Doom Winds, Lightning Bolt at 5, Crash Lightning, Lava Lash, Stormstrike, Voltaic Blaze, Flame Shock. Same reminders as the Stormbringer reference.",
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'enhancement','melee','reference','totemic','single-target','aoe','icy-veins','simulationcraft','wowhead'},
  sources={

@@ -104,9 +104,14 @@ function addon:ShowNativeImportPreview(p, view, spec)
             d,
             {
                 heading = L['Import comparison'],
-                brief = L['Help.Transfers.comparison_brief'],
-                sections = { { title = L['Read-only'], text = L['Help.Transfers.comparison'] } },
-                briefs = { close = L['Help.Transfers.cancel'] },
+                brief = L["Explain this read-only incoming rotation comparison."],
+                sections = {
+                    {
+                        title = L['Read-only'],
+                        text = L["This view compares the saved or exported rotation with the current incoming preview. It does not apply changes. Close it to choose the destination and import from the transfer dialog. A changed preview, closed owner, or changed profile retires this comparison Help."],
+                    },
+                },
+                briefs = { close = L["Close this dialog without importing its text."] },
             },
             function()
                 return p.importPreview == d
@@ -215,9 +220,14 @@ function addon:ShowNativeImportContent(p, preview, spec)
             d,
             {
                 heading = L['Import preview'],
-                brief = L['Help.Transfers.preview_view_brief'],
-                sections = { { title = L['Read-only'], text = L['Help.Transfers.preview_view'] } },
-                briefs = { close = L['Help.Transfers.cancel'] },
+                brief = L["Explain this read-only preview of the incoming rotation."],
+                sections = {
+                    {
+                        title = L['Read-only'],
+                        text = L["This view shows the rotation as it would be imported: name, specializations, switch condition, steps and cooldowns. It is read-only and works on a copy; it saves and changes nothing. Close it to choose the destination and import from the transfer dialog. A changed text, closed transfer or changed profile retires this Help."],
+                    },
+                },
+                briefs = { close = L["Close this dialog without importing its text."] },
             },
             function()
                 return p.importContent == d
@@ -332,11 +342,17 @@ function addon:ShowRotationTransfer(spec, id)
         requirePreview = true,
         help = {
             heading = L['Import/Export Rotation'],
-            brief = L['Help.Transfers.rotation_brief'],
+            brief = L["Explain rotation preview, destination, and import scope."],
             briefs = self:TransferHelpBriefs(),
             sections = {
-                { title = L['Import/Export'], text = L['Help.Transfers.rotation'] },
-                { title = L['Preview import'], text = L['Help.Transfers.rotation_preview'] },
+                {
+                    title = L['Import/Export'],
+                    text = L["Copy the text to export the current rotation, or paste a rotation to import. Choose replacement of the selected editable rotation or a new named copy. Class and This character set the owner of a new copy; replacement keeps the original owner. The imported rotation is opened for editing after a successful import."],
+                },
+                {
+                    title = L['Preview import'],
+                    text = L["With Replace selected entry ticked, the button reads Compare import and shows what would change in that rotation. For a new named copy it reads Preview import and shows everything the import contains, read-only, as the rotation editor shows it. Neither saves anything. Import is enabled only for a ready preview or comparison; changing the text requires another one. Check import shows read-only diagnostics, including unsupported data that prevents import."],
+                },
                 {
                     title = L['Applies to'],
                     text = L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.'],

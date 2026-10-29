@@ -11,7 +11,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.monk.windwalker',revision=6,
  blocks={['retail.monk.boundaries']=3,['retail.monk.utility']=2},
- nameKey='Default.Retail.Monk.Windwalker.Name',descriptionKey='Default.Retail.Monk.Windwalker.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Windwalker. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it already keeps Combo Strikes); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Zenith, Celestial Conduit, Invoke Xuen and Touch of Karma in combat, Spear Hand Strike on an interruptible cast, and Fortifying Brew and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use Fortifying Brew is your call.",
  applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'windwalker','melee','assisted-combat'},
  sources={

@@ -15,7 +15,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.monk.unspecialized',revision=5,
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1},
- nameKey='Default.MoP.Monk.Unspecialized.Name',descriptionKey='Default.MoP.Monk.Unspecialized.Description',
+ nameKey="Before a specialization",descriptionKey="For levels 1 to 9, or any monk who has not chosen a specialization; a specialization premade takes over as soon as you pick one. Keeps Fierce Tiger and Tiger Power up, spends two Chi on Blackout Kick, uses Expel Harm when you are hurt and Jab otherwise.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'leveling','single-target'},
  sources={

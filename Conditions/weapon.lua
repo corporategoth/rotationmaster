@@ -463,7 +463,7 @@ addon:RegisterCondition("SWING_TIME", {
                 "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect " ..
                 "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."))
         frame:AddChild(helpers.CreateText(L["With no off-hand weapon equipped, an off-hand check is false (and true under NOT)."]))
-        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Ranged"] .. color.RESET .. " - " .. L["Help.Conditions.SWING_RANGED"]))
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Ranged"] .. color.RESET .. " - " .. L["Measure your Auto Shot or wand shot instead of a melee weapon. Choose Off Hand or Ranged, not both. The time remaining needs the combat log, so it works on Classic Era, Burning Crusade and Mists of Pandaria but not on Retail or Forever."]))
 
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Attack Speed"], L["Seconds"],
@@ -575,7 +575,7 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
                 "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect " ..
                 "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."))
         frame:AddChild(helpers.CreateText(L["With no off-hand weapon equipped, an off-hand check is false (and true under NOT)."]))
-        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Ranged"] .. color.RESET .. " - " .. L["Help.Conditions.SWING_RANGED"]))
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Ranged"] .. color.RESET .. " - " .. L["Measure your Auto Shot or wand shot instead of a melee weapon. Choose Off Hand or Ranged, not both. The time remaining needs the combat log, so it works on Classic Era, Burning Crusade and Mists of Pandaria but not on Retail or Forever."]))
 
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Swing Time Remaining"], L["Seconds"],

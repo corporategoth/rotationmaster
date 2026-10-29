@@ -21,7 +21,7 @@ local scarredMeta=all(negate(aldrachi),buff(162264))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc.guide',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey='Default.Retail.DemonHunter.HavocGuide.Name',descriptionKey='Default.Retail.DemonHunter.HavocGuide.Description',
+ nameKey="Reference (Icy Veins, SimulationCraft and Wowhead)",descriptionKey="Reference only, off by default: the guides' Havoc priority. Your procs, Metamorphosis and Essence Break are hidden from addons in Midnight combat, so this list cannot run there; read it, or clone it to experiment. Fury is hidden on Retail, so Felblade does not wait for room. Aldrachi Reaver: Reaver's Glaive when neither Rending Strike nor Glaive Flurry is up, Chaos Strike on Rending Strike. Fel-Scarred: Essence Break, Blade Dance and Chaos Strike in Metamorphosis. Then Blade Dance and Chaos Strike inside Essence Break, Immolation Aura at two charges, Eye Beam, Felblade for Inertia, Essence Break when Eye Beam is over 4 seconds away, Blade Dance, Immolation Aura on two enemies, Chaos Strike, Felblade, Immolation Aura, Throw Glaive, Fel Rush. Reminders: Metamorphosis once Eye Beam and Blade Dance are spent, The Hunt, Vengeful Retreat, plus Disrupt and Blur.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'havoc','melee','reference','icy-veins','simulationcraft','wowhead'},
  sources={

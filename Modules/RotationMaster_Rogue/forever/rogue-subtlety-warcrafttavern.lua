@@ -22,7 +22,7 @@ local behind=negate({type='THREAT',unit='target',threat=3})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.warcrafttavern',revision=6,
  blocks={['forever.rogue.boundaries']=3,['forever.rogue.stealth-fallback']=3,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
- nameKey='Default.Forever.Rogue.Subtlety.WarcraftTavern.Name',descriptionKey='Default.Forever.Rogue.Subtlety.WarcraftTavern.Description',
+ nameKey="Subtlety, Ambush build (Warcraft Tavern)",descriptionKey="Warcraft Tavern's Ambush/Cutthroat Subtlety build: Premeditation and Ambush on every opener, Ambush again whenever Cutthroat allows it, Backstab from behind as the builder (Hemorrhage when the target is facing you), Ghostly Strike on cooldown, and Slice and Dice then Eviscerate at five points with no Rupture. Reminds you to Vanish for another Ambush on a tanked boss. Choose it instead of the recommended Rogue premade if you took the Cutthroat talents; it applies with Subtlety as your main talent tree and Cutthroat talented. Same poison and cooldown reminders as the recommended premade. An alternative to the recommended Rogue DPS premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'forever'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','subtlety','warcraft-tavern'},
  sources={

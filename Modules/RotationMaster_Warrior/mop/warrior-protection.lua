@@ -30,7 +30,7 @@ local function devastate(id,conditions)return{id=id,type='branch',conditions={ty
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.protection',revision=8,
  blocks={['mop.warrior.boundaries']=4},
- nameKey='Default.MoP.Warrior.Protection.Name',descriptionKey='Default.MoP.Warrior.Protection.Description',
+ nameKey="Recommended",descriptionKey="Tanking from level 10 to 90, picked in the Protection specialization. Charge or Heroic Throw to pull. Devastate to keep three Weakened Armor on elites and bosses, Dragon Roar, Bladestorm, Shockwave on three enemies and Thunder Clap on cooldown on three or more. Then Revenge for the last rage of a Shield Block, Shield Slam, Revenge on Hold the Line, Devastate for Deep Wounds, Victory Rush below 60% health, Revenge, Thunder Clap for Weakened Blows, Execute, Storm Bolt, a shout for rage and Devastate (Sunder Armor before 26). Reminders: Defensive Stance, a shout when none is up, Shield Block whenever it is down, Shield Barrier when hurt with rage to spare, Heroic Strike or Cleave on Ultimatum, Incite or near the cap, Demoralizing Shout, Berserker Rage, Enraged Regeneration, Last Stand and Shield Wall when low, your offensive cooldowns, Pummel. Taunt and Heroic Leap are listed but off. Left to you: whom to taunt, and Block versus Barrier against magic.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'protection','tank','melee','leveling','endgame','icy-veins'},
  sources={

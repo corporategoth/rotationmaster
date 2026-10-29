@@ -26,7 +26,7 @@ local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination.icyveins',revision=8,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.assassination-opener']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
- nameKey='Default.MoP.Rogue.Assassination.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Assassination.IcyVeins.Description',
+ nameKey="Envenom at five (Icy Veins)",descriptionKey="Off by default. The Icy Veins and Method order: Vanish on cooldown for a stealthed Mutilate, Vendetta on cooldown when the fight is long enough, Envenom only at five points, Rupture kept up, Dispatch below 35% or on Blindside, Mutilate. Four to eight enemies: Fan of Knives with Rupture at three points or more; nine or more: Fan of Knives and Envenom only. The recommended Assassination premade follows the newer Phase 5 advice instead; to use this one, enable it and disable the recommended one.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'assassination','dps','melee','leveling','endgame','icy-veins','method'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-pve-rotation-cooldowns-abilities',title='Icy Veins: Assassination Rogue rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'},

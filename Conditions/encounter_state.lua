@@ -87,7 +87,7 @@ addon:RegisterCondition("ENCOUNTER", {
     --
     -- help draws the help page; there is no widget because nothing is configurable.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.ENCOUNTER"]))
+        frame:AddChild(helpers.CreateText(L["Matches while the game says a boss encounter is in progress. Unlike the Boss Mod Encounter condition it needs no boss mod, and it knows nothing of which boss or stage it is. It starts when the encounter starts and ends on a kill, a wipe or a reset. It reads in combat on every edition, Retail and Forever included."]))
     end,
 })
 
@@ -146,7 +146,7 @@ addon:RegisterCondition("KEYSTONE_LEVEL", {
     -- Builds the help page for the KEYSTONE_LEVEL condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.KEYSTONE_LEVEL"]))
+        frame:AddChild(helpers.CreateText(L["The level of the Mythic+ keystone you are running. It is 0 whenever you are not in a Mythic+ dungeon, so 'at least 10' is only true inside a run of that level. Retail only."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Mythic+ Keystone Level"], L["Level"],
             L["The keystone level of the Mythic+ dungeon you are running; 0 when you are not in one."])

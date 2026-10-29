@@ -13,7 +13,7 @@ local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,34870
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.icyveins',revision=7,
  blocks={['tbc.paladin.tank-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
- nameKey='Default.TBC.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.TBC.Paladin.Protection.IcyVeins.Description',
+ nameKey="Protection (Icy Veins)",descriptionKey="Icy Veins' tanking, an alternative to the recommended Wowhead Protection premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader when nobody keeps it up, Righteousness (Wisdom on packs), Consecration as the main threat, Judgement, Holy Shield, then Avenger's Shield and Hammer of Wrath on cooldown. Same reminders as the Wowhead variant without Avenging Wrath.",
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','protection','tank','single-target','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/protection-paladin-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Protection Paladin rotation',reviewedAt='2026-10-23',revision='2026-01-12'},

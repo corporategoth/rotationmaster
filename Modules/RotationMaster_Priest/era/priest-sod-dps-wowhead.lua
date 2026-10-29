@@ -15,7 +15,7 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.priest.dps-boundaries']=2,['era.priest.shadowform']=1,['era.priest.pull-shield']=1,['era.priest.wand-finish']=2,
   ['era.priest.wand-fallback']=2,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1,['sod.priest.upkeep']=2,['sod.priest.pull']=3,['sod.priest.aoe']=1,
   ['sod.priest.moving']=2,['sod.priest.dots']=2,['sod.priest.procs']=1,['sod.priest.filler']=1},
- nameKey='Default.SoD.Priest.Dps.Wowhead.Name',descriptionKey='Default.SoD.Priest.Dps.Wowhead.Description',
+ nameKey="Damage (SoD, Wowhead Mind Spike stacks)",descriptionKey="The Wowhead and Warcraft Tavern way for Season of Discovery, an alternative to the recommended Season of Discovery damage premade, off by default: enable it and disable that one, or raise its priority. Mind Blast waits for three of your Mind Spike stacks on the target (it is cast normally until you engrave Mind Spike), Mind Flay only on Melting Faces, Mind Spike as the filler. Everything else matches the recommended premade.",
  applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
  tags={'shadow','damage','raid','single-target','aoe','season-of-discovery','wowhead','warcraft-tavern'},
  sources={

@@ -22,7 +22,7 @@ local MISSILES=79683
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane',revision=7,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1,['mop.mage.arcane-open']=3,['mop.mage.arcane-aoe-moving']=2},
- nameKey='Default.MoP.Mage.Arcane.Name',descriptionKey='Default.MoP.Mage.Arcane.Description',
+ nameKey="Recommended",descriptionKey="Recommended for Arcane, from level 10 to 90 (selected in the Arcane specialization). Arcane Blast builds four Arcane Charges; with four, an Arcane Missiles! proc is spent with Missiles, and without one Arcane Barrage comes out once your mana drops below 90%. Above 95% mana it keeps blasting, which is how the simulator plays it. Missiles is never left sitting on two procs, Barrage is cast before Alter Time snaps back, and with two or more enemies Barrage goes out every four charges; Cone of Cold and Arcane Explosion when five are close. Keeps your talented bomb up, and Fire Blast or Ice Lance while moving without Ice Floes. Reminders: Arcane Power and Alter Time at four charges with a proc, Frost Armor (Molten before 54), Arcane Brilliance, Counterspell, Mana Gem, Mirror Image, Ice Barrier, Ice Floes, Rune of Power or Invocation. Time Warp, Spellsteal and Presence of Mind are off; Rune of Power still needs placing by hand.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'arcane','leveling','single-target','aoe','hekili'},
  sources={

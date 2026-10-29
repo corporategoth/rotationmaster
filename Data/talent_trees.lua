@@ -19,7 +19,7 @@ local platform=addon.Platform
 --   * the player's own class while the talent data has not loaded yet, or when
 --     the client withholds it.
 -- The names below are English; each is read through the locale files as
--- L["TalentTree.<name>"], so the fallback speaks the client's language.
+-- L["<name>"], so the fallback speaks the client's language.
 --
 -- Each list is in the talent window's order, which is the stored number: the
 -- first name is tree 1. tests/talent_trees.lua fails when a shipped Built In's
@@ -164,7 +164,7 @@ end
 function Trees.StaticName(tree,class,family)
     local names=Trees.Names(class,family)
     local key=names and type(tree)=="number" and names[tree]
-    if key then return L["TalentTree."..key] end
+    if key then return L[key] end
 end
 
 -- The class whose trees an editor lists and a summary names: the class of the

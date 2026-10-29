@@ -12,7 +12,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation.assisted',revision=7,
  blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
- nameKey='Default.Retail.Evoker.AugmentationAssisted.Name',descriptionKey='Default.Retail.Evoker.AugmentationAssisted.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Blizzard's Assisted Combat suggestion for Augmentation, an alternative to the recommended Icy Veins Augmentation premade, off by default: enable it and disable that one, or raise its priority. It recasts Ebon Might only after it has fallen off, and waits while you cast or hold an empowered spell. Reminders in combat for Breath of Eons, Deep Breath, Tip the Scales and Time Skip, plus Quell, Obsidian Scales, Blessing of the Bronze and Source of Magic as in the other Evoker premades.",
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'augmentation','ranged','support','assisted-combat'},
  sources={

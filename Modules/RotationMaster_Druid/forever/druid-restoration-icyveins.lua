@@ -21,7 +21,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration.icyveins',revision=6,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=2,['forever.druid.dots']=2},
- nameKey='Default.Forever.Druid.RestorationIcyVeins.Name',descriptionKey='Default.Forever.Druid.RestorationIcyVeins.Description',
+ nameKey="Restoration, HoTs first (Icy Veins)",descriptionKey="Icy Veins' HoT-first healing, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. On your friendly target: Rejuvenation, then Regrowth when missing, Healing Touch only with both HoTs running, Swiftmend on a HoT target, then Wild Growth (health is hidden on Forever, so the target you pick decides who is healed). Innervate on cooldown. Otherwise the same reminders and hostile-target list as the Restoration premade.",
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','group','icy-veins'},
  sources={

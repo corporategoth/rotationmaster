@@ -14,7 +14,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.icyveins',revision=6,
  blocks={['tbc.shaman.enhancement-upkeep']=2,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,
   ['tbc.shaman.enhancement-opening']=3,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1},
- nameKey='Default.TBC.Shaman.Enhancement.IcyVeins.Name',descriptionKey='Default.TBC.Shaman.Enhancement.IcyVeins.Description',
+ nameKey="Enhancement (Icy Veins)",descriptionKey="Melee Enhancement from level 1 to 70, and the default for any Shaman no other premade fits. Pulls with Lightning Bolt from range, interrupts with Earth Shock, drops Fire Nova and Magma Totems on three or more nearby enemies, then Stormstrike, Earth Shock while Stormstrike's debuff is up, Flame Shock on a target that will live, Earth Shock on cooldown, and Lightning Bolt while the target is out of reach. Separate reminders: weapon imbues, Water or Lightning Shield, Strength of Earth, Windfury (group) or Grace of Air (solo), Searing on long fights, water totems, Shamanistic Rage, Bloodlust/Heroism on bosses, Stoneclaw and Earth Elemental when solo. Fire Elemental is an optional step that starts off. Totem placement, Ghost Wolf and healing stay with you.",
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','enhancement','melee','single-target','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/enhancement-shaman-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Enhancement Shaman rotation',reviewedAt='2026-10-23',revision='2026-01-12'},

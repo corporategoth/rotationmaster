@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer.warcrafttavern',revision=7,
  blocks={['era.priest.boundaries']=3,['era.priest.enemy-target']=2,['era.priest.dispels']=1,['era.priest.big-heal']=1,
   ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1,['sod.priest.healer-damage']=2,['sod.priest.healer-upkeep']=1},
- nameKey='Default.SoD.Priest.Healer.WarcraftTavern.Name',descriptionKey='Default.SoD.Priest.Healer.WarcraftTavern.Description',
+ nameKey="Healer (SoD, Warcraft Tavern)",descriptionKey="Warcraft Tavern's Serendipity loop, built for Serendipity and Soul Warding, an alternative to the recommended Season of Discovery healer premade, off by default: enable it and disable that one, or raise its priority. Prayer of Mending on cooldown, Shield on your target whenever it can take one (with Soul Warding engraved; else below half health), Penance on heavy damage, Circle of Healing for three hurt, Greater Heal or Prayer of Healing at three Serendipity stacks, Renew on minor damage, and Flash Heal on minor injuries to build the stacks (with Serendipity engraved; else below 30%).",
  applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
  tags={'holy','discipline','healer','dungeon','raid','season-of-discovery','warcraft-tavern'},
  sources={

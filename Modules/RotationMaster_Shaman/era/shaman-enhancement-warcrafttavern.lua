@@ -18,7 +18,7 @@ local threatening=all({type='GROUP'},{type='THREAT',unit='target',threat=2})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement.warcrafttavern',revision=6,
  blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
- nameKey='Default.Era.Shaman.Enhancement.WarcraftTavern.Name',descriptionKey='Default.Era.Shaman.Enhancement.WarcraftTavern.Description',
+ nameKey="Enhancement, Flame Shock first (Warcraft Tavern)",descriptionKey="Warcraft Tavern's Enhancement, an alternative to the recommended Enhancement premade, off by default: enable it and disable that one, or raise its priority. Windfury Weapon as soon as you learn it, Stormstrike, Flame Shock before any direct shock, then Earth Shock while your threat is low, or Frost Shock in a group once it is high; Magma and Chain Lightning on packs. Same totems and reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','endgame','aoe','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/pve-enhancement-shaman/',title='Warcraft Tavern: Classic PvE Enhancement Shaman',reviewedAt='2026-10-23'},

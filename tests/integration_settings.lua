@@ -871,7 +871,8 @@ test('shared integration help stays at page level; option help is beneath the st
     click(p, 'integration_help_editor_native')
 
     assert(
-        shown.sections[1].text == L['Help.Integrations.native_highlighting'],
+        shown.sections[1].text
+            == L["Syntax highlighting applies only to the Native Lua editor. Apply saves this preference for the next source-editor opening; it does not switch a selected external editor. Show line numbers under the editor heading applies to every provider."],
         'Native Help repeats general editor instructions'
     )
 

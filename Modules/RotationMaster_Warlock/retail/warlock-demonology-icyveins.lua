@@ -20,7 +20,7 @@ local core=own(264173)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology.icyveins',revision=7,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey='Default.Retail.Warlock.Demonology.IcyVeins.Name',descriptionKey='Default.Retail.Warlock.Demonology.IcyVeins.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft (Diabolist) order reads Demonic Core, imp counts and cooldown timers, which Midnight hides in combat. Power Siphon, Demonbolt and Shadow Bolt before the pull; then Power Siphon at one Demonic Core or none, Grimoire: Imp Lord, Grimoire: Fel Ravager, Summon Doomguard, Call Dreadstalkers, Summon Demonic Tyrant at 5 shards, Implosion on three or more engaged enemies, Ruination, Hand of Gul'dan at 3 shards or more, Infernal Bolt below 3, Demonbolt on Demonic Core below 4, Shadow Bolt.",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'demonology','ranged','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={

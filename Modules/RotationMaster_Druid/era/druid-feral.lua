@@ -13,7 +13,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral',revision=5,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.cat']=1,['era.druid.stealth-opener']=2,
   ['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear']=2,['era.druid.bear-pull']=3,['era.druid.feral-humanoid']=2},
- nameKey='Default.Era.Druid.Feral.Name',descriptionKey='Default.Era.Druid.Feral.Description',
+ nameKey="Feral",descriptionKey="Feral cat and bear from level 10 when Feral is your main talent tree; your form decides which. Cat: stealth opener, Faerie Fire (Feral) kept up, Clearcasting spent on Shred, a finisher from four combo points (Rip before Ferocious Bite is learned and on long fights outside raids, Bite under 63 energy), Rake outside raids, Shred from behind or Claw when the target is on you, and a powershift (Cat Form again) when far short of energy with Furor 5/5 and mana to spare. Bear: Enrage when starved, Demoralizing Roar on packs and elites unless a warrior's Shout is up, Swipe on two or more and with spare rage, Faerie Fire (Feral) otherwise. Caster form: shift. Reminders: Maul every swing, Tiger's Fury before a pull, Manual Crowd Pummeler, Innervate, Frenzied Regeneration. Positioning stays with you.",
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','feral','melee','tank','single-target','aoe','icy-veins','wowhead','warcraft-tavern'},
  sources={

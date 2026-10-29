@@ -21,7 +21,7 @@ local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.restoration',revision=4,
  blocks={['era.shaman.manual']=3,['era.shaman.shield']=1,['era.shaman.cures']=1,['era.shaman.healer-damage']=2},
- nameKey='Default.SoD.Shaman.Restoration.Name',descriptionKey='Default.SoD.Shaman.Restoration.Description',
+ nameKey="Restoration (SoD)",descriptionKey="Season of Discovery Restoration from level 10 (most points in Restoration); built from Icy Veins and Wowhead. On your friendly target: Riptide then Lesser Healing Wave below 40%, Cure Poison or Cure Disease, Healing Rain when three group members near you are below 85%, Chain Heal when two are (at once on a Power Surge proc), Riptide below 95% for Tidal Waves, Healing Wave below 90%. On an enemy it fights. Reminders: Water Shield (Lightning Shield before), Earth Shield on your friendly target or yourself, Shamanistic Rage, Mana Tide, Mana Spring and Strength of Earth. Choosing whom to heal and Tremor or cleansing totems stay with you.",
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'healer','leveling','endgame','season-of-discovery','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/restoration-shaman-healer-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Restoration Shaman healer rotation',reviewedAt='2026-10-23',revision='2025-04-08'},

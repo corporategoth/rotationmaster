@@ -18,7 +18,7 @@ local combat={type='COMBAT',unit='player'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=6,
  blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
- nameKey='Default.SoD.Mage.Arcane.Name',descriptionKey='Default.SoD.Mage.Arcane.Description',
+ nameKey="Arcane (SoD)",descriptionKey="Season of Discovery Arcane damage, chosen when Arcane is your main tree and Arcane Blast is engraved. Arcane Missiles on Missile Barrage; Arcane Barrage at four Arcane Blast stacks; Balefire Bolt when safe, never at four Balefire stacks or more; Living Flame on cooldown; Arcane Blast fills. Arcane Barrage and Fire Blast while moving; Living Flame and Arcane Explosion on packs. Reminders: Arcane Power on elites and long fights, Presence of Mind with Arcane Power or while moving, Icy Veins, Cold Snap and the other Mage reminders.",
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'arcane','raid','single-target','aoe','season-of-discovery','icy-veins'},
  sources={

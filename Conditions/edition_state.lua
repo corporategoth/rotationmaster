@@ -132,7 +132,7 @@ addon:RegisterCondition("PET_HAPPINESS", {
     -- Builds the help page for the PET_HAPPINESS condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.PET_HAPPINESS"]))
+        frame:AddChild(helpers.CreateText(L["How happy your Hunter pet is: Unhappy, Content or Happy, as the game reports it. No pet, or a pet that is not a Hunter pet, is in none of these moods. Classic Era, Burning Crusade and Wrath only."]))
     end,
 })
 
@@ -212,7 +212,7 @@ addon:RegisterCondition("STAGGER", {
     -- Builds the help page for the STAGGER condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.STAGGER"]))
+        frame:AddChild(helpers.CreateText(L["The damage waiting in your Brewmaster Monk's Stagger pool, or, with the box ticked, that damage as a percent of your maximum health. Mists of Pandaria, Retail and Forever only. On Retail and Forever the game can hide the pool from addons in combat, and always hides maximum health, so the percent form is unavailable there and the amount is unavailable whenever the game hides it; neither is ever guessed."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Stagger"], L["Value"],
             L["The damage waiting in your Stagger pool, or the same as a percent of your maximum health when the box is ticked."])
@@ -332,7 +332,7 @@ addon:RegisterCondition("ECLIPSE", {
     -- Builds the help page for the ECLIPSE condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.ECLIPSE"]))
+        frame:AddChild(helpers.CreateText(L["Balance Druid Eclipse. Choose the measure first. Direction matches while the Eclipse bar is heading toward a Solar or a Lunar Eclipse. Energy compares the bar itself, from -100 (a full Lunar Eclipse) to 100 (a full Solar Eclipse), using the operator and value. Only the fields of the chosen measure are used."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Eclipse"], L["Energy"],
             L["The Eclipse bar, from -100 (a full Lunar Eclipse) to 100 (a full Solar Eclipse)."])

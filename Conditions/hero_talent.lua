@@ -163,7 +163,7 @@ addon:RegisterCondition("HERO_TALENT", {
     --
     -- Help page text (the Help.Conditions.HERO_TALENT locale entry).
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.HERO_TALENT"]))
+        frame:AddChild(helpers.CreateText(L["The hero talent tree you have chosen. Pick a tree from the list, which shows the trees of the rotation's specialization, or choose 'Any hero talent tree' to match once you have chosen one. A tree can also be entered by its ID, to share a rotation with another class. Below the level that offers hero talents, or before you pick a tree, no tree is chosen. Retail only."]))
     end,
 })
 

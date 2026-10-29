@@ -13,7 +13,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost',revision=6,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
- nameKey='Default.Retail.Mage.Frost.Name',descriptionKey='Default.Retail.Mage.Frost.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Summon Water Elemental when you have the talent and no elemental, Arcane Intellect out of combat, Counterspell on an interruptible cast, Ice Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call.",
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'frost','caster','assisted-combat'},
  sources={

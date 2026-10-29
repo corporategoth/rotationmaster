@@ -17,7 +17,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.frost.dualwield',revision=6,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.frost-upkeep']=2,['mop.deathknight.frost-open']=2,
   ['mop.deathknight.frost-tail']=1,['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
- nameKey='Default.MoP.DeathKnight.FrostDualWield.Name',descriptionKey='Default.MoP.DeathKnight.FrostDualWield.Description',
+ nameKey="Two weapons",descriptionKey="Recommended for Frost with two one-handed weapons (Masterfrost); chosen in the Frost specialization while your off hand holds a weapon. Pulls with Outbreak or Howling Blast (Death Grip solo). Death Strike on Dark Succor or below 35% health, Blood Tap at eleven charges, diseases (Unholy Blight, Outbreak, Howling Blast, Plague Strike), Soul Reaper under 35%, Frost Strike on Killing Machine or above 89 runic power, Howling Blast on Rime or with both Frost or both Death runes ready, Obliterate on two Unholy runes below 77 runic power, Frost Strike above 76, Obliterate, Howling Blast, Plague Leech before diseases fade with Outbreak ready, Frost Strike at 40, Horn of Winter. Three enemies on you: a disease spread, Death and Decay and Howling Blast. Reminders: Frost Presence, Pillar of Frost, Raise Dead, Empower Rune Weapon with every rune down, Horn of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a group boss.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'frost','single-target','aoe','icy-veins'},
  sources={

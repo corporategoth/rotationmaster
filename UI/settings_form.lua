@@ -127,9 +127,11 @@ function addon:CreateSettingsForm(parent)
                 local brief = authored[key] or control.tooltip
 
                 if not brief then
-                    brief = control.rmCheck and L['Help.Brief.check']
-                        or inputs[control] and L['Help.Brief.edit']
-                        or L['Help.Brief.control']
+                    brief = control.rmCheck
+                        and L["Click to toggle this option. Page Help explains when changes are saved."]
+                        or inputs[control]
+                            and L["Edit the value; Enter or leaving the field checks and accepts valid text. Page Help explains when changes are saved."]
+                        or L["Use this control for the current page; page Help explains its options and consequences."]
                 end
 
                 self.cleanups[#self.cleanups + 1] = addon:BindWorkbenchHelp(control, {

@@ -18,7 +18,7 @@ local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{ty
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline',revision=6,
  blocks={['retail.priest.upkeep']=2,['retail.priest.disc-cooldowns']=1},
- nameKey='Default.Retail.Priest.Discipline.Name',descriptionKey='Default.Retail.Priest.Discipline.Description',
+ nameKey="Atonement (Icy Veins)",descriptionKey="Discipline in Midnight, for reference: Blizzard's Assisted Combat does not cover healers, the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this runs the damage that heals through Atonement and leaves deciding who to heal to you. On a friendly target: Power Word: Shield (Void Shield), Penance, Flash Heal. On an enemy: Shadow Word: Pain when you have not cast it for 12 seconds, Mind Blast, Penance, Shield, Shadow Word: Death, Void Blast, Smite. Reminders in combat: Power Word: Radiance, Evangelism, Ultimate Penitence, Pain Suppression on a friendly target; Fortitude between pulls. Desperate Prayer is your call. Raid ramps before big damage are yours to time.",
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
  tags={'discipline','healer','atonement','reference','icy-veins'},
  sources={

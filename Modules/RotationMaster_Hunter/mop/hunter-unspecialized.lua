@@ -14,7 +14,7 @@ local idle=negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.unspecialized',revision=5,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.serpent']=1},
- nameKey='Default.MoP.Hunter.Unspecialized.Name',descriptionKey='Default.MoP.Hunter.Unspecialized.Description',
+ nameKey="Before a specialization",descriptionKey="For levels 1 to 9 and any Hunter who has not chosen a specialization; the Beast Mastery, Marksmanship and Survival premades take over as soon as you choose a specialization. Pulls with Hunter's Mark and Arcane Shot, then Serpent Sting on targets that will live, Multi-Shot on three or more enemies, Arcane Shot, Steady Shot and Auto Shot. Reminds you to call, revive and mend your pet and to keep Aspect of the Hawk up.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'leveling','single-target'},
  sources={

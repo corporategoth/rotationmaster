@@ -27,7 +27,7 @@ local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=o
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.tank',revision=6,
  blocks={['era.warlock.boundaries']=3,['era.warlock.armor']=1,['era.warlock.pets']=1},
- nameKey='Default.SoD.Warlock.Tank.Name',descriptionKey='Default.SoD.Warlock.Tank.Description',
+ nameKey="Tank (SoD, Metamorphosis)",descriptionKey="Season of Discovery tank, chosen once Metamorphosis is engraved; built from simulator, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is missing or ending, a Soul Fire! proc, Incinerate to keep its fire buff; on three or more enemies Shadow Cleave, Lake of Fire, Shadowflame and Hellfire. Then a curse (Agony, else Recklessness when nobody has it), Shadowflame (Immolate before you engrave it), Master Channeler Drain Life, Corruption, Siphon Life, Conflagrate for Backdraft, Soul Fire under Decimation below 35%, and Searing Pain as the threat filler. Reminders: Metamorphosis, Fel Armor, your pet, Immolation Aura, Demonic Grace, Vengeance when low, Menace when the target attacks someone else, Demonic Howl on packs, Amplify Curse, Life Tap for a pet low on mana. Infernal Armor stays with you.",
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'tank','ranged','caster','endgame','aoe','season-of-discovery','icy-veins','wowhead','warcraft-tavern'},
  sources={

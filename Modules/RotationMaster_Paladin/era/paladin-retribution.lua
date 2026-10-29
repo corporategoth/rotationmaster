@@ -18,7 +18,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution',revision=5,
  blocks={['era.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,
   ['era.paladin.crusader-opener']=1,['era.paladin.seal']=2,['era.paladin.undead']=1},
- nameKey='Default.Era.Paladin.Retribution.Name',descriptionKey='Default.Era.Paladin.Retribution.Description',
+ nameKey="Retribution",descriptionKey="Melee Retribution from level 1 to 60, and the default for any Paladin no other premade fits. On elites and long fights outside raids, puts up Seal of the Crusader and judges it once; otherwise keeps a seal up (Command with a weapon of 3.5 seconds or slower, else Righteousness), Exorcism and Holy Wrath on Undead and Demons, Hammer of Wrath, Judgement on cooldown, Consecration while Vengeance is up or on two or more close enemies. Reminders: Sanctity, Retribution or Devotion Aura, Blessing of Wisdom solo or Might in a group, a heal between fights, Divine Shield, Divine Protection or Lay on Hands when you are about to die. Seal twisting is a separate premade; target choice and positioning stay with you.",
  applicability={families={'era'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','retribution','melee','single-target','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Retribution Paladin rotation',reviewedAt='2026-10-23',revision='2024-11-18'},

@@ -25,7 +25,7 @@ local capped=all(holyPower('GREATERTHANOREQUALS',5),negate({type='SPELL_AVAIL',s
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.retribution.icyveins',revision=7,
  blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2},
- nameKey='Default.Retail.Paladin.Retribution.IcyVeins.Name',descriptionKey='Default.Retail.Paladin.Retribution.IcyVeins.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft order reads buffs, charges and enemy counts that Midnight hides in combat, so it cannot run reliably there. Hammer of Light; a free Divine Purpose spender; at 5 Holy Power while Wake of Ashes is cooling, the spender; Wake of Ashes; Divine Toll; Blade of Justice on Art of War; Hammer of Wrath before it caps; at 3 or more Holy Power, Divine Storm on two or more enemies (or with Empyrean Power), else Final Verdict; Hammer of Wrath; Blade of Justice; Judgment; Templar Strike or Crusader Strike. Holy Power stays visible in combat, so its spending points work there. Reminders: Avenging Wrath, Execution Sentence with Wake of Ashes ready, aura, Rebuke, defensives.",
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'retribution','melee','reference','single-target','aoe','icy-veins','simulationcraft','wowhead'},
  sources={

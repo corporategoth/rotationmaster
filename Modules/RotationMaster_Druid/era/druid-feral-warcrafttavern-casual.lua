@@ -15,7 +15,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.warcrafttavern.casual',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.stealth-opener']=2,
   ['era.druid.cat-builders']=1,['era.druid.bear']=2,['era.druid.bear-pull']=3,['era.druid.feral-humanoid']=2},
- nameKey='Default.Era.Druid.Feral.WarcraftTavernCasual.Name',descriptionKey='Default.Era.Druid.Feral.WarcraftTavernCasual.Description',
+ nameKey="Feral (Warcraft Tavern, no powershifting)",descriptionKey="Warcraft Tavern's list without powershifting, an alternative to the recommended Feral premade, off by default: enable it and disable that one, or raise its priority. Build to five combo points with Shred (Claw from the front), then Rip on a target that will live, Tiger's Fury, Ferocious Bite; otherwise wait for energy. Bear and reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','feral','melee','tank','single-target','warcraft-tavern'},
  sources={

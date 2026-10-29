@@ -14,7 +14,7 @@ local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{ty
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline.wowhead',revision=6,
  blocks={['retail.priest.upkeep']=2,['retail.priest.disc-cooldowns']=1},
- nameKey='Default.Retail.Priest.Discipline.Wowhead.Name',descriptionKey='Default.Retail.Priest.Discipline.Wowhead.Description',
+ nameKey="Death first reference (Wowhead)",descriptionKey="Reference only, off by default: Wowhead's Season 1 Oracle order, which keeps Shadow Word: Pain up by reading the debuff that Midnight hides in combat. Shadow Word: Pain, Shadow Word: Death on cooldown, Penance, Mind Blast, Smite; Penance first on a friendly target. Same reminders as the Icy Veins premade.",
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
  tags={'discipline','healer','atonement','reference','wowhead'},
  sources={

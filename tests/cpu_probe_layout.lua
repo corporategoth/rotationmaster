@@ -255,7 +255,7 @@ test('probe report states and the perf command usage have explicit locale entrie
         'Capability probe only; no evaluator or gameplay was measured.', 'Native profiler probe',
         'Native profiler probe is already running.',
         'Native profiler probe is unavailable while CPU capture is running.', 'Native profiler probe is unavailable.',
-        'Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe', 'call completed',
+        "Usage: /rm perf cpu||runtime||memory [seconds||start||stop||report], or /rm perf probe", 'call completed',
         'call failed', 'disabled', 'enabled', 'exact', 'malformed', 'mismatch', 'more than one', 'not run', 'present',
         'restricted', 'unavailable (context changed)', 'absent', 'unavailable', 'Native acceptance: unverified'
     }) do
@@ -264,7 +264,7 @@ test('probe report states and the perf command usage have explicit locale entrie
 
     -- /rm cpu is gone (48d591d1); the one usage line names probe.
     assert(
-        L['Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe']:find(
+        L["Usage: /rm perf cpu||runtime||memory [seconds||start||stop||report], or /rm perf probe"]:find(
             '/rm perf probe',
             1,
             true

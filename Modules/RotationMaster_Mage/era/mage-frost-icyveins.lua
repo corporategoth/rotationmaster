@@ -17,7 +17,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost.icyveins',revision=5,
  blocks={['era.mage.boundaries']=3,['era.mage.frostbolt']=1,['era.mage.moving']=2,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
- nameKey='Default.Era.Mage.Frost.IcyVeins.Name',descriptionKey='Default.Era.Mage.Frost.IcyVeins.Description',
+ nameKey="Frost AoE grinding (Icy Veins)",descriptionKey="Blizzard leveling after Icy Veins' AoE grinding guide, chosen automatically when you play solo with Improved Blizzard. From two engaged enemies: Frost Nova the pack, Cone of Cold while Nova is cooling, Blizzard once nothing is next to you, Arcane Explosion when they are; Frostbolt on a single target, Fire Blast and the wand to finish. Mana Shield and Ice Barrier go up before each pull. Gathering the pack, Blink and kiting stay with you.",
  applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'frost','leveling','aoe','icy-veins'},
  sources={

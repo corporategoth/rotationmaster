@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost.warcrafttavern',revision=7,
  blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire-brain-freeze']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.overheat']=2,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
- nameKey='Default.SoD.Mage.Frost.WarcraftTavern.Name',descriptionKey='Default.SoD.Mage.Frost.WarcraftTavern.Description',
+ nameKey="Frost, Fire runes (SoD, Warcraft Tavern)",descriptionKey="Warcraft Tavern's Phase 4 Frost build on Fire runes, an alternative to the recommended Season of Discovery Frost premade, off by default: enable it and disable that one, or raise its priority. Pyroblast opens; Pyroblast on Hot Streak; Living Bomb kept up; Scorch to five stacks with Improved Scorch; Balefire Bolt only on a Brain Freeze proc and never at four Balefire stacks or more; Frostfire Bolt fills. Living Bomb and Fire Blast while moving; Living Bomb, Cone of Cold and Blizzard on packs. Reminders: Fire Blast with Overheat, Frozen Orb during Icy Veins, Icy Veins, Cold Snap and the other Mage reminders.",
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'frost','fire','raid','single-target','season-of-discovery','warcraft-tavern'},
  sources={

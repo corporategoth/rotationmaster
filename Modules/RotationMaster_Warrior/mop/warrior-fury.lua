@@ -33,7 +33,7 @@ local dump=any(all(smashed,rage('GREATERTHANOREQUALS',60)),all(target('GREATERTH
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury',revision=8,
  blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
- nameKey='Default.MoP.Warrior.Fury.Name',descriptionKey='Default.MoP.Warrior.Fury.Description',
+ nameKey="Recommended",descriptionKey="Recommended for Fury from level 10 to 90, picked in the Fury specialization. Charges to open and for rage. Colossus Smash once two Raging Blow charges are banked (one with Recklessness), Raging Blow as the window closes, Bloodthirst, Colossus Smash, Storm Bolt, Dragon Roar outside the window, Execute here with Single-Minded Fury (one-handers), Bladestorm while Bloodthirst cools, with Titan's Grip (two-handers) one more Raging Blow outside the window, Execute, Wild Strike on Bloodsurge, Raging Blow keeping a charge for the next window, Wild Strike, Heroic Throw, Battle Shout for rage. Two or more enemies fighting you add Bladestorm, Dragon Roar, Whirlwind for Meat Cleaver and cleaving Raging Blows. Reminders: a shout when none is up, Battle Stance, Berserker Rage for Enrage, Recklessness, Avatar and Bloodbath with Colossus Smash on long fights, Skull Banner, Heroic Strike or Cleave with spare rage, Heroic Leap, Pummel and defensives when low. Left to you: canceling Bladestorm.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'fury','dps','melee','leveling','endgame'},
  sources={

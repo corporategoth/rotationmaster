@@ -25,7 +25,7 @@ local group=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.tank',revision=6,
  blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1},
- nameKey='Default.SoD.Shaman.Tank.Name',descriptionKey='Default.SoD.Shaman.Tank.Description',
+ nameKey="Tank (SoD, Way of Earth)",descriptionKey="Season of Discovery tank, chosen once Way of Earth is engraved; built from Icy Veins, Wowhead, simulator and Warcraft Tavern. Flame Shock pulls. Earth Shock taunts a target in melee that is not attacking you, and interrupts. On two or more enemies: Molten Blast, Flame Shock, Chain Lightning at five Maelstrom stacks or on Power Surge, Fire Nova at five stacks. Then Flame Shock kept up, Lava Burst on Power Surge or while Flame Shock lasts, Stormstrike, Earth Shock, Lightning Bolt at five stacks, Molten Blast, Frost Shock. Reminders: Rockbiter, Lightning Shield, Spirit of the Alpha on yourself, Feral Spirit, Shamanistic Rage, Searing or Magma, and group totems.",
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'tank','melee','endgame','aoe','season-of-discovery','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/enhancement-shaman-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Enhancement Shaman tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},

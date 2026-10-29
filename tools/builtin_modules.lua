@@ -109,7 +109,7 @@ function M.list(root)
                     row.files = {}
 
                     for _, path in ipairs(M.entries(row.tocs[1], root)) do
-                        if path ~= module.bind then
+                        if path ~= module.bind and path ~= dir .. '/locales.xml' then
                             row.files[#row.files + 1] = path
                         end
                     end

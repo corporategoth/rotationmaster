@@ -18,7 +18,7 @@ local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,34870
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.wowhead',revision=6,
  blocks={['tbc.paladin.ret-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
- nameKey='Default.TBC.Paladin.Retribution.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Retribution.Wowhead.Description',
+ nameKey="Retribution (Wowhead & simulator)",descriptionKey="Melee Retribution from level 1 to 70, and the default for any Paladin no other premade fits. Opens each target with Judgement of Wisdom (low mana) or the Crusader, keeps your best seal up (Blood or Martyr, Command, then Righteousness), Crusader Strike, judges only Righteousness, Blood or Martyr (or Command on a stunned target), Exorcism on Undead and Demons, Consecration for three or more enemies with mana to spare. Hammer of Wrath is left to you (Wowhead uses it only on fleeing targets). Reminders: Sanctity, Retribution or Devotion Aura, a Blessing on yourself, a heal after the fight, Avenging Wrath. Seal twisting is a separate premade.",
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','retribution','melee','single-target','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/paladin/retribution/leveling-tips',title='Wowhead: Retribution Paladin leveling',reviewedAt='2026-10-23',revision='2026-09-04'},

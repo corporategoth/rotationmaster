@@ -19,7 +19,7 @@ local moving={type='MOVING'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=6,
  blocks={['mop.druid.melee-boundaries']=2},
- nameKey='Default.MoP.Druid.Unspecialized.Name',descriptionKey='Default.MoP.Druid.Unspecialized.Description',
+ nameKey="Before a specialization",descriptionKey="For levels 1 to 9, or any druid who has not chosen a specialization yet; the specialization premades take over once you pick one. In Cat Form it keeps Rake up, spends five combo points (or two on a dying target) on Ferocious Bite and builds with Mangle; in Bear Form it uses Mangle and Maul. Otherwise it pulls with Wrath, keeps Moonfire on targets that will last, casts Wrath (Moonfire while moving) and suggests Rejuvenation on yourself when you are below half health and alone. It stops while you cast, travel or have no enemy targeted.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'leveling','single-target','warcraft-tavern'},
  sources={

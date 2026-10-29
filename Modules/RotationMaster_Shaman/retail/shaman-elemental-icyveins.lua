@@ -25,7 +25,7 @@ local refresh=any(negate(shocked),{type='DEBUFF_REMAIN',unit='target',spell=1883
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.elemental.icyveins',revision=7,
  blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
- nameKey='Default.Retail.Shaman.Elemental.IcyVeins.Name',descriptionKey='Default.Retail.Shaman.Elemental.IcyVeins.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft order reads Flame Shock, Master of the Elements and Stormkeeper, which Midnight hides in combat; Maelstrom is hidden on Retail, so the spenders go at their cost instead of near full Maelstrom. Stormkeeper and Lava Burst before the pull. On three or more engaged enemies: Stormkeeper, Ancestral Swiftness, Flame Shock, Chain Lightning with Stormkeeper, Elemental Blast, Earthquake, Lava Burst on Lava Surge, Tempest, Chain Lightning. Otherwise Stormkeeper, Ancestral Swiftness, Flame Shock and Voltaic Blaze in their last 30% outside Master of the Elements, Lava Burst to start it, Tempest and Stormkeeper's Lightning Bolt inside it, Elemental Blast or Earth Shock inside it, Voltaic Blaze, Tempest, Flame Shock or Frost Shock while moving, Elemental Blast or Earth Shock whenever you can afford it, Lightning Bolt. Reminders: Ascendance once Stormkeeper is used, elementals, Spiritwalker's Grace, and the shared ones.",
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'elemental','ranged','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={

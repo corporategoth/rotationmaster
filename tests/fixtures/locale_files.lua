@@ -10,7 +10,15 @@ if manifest then
     manifest:close()
 
     for module in text:gmatch('"module"%s*:%s*"([^"]+)"') do
-        files[#files + 1] = 'Modules/' .. module .. '/enUS.lua'
+        local dir = 'Modules/' .. module
+        local classLocale = io.open(dir .. '/Locales/enUS.lua', 'rb')
+
+        if classLocale then
+            classLocale:close()
+            dir = dir .. '/Locales'
+        end
+
+        files[#files + 1] = dir .. '/enUS.lua'
     end
 end
 

@@ -13,7 +13,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.demonology.guide',revision=7,
  blocks={['mop.warlock.boundaries']=4,['mop.warlock.upkeep']=1,['mop.warlock.demonology-upkeep']=2,['mop.warlock.demonology-demon']=2,
   ['mop.warlock.demonology-pull']=3,['mop.warlock.demonology-caster']=2,['mop.warlock.demonology-filler']=1},
- nameKey='Default.MoP.Warlock.Demonology.Guide.Name',descriptionKey='Default.MoP.Warlock.Demonology.Guide.Description',
+ nameKey="Pool Molten Core (guides)",descriptionKey="Off by default. The guide consensus (Method, wowtbc.gg, Warcraft Tavern, Wowhead): the recommended Demonology premade, except that in caster form Metamorphosis waits for 900 fury or Dark Soul and Soul Fire is only cast at eight Molten Core stacks or below 25%, so the stacks are spent in demon form. Enable it and disable the recommended Demonology premade to use it.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'demonology','dps','caster','ranged','pet','leveling','endgame','method','wowtbc','warcraft-tavern','wowhead'},
  sources={{url='https://www.method.gg/mop-classic/demonology-warlock-class-guide-mop-classic',title='Method: Demonology Warlock guide (MoP Classic)',reviewedAt='2026-10-23',revision='2025-07-23'},

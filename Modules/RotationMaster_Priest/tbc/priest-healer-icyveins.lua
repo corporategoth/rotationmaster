@@ -17,7 +17,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.icyveins',revision=6,
  blocks={['tbc.priest.boundaries']=4,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
   ['tbc.priest.healer-damage']=2,['tbc.priest.upkeep']=1},
- nameKey='Default.TBC.Priest.HealerIcyVeins.Name',descriptionKey='Default.TBC.Priest.HealerIcyVeins.Description',
+ nameKey="Healer (Icy Veins)",descriptionKey="Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash Heal, Greater Heal (any rank), group heals, and Prayer of Mending last. You choose whom to heal. An alternative to the recommended Wowhead healer premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'tbc'},actionContext='player',class='PRIEST'},
  tags={'holy','discipline','healer','icy-veins','dungeon','raid'},
  sources={

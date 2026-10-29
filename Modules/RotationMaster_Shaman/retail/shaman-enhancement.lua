@@ -15,7 +15,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.enhancement',revision=6,
  blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
- nameKey='Default.Retail.Shaman.Enhancement.Name',descriptionKey='Default.Retail.Shaman.Enhancement.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Enhancement in Midnight. Shows Blizzard's Assisted Combat suggestion (it spends Maelstrom Weapon, keeps Flame Shock and handles Surging Totem and Sundering), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Ascendance, Doom Winds and Feral Spirit in combat, Lightning Shield and Skyfury between pulls (Blizzard's suggestion keeps Windfury Weapon), Wind Shear, Astral Shift.",
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'enhancement','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

@@ -25,7 +25,7 @@ local crusaded={type='DEBUFF',unit='target',spell=21183,anyrank=true}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.retribution',revision=6,
  blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.main-seal']=1},
- nameKey='Default.Forever.Paladin.Retribution.Name',descriptionKey='Default.Forever.Paladin.Retribution.Description',
+ nameKey="Retribution",descriptionKey="Retribution and every melee Paladin from level 1 to 60, and the Forever Paladin default. Keeps a damage seal up, refreshed only when it runs low: Seal of the Crusader judged once on an elite target, then Seal of Command with a slow (3.0 s) weapon, else Seal of Righteousness. Then Holy Strike on cooldown, Holy Shock and Light's Vigil for a Shockadin, Exorcism on Undead and Demons, Consecration on three or more enemies, Hammer of Wrath when it can be cast, and melee. Judgement is off the global cooldown, so it is a reminder whenever a seal is up. Other reminders: your aura and Blessing (Retribution Aura and Kings once learned; yours are kept). Optional step, off by default: Hammer of Justice before a Seal of Command Judgement. Mana, health and the swing timer are hidden from addons on Forever, so mana saving, healing yourself, Lay on Hands and Twist of Light seal swapping are your call. Built from level-30 beta guides.",
  applicability={families={'forever'},actionContext='player',class='PALADIN'},
  tags={'retribution','melee','leveling','single-target','aoe','wowhead','icy-veins'},
  sources={

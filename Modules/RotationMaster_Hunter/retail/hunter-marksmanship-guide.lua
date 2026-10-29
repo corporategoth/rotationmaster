@@ -27,7 +27,7 @@ local hydra=all(precise,engaged(2),known(470945))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=8,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
- nameKey='Default.Retail.Hunter.MarksmanshipGuide.Name',descriptionKey='Default.Retail.Hunter.MarksmanshipGuide.Description',
+ nameKey="Reference (SimulationCraft and Icy Veins)",descriptionKey="Reference only, off by default: the optimized Marksmanship priority, which spends Precise Shots before the next Aimed Shot. Procs and charges are hidden in Midnight combat, so it cannot run there; Focus is hidden on Retail, so the 70-Focus Multi-Shot dump on packs is left out. Marks the target and opens with Aimed Shot. Sentinel: Explosive Shot, Volley, Trueshot, Moonlight Chakram before its window ends, Aimed Shot in Trueshot without Precise Shots, Rapid Fire, Kill Shot, Multi-Shot (two enemies with Aspect of the Hydra) or Arcane Shot on Precise Shots, Aimed Shot, Moonlight Chakram, Steady Shot. Dark Ranger: Black Arrow on Precise Shots first, no Explosive Shot during Lock and Load, Aimed Shot before it caps, Wailing Arrow. Three or more enemies with Trick Shots: Explosive Shot, Volley, Multi-Shot to apply Trick Shots, Trueshot, then Rapid Fire and Aimed Shot while it lasts. Calling Trueshot for 30 Bullseye stacks or an unmarked target stays with you.",
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'marksmanship','ranged','reference','simulationcraft','icy-veins'},
  sources={

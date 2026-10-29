@@ -11,7 +11,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.wowhead',revision=7,
  blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
- nameKey='Default.Retail.Paladin.Protection.Wowhead.Name',descriptionKey='Default.Retail.Paladin.Protection.Wowhead.Description',
+ nameKey="Consecration filler reference (Wowhead)",descriptionKey="Reference only, off by default: Wowhead's tank order. Judgment on cooldown, Shield of the Righteous, Avenger's Shield, Divine Toll at 0 Holy Power, Blessed Hammer or Hammer of the Righteous, and Consecration only as the filler. Health is hidden on Retail, so Word of Glory below half health is left to you. Same reminders as the Icy Veins reference.",
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','reference','single-target','aoe','wowhead'},
  sources={

@@ -24,7 +24,7 @@ local evil=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',u
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.protection',revision=6,
  blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.taunt']=2,['forever.paladin.tank-upkeep']=2},
- nameKey='Default.Forever.Paladin.Protection.Name',descriptionKey='Default.Forever.Paladin.Protection.Description',
+ nameKey="Protection (Wowhead)",descriptionKey="Tanking, once Protection is your main talent tree or you turn on Righteous Fury. When the target is fighting someone else: Judgement with Seal of Fury (the taunt), Swift Judgement to reset it. Two or more enemies engaged: Consecration, Exorcism and Holy Wrath on Undead and Demons, Holy Strike. One enemy: Exorcism on Undead and Demons, Holy Strike, Consecration. Reminders: Righteous Fury, Seal of Fury, Judgement on cooldown, Holy Shield while tanking, your aura and Blessing. Health and mana are hidden from addons on Forever, so Templar's Bulwark and Lay on Hands are your call. Pulling, positioning and other taunts stay with you.",
  applicability={families={'forever'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','group','leveling','aoe','wowhead'},
  sources={

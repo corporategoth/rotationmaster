@@ -19,7 +19,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.twist',revision=6,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
- nameKey='Default.SoD.Paladin.Retribution.Twist.Name',descriptionKey='Default.SoD.Paladin.Retribution.Twist.Description',
+ nameKey="Retribution, seal twisting (SoD)",descriptionKey="Off by default; enable it if you twist with a slow two-hander. Swaps between Seal of Martyrdom and Seal of Command in the last 0.4 seconds before each swing, suggests nothing on the global cooldown in the 1.9 seconds before it, judges while both seals linger, and uses one filler per swing: Divine Storm at three Holy Power, Crusader Strike, Exorcism. Needs a swing timer and practice.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','raid','retribution','melee','single-target','seal-twisting','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin DPS rotation, seal twisting (Phase 8)',reviewedAt='2026-10-23',revision='2025-06-06'},

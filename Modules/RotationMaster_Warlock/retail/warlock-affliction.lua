@@ -17,7 +17,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.affliction',revision=6,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey='Default.Retail.Warlock.Affliction.Name',descriptionKey='Default.Retail.Warlock.Affliction.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Affliction in Midnight. In combat the game now hides your DoTs, procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which keeps Agony and Corruption, spends shards on Unstable Affliction and handles Grimoire of Sacrifice), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Darkglare in combat, a Felhunter between pulls unless you sacrificed your demon, Command Demon on an interruptible cast (it lights only where the game lets the cast be read), Dark Pact and Unending Resolve whenever they are ready in combat (health is hidden on Retail, so when to use them is your call).",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'affliction','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

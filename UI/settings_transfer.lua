@@ -191,18 +191,21 @@ end
 -- @return table  The map of field name to brief (a string, or a function of the dialog that returns one).
 function addon:TransferHelpBriefs()
     return {
-        copy = L['Help.Transfers.copy'],
-        clear = L['Help.Transfers.clear'],
-        apply = L['Help.Transfers.apply'],
-        cancel = L['Help.Transfers.cancel'],
-        close = L['Help.Transfers.cancel'],
-        destination = L['Help.Transfers.destination'],
-        name = L['Help.Transfers.name'],
+        copy = L["Select all export text for manual copying. This button does not send it anywhere."],
+        clear = L["Clear the transfer text. A previous preview becomes invalid; saved settings stay unchanged."],
+        apply = L["Import into the displayed destination. Read the destination and review requirements before continuing."],
+        cancel = L["Close this dialog without importing its text."],
+        close = L["Close this dialog without importing its text."],
+        destination = L["Choose a new named copy or replacement of the selected editable entry."],
+        name = L["Set the name for a new copy. Replacement keeps the selected entry as its destination."],
         preview = function(d)
-            return d.mode == 'replace' and d.options and d.options.canReplace and L['Help.Transfers.compare']
-                or L['Help.Transfers.preview']
+            return d.mode == 'replace'
+                and d.options
+                and d.options.canReplace
+                and L["Compare import shows what would change in the entry you are replacing, side by side with its current content. Nothing is saved."]
+                or L["Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."]
         end,
-        inspect = L['Help.Transfers.inspect'],
+        inspect = L["Check import lists problems with the text instead of its content: why it cannot be imported and any unsupported data. It does not import or change anything."],
     }
 end
 
@@ -700,9 +703,13 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
 
         local compare = d.mode == 'replace' and options.canReplace and true or false
         d.preview:SetText(compare and L['Compare import'] or L['Preview import'])
-        d.preview.tooltip = compare and L['Help.Transfers.compare'] or L['Help.Transfers.preview']
+
+        d.preview.tooltip = compare
+            and L["Compare import shows what would change in the entry you are replacing, side by side with its current content. Nothing is saved."]
+            or L["Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."]
+
         d.inspect:SetText(L['Check import'])
-        d.inspect.tooltip = L['Help.Transfers.inspect']
+        d.inspect.tooltip = L["Check import lists problems with the text instead of its content: why it cannot be imported and any unsupported data. It does not import or change anything."]
 
         for _, button in ipairs({ d.preview, d.inspect }) do
             local label = button.GetFontString and button:GetFontString()

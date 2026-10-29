@@ -947,10 +947,13 @@ function addon:CreateConditionCanvas(parent, owner)
             end
         end)
 
-        card.controls.help.tooltip = L['Help.Conditions.subject_brief']
+        card.controls.help.tooltip = L["Open Help for this condition without changing its fields."]
 
         if addon.BindWorkbenchHelp then
-            addon:BindWorkbenchHelp(card.controls.help, { brief = L['Help.Conditions.subject_brief'], valid = alive })
+            addon:BindWorkbenchHelp(card.controls.help, {
+                brief = L["Open Help for this condition without changing its fields."],
+                valid = alive,
+            })
         end
 
         addon:SetUIScript(card.controls.help, "OnClick", function()

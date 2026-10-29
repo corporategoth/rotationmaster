@@ -9,7 +9,7 @@ local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.holy.wowhead',revision=6,
  blocks={['tbc.paladin.holy-upkeep']=2,['tbc.paladin.boundaries']=2,['tbc.paladin.holy-hostile']=2,['tbc.paladin.holy-emergency']=2},
- nameKey='Default.TBC.Paladin.Holy.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Holy.Wowhead.Description',
+ nameKey="Holy (Wowhead tank healing)",descriptionKey="Wowhead's raid tank healing, an alternative to the recommended Holy premade, off by default: enable it and disable that one, or raise its priority. Holy Light whenever your target is missing a tenth of their health, Flash of Light only for small deficits, with the same emergencies, cleansing, Judgement and reminders as the blended Holy premade.",
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'endgame','raid','holy','healer','tank-healing','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/paladin/holy/healer-rotation-cooldowns-abilities-pve',title='Wowhead: Holy Paladin healing',reviewedAt='2026-10-23',revision='2026-02-10'}},

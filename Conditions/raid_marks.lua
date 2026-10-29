@@ -215,7 +215,7 @@ addon:RegisterCondition("MARKED", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.MARKED"]))
+        frame:AddChild(helpers.CreateText(L["Matches while the unit carries a raid target marker. Choose Any mark, No mark, or One of these marks and tick the marks you want (skull, cross, square, moon, triangle, diamond, circle, star). A unit that does not exist never matches, not even for No mark. Where the game hides a marker (Retail and Forever restrict some data in combat) the condition is unavailable, also under NOT, never false. To act on whichever unit carries a mark, pick the mark itself as the Unit of another condition: Skull, Cross and the rest, or the highest-priority marked unit, which tries skull first and star last."]))
     end,
 })
 
@@ -276,7 +276,7 @@ addon:RegisterCondition("MARK_COUNT", {
         parent:AddChild(addon:Widget_OperatorWidget(value, L["Value"], function() top:SetStatusText(funcs:print(root, spec)) end))
     end,
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.MARK_COUNT"]))
+        frame:AddChild(helpers.CreateText(L["Counts the marked units Rotation Master knows of. It finds them on your target, focus, mouseover, nameplates, group members and their targets, bosses and arena opponents each time a mark changes, so a marked unit you cannot reach right now still counts until the mark is seen to be gone or you leave the area. Count every marked unit, only enemies, or only friendly units. If a marker cannot be read, or a unit's hostility is unknown for the filter you chose, the condition is unavailable, also under NOT. A unit carries at most one mark, so the count is never more than eight."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Raid Mark Count"], L["Value"],
             L["A number from 0 to 8: there are eight marks, and a unit carries at most one."])

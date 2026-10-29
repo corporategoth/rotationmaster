@@ -20,7 +20,7 @@ local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.simulator',revision=5,
  blocks={['tbc.hunter.opening']=4,['tbc.hunter.leveling']=2,['tbc.hunter.upkeep']=1},
- nameKey='Default.TBC.Hunter.Ranged.Simulator.Name',descriptionKey='Default.TBC.Hunter.Ranged.Simulator.Description',
+ nameKey="Ranged DPS (simulator)",descriptionKey="Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot, keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you have plenty. From level 62: Multi-Shot when ready, Steady Shot straight after each Auto Shot, Arcane Shot to fill the gap, Serpent Sting when solo. With three or more enemies fighting you, Multi-Shot whenever it is ready. Reminds you of aspects (Viper when mana runs low, Hawk again at half mana), pet care, Kill Command, major cooldowns on elites and bosses and Silencing Shot. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you.",
  applicability={families={'tbc'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','leveling','endgame','icy-veins'},
  sources={

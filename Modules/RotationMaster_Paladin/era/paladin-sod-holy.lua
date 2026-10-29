@@ -18,7 +18,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.holy',revision=6,
  blocks={['sod.paladin.holy-upkeep']=2,['era.paladin.boundaries']=2,['era.paladin.cleanse']=1,['sod.paladin.holy-hostile']=3},
- nameKey='Default.SoD.Paladin.Holy.Name',descriptionKey='Default.SoD.Paladin.Holy.Description',
+ nameKey="Holy (SoD)",descriptionKey="Season of Discovery healing in a group, chosen by an engraved Beacon of Light, Divine Light or Sacred Shield, or the Holy tree without Crusader Strike. Acts on your friendly target: Cleanse, Holy Shock while moving or below 30%, Divine Light (Holy Light when mana is under half) below 60%, Flash of Light below 90%. With an enemy in melee range it only keeps a seal up. Reminders: Beacon of Light and Sacred Shield on the target that lacks them, Concentration or Devotion Aura, Blessing of Wisdom, Divine Favor and Lay on Hands for a target that is very low. The guides behind it are from Phase 4; choosing whom to heal stays with you.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','endgame','holy','healer','dungeon','raid','season-of-discovery','icy-veins','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/holy-paladin-healer-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Holy Paladin rotation (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-09'},

@@ -20,7 +20,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.guide',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey='Default.Retail.DemonHunter.VengeanceGuide.Name',descriptionKey='Default.Retail.DemonHunter.VengeanceGuide.Description',
+ nameKey="Reference (Wowhead and Icy Veins)",descriptionKey="Reference only, off by default: Wowhead's Vengeance order with Icy Veins' hero-tree goals. Your buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so spenders wait only for their cost and builders do not avoid capping. Aldrachi Reaver: Reaver's Glaive, Fracture on Rending Strike, Soul Cleave on Glaive Flurry. Then Fracture at full charges, Spirit Bomb on three or more enemies, Immolation Aura, Sigil of Flame, Soul Cleave against one target, Fel Devastation, Soul Cleave, Fracture, Felblade, Throw Glaive. Rotation Master cannot count Soul Fragments, so Spirit Bomb follows the enemy count. Reminders: Demon Spikes when it is down, Metamorphosis, Fiery Brand, Sigil of Spite, Soul Carver (Infernal Strike at two charges is off), plus Disrupt and Blur.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'vengeance','tank','reference','wowhead','icy-veins'},
  sources={

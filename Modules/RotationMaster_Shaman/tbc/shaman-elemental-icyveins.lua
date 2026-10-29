@@ -15,7 +15,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.icyveins',revision=4,
  blocks={['tbc.shaman.shield']=1,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.elemental-totems']=1,['tbc.shaman.bloodlust']=1,
   ['tbc.shaman.elemental-opening']=2,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1,['tbc.shaman.elemental-aoe']=1},
- nameKey='Default.TBC.Shaman.Elemental.IcyVeins.Name',descriptionKey='Default.TBC.Shaman.Elemental.IcyVeins.Description',
+ nameKey="Elemental (Icy Veins & simulator)",descriptionKey="Caster Elemental for the Elemental talent tree. Lightning Bolt is the filler; Chain Lightning goes out with Elemental Mastery, on Clearcasting while you have 40% mana, or freely above 80%; Flame Shock only while moving; Earth Shock interrupts; Fire Nova, Chain Lightning and Magma for packs. Before Chain Lightning a target in melee is left to auto-attack to save mana. Reminders: Water or Lightning Shield, a weapon imbue, Totem of Wrath (or Searing on long fights), Wrath of Air, Mana Spring, Totemic Call after the fight, Elemental Mastery and Bloodlust/Heroism.",
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','elemental','caster','single-target','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/elemental-shaman-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Elemental Shaman rotation',reviewedAt='2026-10-23',revision='2026-01-12'},

@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 era/blocks.lua
 era/priest-dps.lua
 era/priest-dps-warcrafttavern.lua

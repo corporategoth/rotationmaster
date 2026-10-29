@@ -20,7 +20,7 @@ local still=negate({type='MOVING'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration.wowhead',revision=6,
  blocks={['mop.druid.boundaries']=4,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=3},
- nameKey='Default.MoP.Druid.Restoration.Wowhead.Name',descriptionKey='Default.MoP.Druid.Restoration.Wowhead.Description',
+ nameKey="Tank healing (Wowhead)",descriptionKey="Wowhead's single-target tank-healing order, an alternative to the recommended Restoration premade for when you are assigned to the tank: enable it and disable that one, or raise its priority. Keep the tank targeted: it keeps three Lifeblooms and Rejuvenation on it, uses Regrowth for heavy damage, Nourish for light damage, Healing Touch once Lifebloom and Rejuvenation are rolling and the tank is below half, and Swiftmend to keep it topped up. Same reminders as the recommended premade.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'restoration','healer','tank-healing','wowhead'},
  sources={

@@ -15,7 +15,7 @@ local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,34870
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.icyveins',revision=7,
  blocks={['tbc.paladin.ret-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
- nameKey='Default.TBC.Paladin.Retribution.IcyVeins.Name',descriptionKey='Default.TBC.Paladin.Retribution.IcyVeins.Description',
+ nameKey="Retribution (Icy Veins)",descriptionKey="Icy Veins' Retribution, an alternative to the recommended Wowhead Retribution premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader once per target, Seal of Righteousness (Command only with a slow weapon, Blood or Martyr once learned), Crusader Strike, Hammer of Wrath and Judgement on cooldown, Consecration on two or more enemies, Exorcism on Undead and Demons, and Holy Shock for Holy levelers. Same reminders as the Wowhead variant.",
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','retribution','melee','single-target','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/retribution-paladin-leveling-guide',title='Icy Veins: Retribution Paladin leveling',reviewedAt='2026-10-23',revision='2026-01-12'},

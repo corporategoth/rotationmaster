@@ -28,7 +28,7 @@ local tigerPower=any(negate(own(125359)),remain(125359,'LESSTHANOREQUALS',1))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker',revision=7,
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=3,['mop.monk.windwalker-tail']=1},
- nameKey='Default.MoP.Monk.Windwalker.Name',descriptionKey='Default.MoP.Monk.Windwalker.Description',
+ nameKey="Recommended",descriptionKey="Picked automatically in the Windwalker specialization. Touch of Death when usable, Tiger Palm to keep Tiger Power, Rising Sun Kick on cooldown, Chi Wave, Combo Breaker procs, Fists of Fury when you are standing still and its channel will not cap your energy, Jab when two Chi are missing (Expel Harm instead when hurt), Blackout Kick without starving the next Rising Sun Kick. On two or more enemies Rising Sun Kick keeps its debuff up and Spinning Crane Kick or Rushing Jade Wind joins from three. Reminders: Fierce Tiger, Legacy of the Emperor and of the White Tiger, Tigereye Brew at 19 stacks (15 with Chi to spend, 10 under Bloodlust or near the end of a fight), Energizing Brew at low energy, Chi Brew, Xuen, Storm, Earth, and Fire on two enemies (you cast it on the second one), Touch of Karma, defensives and Spear Hand Strike. Energy-to-cap checks are energy thresholds, so tune them to your haste.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'windwalker','leveling','single-target','aoe','wowhead'},
  sources={

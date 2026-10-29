@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 tbc/blocks.lua
 tbc/warlock-dps-icyveins.lua
 tbc/warlock-dps-wowhead.lua

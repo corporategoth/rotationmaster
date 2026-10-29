@@ -27,7 +27,7 @@ local function shout(prefix)return{id=prefix..'shout',type='branch',conditions=r
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms.icyveins',revision=7,
  blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
- nameKey='Default.MoP.Warrior.Arms.IcyVeins.Name',descriptionKey='Default.MoP.Warrior.Arms.IcyVeins.Description',
+ nameKey="Pool for Colossus Smash (Icy Veins)",descriptionKey="Off by default. The Icy Veins and Wowhead Arms order: outside the Colossus Smash window it uses Overpower and Slams only above 80 rage, banking rage for the window instead of Slamming as filler. In the window: Mortal Strike, Slam, Overpower, Heroic Throw. Below 20% health: Colossus Smash, Mortal Strike, Execute, Overpower, Dragon Roar. Sweeping Strikes on two enemies, a Thunder Clap pack list on three or more. Heroic Strike or Cleave only near the rage cap. Same reminders as the recommended Arms premade. Enable it and disable that one to use it.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'arms','dps','melee','leveling','endgame','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/arms-warrior-pve-rotation-cooldowns-abilities',title='Icy Veins: Arms Warrior rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},

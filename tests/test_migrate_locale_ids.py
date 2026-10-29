@@ -74,11 +74,11 @@ class Migration(unittest.TestCase):
         stats = self.convert()
         english = L.english_entries()
         self.assertEqual([(e.id, e.key) for e in english], [
-            (1, 'Report'), (2, 'Pipe [a|b]'), (3, 'Default.X.Name'),
+            (1, 'Report'), (2, 'Pipe [a||b]'), (3, 'Arms Warrior'),
             (4, 'The current rotation is |cFFFFFFFF%s|cFF7BC653'), (5, 'A generated description.')])
-        self.assertEqual(L.by_key()['Pipe [a|b]'].text, 'Pipe [a||b]')
+        self.assertEqual(L.by_key()['Pipe [a||b]'].text, 'Pipe [a||b]')
         self.assertEqual(dict(L.locale_entries('deDE')), {
-            'Report': 'Bericht', 'Pipe [a|b]': 'Rohr [a||b]', 'Default.X.Name': 'Waffen',
+            'Report': 'Bericht', 'Pipe [a||b]': 'Rohr [a||b]', 'Arms Warrior': 'Waffen',
             'The current rotation is |cFFFFFFFF%s|cFF7BC653': 'Die aktuelle Rotation ist |cFFFFFFFF%s|cFF7BC653',
             'A generated description.': 'Eine Beschreibung.'})
         self.assertEqual(stats['translations'], 5)
@@ -91,7 +91,7 @@ class Migration(unittest.TestCase):
         self.assertEqual(stats['stale'], 1)
         untranslated, stale = L.classify('deDE')
         self.assertEqual(untranslated, [])
-        self.assertEqual([(e.key, t.english, t.text) for e, t in stale], [('Default.X.Name', 'Arms', 'Waffen')])
+        self.assertEqual([(e.key, t.english, t.text) for e, t in stale], [('Arms Warrior', 'Arms', 'Waffen')])
         self.assertEqual(stale[0][1].hash, F.text_hash('Arms'))
         self.assertNotEqual(stale[0][1].hash, F.text_hash('Arms Warrior'))
 

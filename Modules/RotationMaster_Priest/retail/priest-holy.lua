@@ -21,7 +21,7 @@ local grouped=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.priest.holy',revision=6,
  blocks={['retail.priest.upkeep']=2},
- nameKey='Default.Retail.Priest.Holy.Name',descriptionKey='Default.Retail.Priest.Holy.Description',
+ nameKey="Icy Veins",descriptionKey="Holy in Midnight, for reference: the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this keeps your Holy Words, Prayer of Mending and procs moving on whatever you target and leaves triage to you. On a friendly target: Holy Word: Sanctify, Holy Word: Serenity, Prayer of Mending, Prayer of Healing with Surge of Light, Benediction, Prayer of Healing with Lightweaver, Flash Heal with Surge of Light, Prayer of Healing in a group, Holy Nova while moving, Flash Heal. On an enemy: Holy Word: Chastise, Holy Fire, Holy Nova while moving, Smite. Reminders: Apotheosis, Divine Hymn and Halo in combat, Guardian Spirit on a friendly target (health is hidden on Retail, so whether it is about to die is your call), Fortitude. Desperate Prayer is yours.",
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
  tags={'holy','healer','reference','icy-veins'},
  sources={

@@ -15,7 +15,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged.mobalytics',revision=6,
  blocks={['forever.hunter.boundaries']=4,['forever.hunter.deadzone']=3,['forever.hunter.pull']=3,['forever.hunter.moving']=2,
   ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
- nameKey='Default.Forever.Hunter.RangedMobalytics.Name',descriptionKey='Default.Forever.Hunter.RangedMobalytics.Description',
+ nameKey="Ranged, mana-saving (Mobalytics)",descriptionKey="Mobalytics' mana-saving leveling style, an alternative to the recommended Wowhead ranged premade, off by default: enable it and disable that one, or raise its priority. Keeps your Serpent Sting up, one Summon Hawk out, Aimed Shot (Multi-Shot on two or more enemies), and never Arcane Shot once Summon Hawk is known; its second Hawk on a healthy target is left out, as Forever hides target health. Same pull, melee, movement and reminders as the Wowhead premade.",
  applicability={families={'forever'},actionContext='player',class='HUNTER'},
  tags={'beast-mastery','marksmanship','ranged','leveling','mana-saving','mobalytics'},
  sources={

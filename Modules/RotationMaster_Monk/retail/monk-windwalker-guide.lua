@@ -25,7 +25,7 @@ local bok={type='BUFF_STACKS',unit='player',spell=116768,ownbuff=true,operator='
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.monk.windwalker.guide',revision=6,
  blocks={['retail.monk.boundaries']=3,['retail.monk.utility']=2},
- nameKey='Default.Retail.Monk.WindwalkerGuide.Name',descriptionKey='Default.Retail.Monk.WindwalkerGuide.Description',
+ nameKey="Reference (Icy Veins and SimulationCraft)",descriptionKey="Reference only, off by default: Icy Veins' Conduit of the Celestials priority. Every step keeps Combo Strikes (never the spell you cast last); Chi and your own casts stay readable, but Heart of the Jade Serpent, Zenith, Blackout Kick! and Dance of Chi-Ji are hidden in Midnight combat, so it cannot run there; energy is hidden on Retail, so the Tiger Palm before the energy cap is left out. Whirling Dragon Punch with Xuen over 10 seconds away; Zenith Stomp when low on Chi or as Zenith ends; Celestial Conduit without Heart; Fists of Fury as Heart ends; Celestial Conduit, Invoke Xuen, Fists of Fury, Whirling Dragon Punch, Strike of the Windlord; Blackout Kick when short of Chi for Fists; Rushing Wind Kick, Rising Sun Kick; Blackout Kick on two Blackout Kick! charges or in Zenith; Spinning Crane Kick in Zenith or on Dance of Chi-Ji; Touch of Death; Tiger Palm, Blackout Kick, Slicing Winds as fillers. Reminder: Touch of Karma, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'windwalker','melee','reference','icy-veins','simulationcraft'},
  sources={

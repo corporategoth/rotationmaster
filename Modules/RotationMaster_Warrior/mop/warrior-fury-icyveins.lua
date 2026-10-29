@@ -29,7 +29,7 @@ local function shout(prefix)return{id=prefix..'shout',type='branch',conditions=r
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury.icyveins',revision=8,
  blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
- nameKey='Default.MoP.Warrior.Fury.IcyVeins.Name',descriptionKey='Default.MoP.Warrior.Fury.IcyVeins.Description',
+ nameKey="Cooldowns in Colossus Smash (Icy Veins)",descriptionKey="Off by default. Icy Veins' Fury order spends Bladestorm or Dragon Roar first inside the Colossus Smash window, and puts Execute ahead of Bloodthirst below 20% health. Outside the window: Colossus Smash, Bloodthirst, Raging Blow only at two charges, Wild Strike on Bloodsurge, shout, Wild Strike. Four or more enemies: Bloodthirst for Enrage, Whirlwind to three Meat Cleaver stacks, Raging Blow. Heroic Strike or Cleave only near the rage cap. Same reminders as the recommended Fury premade. Enable it and disable that one to use it.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'fury','dps','melee','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/fury-warrior-pve-rotation-cooldowns-abilities',title='Icy Veins: Fury Warrior rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},

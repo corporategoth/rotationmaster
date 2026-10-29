@@ -27,7 +27,7 @@ local function spend(proc)return any(negate(known(ALTER)),{type='SPELL_COOLDOWN'
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.mage.frost',revision=7,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1},
- nameKey='Default.MoP.Mage.Frost.Name',descriptionKey='Default.MoP.Mage.Frost.Description',
+ nameKey="Recommended",descriptionKey="Frost from level 10 to 90 (selected in the Frost specialization). Ice Lance at two Fingers of Frost, Frostfire Bolt on Brain Freeze, your talented bomb, Frozen Orb, Ice Lance on one Fingers of Frost, Frostbolt; from 87 a proc is held for Alter Time when it is less than 10 seconds away. With two or more enemies: Frozen Orb, Cone of Cold and Arcane Explosion when they are close, Blizzard when four stand still. Ice Lance and Fire Blast on the move without Ice Floes. Reminders: Water Elemental, Freeze on anything but a boss (place it yourself), Icy Veins timed with Alter Time, Alter Time at two Fingers of Frost in Icy Veins, Frost Armor (Molten before 54), Mana Gem, Arcane Brilliance, Counterspell, Mirror Image, Ice Barrier, Ice Floes, Invocation or Rune of Power. Cold Snap, Presence of Mind, Time Warp and Spellsteal are off.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'frost','leveling','single-target','aoe','method'},
  sources={

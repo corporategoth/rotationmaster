@@ -22,7 +22,7 @@ local blocks={['era.warlock.boundaries']=3,['era.warlock.procs']=1,['era.warlock
  ['era.warlock.moving']=2,['era.warlock.aoe']=1,['era.warlock.filler']=2,['era.warlock.armor']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps.warcrafttavern',revision=6,blocks=blocks,
- nameKey='Default.Era.Warlock.DPS.WarcraftTavern.Name',descriptionKey='Default.Era.Warlock.DPS.WarcraftTavern.Description',
+ nameKey="Drain tank (Warcraft Tavern)",descriptionKey="Warcraft Tavern's leveling style, an alternative to the recommended Warlock premade, off by default: enable it and disable that one, or raise its priority. The Imp, then the Succubus from level 20. Immolate, Siphon Life and Corruption, then solo Drain Life as the filler once you learn its fourth rank (the wand before), Life Tap whenever your health is nearly full and Dark Pact before your pet's mana is full. In raids every DoT the slots allow, then Shadow Bolt. Same finishers, curse and safety reminders as the recommended premade; fearing a second mob stays with you.",
  applicability={families={'era'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/warlock-leveling-guide/',title='Warcraft Tavern: Classic Warlock leveling guide',reviewedAt='2026-10-23'},

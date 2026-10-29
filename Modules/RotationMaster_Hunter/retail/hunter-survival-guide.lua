@@ -23,7 +23,7 @@ local beforeTakedown=all(negate(known(1272139)),negate(tip),{type='SPELL_AVAIL',
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=7,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
- nameKey='Default.Retail.Hunter.SurvivalGuide.Name',descriptionKey='Default.Retail.Hunter.SurvivalGuide.Description',
+ nameKey="Reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Survival priority, where Kill Command builds Tip of the Spear and Takedown, Boomstick, Wildfire Bomb and Raptor Strike spend it. Tip of the Spear and charges are hidden in Midnight combat, so it cannot run there. Calls your pet, marks the target and opens with Wildfire Bomb. Sentinel: Kill Command without Tip of the Spear, Boomstick, Wildfire Bomb on Sentinel's Mark, Kill Command before a ready Takedown, Takedown, Moonlight Chakram, Raptor Strike, then Kill Command, Wildfire Bomb and Takedown. Pack Leader: Kill Command on Howl of the Pack Leader, then Takedown, Wildfire Bomb, Boomstick and Raptor Strike with Tip of the Spear. Three or more enemies: Boomstick and Wildfire Bomb before Takedown, Raptor Swipe. Reminders: Aspect of the Eagle out of melee and the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'survival','melee','pet','reference','simulationcraft'},
  sources={

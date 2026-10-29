@@ -21,7 +21,7 @@ local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.combat.icyveins',revision=7,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.combat-opener']=2,['mop.rogue.out-of-combat']=3,['mop.rogue.combat-aoe']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
- nameKey='Default.MoP.Rogue.Combat.IcyVeins.Name',descriptionKey='Default.MoP.Rogue.Combat.IcyVeins.Description',
+ nameKey="Sinister Strike builder (Icy Veins)",descriptionKey="Off by default, and superseded for Phase 5. The Icy Veins, Warcraft Tavern, Method and wowtbc.gg order from before the Siege of Orgrimmar patch: Slice and Dice, Revealing Strike kept up, five-point Rupture on a long single-target fight and Eviscerate, with Sinister Strike as the builder. Same reminders and pack play as the recommended Combat premade. Choose it only if you follow those guides; enable it and disable the recommended one.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'combat','dps','melee','leveling','endgame','icy-veins','warcraft-tavern','method','wowtbc'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/combat-rogue-pve-rotation-cooldowns-abilities',title='Icy Veins: Combat Rogue rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'},

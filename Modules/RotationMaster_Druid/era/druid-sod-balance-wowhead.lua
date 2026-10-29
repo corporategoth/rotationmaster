@@ -17,7 +17,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.wowhead',revision=7,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
   ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.bear']=2},
- nameKey='Default.SoD.Druid.Balance.Wowhead.Name',descriptionKey='Default.SoD.Druid.Balance.Wowhead.Description',
+ nameKey="Balance (SoD, Wowhead)",descriptionKey="Wowhead's Phase 8 list, an alternative to the recommended Season of Discovery Balance premade, off by default: enable it and disable that one, or raise its priority. Wrath to open, Starsurge on cooldown, Hurricane on six or more, Insect Swarm only while moving, Sunfire and Moonfire kept up, Wrath while your Sunfire has under 5 seconds when Elune's Fires is engraved to extend it, Starfire on Lunar Eclipse, Wrath otherwise. Reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','balance','caster','single-target','aoe','wowhead'},
  sources={

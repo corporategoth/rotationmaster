@@ -21,7 +21,7 @@ local function scythe(id)return spell(id,85948,all(buff(458123),any(negate(debuf
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.simc',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey='Default.Retail.DeathKnight.UnholySimc.Name',descriptionKey='Default.Retail.DeathKnight.UnholySimc.Description',
+ nameKey="Reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Unholy list, which spends Death Coil far more often. Hidden combat data keeps it from running in Midnight combat; runic power and target health are hidden on Retail, so the cap and execute checks are left out. Festering Scythe upkeep, Soul Reaper in Dark Transformation, Death Coil on Sudden Doom, Putrefy in Dark Transformation, Death Coil in Dark Transformation or Forbidden Knowledge and whenever Army of the Dead is over 5 seconds away, Scourge Strike with Lesser Ghoul charges, Festering Strike. Three or more enemies: Epidemic for Death Coil and Festering Strike below three charges. Reminders: Outbreak, Death and Decay on packs, Army of the Dead, Dark Transformation.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','melee','pet','reference','simulationcraft'},
  sources={

@@ -12,7 +12,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster',revision=6,
  blocks={['retail.monk.boundaries']=3,['retail.monk.utility']=2},
- nameKey='Default.Retail.Monk.Brewmaster.Name',descriptionKey='Default.Retail.Monk.Brewmaster.Description',
+ nameKey="Blizzard Assisted with brews",descriptionKey="Recommended for Brewmaster. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Assisted Combat presses no brews, so, as Icy Veins advises, the brews are reminders beside it: Black Ox Brew, Invoke Niuzao, Purifying Brew, Celestial Brew or Celestial Infusion and Touch of Death light whenever they are ready in combat (Rotation Master cannot read Stagger yet, so how heavy it is stays your call). Also Spear Hand Strike on an interruptible cast, and Fortifying Brew and your racial cooldown whenever they are ready in combat; enemy casts are hidden in combat, so the interrupt lights only where the game shows them, and health is hidden on Retail, so when to use Fortifying Brew is your call.",
  applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'brewmaster','tank','assisted-combat','icy-veins'},
  sources={

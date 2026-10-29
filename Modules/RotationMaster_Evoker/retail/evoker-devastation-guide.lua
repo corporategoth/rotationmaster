@@ -23,7 +23,7 @@ local sweep=buff(1265871)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation.guide',revision=7,
  blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
- nameKey='Default.Retail.Evoker.DevastationGuide.Name',descriptionKey='Default.Retail.Evoker.DevastationGuide.Description',
+ nameKey="Reference (SimulationCraft and Icy Veins)",descriptionKey="Reference only, off by default: the optimal Devastation priority. Procs, cooldowns and the target's burn are hidden in Midnight combat, so it cannot run there; read it, or clone it to experiment. Pulls with Living Flame. Scalecommander (Mass Disintegrate known): Eternity Surge, Fire Breath, Deep Breath on two or more enemies, Disintegrate with Mass Disintegrate charges, Pyre on five or more, Disintegrate, Living Flame on Burnout with Leaping Flames, Unbound Flame below two Essence Bursts, Azure Sweep. Flameshaper: Eternity Surge, Fire Breath when its burn is missing or ending, Pyre on five or more, Disintegrate, Deep Breath on four or more, Unbound Flame, Living Flame on Burnout with Leaping Flames, Azure Sweep. Then Azure Strike while moving, Living Flame, Azure Strike. Use empowers at rank 1 on one target (Icy Veins). Reminders: Dragonrage, Tip the Scales in Dragonrage or with Fire Breath ready, Deep Breath for Scalecommander, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'devastation','ranged','reference','simulationcraft','icy-veins'},
  sources={

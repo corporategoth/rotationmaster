@@ -36,7 +36,7 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.dps',revision=6,
  blocks={['forever.warrior.boundaries']=3,['forever.warrior.upkeep']=2},
- nameKey='Default.Forever.Warrior.DPS.Name',descriptionKey='Default.Forever.Warrior.DPS.Description',
+ nameKey="Arms and Fury (Icy Veins)",descriptionKey="Melee Arms and Fury from level 1 to 60, and the default for any warrior outside Defensive Stance. Forever rage is scarce and hidden from addons, so it pools by spending on anything else only while Mortal Strike or Bloodthirst is recovering: Charge to pull, Victory Rush, Intercept, Execute (in its range) on elites, bosses or in a group, Whirlwind or Thunder Clap, Demoralizing Shout and Slam on packs, Spearing Strike on Giants and Dragonkin, Rend until Bloodthirst, Overpower, Mortal Strike, Bloodthirst, then Whirlwind, Slam while standing and two Sunder Armors (five on elites). Reminders: Battle Shout, Bloodrage, the interrupt, Heroic Strike while the main strike recovers, Cleave on packs, Sweeping Strikes, Death Wish and Berserker Rage; Recklessness and Retaliation are listed but off. Left to you: stance dancing, Hamstring and consumables.",
  applicability={families={'forever'},actionContext='player',class='WARRIOR'},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins','method'},
  sources={{url='https://www.icy-veins.com/wow-forever/arms-warrior-leveling',title='Icy Veins: Forever Arms Warrior leveling',reviewedAt='2026-10-23',revision='2026-10-17'},

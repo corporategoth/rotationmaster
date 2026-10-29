@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival.weave',revision=7,
  blocks={['forever.hunter.boundaries']=4,['forever.hunter.survival-pull']=3,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
   ['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
- nameKey='Default.Forever.Hunter.SurvivalWeave.Name',descriptionKey='Default.Forever.Hunter.SurvivalWeave.Description',
+ nameKey="Survival two-hand weave (Wowhead)",descriptionKey="Wowhead's in-and-out weave for a two-handed Survival Hunter, an alternative to the recommended Survival melee premade, off by default: enable it and disable that one, or raise its priority. In melee: Mongoose Bite and Raptor Strike; when Raptor Strike is more than 2.5 seconds away, Strider Kick and step out. Out of melee: Serpent Sting, Arcane Shot, Aimed Shot and Auto Shot until Raptor Strike is nearly ready, then back in. You do the moving; RM follows your range.",
  applicability={families={'forever'},actionContext='player',class='HUNTER'},
  tags={'survival','melee','two-hander','weave','wowhead'},
  sources={

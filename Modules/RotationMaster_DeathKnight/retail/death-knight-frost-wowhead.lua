@@ -24,7 +24,7 @@ aoe[#aoe+1]=spell('fwh-aoe-obliterate',49020);aoe[#aoe+1]=spell('fwh-aoe-frost-s
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost.wowhead',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey='Default.Retail.DeathKnight.FrostWowhead.Name',descriptionKey='Default.Retail.DeathKnight.FrostWowhead.Description',
+ nameKey="Reference (Wowhead)",descriptionKey="Reference only, off by default: Wowhead's Frost order, which puts its cooldowns in the rotation. Hidden combat data keeps it from running in Midnight combat; runic power is hidden on Retail, so there is no cap check. Empower Rune Weapon at two charges, Reaper's Mark, Pillar of Frost, Breath of Sindragosa, Frostwyrm's Fury; then Obliterate on two Killing Machines or one with Exterminate, Howling Blast on Rime, Obliterate on Killing Machine, Empower Rune Weapon for a new one, Frost Strike, Obliterate, Howling Blast. Three or more enemies swap in Frostscythe and Glacial Advance.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'frost','melee','reference','wowhead'},
  sources={

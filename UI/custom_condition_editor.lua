@@ -1050,7 +1050,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
                         title = L['Functions reference'],
                         text = L['The Functions page documents public helpers and their typed arguments, return values and source. Context completion and hover use that reference; Ctrl-click a known helper to open its source. Use explicit binding aliases for reusable custom helpers.'],
                     },
-                    { title = L['Function dependencies'], text = L['Help.Functions.bindings'] },
+                    {
+                        title = L['Function dependencies'],
+                        text = L["Choose a source helper and its name in this Lua body, such as custom.ready or utils.getCached. These are dependency records even when the source and local names match; a different local name is an optional alias. The records identify helpers for loading, export and availability checks. Accepting a completion records the dependency automatically. Typing a call does not infer a dependency: add its qualified name explicitly or accept a completion. WoW globals and existing addon APIs remain directly available. Namespaces are private to this callback and do not supply self. Pass a method receiver explicitly in a namespaced dot call; object:method(x) is shorthand for object.method(object, x). Click the bound source name to open its function; the adjacent arrow changes the mapping. Pending edits offer Apply, Discard or Cancel before navigation. Renaming a function, namespace or binding does not rewrite code. Missing, disabled or invalid dependencies keep consumers unavailable."],
+                    },
                     {
                         title = L['Trusted code'],
                         text = L['Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract.'],

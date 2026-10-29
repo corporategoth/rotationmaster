@@ -2,21 +2,15 @@
 
 """The shipped locale file formats: how tools/locales.py writes them and every other tool reads them.
 
-Pure functions over text; nothing here knows where the repository is. Two kinds of file, one per catalog and
-language (the main catalog in Locales/, each load-on-demand text bundle in Modules/<module>/):
+Pure functions over text; nothing here knows where the repository is. Each catalog has an English file and translation files.
 
-  enUS.lua    N["English text"] = id, the one place the English is bound to its number, with a hash comment above each
-              entry (and its Context/token-note comments). An English client builds no N. What it needs besides that is
-              written before the early return, in tables of their own:
-                S       [id] = { key, English } for a symbolic key such as "Default.X.Name" (key and text really differ),
-                        and one table per key prefix, [id] = English, for "TalentTree." .. English;
-                P       the keys whose English is the key with every | doubled for chat (listed by key; they are N
-                        entries like any other, so a translated game binds them to their translation too).
-  <xx>.lua    -- <hash> English: the English this translation was made from (wrapped over comment lines)
+  enUS.lua    T["English text"] = id, with a hash and optional context comments. The English string is exactly the
+              source lookup key. On load, it joins its IDs to the current language and writes L[text] = translation.
+  <xx>.lua    -- <hash> English: the English this translation was made from
               [id] = "translation",
 
-IDs are stable numbers (tools/locale_registry.json); the hash is a short digest of the English text, so a
-translation whose recorded hash differs from the current English is known to be stale.
+IDs are stable within each catalog (tools/locale_registry.json); the same number may appear in another catalog.
+A hash identifies stale translations when the English changes.
 """
 import hashlib
 import re
@@ -166,63 +160,33 @@ def block_name(prefix):
     return prefix.rstrip('.')
 
 
-def render_english(entries, description, extras=None):
-    """The enUS.lua of a catalog from entries with .id .key .text .hash, in ID order.
-
-    Every string binds its English to its ID once, `N["English text"] = 1234`; the languages bind the ID to the translation.
-    What an English game needs besides that (it loads no N and no translation) is written before the early return: the strings
-    read under another key (S, and one table per key prefix) and the keys whose English doubles their pipes (P)."""
+def render_english(entries, description, extras=None, central_locale=False):
+    """Bind each exact English source string to its stable translation ID."""
     extras = extras or {}
-    ordered = sorted(entries, key=lambda e: e.id)
-    kinds = {e.id: kind_of(e.key, e.text) for e in ordered}
-    symbolic = [e for e in ordered if kinds[e.id] == 'symbolic']
-    piped = [e for e in ordered if kinds[e.id] == 'piped']
-    prefixed = {prefix: [e for e in ordered if kinds[e.id] == 'prefixed' and prefix_of(e.key) == prefix] for prefix in PREFIXES}
-    named = [e for e in ordered if kinds[e.id] in ('plain', 'piped')]
-
-    def entry_lines(e, line):
-        return [f'-- {e.hash}', *extras.get(e.id, ()), line]
+    ordered = sorted(entries, key=lambda entry: entry.id)
+    keys = set()
+    for entry in ordered:
+        if entry.key != entry.text:
+            raise ValueError(f"English key and display text differ for ID {entry.id}")
+        if entry.key in keys:
+            raise ValueError(f"Duplicate English key for ID {entry.id}")
+        keys.add(entry.key)
+    locale_lines = (['LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true, true)',
+                     'local host = RotationMasterBuiltIns',
+                     'local L = LibStub("AceLocale-3.0"):GetLocale(host and host.localeName or addon_name:match("^(.-)_[^_]+$") or addon_name)']
+                    if central_locale else ['local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true, true)'])
     lines = [COPYRIGHT, *ENGLISH_NOTICE, f'-- {description}',
-             'local addon_name, addon = ...', '',
-             'local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true, true)',
-             '-- The game language\'s translation, set by that language\'s file (loaded before this one); nil for English.',
-             'local T = addon.translation',
+             'local addon_name, addon = ...', '', *locale_lines,
+             'local translations = addon.translation',
              'addon.translation = nil',
-             'addon.localeIsTranslated = T ~= nil', '']
-    if symbolic:
-        lines += ['-- Read under a key that is not their text: [id] = { key, English }. An English game reads these.',
-                  'local S = {']
-        for e in symbolic:
-            lines += entry_lines(e, f'[{e.id}] = {{ {lua_string(e.key)}, {lua_string(e.text)} }},')
-        lines += ['}', 'for id, entry in pairs(S) do', '    L[entry[1]] = T and T[id] or entry[2]', 'end', 'S = nil', '']
-    for prefix, group in prefixed.items():
-        if group:
-            name = block_name(prefix)
-            lines += [f'-- Read under "{prefix}" followed by their English: [id] = English. An English game reads these.',
-                      f'local {name} = {{ -- keys are {lua_string(prefix)} followed by the English']
-            for e in group:
-                lines += entry_lines(e, f'[{e.id}] = {lua_string(e.text)},')
-            lines += ['}', f'for id, text in pairs({name}) do', f'    L[{lua_string(prefix)} .. text] = T and T[id] or text', 'end', f'{name} = nil', '']
-    if piped:
-        lines += ['-- Read under their own text (they are in N below), displayed with every | doubled, as chat needs it.',
-                  'local P = { -- keys whose English is the key with every | doubled']
-        lines += [f'{lua_string(e.key)},' for e in piped]
-        lines += ['}', '']
-    lines.append('if not T then')
-    if piped:
-        lines += ['    for _, key in ipairs(P) do', '        L[key] = (key:gsub("|", "||"))', '    end', '']
-    lines += ['    return', 'end', '']
-    lines += ['-- Every string read under its own text binds it to its ID: N["English text"] = id. Only a translated game builds',
-              '-- this; the languages bind the ID to the translation, and an untranslated text stays absent (it reads as itself).',
-              'local N = {}']
-    for e in named:
-        lines += entry_lines(e, f'N[{lua_string(e.key)}] = {e.id}')
-    lines += ['', 'for text, id in pairs(N) do', '    local translation = T[id]', '', '    if translation then', '        L[text] = translation', '    end', 'end']
-    if piped:
-        lines += ['', '-- An untranslated string that doubles its pipes still shows the doubled English.',
-                  'for _, key in ipairs(P) do', '    if not T[N[key]] then', '        L[key] = (key:gsub("|", "||"))', '    end', 'end']
-    lines.append('')
-    return '\n'.join(lines)
+             'addon.localeIsTranslated = translations ~= nil', '',
+             '-- The key is the exact English text used by the source; the value is its stable ID.',
+             'local T = {}']
+    for entry in ordered:
+        lines.extend([f'-- {entry.hash}', *extras.get(entry.id, ()),
+                      f'T[{lua_string(entry.key)}] = {entry.id}'])
+    lines += ['', 'for text, id in pairs(T) do', '    L[text] = translations and translations[id] or text', 'end', '']
+    return "\n".join(lines)
 
 
 def translators_header(credits):
@@ -283,7 +247,7 @@ class Translation:
 
 PLAIN = re.compile(r'^\[(\d+)\] = (' + STRING + r'),$')
 SYMBOLIC = re.compile(r'^\[(\d+)\] = \{ (' + STRING + r'), (' + STRING + r') \},$')
-NAMED = re.compile(r'^N\[(' + STRING + r')\] = (\d+)$')
+NAMED = re.compile(r'^[NT]\[(' + STRING + r')\] = (\d+)$')
 PREFIX_BLOCK = re.compile(r'^local \w+ = \{ -- keys are (' + STRING + r') followed by the English$')
 PIPED_BLOCK = re.compile(r'^local P = \{ -- keys whose English is the key with every \| doubled$')
 S_BLOCK = re.compile(r'^local S = \{$')
@@ -341,7 +305,7 @@ def parse_english(text):
                 id, key = int(m.group(2)), decode_lua_string(m.group(1))
                 value = key
         if id is None:
-            if line.startswith(('[', 'N[')):
+            if line.startswith(('[', 'N[', 'T[')):
                 problems.append(f'line {number}: not an entry this format knows: {line[:60]!r}')
             continue
         if pending is None:

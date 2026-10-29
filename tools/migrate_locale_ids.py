@@ -108,12 +108,12 @@ def convert(root=ROOT):
             if key in seen:
                 raise SystemExit(f'{key!r} is in both {seen[key]} and {catalog.name}')
             seen[key] = catalog.name
-            entry = model.add(key, english[key], catalog.name)
+            entry = model.add(english[key], catalog=catalog.name if catalog.is_class else 'main')
             if key in generated_keys:
                 model.registry['generated']['public-helper-docs'].append(entry.id)
             stats['entries'] += 1
             stats['symbolic'] += entry.key != entry.text
-        by_key = {e.key: e for e in model.entries[catalog.name]}
+        by_key = {key: model.find_key(english[key]) for key in order}
         for locale, (values, sources) in translations.items():
             rows = model.translations(locale, catalog)
             for key, text in values.items():

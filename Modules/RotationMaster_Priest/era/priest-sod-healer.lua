@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer',revision=5,
  blocks={['era.priest.boundaries']=3,['era.priest.enemy-target']=2,['era.priest.dispels']=1,['era.priest.big-heal']=1,['era.priest.renew']=1,
   ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1,['sod.priest.healer-damage']=2,['sod.priest.healer-upkeep']=1},
- nameKey='Default.SoD.Priest.Healer.Name',descriptionKey='Default.SoD.Priest.Healer.Description',
+ nameKey="Healer (SoD)",descriptionKey="Chosen on Season of Discovery realms in a group when Holy or Discipline is your main talent tree; follows Icy Veins. Heals the friendly unit you target: Prayer of Mending before the pull and whenever ready, Shield below half health, Penance, instant Flash Heal on Surge of Light, emergency Flash Heal, dispels, Circle of Healing and Prayer of Healing when three of your party are hurt, Greater Heal below half health, Renew while moving or on light damage, then Heal. Targeting an enemy gives Pain, Void Plague, Penance, Holy Fire and Smite. Reminders include Shadowfiend, Pain Suppression on a dying target, Power Word: Barrier and Spirit of the Redeemer when the party is hurt.",
  applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
  tags={'holy','discipline','healer','dungeon','raid','season-of-discovery','icy-veins'},
  sources={

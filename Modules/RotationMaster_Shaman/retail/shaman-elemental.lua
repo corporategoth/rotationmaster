@@ -16,7 +16,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.elemental',revision=6,
  blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
- nameKey='Default.Retail.Shaman.Elemental.Name',descriptionKey='Default.Retail.Shaman.Elemental.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Elemental in Midnight. In combat the game now hides Flame Shock, your buffs, Maelstrom, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Ascendance, Fire or Storm Elemental and Nature's Swiftness in combat, Spiritwalker's Grace while moving, Lightning Shield and Skyfury between pulls (Blizzard's suggestion keeps your weapon and shield imbues), Wind Shear on an interruptible cast (it lights only where the game lets the cast be read), Astral Shift whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).",
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'elemental','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

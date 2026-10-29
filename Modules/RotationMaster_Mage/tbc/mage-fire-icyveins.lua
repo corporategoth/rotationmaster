@@ -13,7 +13,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.icyveins',revision=5,
  blocks={['tbc.mage.boundaries']=3,['tbc.mage.wand-finish']=2,['tbc.mage.moving-fire-blast']=2,['tbc.mage.fire-aoe']=1,
   ['tbc.mage.improved-scorch']=1,['tbc.mage.armor-molten']=1,['tbc.mage.upkeep']=1},
- nameKey='Default.TBC.Mage.FireIcyVeins.Name',descriptionKey='Default.TBC.Mage.FireIcyVeins.Description',
+ nameKey="Fire (Icy Veins)",descriptionKey="Fire after Icy Veins, chosen when Fire is your main talent tree. Pyroblast opens a pull once learned, Improved Scorch keeps five Fire Vulnerability stacks, Fireball fills, Fire Blast is for moving; Blast Wave, Dragon's Breath and Flamestrike for three or more enemies. Reminders: Molten, Mage or Ice Armor, Combustion below 20% target health, mana gem, Evocation and the shared Mage utilities.",
  applicability={families={'tbc'},actionContext='player',class='MAGE'},
  tags={'fire','icy-veins','leveling','raid','single-target','aoe'},
  sources={

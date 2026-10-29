@@ -494,7 +494,7 @@ addon:RegisterCondition("INSTANCE", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Scenario"] .. color.RESET .. " - " ..
                 "A single-person instance, similar to a dungeon but completed solo.")))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.INSTANCE_DETAILS"]))
+        frame:AddChild(helpers.CreateText(L["Instance Difficulty and Instance ID are optional. Every part you set must match, for example a Dungeon on Heroic difficulty, or one particular instance by its ID (the editor shows the ID of the instance you are in). The ID does not change with the game's language the way a zone name does."]))
     end,
 })
 

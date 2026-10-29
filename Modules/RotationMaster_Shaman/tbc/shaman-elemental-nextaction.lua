@@ -13,7 +13,7 @@ local function flame()return{type='DEBUFF',unit='target',spell=8050,anyrank=true
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.elemental.nextaction',revision=5,
  blocks={['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.bloodlust']=1,['tbc.shaman.elemental-opening']=2,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1},
- nameKey='Default.TBC.Shaman.Elemental.NextAction.Name',descriptionKey='Default.TBC.Shaman.Elemental.NextAction.Description',
+ nameKey="Elemental (NextActionTBC)",descriptionKey="NextActionTBC's Elemental, an alternative to the recommended Icy Veins Elemental premade, off by default: enable it and disable that one, or raise its priority. Keeps Flame Shock on the target, Chain Lightning only against two or more enemies while above 30% mana, Lightning Bolt otherwise. Reminds you of Lightning Shield, a weapon imbue, Elemental Mastery and Bloodlust/Heroism; totems stay manual.",
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','elemental','caster','single-target','dot','nextaction'},
  sources={{url='https://www.curseforge.com/wow/addons/next-action',title='NextActionTBC 1.30.1 Elemental priority',reviewedAt='2026-10-23',revision='1.30.1'}},

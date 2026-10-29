@@ -48,10 +48,10 @@ print(L["Known"], L["Missing"], L["Escaped \\"quote\\""], L["Prefix" .. color.RE
         self.assertIn('Missing', issues[0])
         self.assertIn('main.lua:4', issues[0])
 
-    def test_a_symbolic_key_is_a_defined_key(self):
-        base = english(('Default.X.Name', 'Arms Warrior'), ('Plain', None))
-        self.assertEqual(self.check(base, 'print(L["Default.X.Name"], L["Plain"])'), [])
-        issues = self.check(base, 'print(L["Arms Warrior"])')
+    def test_only_the_english_text_is_a_defined_key(self):
+        base = english(('Arms Warrior', None), ('Plain', None))
+        self.assertEqual(self.check(base, 'print(L["Arms Warrior"], L["Plain"])'), [])
+        issues = self.check(base, 'print(L["Default.X.Name"])')
         self.assertEqual(len(issues), 1, issues)
 
     def test_long_string_removes_only_the_first_lua_opening_newline(self):

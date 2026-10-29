@@ -11,7 +11,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.wowhead',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.cat']=1,['era.druid.stealth-opener']=2,
   ['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear-pull']=3,['era.druid.feral-humanoid']=2},
- nameKey='Default.Era.Druid.Feral.Wowhead.Name',descriptionKey='Default.Era.Druid.Feral.Wowhead.Description',
+ nameKey="Feral (Wowhead raid bear)",descriptionKey="The cat of the recommended Feral premade with Wowhead's geared raid bear: Maul every swing (tab-Maul packs yourself), Swipe only with 60 rage to spare, Faerie Fire (Feral) otherwise, no Demoralizing Roar and no Enrage in combat. An alternative to the recommended Feral premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'endgame','raid','feral','melee','tank','single-target','wowhead'},
  sources={

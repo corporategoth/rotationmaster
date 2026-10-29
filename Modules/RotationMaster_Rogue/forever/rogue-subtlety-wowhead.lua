@@ -24,7 +24,7 @@ local function sliced()return{type='BUFF',unit='player',spell=5171,anyrank=true,
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.wowhead',revision=6,
  blocks={['forever.rogue.boundaries']=3,['forever.rogue.stealth-fallback']=3,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
- nameKey='Default.Forever.Rogue.Subtlety.Wowhead.Name',descriptionKey='Default.Forever.Rogue.Subtlety.Wowhead.Description',
+ nameKey="Subtlety, Garrote build (Wowhead)",descriptionKey="Wowhead's Subtlety: Premeditation and Garrote on every opener, and Vanish (then Preparation) used in the rotation to open with Garrote again once the last one has run out. Slice and Dice kept up, Expose Armor in groups, Rupture as the five-point finisher, Hemorrhage as the only builder. This spends Vanish, your escape, on damage: choose it deliberately. It applies with Subtlety as your main talent tree, Dirty Deeds talented and Premeditation known. Same poison and cooldown reminders as the recommended premade. An alternative to the recommended Rogue DPS premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'forever'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','subtlety','wowhead'},
  sources={

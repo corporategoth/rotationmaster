@@ -20,7 +20,7 @@ local lowBones=any(negate(buff(195181)),{type='BUFF_STACKS',unit='player',spell=
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.guide',revision=7,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey='Default.Retail.DeathKnight.BloodGuide.Name',descriptionKey='Default.Retail.DeathKnight.BloodGuide.Description',
+ nameKey="Reference (Icy Veins and Wowhead)",descriptionKey="Reference only, off by default: the guides' Blood priority. In Midnight combat your buffs and the target's debuffs are hidden from addons, so the steps that read them wait there; read it, or clone it to experiment. Health and runic power are hidden on Retail, so Death Strike is used whenever you can afford it. Pulls with Death's Caress. Death Strike; Marrowrend (Death's Caress out of melee) when Bone Shield is missing, under five charges, about to expire, or Exterminate is up; during Gift of the San'layn, Death Strike, one Blood Boil, Death and Decay on Crimson Scourge and Heart Strike; Death and Decay on Crimson Scourge or four enemies; Vampiric Strike; Consumption; Blood Boil on Boiling Point, a missing Blood Plague or full charges; Heart Strike. Reminders: Raise Dead, Vampiric Blood, Reaper's Mark, Dancing Rune Weapon after Reaper's Mark, plus the Assisted premade's utility reminders.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','reference','icy-veins','wowhead'},
  sources={

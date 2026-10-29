@@ -44,7 +44,7 @@ test('every family lists three distinct trees per class, each with a locale key'
             for _, name in ipairs(names) do
                 assert(not seen[name], key .. ' ' .. class .. ' repeats ' .. name)
                 seen[name] = true
-                assert(enUS['TalentTree.' .. name] == name, 'no locale key for tree name ' .. name)
+                assert(enUS[name] == name, 'no locale key for tree name ' .. name)
             end
         end
 

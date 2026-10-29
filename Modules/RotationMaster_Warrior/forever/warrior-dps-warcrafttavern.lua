@@ -23,7 +23,7 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.dps.warcrafttavern',revision=6,
  blocks={['forever.warrior.boundaries']=3,['forever.warrior.upkeep']=2},
- nameKey='Default.Forever.Warrior.DPS.WarcraftTavern.Name',descriptionKey='Default.Forever.Warrior.DPS.WarcraftTavern.Description',
+ nameKey="Arms and Fury, spend rage (Warcraft Tavern)",descriptionKey="Warcraft Tavern's always-spend list for groups and raids: five Sunder Armors first, Execute above everything below 20%, Overpower, Rend until Bloodthirst, Mortal Strike, Bloodthirst, Whirlwind, Spearing Strike on cooldown, Slam once Improved Slam is taken; Heroic Strike or Cleave whenever you can afford them (rage is hidden on Forever, so there is no 60-rage threshold or spare-rage Hamstring), Recklessness on cooldown with Death Wish beside it. Choose it instead of the Icy Veins premade if you play in groups and do not need to save rage between pulls. An alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'forever'},actionContext='player',class='WARRIOR'},
  tags={'dps','melee','leveling','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/forever/guides/arms-warrior/',title='Warcraft Tavern: Forever Arms Warrior',reviewedAt='2026-10-23'},

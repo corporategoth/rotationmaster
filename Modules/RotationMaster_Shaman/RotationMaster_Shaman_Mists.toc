@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 mop/blocks.lua
 mop/shaman-restoration.lua
 mop/shaman-restoration-hekili.lua

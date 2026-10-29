@@ -17,7 +17,7 @@ local function spell(id,action,conditions,ranked)return{id=id,type='spell',actio
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration.warcrafttavern',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=2},
- nameKey='Default.Era.Druid.Restoration.WarcraftTavern.Name',descriptionKey='Default.Era.Druid.Restoration.WarcraftTavern.Description',
+ nameKey="Restoration (Warcraft Tavern)",descriptionKey="Warcraft Tavern's damage tiers, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. On your friendly target, with no HoT upkeep while damage is low: Swiftmend below 40%, rank 5 Regrowth below 50%, Rejuvenation and rank 3 Regrowth below 75%, full Healing Touch on a Nature's Grace proc, rank 3 Healing Touch below 90%. Reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'endgame','restoration','healer','group','warcraft-tavern'},
  sources={

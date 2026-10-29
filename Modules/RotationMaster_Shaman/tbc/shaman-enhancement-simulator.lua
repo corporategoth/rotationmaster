@@ -13,7 +13,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.simulator',revision=7,
  blocks={['tbc.shaman.enhancement-upkeep']=2,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,
   ['tbc.shaman.enhancement-opening']=3,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1},
- nameKey='Default.TBC.Shaman.Enhancement.Simulator.Name',descriptionKey='Default.TBC.Shaman.Enhancement.Simulator.Description',
+ nameKey="Enhancement (Wowhead & simulator)",descriptionKey="The level-70 raid model for totem twisting, an alternative to the recommended Icy Veins Enhancement premade, off by default: enable it and disable that one, or raise its priority. Stormstrike, a Fire Nova Totem weave, Flame Shock whenever it has fallen off, and Earth Shock as the main shock, with Lightning Bolt only out of reach. Reminders twist Windfury and Grace of Air Totems, keep Searing down, use Shamanistic Rage when mana runs low, and share the Icy Veins variant's imbue, shield and totem upkeep.",
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'endgame','raid','enhancement','melee','single-target','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/shaman/enhancement/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2026-02-17'},

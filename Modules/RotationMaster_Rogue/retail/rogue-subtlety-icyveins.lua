@@ -23,7 +23,7 @@ local dance=own(185422)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety.icyveins',revision=6,
  blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
- nameKey='Default.Retail.Rogue.Subtlety.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Subtlety.IcyVeins.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft order holds Shadow Dance for Secret Technique and reads Shadow Dance, Darkest Night and energy, which Midnight hides in combat. Stealthed before the pull: Shadowstrike. One combo point short of full or more: Eviscerate with Darkest Night, Secret Technique in Shadow Dance, Coup de Grace, Black Powder on three or more enemies, Eviscerate. Otherwise Shadowstrike, Shuriken Storm on two or more, Gloomblade or Backstab. Reminders: Goremaw's Bite in Shadow Dance, Shadow Blades with Shadow Dance ready, Shadow Dance at two or fewer (or six or more) combo points when Secret Technique is ready or Shadow Blades is up, Vanish out of stealth at two or fewer combo points.",
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'subtlety','melee','reference','single-target','aoe','icy-veins','simulationcraft','wowhead'},
  sources={

@@ -15,14 +15,14 @@ translations, check them, reword English without losing translations, move text 
                                                           headers, notes); the switches also fail for strings lacking notes/context
   python3 tools/locales.py rebuild                        rewrite every file in canonical form (headers, order, TOCs, index)
   python3 tools/locales.py bundles                        list the catalogs: the main one and each text bundle
-  python3 tools/locales.py move BUNDLE KEYS.json          move the keys in KEYS.json (a JSON list) between catalogs, with their IDs
+  python3 tools/locales.py move BUNDLE KEYS.json          move the keys in KEYS.json (a JSON list) between catalogs, assigning destination IDs
                                                           and every translation (BUNDLE may be `main`)
   python3 tools/locales.py index [--check]                write (or verify) Data/text_bundle_index.lua
   python3 tools/locales.py reword "old English" "new English" [--dry-run] [--all-literals] [--tests]
                                                           change the English in code and enUS, keep the ID and every translation
   python3 tools/locales.py add KEY [TEXT] [--catalog NAME]  add a string (TEXT omitted: the key is its own English); new ID
   python3 tools/locales.py remove KEY ...                 delete strings everywhere and retire their IDs
-  python3 tools/locales.py sync [--dry-run]               add every literal L["..."] the code reads and no catalog holds
+  python3 tools/locales.py sync [--dry-run] [--prune-class] add missing literals, optionally prune unused class rotation text
   python3 tools/locales.py notes todo [--only notes|context] [--context-words N]
                                                           strings with format tokens and no notes, short strings without context,
                                                           with the code that reads them
@@ -31,20 +31,18 @@ translations, check them, reword English without losing translations, move text 
                                                           where the source reads a string, with context lines like grep
 
 Stable IDs. Every string has a number from tools/locale_registry.json that is never reused and never derived from the
-wording. The English binds text to ID, N["English text"] = 1234, and a language binds the ID to its translation,
+wording. The English binds text to ID, T["English text"] = 1234, and a language binds the ID to its translation,
 [1234] = "translation" (tools/locale_format.py has the layout); each translation records, in a comment
 above it, the hash of the English it was made from, so a reworded English leaves its translations in place, shown in
 game, and listed by `missing` as stale until a translator confirms (`accept`) or replaces them.
 
 Each generated locale is a plain AceLocale NewLocale(addon_name, "<xx>", false, true): only the game's language
 executes its file, the others return at once. The enUS file of each catalog runs last, joins the language's
-ID -> translation table to its own text -> ID table N and writes L[text] = translation into the AceLocale table.
+ID -> translation table to its own text -> ID table T and writes L[text] = translation into the AceLocale table.
 
-Catalogs. The main catalog is Locales/<xx>.lua (listed in locales.xml, loaded with the addon). A text bundle is the
-same set of files inside a load-on-demand add-on Modules/<module>/ (listed in that add-on's TOC), named in
-Locales/bundles.json. English is still the key in code: `L["English text"]` reads the same wherever the text lives, and
-Core/text_bundles.lua loads the bundle that owns a key the first time the key is read. A key lives in exactly one
-catalog. Data/text_bundle_index.lua is how the runtime finds the owner: the sorted 32-bit hashes of every bundle's keys.
+Catalogs. The main catalog is Locales/<xx>.lua, loaded at startup. Built In class rotation names and descriptions
+live in Modules/RotationMaster_<Class>/Locales/. Each catalog has independent stable IDs; IDs from another catalog must
+be written as catalog:id when using ID-based commands. `L["English text"]` always uses the exact English source text.
 """
 import argparse
 import datetime
@@ -77,13 +75,18 @@ AI_NOTE = 'AI-assisted, not yet reviewed by a native speaker'
 class Catalog:
     """One set of locale files: the main one (Locales/) or a text bundle (Modules/<module>/)."""
 
-    def __init__(self, name, directory, module=None, title=None, notes=None):
+    def __init__(self, name, directory, module=None, title=None, notes=None, kind=None):
         self.name, self.directory, self.module = name, Path(directory), module
         self.title, self.notes = title, notes
+        self.kind = kind
 
     @property
     def is_main(self):
         return self.module is None
+
+    @property
+    def is_class(self):
+        return self.kind == 'class'
 
     # catalogs() builds fresh objects on every call: two views of the same catalog are the same catalog.
     def __eq__(self, other):
@@ -93,7 +96,7 @@ class Catalog:
         return hash(self.name)
 
     def path(self, locale):
-        return self.directory / f'{locale}.lua'
+        return self.directory / ('Locales' if self.is_class else '') / f'{locale}.lua'
 
     @property
     def english_path(self):
@@ -118,7 +121,7 @@ def catalogs():
     manifest = ROOT / BUNDLES_JSON
     if manifest.exists():
         for row in json.loads(manifest.read_text(encoding='utf-8'))['bundles']:
-            found.append(Catalog(row['id'], ROOT / 'Modules' / row['module'], row['module'], row.get('title'), row.get('notes')))
+            found.append(Catalog(row['id'], ROOT / 'Modules' / row['module'], row['module'], row.get('title'), row.get('notes'), row.get('kind')))
     return found
 
 
@@ -168,7 +171,7 @@ def english(catalog=None):
 
 
 def by_id(catalog=None):
-    return {e.id: e for e in english_entries(catalog)}
+    return {e.id: e for e in english_entries(catalog or catalogs()[0])}
 
 
 def by_key(catalog=None):
@@ -189,30 +192,35 @@ def read_locale_file(locale, catalog):
 
 
 def locale_translations(locale, catalog=None):
-    """{id: Translation} across catalogs (all unless one is named)."""
+    """Translations indexed by ID for one catalog, or (catalog, ID) for all catalogs."""
     found = {}
     for each in ([catalog] if catalog else catalogs()):
         for entry in read_locale_file(locale, each)[0]:
-            found[entry.id] = entry
+            found[entry.id if catalog else (each.name, entry.id)] = entry
     return found
 
 
 def locale_entries(locale, catalog=None):
     """The (key, translation) entries of a locale in ID order, for IDs the English knows."""
-    ids = by_id()
-    return [(ids[i].key, t.text) for i, t in sorted(locale_translations(locale, catalog).items()) if i in ids]
+    return [(e.key, t.text) for e, t in translated_entries(locale, catalog)]
 
 
 def read_sources(locale, catalog=None):
     """key -> the English each entry was translated from (the comment above it)."""
-    ids = by_id()
-    return {ids[i].key: t.english for i, t in locale_translations(locale, catalog).items() if i in ids}
+    return {e.key: t.english for e, t in translated_entries(locale, catalog)}
 
 
 def read_hashes(locale, catalog=None):
     """key -> the hash of the English each entry was translated from."""
-    ids = by_id()
-    return {ids[i].key: t.hash for i, t in locale_translations(locale, catalog).items() if i in ids}
+    return {e.key: t.hash for e, t in translated_entries(locale, catalog)}
+
+
+def translated_entries(locale, catalog=None):
+    for each in ([catalog] if catalog else catalogs()):
+        ids = by_id(each)
+        for id, translation in sorted(locale_translations(locale, each).items()):
+            if id in ids:
+                yield ids[id], translation
 
 
 def locale_files(locale):
@@ -345,8 +353,8 @@ class Model:
             if e.key == key:
                 return e
 
-    def find_id(self, id):
-        for e in self.all_entries():
+    def find_id(self, id, catalog='main'):
+        for e in self.entries[catalog]:
             if e.id == id:
                 return e
 
@@ -361,36 +369,44 @@ class Model:
         self._dirty.add((locale, catalog.name))
 
     # -- registry
-    def new_id(self):
-        number = self.registry['next']
-        self.registry['next'] = number + 1
+    def registry_for(self, catalog):
+        name = catalog.name if isinstance(catalog, Catalog) else catalog
+        if name == 'main':
+            return self.registry
+        return self.registry.setdefault('catalogs', {}).setdefault(name, {'next': 1, 'retired': [], 'annotations': {}})
+
+    def new_id(self, catalog='main'):
+        registry = self.registry_for(catalog)
+        number = registry['next']
+        registry['next'] = number + 1
         return number
 
-    def retire(self, id):
-        if id not in self.registry['retired']:
-            self.registry['retired'].append(id)
-            self.registry['retired'].sort()
-        self.registry.setdefault('annotations', {}).pop(str(id), None)
-        for ids in self.registry.get('generated', {}).values():
+    def retire(self, id, catalog='main'):
+        registry = self.registry_for(catalog)
+        if id not in registry['retired']:
+            registry['retired'].append(id)
+            registry['retired'].sort()
+        registry.setdefault('annotations', {}).pop(str(id), None)
+        for ids in registry.get('generated', {}).values():
             if id in ids:
                 ids.remove(id)
 
     # -- annotations: the context and token notes a translator sees under the English
-    def annotation(self, id):
-        return self.registry.setdefault('annotations', {}).get(str(id), {})
+    def annotation(self, id, catalog='main'):
+        return self.registry_for(catalog).setdefault('annotations', {}).get(str(id), {})
 
     def extras(self, entries):
         """{id: comment lines} for the entries that carry a context or token notes."""
         out = {}
         for e in entries:
-            row = self.annotation(e.id)
+            row = self.annotation(e.id, e.catalog)
             if row:
                 out[e.id] = F.annotation_lines(e.text, row.get('notes'), row.get('context'))
         return out
 
-    def set_annotation(self, id, notes=None, context=None):
+    def set_annotation(self, id, notes=None, context=None, catalog='main'):
         """Replace the notes and/or context of an ID (None keeps, empty removes)."""
-        table = self.registry.setdefault('annotations', {})
+        table = self.registry_for(catalog).setdefault('annotations', {})
         row = dict(table.get(str(id), {}))
         if notes is not None:
             if notes:
@@ -440,9 +456,14 @@ class Model:
     # -- adding, removing, moving
     def add(self, key, text=None, catalog='main', id=None):
         text = key if text is None else text
+        if key != text:
+            raise SystemExit('the English source key and English text must be identical')
+        target = self.catalog(catalog)
+        if not target.is_main and not target.is_class:
+            raise SystemExit('English text must be in the main or a class catalog')
         if self.find_key(key):
             raise SystemExit(f'{key!r} already exists')
-        entry = F.English(id if id is not None else self.new_id(), key, text, text_hash(text), 0)
+        entry = F.English(id if id is not None else self.new_id(catalog), key, text, text_hash(text), 0)
         entry.catalog = self.catalog(catalog)
         self.entries[catalog].append(entry)
         return entry
@@ -452,12 +473,12 @@ class Model:
         if not entry:
             raise SystemExit(f'{key!r} is not a key of any catalog')
         self.entries[entry.catalog.name].remove(entry)
-        self.retire(entry.id)
+        self.retire(entry.id, entry.catalog)
         for locale in LOCALES:
-            for each in self.catalogs:
-                if entry.id in self.translations(locale, each):
-                    del self.translations(locale, each)[entry.id]
-                    self.mark(locale, each)
+            each = entry.catalog
+            if entry.id in self.translations(locale, each):
+                del self.translations(locale, each)[entry.id]
+                self.mark(locale, each)
         return entry
 
     def move(self, entry, target_name):
@@ -465,13 +486,22 @@ class Model:
         target = self.catalog(target_name)
         if source == target:
             return
+        if not target.is_main and not target.is_class:
+            raise SystemExit('English text must be in the main or a class catalog')
+        old_id = entry.id
+        annotation = self.annotation(old_id, source)
         self.entries[source.name].remove(entry)
+        self.retire(old_id, source)
+        entry.id = self.new_id(target)
         entry.catalog = target
+        if annotation:
+            self.registry_for(target).setdefault('annotations', {})[str(entry.id)] = annotation
         self.entries[target.name].append(entry)
         for locale in LOCALES:
-            moved = self.translations(locale, source).pop(entry.id, None)
+            moved = self.translations(locale, source).pop(old_id, None)
             if moved is None:
                 continue
+            moved.id = entry.id
             self.translations(locale, target)[entry.id] = moved
             self.mark(locale, source)
             self.mark(locale, target)
@@ -507,15 +537,15 @@ class Model:
             path = ROOT / relative
             if not path.exists() or path.read_text(encoding='utf-8') != text:
                 out[relative] = text
-        seen = {}
         for each in self.catalogs:
+            seen = {}
             for e in self.entries[each.name]:
                 if e.id in seen:
                     raise SystemExit(f'ID {e.id} is used by {seen[e.id]!r} and {e.key!r}')
                 seen[e.id] = e.key
-                if e.id >= self.registry['next']:
-                    raise SystemExit(f'ID {e.id} ({e.key!r}) is not below the registry counter {self.registry["next"]}')
-            put(each.relative(), F.render_english(self.entries[each.name], each.description, self.extras(self.entries[each.name])))
+                if e.id >= self.registry_for(each)['next']:
+                    raise SystemExit(f'ID {e.id} ({e.key!r}) is not below the registry counter for {each.name}')
+            put(each.relative(), F.render_english(self.entries[each.name], each.description, self.extras(self.entries[each.name]), central_locale=each.is_class))
         put(REGISTRY_FILE, render_registry(self.registry))
         put(TRANSLATORS_FILE, render_translators(self.credits))
         put(INDEX_FILE, index_text(self.entries, self.catalogs))
@@ -536,7 +566,9 @@ class Model:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding='utf-8')
         for each in self.catalogs:
-            if not each.is_main:
+            if each.is_class:
+                ensure_class_locales(each)
+            elif not each.is_main:
                 ensure_bundle_toc(each)
         for locale in LOCALES:
             for each in self.catalogs:
@@ -574,7 +606,7 @@ def render_registry(registry):
     rows = sorted(registry.get('annotations', {}).items(), key=lambda kv: int(kv[0]))
     for n, (id, row) in enumerate(rows):
         lines.append(f'    {json.dumps(id)}: {json.dumps(row, ensure_ascii=False)}' + (',' if n < len(rows) - 1 else ''))
-    lines += ['  }', '}', '']
+    lines += ['  },', '  "catalogs": ' + json.dumps(registry.get('catalogs', {}), ensure_ascii=False, sort_keys=True, indent=2).replace('\n', '\n  '), '}', '']
     return '\n'.join(lines)
 
 
@@ -591,6 +623,9 @@ def render_translators(credits):
 
 def ensure_registered(locale, catalog=None):
     catalog = catalog or catalogs()[0]
+    if catalog.is_class:
+        ensure_class_locales(catalog)
+        return
     if catalog.is_main:
         xml = ROOT / 'locales.xml'
         text = xml.read_text(encoding='utf-8')
@@ -602,6 +637,23 @@ def ensure_registered(locale, catalog=None):
             xml.write_text(new, encoding='utf-8')
         return
     ensure_bundle_toc(catalog)
+
+
+def ensure_class_locales(catalog):
+    """Register a class module's translations in each flavour after its bootstrap."""
+    xml = catalog.directory / 'locales.xml'
+    lines = ['<?xml version="1.0" encoding="utf-8"?>',
+             '<!-- ' + F.COPYRIGHT.removeprefix('-- ') + ' -->',
+             '<Ui xmlns="http://www.blizzard.com/wow/ui/">']
+    lines.extend(f'<Script file="Locales\\{name}" />' for name in bundle_files(catalog))
+    lines.extend(['</Ui>', ''])
+    content = '\n'.join(lines)
+    if not xml.exists() or xml.read_text(encoding='utf-8') != content:
+        xml.write_text(content, encoding='utf-8')
+    for toc in catalog.directory.glob(f'{catalog.module}_*.toc'):
+        text = toc.read_text(encoding='utf-8')
+        if '\nbind.lua\n' in text and '\nlocales.xml\n' not in text:
+            toc.write_text(text.replace('\nbind.lua\n', '\nbind.lua\nlocales.xml\n', 1), encoding='utf-8')
 
 
 def bundle_files(catalog):
@@ -716,7 +768,7 @@ def classify(locale):
     have = locale_translations(locale)
     untranslated, stale = [], []
     for e in sorted(english_entries(), key=lambda e: e.id):
-        t = have.get(e.id)
+        t = have.get((e.catalog.name, e.id))
         if t is None:
             untranslated.append(e)
         elif t.hash != e.hash:
@@ -744,10 +796,14 @@ def cmd_missing(locale):
 
 
 def resolve_ids(incoming, model):
-    """{id: text} from a mapping keyed by ID (a number or digits) or by lookup key."""
+    """{(catalog, id): text}; numeric IDs refer to main, catalog:id to a named catalog."""
     out = {}
     for name, text in incoming.items():
-        if isinstance(name, int) or (isinstance(name, str) and name.isdigit()):
+        if isinstance(name, str) and re.fullmatch(r'[^:]+:\d+', name):
+            catalog, number = name.rsplit(':', 1)
+            model.catalog(catalog)
+            found = model.find_id(int(number), catalog)
+        elif isinstance(name, int) or (isinstance(name, str) and name.isdigit()):
             found = model.find_id(int(name))
             other = model.find_key(str(name))
             if found and other and other is not found:
@@ -757,9 +813,10 @@ def resolve_ids(incoming, model):
             found = model.find_key(name)
         if not found:
             raise SystemExit(f'{name!r}: not an ID or key of the English')
-        if found.id in out:
-            raise SystemExit(f'ID {found.id} supplied twice')
-        out[found.id] = text
+        slot = (found.catalog.name, found.id)
+        if slot in out:
+            raise SystemExit(f'ID {found.catalog.name}:{found.id} supplied twice')
+        out[slot] = text
     return out
 
 
@@ -769,21 +826,21 @@ def build(locale, incoming, translator=None, kind=None, url=None, note=None):
     model = Model()
     ids = resolve_ids(incoming, model)
     errors = []
-    for id, text in ids.items():
-        entry = model.find_id(id)
+    for (catalog, id), text in ids.items():
+        entry = model.find_id(id, catalog)
         for p in problems(entry.key, entry.text, text):
             errors.append(f'{id} {entry.key[:60]!r}: {p}')
     if errors:
         print('\n'.join(errors), file=sys.stderr)
         raise SystemExit(f'{len(errors)} problem(s); nothing written')
     for each in model.catalogs:
-        mine = {i: t for i, t in ids.items() if model.find_id(i).catalog == each}
+        mine = {i: t for (catalog, i), t in ids.items() if catalog == each.name}
         current = model.translations(locale, each)
         if not mine and not current and not each.path(locale).exists():
             continue  # a bundle with nothing to say in this language yet has no file
         changed = 0
         for id, text in mine.items():
-            entry = model.find_id(id)
+            entry = model.find_id(id, each.name)
             old = current.get(id)
             if old is None or old.text != text or old.hash != entry.hash:
                 changed += 1
@@ -805,13 +862,13 @@ def cmd_build(locale, translation_path, **credit):
 def cmd_accept(locale, id_args):
     """Record the current English as the one the stale translations were checked against."""
     model = Model()
-    wanted = {int(i) for i in id_args}
+    wanted = {(part.rsplit(':', 1)[0], int(part.rsplit(':', 1)[1])) if ':' in part else ('main', int(part)) for part in id_args}
     count = 0
     for each in model.catalogs:
         current = model.translations(locale, each)
         for e in model.entries[each.name]:
             t = current.get(e.id)
-            if t is not None and t.hash != e.hash and (not wanted or e.id in wanted):
+            if t is not None and t.hash != e.hash and (not wanted or (each.name, e.id) in wanted):
                 current[e.id] = F.Translation(e.id, t.text, e.hash, e.text, 0)
                 model.mark(locale, each)
                 count += 1
@@ -876,9 +933,10 @@ def cmd_check(complete=False, require_notes=False, require_context=False, contex
     cats = catalogs()
     registry = Model.load_json(REGISTRY_FILE, {'next': 1, 'retired': [], 'generated': {}})
     credits = {k: v for k, v in Model.load_json(TRANSLATORS_FILE, {}).items() if not k.startswith('_')}
-    annotations = registry.get('annotations', {})
     seen_id, seen_key, en = {}, {}, {}
     for catalog in cats:
+        catalog_registry = registry if catalog.is_main else registry.get('catalogs', {}).get(catalog.name, {'next': 1, 'retired': [], 'annotations': {}})
+        annotations = catalog_registry.get('annotations', {})
         if not catalog.english_path.exists():
             fail(f'{catalog.relative()}: missing')
             continue
@@ -888,19 +946,26 @@ def cmd_check(complete=False, require_notes=False, require_context=False, contex
         entries, parse_problems = F.parse_english(text)
         for p in parse_problems:
             fail(f'{catalog.relative()}: {p}')
+        if re.search(r'(?m)^(?:local S\s*=|local P\s*=|local N\s*=|N\[)', text):
+            fail(f'{catalog.relative()}: expected direct T[english] = id assignments')
+        if not catalog.is_main and not catalog.is_class and entries:
+            fail(f'{catalog.relative()}: text must be in the main catalog for startup loading')
         en[catalog.name] = {}
         for e in entries:
-            if e.id in seen_id:
-                fail(f'ID {e.id} is in both {seen_id[e.id]!r} and {e.key!r}')
-            seen_id.setdefault(e.id, e.key)
+            if e.key != e.text:
+                fail(f'{catalog.relative()}:{e.line}: English key must equal its displayed text')
+            slot = (catalog.name, e.id)
+            if slot in seen_id:
+                fail(f'ID {catalog.name}:{e.id} is in both {seen_id[slot]!r} and {e.key!r}')
+            seen_id.setdefault(slot, e.key)
             if e.key in seen_key:
                 fail(f'{e.key!r} is in both the {seen_key[e.key]} catalog and the {catalog.name} catalog')
             seen_key.setdefault(e.key, catalog.name)
             if e.hash != text_hash(e.text):
                 fail(f'{catalog.relative()}:{e.line}: ID {e.id} records hash {e.hash} but its text hashes to {text_hash(e.text)} (run `locales.py rebuild`)')
-            if e.id >= registry['next']:
-                fail(f'ID {e.id} is not below the registry counter {registry["next"]}')
-            if e.id in registry['retired']:
+            if e.id >= catalog_registry['next']:
+                fail(f'ID {catalog.name}:{e.id} is not below the registry counter {catalog_registry["next"]}')
+            if e.id in catalog_registry['retired']:
                 fail(f'ID {e.id} ({e.key!r}) was retired and must not be reused')
             en[catalog.name][e.id] = e
             row = annotations.get(str(e.id), {})
@@ -914,18 +979,21 @@ def cmd_check(complete=False, require_notes=False, require_context=False, contex
                 fail(f'ID {e.id} {e.key[:50]!r}: has {len(tokens_here)} format token(s) {tokens_here} and no notes (locales.py notes todo)')
             if require_context and is_short(e.text, context_words) and not row.get('context'):
                 fail(f'ID {e.id} {e.key[:50]!r}: short string without context (locales.py notes todo)')
-    for id in annotations:
-        if int(id) not in seen_id:
-            fail(f'{REGISTRY_FILE}: annotations for ID {id}, which no catalog holds')
+    for catalog in cats:
+        annotations = (registry if catalog.is_main else registry.get('catalogs', {}).get(catalog.name, {})).get('annotations', {})
+        for id in annotations:
+            if (catalog.name, int(id)) not in seen_id:
+                fail(f'{REGISTRY_FILE}: annotations for ID {catalog.name}:{id}, which no catalog holds')
     for group, ids in registry.get('generated', {}).items():
         for id in ids:
-            if id not in seen_id:
+            if ('main', id) not in seen_id:
                 fail(f'registry group {group!r} names ID {id}, which no catalog holds')
-    all_ids = {i: e for rows in en.values() for i, e in rows.items()}
+    all_ids = {(name, i): e for name, rows in en.items() for i, e in rows.items()}
     for locale in LOCALES:
         total = stale = 0
         any_file = False
         for catalog in cats:
+            annotations = (registry if catalog.is_main else registry.get('catalogs', {}).get(catalog.name, {})).get('annotations', {})
             path = catalog.path(locale)
             if not path.exists():
                 continue
@@ -952,7 +1020,7 @@ def cmd_check(complete=False, require_notes=False, require_context=False, contex
                 ids.add(t.id)
                 english_entry = en.get(catalog.name, {}).get(t.id)
                 if english_entry is None:
-                    fail(f'{label} ID {t.id}: not an ID of this catalog ({"another catalog" if t.id in all_ids else "enUS"})')
+                    fail(f'{label} ID {t.id}: not an ID of this catalog (enUS)')
                     continue
                 for p in problems(english_entry.key, english_entry.text, t.text):
                     fail(f'{label} ID {t.id} {english_entry.key[:60]!r}: {p}')
@@ -966,6 +1034,10 @@ def cmd_check(complete=False, require_notes=False, require_context=False, contex
             if catalog.is_main:
                 if f'Locales\\{locale}.lua' not in (ROOT / 'locales.xml').read_text(encoding='utf-8'):
                     fail(f'{locale}: not listed in locales.xml')
+            elif catalog.is_class:
+                xml = catalog.directory / 'locales.xml'
+                if not xml.exists() or f'file="Locales\\{locale}.lua"' not in xml.read_text(encoding='utf-8'):
+                    fail(f'{catalog.relative(locale)}: not listed in {xml.relative_to(ROOT)}')
             else:
                 toc = toc_path(catalog)
                 if not toc.exists() or f'{locale}.lua' not in toc.read_text(encoding='utf-8').split():
@@ -979,7 +1051,15 @@ def cmd_check(complete=False, require_notes=False, require_context=False, contex
     if listed[-1:] != ['enUS']:
         fail("locales.xml: enUS.lua must be listed last (it joins the language's table to its own English)")
     for catalog in cats:
-        if not catalog.is_main:
+        if catalog.is_class:
+            xml = catalog.directory / 'locales.xml'
+            if not xml.exists() or 'file="Locales\\enUS.lua"' not in xml.read_text(encoding='utf-8'):
+                fail(f'{catalog.module}: class locales must list enUS.lua last')
+            for toc in catalog.directory.glob(f'{catalog.module}_*.toc'):
+                text = toc.read_text(encoding='utf-8')
+                if '\nbind.lua\n' in text and '\nlocales.xml\n' not in text:
+                    fail(f'{toc.relative_to(ROOT)}: class locales are not listed')
+        elif not catalog.is_main:
             toc = toc_path(catalog)
             files = [l for l in toc.read_text(encoding='utf-8').split() if l.endswith('.lua')] if toc.exists() else []
             if files[-1:] != ['enUS.lua']:
@@ -1107,7 +1187,7 @@ def cmd_reword(old, new, dry_run=False, all_literals=False, tests=False):
     entry.text = new_text
     entry.hash = text_hash(new_text)
     model.write()
-    stale = sum(1 for locale in LOCALES for each in model.catalogs if entry.id in model.translations(locale, each))
+    stale = sum(1 for locale in LOCALES if entry.id in model.translations(locale, entry.catalog))
     print(f'kept ID {entry.id}; {stale} translation(s) are now stale (python3 tools/locales.py missing <xx> lists them)')
 
 
@@ -1157,7 +1237,7 @@ def cmd_notes_todo(context_words=3, only=None):
     model = Model()
     rows = []
     for e in model.all_entries():
-        row = model.annotation(e.id)
+        row = model.annotation(e.id, e.catalog)
         tokens_here = F.format_tokens(e.text)
         needs = []
         if tokens_here and not row.get('notes') and only in (None, 'notes'):
@@ -1178,7 +1258,12 @@ def cmd_notes_set(path):
     model = Model()
     data = json.loads(Path(path).read_text(encoding='utf-8'))
     for name, value in data.items():
-        entry = model.find_id(int(name)) if str(name).isdigit() and model.find_id(int(name)) else model.find_key(name)
+        if isinstance(name, str) and re.fullmatch(r'[^:]+:\d+', name):
+            catalog, number = name.rsplit(':', 1)
+            model.catalog(catalog)
+            entry = model.find_id(int(number), catalog)
+        else:
+            entry = model.find_id(int(name)) if str(name).isdigit() else model.find_key(name)
         if entry is None:
             entry = next((e for e in model.all_entries() if e.text == name), None)
         if entry is None:
@@ -1192,7 +1277,7 @@ def cmd_notes_set(path):
                 raise SystemExit(f'ID {entry.id} {entry.key[:50]!r}: {len(notes)} note(s) for {len(tokens_here)} format token(s) {tokens_here}')
             token = re.compile(r'^(%\S+|\{\{[^}]*\}\})\s*=\s*')
             notes = [token.sub('', n) if token.match(n) and token.match(n).group(1) in tokens_here else n for n in notes]
-        model.set_annotation(entry.id, notes=notes, context=value.get('context'))
+        model.set_annotation(entry.id, notes=notes, context=value.get('context'), catalog=entry.catalog)
     for locale in LOCALES:
         for each in model.catalogs:
             if each.path(locale).exists():
@@ -1222,8 +1307,13 @@ def enclosing_function(lines, index):
 def resolve_string(query, model):
     """The entries a `where` query names: an ID, the exact key or English, else a unique substring (case-insensitive)."""
     entries = model.all_entries()
+    if re.fullmatch(r'[^:]+:\d+', str(query)):
+        catalog, number = str(query).rsplit(':', 1)
+        hit = [e for e in entries if e.catalog.name == catalog and e.id == int(number)]
+        if hit:
+            return hit, 'id'
     if str(query).isdigit():
-        hit = [e for e in entries if e.id == int(query)]
+        hit = [e for e in entries if e.catalog.is_main and e.id == int(query)]
         if hit:
             return hit, 'id'
     exact = [e for e in entries if e.key == query or e.text == query]
@@ -1250,7 +1340,7 @@ def blocks_for(lines, hits, before, after):
 
 def where_report(entry, model, tests=False, before=0, after=0):
     """Everything about one string: catalog, notes/context and where the source uses it."""
-    row = model.annotation(entry.id)
+    row = model.annotation(entry.id, entry.catalog)
     direct, indirect = [], []
     for path in lua_sources(include_tests=tests):
         text = path.read_text(encoding='utf-8')
@@ -1336,18 +1426,41 @@ def literal_keys():
     return used
 
 
-def cmd_sync(dry_run=False):
+def cmd_sync(dry_run=False, prune_class=False):
+    import catalog_check
     model = Model()
     known = {e.key for e in model.all_entries()}
-    missing = {k: w for k, w in literal_keys().items() if k not in known}
+    main_uses = literal_keys()
+    uses = dict(main_uses)
+    class_uses = {}
+    for each in model.catalogs:
+        if not each.is_class:
+            continue
+        used = set()
+        for path in each.directory.rglob('*.lua'):
+            if 'Locales' in path.relative_to(each.directory).parts:
+                continue
+            for key, line in catalog_check.manifest_references(path.read_text(encoding='utf-8')):
+                used.add(key)
+                uses.setdefault(key, f'{path.relative_to(ROOT).as_posix()}:{line}')
+        class_uses[each.name] = used
+    missing = {k: w for k, w in uses.items() if k not in known}
     for key, where in sorted(missing.items(), key=lambda kv: kv[1]):
         print(f'{"would add" if dry_run else "added"} {key[:70]!r} ({where})')
         if not dry_run:
-            model.add(key)
-    if missing and not dry_run:
+            owners = [name for name, keys in class_uses.items() if key in keys]
+            model.add(key, catalog=owners[0] if len(owners) == 1 and key not in main_uses else 'main')
+    unused = [(e.key, each.name) for each in model.catalogs if each.is_class
+              for e in model.entries[each.name] if e.key not in class_uses[each.name]]
+    if prune_class:
+        for key, name in unused:
+            print(f'{"would remove" if dry_run else "removed"} unused class text {key[:70]!r} ({name})')
+            if not dry_run:
+                model.remove(key)
+    if (missing or (prune_class and unused)) and not dry_run:
         model.write()
     print(f'{len(missing)} string(s) the code reads and no catalog held')
-    if missing and dry_run:
+    if (missing or (prune_class and unused)) and dry_run:
         raise SystemExit(1)
 
 
@@ -1416,6 +1529,7 @@ def main(argv=None):
     p.add_argument('keys', nargs='+')
     p = sub.add_parser('sync')
     p.add_argument('--dry-run', action='store_true')
+    p.add_argument('--prune-class', action='store_true', help='also remove class rotation texts no longer referenced by that class')
     args = parser.parse_args(argv)
     if args.command == 'export':
         cmd_export()
@@ -1452,7 +1566,7 @@ def main(argv=None):
     elif args.command == 'remove':
         cmd_remove(args.keys)
     elif args.command == 'sync':
-        cmd_sync(args.dry_run)
+        cmd_sync(args.dry_run, args.prune_class)
     else:
         raise SystemExit(__doc__)
 

@@ -26,7 +26,7 @@ local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement',revision=6,
  blocks={['forever.shaman.manual-target']=2,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1},
- nameKey='Default.Forever.Shaman.Enhancement.Name',descriptionKey='Default.Forever.Shaman.Enhancement.Description',
+ nameKey="Enhancement (Icy Veins)",descriptionKey="Melee Enhancement from level 1 to 60, and the default for any Shaman before Lava Burst or Mana Tide Totem. Pulls with Lightning Bolt from range, then Stormstrike on cooldown, an instant Lightning Bolt at five Maelstrom Weapon stacks, Fire Nova (with a Fire totem down) and Flame Shock on three or more enemies, Earth Shock into the Stormstrike debuff, Flame Shock in groups, and Earth Shock on cooldown; Lightning Bolt fills the gap while the target is out of reach. Health and mana are hidden from addons on Forever, so healing yourself and pausing to refill mana are your call (the Wowhead premade saves mana instead). Reminders: weapon imbue (Windfury, else Flametongue, else Rockbiter), Water or Lightning Shield, the Earth Shock interrupt, Searing or Magma Totem, group totems, Rage of the Farseer, Stoneclaw Totem. Left to you: totem presets, Frost Shock, Purge and other totems.",
  applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-forever/enhancement-shaman-melee-dps-pve-guide',title='Icy Veins: Forever Enhancement Shaman PvE guide',reviewedAt='2026-10-23',revision='2026-10-17'},

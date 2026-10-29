@@ -46,10 +46,10 @@ def git_show(rev, path):
 
 
 def current_names():
-    """Default.*.Name -> displayed English, from the generated English catalogs."""
+    """English source text -> English, from the generated catalogs."""
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import locales
-    return {k: v for k, v in locales.english().items() if re.fullmatch(r'Default\.[^"]+\.Name', k)}
+    return locales.english()
 
 
 def read_names(text):
@@ -70,7 +70,11 @@ def packs():
         s = Path(f).read_text()
         for m in re.finditer(r"id='(rm\.[^']+)',revision=(\d+)", s):
             tail = s[m.end():]
-            nk = re.search(r"nameKey='([^']+)'", tail).group(1)
+            import catalog_check
+            match = re.search(r'''nameKey=("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')''', tail)
+            if not match:
+                raise ValueError(f'{f}: missing literal nameKey')
+            nk = catalog_check.decode_string(match.group(1))
             head = tail[tail.index('body={'):][:160]
             head = head.split('switch=')[0].split('cooldowns=')[0].split('rotation=')[0]
             pr = re.search(r'priority=(-?\d+)', head)

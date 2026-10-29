@@ -11,7 +11,7 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
   ['era.druid.cat']=1,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear']=2,['era.druid.bear-pull']=3,
   ['era.druid.caster-pull']=3},
- nameKey='Default.Era.Druid.Balance.IcyVeins.Name',descriptionKey='Default.Era.Druid.Balance.IcyVeins.Description',
+ nameKey="Balance (Icy Veins)",descriptionKey="Icy Veins' raid list for realms with the 16-debuff limit, an alternative to the recommended Balance premade, off by default: enable it and disable that one, or raise its priority. Starfire and nothing else, no Moonfire or Insect Swarm, Hurricane when three or more enemies are on you, Wrath only before Starfire is learned. Same reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'endgame','raid','balance','caster','single-target','aoe','icy-veins'},
  sources={

@@ -27,7 +27,7 @@ local near={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANORE
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement',revision=5,
  blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
- nameKey='Default.Era.Shaman.Enhancement.Name',descriptionKey='Default.Era.Shaman.Enhancement.Description',
+ nameKey="Enhancement",descriptionKey="Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a talent majority; built from Icy Veins, Wowhead and simulator. Lightning Bolt pulls from range; Earth Shock interrupts. In raids only Stormstrike and Frost Shock (debuff slots). On three or more enemies fighting you, Fire Nova and Magma totems. Then Stormstrike, Earth Shock into the Stormstrike debuff or to finish, Flame Shock when it will run its course, Earth Shock while you have half your mana, and Lightning Bolt while out of reach. Reminders: Rockbiter solo and Windfury Weapon in dungeons, Lightning Shield, Strength of Earth, Searing, Windfury or Grace of Air, Mana Spring or Healing Stream, healing after a pull and in emergencies. Stoneclaw, Earthbind, totem twisting and racials are listed off; dispels, purges and cleansing totems stay with you.",
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/enhancement-shaman-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},

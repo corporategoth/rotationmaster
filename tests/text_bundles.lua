@@ -37,7 +37,9 @@ local LOCALES = {'deDE', 'esES', 'esMX', 'frFR', 'itIT', 'koKR', 'ptBR', 'ruRU',
 local bundles = {}
 
 for id, module in read('Locales/bundles.json'):gmatch('"id"%s*:%s*"([^"]+)"%s*,%s*"module"%s*:%s*"([^"]+)"') do
-    bundles[#bundles + 1] = { id = id, module = module, dir = 'Modules/' .. module }
+    if id:match('^class%-') then
+        bundles[#bundles + 1] = { id = id, module = module, dir = 'Modules/' .. module .. '/Locales' }
+    end
 end
 
 assert(#bundles >= 4, 'Locales/bundles.json names fewer bundles than expected: ' .. #bundles)
@@ -93,6 +95,17 @@ local function boot(client, options)
                 -- Only the text: a converter add-on also lists code that needs the whole client.
                 if file:match('^%a%a%a%a%.lua$') then
                     load(dir .. '/' .. file, name, namespace)
+                end
+            end
+
+            local xml = io.open(dir .. '/locales.xml')
+
+            if xml then
+                local source = xml:read('*a')
+                xml:close()
+
+                for file in source:gmatch('<Script file="([^"]+)"') do
+                    load(dir .. '/' .. file:gsub('\\', '/'), name, namespace)
                 end
             end
 
@@ -279,7 +292,7 @@ test('a bundle that cannot load answers with the key and is asked only once', fu
     local help
 
     for _, bundle in ipairs(bundles) do
-        if bundle.id == 'help' then
+        if bundle.id == 'class-shaman' then
             help = bundle
         end
     end
@@ -297,8 +310,8 @@ test('a bundle that cannot load answers with the key and is asked only once', fu
     assert(first and second, 'the help bundle needs two keys')
     assert(L[first] == first and L[second] == second, 'a bundle that cannot load must answer with the English key')
     assert(calls == 1, 'the client was asked ' .. calls .. ' times')
-    assert(addon:GetTextBundleStates().help == 'failed')
-    assert(addon:LoadTextBundle('help') == false)
+    assert(addon:GetTextBundleStates()['class-shaman'] == 'failed')
+    assert(addon:LoadTextBundle('class-shaman') == false)
     assert(select(2, addon:LoadTextBundle('nope')) == 'unknown-bundle')
     assert(L['Enabled'] ~= nil, 'main text still reads')
 end)
@@ -318,7 +331,7 @@ test(
         local first
 
         for _, bundle in ipairs(bundles) do
-            if bundle.id == 'help' then
+            if bundle.id == 'class-shaman' then
                 first = bundle.plain or bundle.symbolic
             end
         end
@@ -328,7 +341,11 @@ test(
         assert(ok, 'a throwing loader escaped an L read: ' .. tostring(value))
         assert(value == first, 'a bundle that threw must answer with the English key')
         assert(L[first] == first and calls == 1, 'the loader was asked ' .. calls .. ' times')
-        assert(addon:GetTextBundleStates().help == 'failed' and addon:LoadTextBundle('help') == false)
+
+        assert(
+            addon:GetTextBundleStates()['class-shaman'] == 'failed' and addon:LoadTextBundle('class-shaman') == false
+        )
+
         assert(L['Enabled'] ~= nil, 'main text still reads')
     end
 )
@@ -341,44 +358,32 @@ test('a key in no catalog reads as itself and loads nothing', function()
     end
 end)
 
-test('a normal start loads no bundle on any client family', function()
+test('the player class loads its locale with its Built In module', function()
     local T = dofile('tests/fixtures/toc_addon.lua')
 
-    local configs = {
-        { name = 'Retail', project = 1, class = 'MONK' },
-        { name = 'Burning Crusade', project = 5, expansion = 1, class = 'SHAMAN', level = 70 },
-    }
-
-    for _, config in ipairs(configs) do
+    for _, config in ipairs({
+        { name = 'Retail', project = 1, class = 'MONK', locale = 'deDE' },
+        { name = 'Burning Crusade', project = 5, expansion = 1, class = 'SHAMAN', level = 70, locale = 'deDE' },
+    }) do
         local f = T.new(config)
 
         for _, e in ipairs(f.loadErrors) do
-            assert(e:match('^Libs/'), config.name .. ': addon file failed to load: ' .. e)
+            assert(e:match('^Libs/'), config.name .. ': ' .. e)
         end
 
-        local addon = f.addon
-        assert(type(addon.GetTextBundleStates) == 'function', config.name .. ': Core/text_bundles.lua did not load')
+        local L = f.env.LibStub('AceLocale-3.0'):GetLocale('rotationmaster')
+        local wanted = config.class == 'MONK' and 'class-monk' or 'class-shaman'
 
         for _, bundle in ipairs(bundles) do
-            assert(
-                not f.env.C_AddOns.IsAddOnLoaded(bundle.module),
-                config.name .. ' loaded ' .. bundle.module .. ' while starting'
-            )
+            if bundle.id == wanted then
+                assert(f.env.C_AddOns.LoadAddOn(bundle.module))
+                assert(f.env.C_AddOns.IsAddOnLoaded(bundle.module), config.name .. ' did not load its class')
+
+                for key, translated in pairs(E.dir_entries(bundle.dir, 'deDE')) do
+                    assert(rawget(L, key) == translated, config.name .. ': missing class translation ' .. key)
+                end
+            end
         end
-
-        assert(idle(addon))
-        -- Reading one of its keys now loads the add-on through the client's own loader.
-        local L = f.env.LibStub('AceLocale-3.0'):GetLocale('rotationmaster')
-        local bundle = bundles[1]
-        local key = bundle.symbolic
-        assert(L[key] == bundle.english[key])
-
-        assert(
-            f.env.C_AddOns.IsAddOnLoaded(bundle.module),
-            config.name .. ': ' .. bundle.module .. ' did not load on first read'
-        )
-
-        assert(addon:GetTextBundleStates()[bundle.id] == 'loaded')
     end
 end)
 

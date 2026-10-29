@@ -19,7 +19,7 @@ local grouped=all(combat(),{type='GROUP'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.restoration',revision=6,
  blocks={['retail.shaman.upkeep']=2},
- nameKey='Default.Retail.Shaman.Restoration.Name',descriptionKey='Default.Retail.Shaman.Restoration.Description',
+ nameKey="Icy Veins",descriptionKey="Restoration in Midnight, for reference: Blizzard's Assisted Combat does not cover healers, the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this orders your healing tools by readiness on whatever you target and leaves deciding who to heal to you. On a friendly target: Healing Stream Totem, Unleash Life, Healing Rain in a group, Surging Totem, Riptide, Chain Heal in a group, Healing Wave. On an enemy: Flame Shock when missing, Lava Burst, Lightning Bolt. Reminders: Water Shield, Earth Shield on a friendly target and Skyfury between pulls; Nature's Swiftness in combat; Healing Tide Totem and Spirit Link Totem in grouped combat; Wind Shear; Astral Shift.",
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'restoration','healer','reference','icy-veins'},
  sources={

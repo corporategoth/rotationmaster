@@ -18,7 +18,7 @@ local five={type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=5}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.icyveins',revision=7,
  blocks={['era.rogue.boundaries']=3,['era.rogue.sod-opener']=4,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3},
- nameKey='Default.SoD.Rogue.DPS.IcyVeins.Name',descriptionKey='Default.SoD.Rogue.DPS.IcyVeins.Description',
+ nameKey="Melee DPS, Rupture for Carnage (SoD, Icy Veins)",descriptionKey="Icy Veins' Season of Discovery order, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Every finisher at five combo points, first Slice and Dice when missing or ending, then Rupture kept up when Carnage is engraved, then Envenom; Poisoned Knife only at five poison stacks; Blunderbuss or Fan of Knives on three enemies. Same openers, builders and reminders as the recommended premade; Sebacious Poison duty stays with you.",
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-classic/assassination-rogue-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Assassination Rogue DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},

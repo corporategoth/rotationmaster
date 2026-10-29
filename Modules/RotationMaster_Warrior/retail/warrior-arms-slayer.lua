@@ -23,7 +23,7 @@ local smashSoon={type='SPELL_COOLDOWN',spell=167105,operator='LESSTHAN',value=1.
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms.slayer',revision=7,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1,['retail.warrior.charge']=3},
- nameKey='Default.Retail.Warrior.Arms.Slayer.Name',descriptionKey='Default.Retail.Warrior.Arms.Slayer.Description',
+ nameKey="Slayer reference (SimulationCraft)",descriptionKey="Reference only, off by default: the Slayer order from SimulationCraft, Icy Veins and Wowhead reads rage, Rend, Colossus Smash, Sudden Death and Opportunist, which Midnight hides in combat. Charge to open; Sweeping Strikes on two or more engaged enemies; Rend before Colossus Smash when it is running out; Ravager just before Colossus Smash; Execute at two Sudden Death; Colossus Smash; Bladestorm in Colossus Smash or Avatar; Heroic Strike; Overpower at two Opportunist; Mortal Strike; Execute; Overpower; Rend under 5 seconds; Slam. Reminders: Avatar with Colossus Smash ready, Die by the Sword, Battle Shout, Pummel.",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'arms','melee','reference','slayer','single-target','aoe','icy-veins','simulationcraft','wowhead'},
  sources={

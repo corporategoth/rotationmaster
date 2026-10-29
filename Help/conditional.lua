@@ -22,7 +22,7 @@ function addon.layout_condition_and_help(frame)
     local group = frame
 
     group:AddChild(CreateText(
-        L["All (AND) requires every child to match. An empty group always matches. Unavailable data remains unavailable."]
+        L["All (AND) checks children in order and stops at the first non-match. An empty group matches. Encountered unavailable data remains unavailable; later children are skipped."]
     ))
 
     group:AddChild(Gap())
@@ -38,7 +38,7 @@ function addon.layout_condition_or_help(frame)
     local group = frame
 
     group:AddChild(CreateText(
-        L["This condition matches if any sub-condition matches. With no sub-conditions, it does not match."]
+        L["Any (OR) checks children in order and stops at the first match. An empty group does not match. Encountered unavailable data remains unavailable; later children are skipped."]
     ))
 
     group:AddChild(Gap())

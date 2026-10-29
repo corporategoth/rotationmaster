@@ -17,7 +17,7 @@ local function classified(kind)return{type='CLASSIFICATION',unit='target',value=
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.protection.icyveins',revision=7,
  blocks={['tbc.warrior.boundaries']=4,['tbc.warrior.upkeep']=1,['tbc.warrior.prot-upkeep']=1,['tbc.warrior.prot-core']=1,['tbc.warrior.sunder']=1},
- nameKey='Default.TBC.Warrior.Protection.IcyVeins.Name',descriptionKey='Default.TBC.Warrior.Protection.IcyVeins.Description',
+ nameKey="Tank (Icy Veins)",descriptionKey="Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins. Shield Slam, Revenge, then Devastate or Sunder Armor, with Rend at the start of a fight until Shield Slam is learned. On packs: Thunder Clap, and Demoralizing Shout against elites. Shield Block is reminded whenever your target is attacking you and you carry a shield. Taunting and other utility stay with you. An alternative to the recommended Wowhead tank premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/protection-warrior-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Protection Warrior tank rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-01-12'},

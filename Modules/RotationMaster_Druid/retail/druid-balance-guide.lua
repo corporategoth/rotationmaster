@@ -24,7 +24,7 @@ local moonkin=any(buff(24858),buff(102560))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=7,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey='Default.Retail.Druid.BalanceGuide.Name',descriptionKey='Default.Retail.Druid.BalanceGuide.Description',
+ nameKey="Reference (Icy Veins, SimulationCraft and Wowhead)",descriptionKey="Reference only, off by default: the guides' Balance priority. Your DoTs, Eclipse and procs are hidden from addons in Midnight combat, so it cannot run there; read it, or clone it to experiment. Astral Power is hidden on Retail, so Starsurge spends at its cost instead of before the cap. Pulls with Moonkin Form and Wrath. Sunfire and Moonfire when missing or about to fall off; Eclipse when neither is active (Lunar on three or more enemies, Solar otherwise); Starfall on Starweaver's Warp, Touch the Cosmos or packs; Starsurge on Starweaver's Weft or Touch the Cosmos; New, Half and Full Moon; Wild Mushroom in an Eclipse; Starsurge whenever you can afford it; Starfire in a Lunar Eclipse or on packs, else Wrath. Reminders: Celestial Alignment or Incarnation, Fury of Elune and Force of Nature before an Eclipse, Convoke in Celestial Alignment, Solar Beam, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'balance','ranged','reference','icy-veins','simulationcraft','wowhead'},
  sources={

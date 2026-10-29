@@ -36,7 +36,7 @@ local rapid=buff(3045)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=6,
  blocks={['era.hunter.boundaries']=3,['sod.hunter.upkeep']=1},
- nameKey='Default.SoD.Hunter.Melee.Name',descriptionKey='Default.SoD.Hunter.Melee.Description',
+ nameKey="Melee (SoD)",descriptionKey="Chosen on a Season of Discovery realm once you engrave Flanking Strike, Wyvern Strike or Carve and neither Chimera Shot nor Explosive Shot. Keeps the Flanking Strike buff up, Mongoose Bite at four Raptor Fury stacks, Wyvern Strike on Clever Strikes, Raptor Strike on every reset, then Mongoose Bite, Wyvern Strike, Flanking Strike and Carve; Immolation Trap and Wing Clip only in empty moments. Carve and Explosive Trap on three or more enemies; Serpent Sting and shots while you cannot reach the target. Reminders: Aspect of the Falcon (Hawk before 60), Viper below 5% mana, pet care (none with Lone Wolf engraved), Rapid Fire and racials once Flanking Strike has stacked, Bestial Wrath. Positioning and pet commands stay with you.",
  applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
  tags={'dps','melee','survival','leveling','endgame','season-of-discovery','wowhead'},
  sources={

@@ -21,7 +21,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction.simc',revision=7,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey='Default.Retail.Warlock.Destruction.Simc.Name',descriptionKey='Default.Retail.Warlock.Destruction.Simc.Description',
+ nameKey="Reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's order reads Immolate, Backdraft, charges and cooldown timers, which Midnight hides in combat. Soul Fire and Incinerate before the pull; on three or more engaged enemies Rain of Fire at 3 shards and Cataclysm; then Soul Fire at 4 shards or fewer, Chaos Bolt only at 5, Conflagrate at two charges or below 4 shards without Backdraft, Summon Infernal, Malevolence, Wither or Immolate in its last 30%, Ruination, Cataclysm, Infernal Bolt at 3 shards or fewer, Incinerate.",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'destruction','ranged','reference','single-target','aoe','simulationcraft'},
  sources={

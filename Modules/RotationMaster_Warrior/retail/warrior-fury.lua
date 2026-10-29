@@ -14,7 +14,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury',revision=6,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1},
- nameKey='Default.Retail.Warrior.Fury.Name',descriptionKey='Default.Retail.Warrior.Fury.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Fury in Midnight. Shows Blizzard's Assisted Combat suggestion (Rampage, Bloodthirst, Raging Blow, Execute, Odyn's Fury and Bladestorm), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Recklessness, Avatar and Champion's Spear in combat, Battle Shout between pulls, Pummel, Enraged Regeneration whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'fury','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

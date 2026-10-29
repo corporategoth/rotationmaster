@@ -30,7 +30,7 @@ local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral',revision=7,
  blocks={['mop.druid.melee-boundaries']=2,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=4,['mop.druid.feral-aoe']=2},
- nameKey='Default.MoP.Druid.Feral.Name',descriptionKey='Default.MoP.Druid.Feral.Description',
+ nameKey="Recommended",descriptionKey="Recommended for Feral from level 10, after simulator and Wowhead's Phase 5 list. Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up, uses Predatory Swiftness for a Healing Touch at four or five combo points with Dream of Cenarius, Rip at five points (Ferocious Bite refreshes it below 25% health), Ferocious Bite at five points while Rip and Savage Roar both have six seconds left, Rake, Thrash on Clearcasting, Shred on Clearcasting or Berserk when the target is not attacking you (Rotation Master cannot tell whether you are behind it) and Mangle; Thrash and Swipe at four enemies. In Bear Form it gives a short tanking list. Reminders: Tiger's Fury under 35 energy, Berserk with it on elites or long fights, Incarnation, Force of Nature, Nature's Vigil, Skull Bash, Survival Instincts and Barkskin when low, Mark of the Wild. Bear- and Wrath-weaving, and Heart of the Wild, stay manual.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'feral','leveling','single-target','aoe','wowhead'},
  sources={

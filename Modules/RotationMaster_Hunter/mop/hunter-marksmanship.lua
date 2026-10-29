@@ -27,7 +27,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship',revision=7,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1},
- nameKey='Default.MoP.Hunter.Marksmanship.Name',descriptionKey='Default.MoP.Hunter.Marksmanship.Description',
+ nameKey="Recommended",descriptionKey="Chosen automatically in the Marksmanship specialization. Pre-casts Aimed Shot, then: Steady Shots in pairs to keep Steady Focus up (from 63), Chimera Shot, Serpent Sting on targets that will live, Aimed Shot whenever Fire! makes it instant, Kill Shot, your talents, and a hard-cast Aimed Shot while the target is above 80% health, under Rapid Fire or Bloodlust, at 85 focus or when Chimera Shot is a few seconds away. Arcane Shot only while you are moving; otherwise Steady Shot. Four or more enemies: Chimera Shot, instant Aimed Shot, Multi-Shot, Kill Shot, Explosive Trap. Same reminders as the other Hunter premades. If you prefer spending spare focus on Arcane Shot, use the Arcane Shot variant.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'marksmanship','leveling','single-target','aoe','wowhead'},
  sources={

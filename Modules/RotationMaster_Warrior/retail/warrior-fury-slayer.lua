@@ -19,7 +19,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury.slayer',revision=7,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1,['retail.warrior.charge']=3},
- nameKey='Default.Retail.Warrior.Fury.Slayer.Name',descriptionKey='Default.Retail.Warrior.Fury.Slayer.Description',
+ nameKey="Slayer reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Slayer order reads Enrage, Recklessness and Sudden Death, which Midnight hides in combat; rage is hidden on Retail, so Rampage waits only for its cost. Charge to open; Whirlwind for its buff on two or more engaged enemies; Rampage when Enrage is ending; in Recklessness Rampage, Bladestorm, Execute on Sudden Death, Odyn's Fury; Crushing Blow; Bloodbath; Execute; Odyn's Fury; Raging Blow; Rampage; Bloodthirst; Whirlwind. Reminders: Recklessness, Avatar, Enraged Regeneration, Battle Shout, Pummel.",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'fury','melee','reference','slayer','single-target','aoe','simulationcraft'},
  sources={

@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.icyveins',revision=6,
  blocks={['tbc.priest.dps-boundaries']=2,['tbc.priest.shadowform']=1,['tbc.priest.moving']=2,
   ['tbc.priest.dots']=1,['tbc.priest.filler']=2,['tbc.priest.upkeep']=1},
- nameKey='Default.TBC.Priest.DpsIcyVeins.Name',descriptionKey='Default.TBC.Priest.DpsIcyVeins.Description',
+ nameKey="Damage (Icy Veins)",descriptionKey="Damage from level 1 to 70, used whenever the healer premade does not apply. Smite and wand early, then Mind Blast, Shadow Word: Pain, Mind Flay, Shadowform, Vampiric Touch and Shadow Word: Death as you learn them; DoTs before Mind Blast; a dying target is wanded when solo. Holy and Discipline questers get Holy Fire and Smite. Reminders: Inner Fire, Fortitude, racial buffs, Inner Focus, Shadowfiend. A Mind Flay past its first tick is cut short for a ready Mind Blast, or Shadow Word: Death above half health. Shields and healing stay with you.",
  applicability={families={'tbc'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','icy-veins','leveling','raid','single-target'},
  sources={

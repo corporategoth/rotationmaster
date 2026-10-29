@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 retail/blocks.lua
 retail/hunter-initial.lua
 retail/hunter-beast-mastery.lua

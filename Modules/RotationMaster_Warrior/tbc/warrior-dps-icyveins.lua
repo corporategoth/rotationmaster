@@ -14,7 +14,7 @@ local execute=function(id)return spell(id,5308,{type='HEALTHPCT',unit='target',o
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.icyveins',revision=6,
  blocks={['tbc.warrior.boundaries']=4,['tbc.warrior.upkeep']=1,['tbc.warrior.dps-upkeep']=1,['tbc.warrior.dps-opening']=1,['tbc.warrior.dps-leveling']=1},
- nameKey='Default.TBC.Warrior.DPS.IcyVeins.Name',descriptionKey='Default.TBC.Warrior.DPS.IcyVeins.Description',
+ nameKey="Melee DPS (Icy Veins)",descriptionKey="Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and leveling steps as the simulator version, but with Mortal Strike Execute comes first, with Bloodthirst Execute comes right after it, Whirlwind follows without holding rage, and Hamstring only near full rage. Slam timing, stance dancing and Berserker Rage stay with you. An alternative to the recommended simulator melee DPS premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/fury-warrior-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Fury Warrior PvE rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-01-12'},

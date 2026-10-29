@@ -12,7 +12,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.unspecialized',revision=7,
  blocks={['mop.warrior.boundaries']=4},
- nameKey='Default.MoP.Warrior.Unspecialized.Name',descriptionKey='Default.MoP.Warrior.Unspecialized.Description',
+ nameKey="Unspecialized",descriptionKey="For levels 1 to 9, or until you choose a specialization. Charge to pull, Victory Rush, Execute and Heroic Strike when you have 30 rage; reminds you to be in Battle Stance if you are in no stance.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'dps','melee','leveling'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/arms-warrior-leveling',title='Icy Veins: Arms Warrior leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},

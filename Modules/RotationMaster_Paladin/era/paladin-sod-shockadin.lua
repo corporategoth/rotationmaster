@@ -14,7 +14,7 @@ local function sealRemain(id)return{type='BUFF_REMAIN',unit='player',spell=id,an
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.shockadin',revision=6,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
- nameKey='Default.SoD.Paladin.Shockadin.Name',descriptionKey='Default.SoD.Paladin.Shockadin.Description',
+ nameKey="Shockadin (SoD, simulator)",descriptionKey="Off by default; enable it if you deal damage with the Holy tree. It applies with Holy as your main tree and Shock and Awe engraved. Seal of Martyrdom (else Righteousness), judged as it runs out, Holy Shock to keep Sunlight up or at three Holy Power, Exorcism and Crusader Strike. Same reminders as the Season of Discovery Retribution premade.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','raid','holy','melee','single-target','season-of-discovery'},
  sources={},

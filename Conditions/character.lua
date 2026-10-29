@@ -895,8 +895,8 @@ addon:RegisterCondition("GROUP", {
     -- Builds the help page for the GROUP condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.GROUP.unit"]))
-        frame:AddChild(helpers.CreateText(L["Help.GROUP.raid"]))
+        frame:AddChild(helpers.CreateText(L["Choose the unit whose membership in your party or raid is checked. Player keeps the original player group-status behavior. Spell recipient uses only the current announcement event context; without that readable context the result is unavailable. It never substitutes your selected target or a previous cast."]))
+        frame:AddChild(helpers.CreateText(L["Checked tests raid membership only. Unchecked tests party membership or raid membership. A known nonmember is false; unavailable native data stays unavailable, including under NOT."]))
     end,
 })
 

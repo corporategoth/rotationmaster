@@ -48,7 +48,7 @@ and has not been verified in a real client is in `docs/quality/client-support.md
 | `Modules/` | Load-on-demand add-ons: 13 class modules of Built In rotations and four text bundles (`RotationMaster_HelpText`, `_ConditionText`, `_DiagnosticsText`, `_IntegrationsText`) |
 | `Libs/`, `LibsAugment/` | Vendored libraries (hash-pinned in `Libs/UPSTREAM.json`) and local additions |
 | `THIRD_PARTY_NOTICES.md` | Third-party notices shipped with the package |
-| `Locales/` | `enUS.lua` (source) and ten generated translations for the text read at startup; `bundles.json` names the load-on-demand text bundles that hold the rest (see "Text bundles") |
+| `Locales/` | `enUS.lua` (source) and ten generated translations for general text; `bundles.json` lists the class and compatibility catalogs |
 | `Assets/`, `Fonts/`, `textures/` | Icons and overlays (`Assets/*/provenance.json` records each one), the monospace font, the two `.blp` textures the help and condition pages still draw |
 | `tests/` | Headless suites (Lua 5.1 and LuaJIT) and Python checks; `tests/fixtures/` holds client models and frozen predecessor sources |
 | `tools/` | Generators, checkers, the package builder, translation tools (`docs/dev/running-things.md`) |
@@ -204,62 +204,25 @@ knowing:
 
 The exact command list is `tools/check`; `tools/check_all.py` runs the same list without stopping at the first failure.
 
-## Text bundles (load-on-demand translations)
+## Localization
 
-A Lua table's hash part doubles past 4,096 entries (about 177 KB resident, for every player in every language), and
-`Locales/enUS.lua` had crossed the line. The text nothing reads while the game loads therefore lives outside the main
-table, in four load-on-demand add-ons named in `Locales/bundles.json`: `RotationMaster_HelpText` (Help articles and
-tooltips), `RotationMaster_ConditionText` (condition summaries, help and choices), `RotationMaster_DiagnosticsText`
-(performance, memory, analytics and error reports, `/rm debug`) and `RotationMaster_IntegrationsText` (the Integrations
-page). Each holds `enUS.lua` and the ten translations by stable ID; the code still reads `L["English text"]`, and a key
-lives in exactly one catalog.
+The main `Locales/` catalog contains general interface text and loads at startup. Each Built In class module has a
+`Locales/` directory for that class's rotation names and descriptions. Its locale files load after `bind.lua` and before
+the rotation sources. Shared names that are also used by the interface remain in the main catalog.
 
-### Stable IDs, and how a language is applied
+Every English key is exactly the text used by the source: `T["English text"] = 1234` in `enUS.lua`. Translation files
+map the number to translated text. Translation files run before English; the English file joins them and writes
+`L["English text"] = translation` (or the English itself). IDs are local to their catalog and stable within it. A removed
+ID is retired; moving text between catalogs assigns a new ID while retaining translations and context. The English hash
+records when an existing translation needs review after a reword.
 
-Every string has a number from `tools/locale_registry.json` (append-only, never reused, never derived from the wording).
-`enUS.lua` binds each English text to its number once, `N["English text"] = 1234`, with a hash of the English (and any
-Context/token-note comments) above it; a language file binds the number to the translation, `[1234] = "translation"`, and a
-translation records, in a comment above it, the hash of the English it was made from (stale = hashes differ; the translation
-is still shown). Code keeps reading `L["English text"]`. Strings read under a key that is not their text (`Default.*` names,
-`Help.*` articles) are *symbolic* and listed as `[id] = { key, English }` in the table `S`, because key and text really
-differ. Where the text follows from the key by a trivial rule there is no pair: the key `TalentTree.Arms` is the prefix
-`TalentTree.` and its English (one table per prefix, `[id] = "Arms"`), and a key whose English is the key with every `|`
-doubled for chat (the `/rm ... [a|b]` help lines) is an ordinary N entry listed in the table `P`.
+`Core/text_bundles.lua` and `Data/text_bundle_index.lua` let translated class text load when it is requested before its
+class module. The player's class module normally loads during startup. The four older text modules are empty compatibility
+modules. A missing class module falls back to the English key.
 
-Locales load **translations first, English last** (`locales.xml`, each bundle's TOC). The game language's file registers
-with `NewLocale(addon_name, "<xx>", false, true)` (every other language's file returns at once) and hands its ID table to
-`enUS.lua` through the add-on's private table. `enUS.lua` then builds the final `L` once, eagerly: a translated game gets
-`L[english] = translation` for every translated ID (untranslated text is absent and reads as its own English, because the
-application is registered silent); an **English game loads no translation table at all** and builds no N: it writes only
-the entries whose English differs from their key (S, the prefix tables, and P with its pipes doubled). The helper tables
-(N, S, the prefix tables, P) are locals of the enUS chunk and are discarded with it. Nothing is resolved per lookup.
-
-`Core/text_bundles.lua` makes the bundles invisible: a `L["English text"]` read the main table cannot answer asks
-`Data/text_bundle_index.lua` (the sorted 32-bit hashes of each bundle's keys, and of the symbolic subset; generated by
-`tools/locales.py index`) which bundle owns the key, loads that add-on once through `C_AddOns.LoadAddOn`, **moves every
-entry the bundle produced into `L`** and releases the bundle's own AceLocale table. An English game loads a bundle only for
-a symbolic key. A bundle that cannot load answers with the key (the English) and is not asked again; a key in no catalog
-reads as itself (the registration is silent; the static gate is `tools/catalog_check.py`). `addon:LoadTextBundle(id)`,
-`addon:GetTextBundleOf(key)`, `addon:GetTextBundleStates()` serve code and tests; `addon:GetLocaleTranslators()` and
-`addon:GetTranslationCredit()` serve the About pages. The index and the loader load straight after `locales.xml`; nothing
-in a bundle may be read while the game is loading.
-
-Resident memory (Lua 5.1, after full collections, net of the libraries; `tools/locale_dump.lua`): an English game 680 KB
-before and 351 KB now at startup (and 945 / 899 KB after reading every key, which loads the bundles); a German game 1,009 KB
-before and 1,015 KB at startup (1,310 / 1,269 KB with every bundle loaded).
-
-Tools and gates. `python3 tools/locales.py bundles` lists the catalogs; `move` moves keys between them (IDs and
-translations follow); `check` validates IDs, hashes, placeholders, headers and the index; `reword` changes English without
-orphaning translations; `where` finds a string's uses; `tools/translation_*.py` read and write all catalogs as one locale.
-`tests/test_locale_bundles.py` fails if any bundle string is untranslated, stale or invalid in any of the ten locales (the
-main catalog may carry untranslated IDs, a bundle may not), if a key is in two catalogs, or if the index is stale;
-`tests/test_locale_ids.py` covers the formats, the registry, reword (including a runtime proof that a reword orphans nothing),
-credits, notes and `where`; `tests/text_bundles.lua` proves the runtime (a normal start loads no bundle, a bundle key loads
-exactly its own bundle, every key reads as its translation in every language); `tests/client_locale.lua` holds the main
-table at or below 3,900 entries and reports the resident memory. New text goes into the main catalog first
-(`locales.py add` or `sync`); move it when it is only read on demand. A new bundle needs an entry in `Locales/bundles.json`,
-a TOC (`## LoadOnDemand: 1`, `## Dependencies: RotationMaster`, translations first and `enUS.lua` last), `.pkgmeta`
-(`python3 tools/generate_artwork_catalog.py --write`) and the index.
+`tools/locales.py check` validates the catalogs and translations; `tools/catalog_check.py` checks literal keys and unused
+class rotation text. `sync` registers source literals, and `sync --prune-class` removes unused class rotation strings.
+`tests/client_locale.lua`, `tests/text_bundles.lua`, and `tests/test_locale_ids.py` exercise runtime loading and tooling.
 
 ## How to...
 
@@ -283,15 +246,11 @@ shipped disabled). Add scenarios to the class suite, run `python3 tools/builtin_
 
 ### Add or change a locale string
 
-English text is the key in code. Write `L["Text"]` in code, then `python3 tools/locales.py sync` (or `add "Text"`) gives it
-an ID in `Locales/enUS.lua`; never concatenate sentences, and use `{{name}}` / `%s` placeholders. Keep `Locales/enUS.lua` at or
-below 3,900 entries (see "Text bundles"). Text that is only read when a window opens, a report is written or a condition is
-described belongs in a text bundle: `python3 tools/locales.py move <bundle> keys.json` moves it (ID and translations
-follow) and rebuilds the index. To change the wording of existing text use `python3 tools/locales.py reword "old" "new"`:
-it rewrites the code, keeps the ID and leaves every translation (stale by hash). Strings with `%s`/`%d` and short or
-abstract strings carry notes and context for translators (`locales.py notes`). `python3 tools/catalog_check.py` and
-`python3 tools/locales.py check` must pass; translations catch up through `tools/translation_status.py` /
-`translation_todo.py` / `translation_apply.py`.
+English text is the key in code. Write `L["Text"]` or a Built In rotation name/description literal, then run
+`python3 tools/locales.py sync`. General text belongs in the main catalog; class-specific rotation text belongs in that
+class's catalog. Use placeholders rather than concatenating sentences. `locales.py reword "old" "new"` updates literal
+lookups and retains translations; use `--all-literals` for rotation metadata. Context and token notes are maintained with
+`locales.py notes`. `catalog_check.py` and `locales.py check` must pass.
 
 ### Add a client
 

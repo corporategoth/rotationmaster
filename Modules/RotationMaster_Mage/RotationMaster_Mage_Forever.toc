@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 forever/blocks.lua
 forever/mage-frost.lua
 forever/mage-fire.lua

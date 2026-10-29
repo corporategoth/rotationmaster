@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 era/blocks.lua
 era/rogue-dps.lua
 era/rogue-dps-warcrafttavern.lua

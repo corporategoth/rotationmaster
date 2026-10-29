@@ -22,7 +22,7 @@ local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution.warcrafttavern',revision=6,
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
- nameKey='Default.MoP.Paladin.Retribution.WarcraftTavern.Name',descriptionKey='Default.MoP.Paladin.Retribution.WarcraftTavern.Description',
+ nameKey="Exorcism first (Warcraft Tavern)",descriptionKey="An alternative to the recommended Retribution premade, off by default: enable it and disable that one, or raise its priority. Exorcism on every cooldown and Art of War reset comes first; Inquisition is cast at any Holy Power when it is missing and refreshed at 3 in its last 20 seconds; then Crusader Strike, Judgment, Templar's Verdict and Hammer of Wrath (first in wings with Sanctified Wrath). Two or more enemies use Crusader Strike, Light's Hammer, Judgment, Divine Storm and Hammer of Wrath. Avenging Wrath and Guardian of Ancient Kings are suggested only on elites. The guide's Seal of Righteousness on any cleave is left to you.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'retribution','leveling','single-target','aoe','warcraft-tavern'},
  sources={

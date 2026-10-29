@@ -17,7 +17,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.holy.wowhead',revision=7,
  blocks={['sod.paladin.holy-upkeep']=2,['era.paladin.boundaries']=2,['era.paladin.cleanse']=1,['sod.paladin.holy-hostile']=3},
- nameKey='Default.SoD.Paladin.Holy.Wowhead.Name',descriptionKey='Default.SoD.Paladin.Holy.Wowhead.Description',
+ nameKey="Holy, Holy Light first (SoD, Wowhead)",descriptionKey="Wowhead's Phase 4 healing order for crit-heavy gear, an alternative to the recommended Season of Discovery Holy premade, off by default: enable it and disable that one, or raise its priority. Divine Light or Holy Light below 75%, then Cleanse, Holy Shock for small deficits or while moving, Flash of Light below 95%. Same reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','holy','healer','dungeon','raid','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/healer-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin healer rotation (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-12'}},

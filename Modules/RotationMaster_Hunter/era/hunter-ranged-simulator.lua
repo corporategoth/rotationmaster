@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.simulator',revision=5,
  blocks={['era.hunter.boundaries']=3,['era.hunter.dead-zone']=3,['era.hunter.opening']=3,['era.hunter.solo']=2,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1,['era.hunter.cooldowns']=1},
- nameKey='Default.Era.Hunter.Ranged.Simulator.Name',descriptionKey='Default.Era.Hunter.Ranged.Simulator.Description',
+ nameKey="Ranged, raid Serpent Sting (simulator)",descriptionKey="Off by default; enable it where the raid has debuff room for your sting. Like Hunter: Ranged, but in a group Serpent Sting is kept up everywhere, raids included, refreshed under 5 seconds while Aimed Shot and Multi-Shot are both cooling, and Arcane Shot is never used.",
  applicability={families={'era'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','endgame','raid'},
  sources={},

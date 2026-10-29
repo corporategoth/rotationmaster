@@ -22,7 +22,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration',revision=6,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=2,['forever.druid.dots']=2},
- nameKey='Default.Forever.Druid.Restoration.Name',descriptionKey='Default.Forever.Druid.Restoration.Description',
+ nameKey="Restoration",descriptionKey="Group healing after Warcraft Tavern, once Restoration is your main talent tree with 11 points. Heals your current friendly target: Swiftmend on a target with your HoT, Wild Growth, Regrowth and Rejuvenation when missing, Healing Touch. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing. On a hostile target: Moonfire, Insect Swarm, Wrath. Reminders: Innervate in combat, Nature's Swiftness on a friendly target in combat, Remove Curse and Abolish Poison, Mark of the Wild; Tranquility is yours. You pick who to heal and the spell rank; solo Restoration uses the Balance premade.",
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','group','warcraft-tavern'},
  sources={

@@ -25,7 +25,7 @@ local tough=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps.mobalytics',revision=6,
  blocks={['forever.priest.dps-boundaries']=2,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=2},
- nameKey='Default.Forever.Priest.DpsMobalytics.Name',descriptionKey='Default.Forever.Priest.DpsMobalytics.Description',
+ nameKey="DoT and wand leveling (Mobalytics)",descriptionKey="Mobalytics' leveling style, an alternative to the recommended Shadow premade, off by default: enable it and disable that one, or raise its priority. Mind Blast and Holy Fire only on tough mobs (elites, or two levels above you), your own Shadow Word: Pain and Devouring Plague, then the wand (Smite without one). From Shadowform: Mind Blast, Pain, Plague, Mind Flay. Shield and Renew on yourself between pulls, Cure Disease on yourself. Health and mana are hidden from addons on Forever, so healing yourself is your call. Spreading Pain across several mobs is up to you.",
  applicability={families={'forever'},actionContext='player',class='PRIEST'},
  tags={'shadow','leveling','dot','wand','mobalytics'},
  sources={

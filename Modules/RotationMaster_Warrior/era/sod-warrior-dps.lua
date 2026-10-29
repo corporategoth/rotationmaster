@@ -38,7 +38,7 @@ local enraged=any(buff(12880),buff(425415),buff(427066),buff(29131),buff(18499))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps',revision=6,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
- nameKey='Default.SoD.Warrior.DPS.Name',descriptionKey='Default.SoD.Warrior.DPS.Description',
+ nameKey="Melee DPS (SoD)",descriptionKey="Season of Discovery, levels 1–60 with runes as you engrave them: two-hander, dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built from simulator Phase 6 and Wowhead Phase 7/8. Charge, Victory Rush, Intercept, Whirlwind (Thunder Clap before it) on two or more enemies, Slam at three Slammin' stacks, Rend kept up, Slam on Blood Surge (on cooldown with Precise Timing engraved), Bloodthirst, Mortal Strike, Shield Slam (with a shield), Overpower; then Quick Strike when it is engraved (two-hander), otherwise Whirlwind, Raging Blow and Devastate (Sunder before it); Execute with 30 rage or on Sudden Death; Hamstring near the rage cap. Reminders: Battle and Commanding Shout, Heroic Strike from 50 rage (always while Consumed by Rage enrages you), Cleave, Bloodrage, Rampage, Death Wish, Recklessness, Sweeping Strikes, interrupts. Berserker Rage and the Taste for Blood Battle Stance dip are listed off.",
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowhead'},
  sources={

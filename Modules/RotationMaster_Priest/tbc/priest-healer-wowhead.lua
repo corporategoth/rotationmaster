@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.wowhead',revision=6,
  blocks={['tbc.priest.boundaries']=4,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
   ['tbc.priest.healer-damage']=2,['tbc.priest.upkeep']=1},
- nameKey='Default.TBC.Priest.HealerWowhead.Name',descriptionKey='Default.TBC.Priest.HealerWowhead.Description',
+ nameKey="Healer (Wowhead)",descriptionKey="Healing in a group when Holy or Discipline is your main talent tree. It advises on the friendly unit you target; you choose whom to heal. Prayer of Mending before pulls and whenever ready, Renew, Power Word: Shield in emergencies, dispels, Circle of Healing or Prayer of Healing for group damage, Binding, Flash and Greater Heal, and Greater Heal rank 1 as a cheap top-up. With an enemy targeted it offers light damage.",
  applicability={families={'tbc'},actionContext='player',class='PRIEST'},
  tags={'holy','discipline','healer','wowhead','dungeon','raid'},
  sources={

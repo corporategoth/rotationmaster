@@ -15,7 +15,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms',revision=6,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1},
- nameKey='Default.Retail.Warrior.Arms.Name',descriptionKey='Default.Retail.Warrior.Arms.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Arms in Midnight. In combat the game now hides rage, Rend, Colossus Smash, procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Heroic Strike (a core button the suggestion never uses), Avatar and Champion's Spear in combat, Battle Shout between pulls, Pummel on an interruptible cast (it lights only where the game lets the cast be read), Die by the Sword whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'arms','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

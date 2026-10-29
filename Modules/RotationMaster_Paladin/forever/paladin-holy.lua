@@ -25,7 +25,7 @@ local evil=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',u
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.holy',revision=6,
  blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.dispel']=1,['forever.paladin.healer-upkeep']=2},
- nameKey='Default.Forever.Paladin.Holy.Name',descriptionKey='Default.Forever.Paladin.Holy.Description',
+ nameKey="Holy",descriptionKey="Group healing once Holy is your main talent tree with 21 points (Holy Shock's tier), while Righteous Fury is off (a grouped Shockadin lands here too). Heals your current friendly target: Holy Shock on a target with your Light's Vigil, Light's Vigil in combat, Cleanse or Purify, Holy Shock while moving, Holy Light with Infusion of Light, Flash of Light as the main heal. On an enemy: Judgement of Light when Seal of Light is up, Holy Shock, Light's Vigil, Holy Strike, Exorcism. Reminders: Seal of Light when you have no seal, Divine Favor in combat on a friendly target, your aura and Blessing. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing; emergency Holy Shocks, big Holy Lights and Lay on Hands are your call.",
  applicability={families={'forever'},actionContext='player',class='PALADIN'},
  tags={'holy','healer','group','icy-veins'},
  sources={

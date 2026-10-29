@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire.warcrafttavern',revision=6,
  blocks={['era.mage.boundaries']=3,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
- nameKey='Default.Era.Mage.Fire.WarcraftTavern.Name',descriptionKey='Default.Era.Mage.Fire.WarcraftTavern.Description',
+ nameKey="Fire (Warcraft Tavern)",descriptionKey="Fire after Warcraft Tavern, an alternative to the recommended Fire premade, off by default: enable it and disable that one, or raise its priority. Combustion is spent at the pull on elites and bosses instead of waiting for Scorch stacks; Pyroblast opens; Scorch keeps five stacks with Improved Scorch; Fireball fills; Fire Blast only while moving. Packs: Flamestrike first, then Arcane Explosion, Cone of Cold and Blast Wave close in, Blizzard at range. Same reminders as the Fire premade.",
  applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'fire','raid','single-target','aoe','warcraft-tavern'},
  sources={

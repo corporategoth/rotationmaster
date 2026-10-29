@@ -29,7 +29,7 @@ local binding=all(health('player','LESSTHAN',.7),low(.7),negate({type='ISSAME',u
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.priest.holy.icyveins',revision=7,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1,['mop.priest.holy-damage']=2},
- nameKey='Default.MoP.Priest.Holy.IcyVeins.Name',descriptionKey='Default.MoP.Priest.Holy.IcyVeins.Description',
+ nameKey="Emergency heals last (Icy Veins)",descriptionKey="Off by default. Icy Veins' Holy order, picked by your chakra. In Chakra: Sanctuary: Holy Word: Sanctuary when three allies are hurt, Renew, Circle of Healing, Prayer of Mending, Prayer of Healing, then Binding Heal and Flash Heal only in emergencies. Otherwise: Renew, Holy Word: Serenity, Prayer of Mending, Greater Heal, Heal, Binding Heal, Flash Heal, Power Word: Shield last, and Flash Heal as the filler before you learn Heal. Same switch, reminders and damage list as the recommended Holy premade; enable it and disable that one to use it.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'holy','healer','group','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/holy-priest-pve-rotation-cooldowns-abilities',title='Icy Veins: Holy Priest rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},

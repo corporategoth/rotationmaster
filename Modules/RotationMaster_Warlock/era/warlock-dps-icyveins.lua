@@ -19,7 +19,7 @@ local blocks={['era.warlock.boundaries']=3,['era.warlock.procs']=1,['era.warlock
  ['era.warlock.moving']=2,['era.warlock.aoe']=1,['era.warlock.sustain']=3,['era.warlock.filler']=2,['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps.icyveins',revision=6,blocks=blocks,
- nameKey='Default.Era.Warlock.DPS.IcyVeins.Name',descriptionKey='Default.Era.Warlock.DPS.IcyVeins.Description',
+ nameKey="Curse and Corruption raids (Icy Veins)",descriptionKey="Icy Veins' list for realms with the 16-debuff limit, an alternative to the recommended Warlock premade, off by default: enable it and disable that one, or raise its priority. In raids only your curse and Corruption, then Shadow Bolt, with no Immolate and no Siphon Life. Leveling and dungeons play as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-classic/warlock-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Warlock DPS rotation',reviewedAt='2026-10-23',revision='2024-11-18'},

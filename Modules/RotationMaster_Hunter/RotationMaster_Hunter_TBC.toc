@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 tbc/blocks.lua
 tbc/hunter-ranged-simulator.lua
 tbc/hunter-ranged-wowhead.lua

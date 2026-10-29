@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 forever/blocks.lua
 forever/hunter-ranged.lua
 forever/hunter-ranged-mobalytics.lua

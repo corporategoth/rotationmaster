@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.beastmastery',revision=7,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=2},
- nameKey='Default.MoP.Hunter.BeastMastery.Name',descriptionKey='Default.MoP.Hunter.BeastMastery.Description',
+ nameKey="Recommended",descriptionKey="Chosen automatically in the Beast Mastery specialization. Opens with Hunter's Mark and Kill Command, then: Kill Shot, Kill Command (held for a moment when Bestial Wrath is about to be ready), A Murder of Crows, Lynx Rush, Dire Beast and your tier-six shot when talented, Focus Fire at five Frenzy stacks (or four about to fall off) but not during Bestial Wrath, Serpent Sting on targets that will live, Cobra Shot to refresh it, Arcane Shot at 80 focus or during Bestial Wrath, then Cobra Shot (Steady Shot before 81). With two or more enemies fighting you it keeps Beast Cleave up with Multi-Shot, saves Kill Command for spare focus on big packs and suggests Explosive Trap from three. Reminders: pet out, revived and mended, Aspect of the Hawk or Iron Hawk, Counter Shot, Fervor, and Bestial Wrath, Rapid Fire, Stampede and racials when the fight is worth it (an elite, a dungeon or raid, or a target that will live). Trap placement, Misdirection, Feign Death and defensives stay with you; Exhilaration and Deterrence reminders are off by default.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'beast-mastery','leveling','single-target','aoe','wowhead'},
  sources={

@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 forever/blocks.lua
 forever/druid-balance.lua
 forever/druid-balance-tavern.lua

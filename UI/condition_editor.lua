@@ -465,15 +465,21 @@ local function createShell()
                 return {
                     {
                         title = L['Groups and toggles'],
-                        text = L['AND requires every child; OR requires any child; NOT reverses its child. Unavailable data remains unavailable.'],
+                        text = L["AND stops at the first non-match; OR stops at the first match. NOT reverses a known result. Encountered unavailable data remains unavailable. Skipped children are not evaluated."],
                     },
                 }
             elseif not available then
                 request.render = nil
-                return { { title = L['Unavailable'], text = L['Help.Conditions.subject_unavailable'] } }
+
+                return {
+                    {
+                        title = L['Unavailable'],
+                        text = L["Help for this condition is unavailable. Its registered definition is missing, disabled or waiting for required functions. Opening Help does not register pending or imported source."],
+                    },
+                }
             elseif type(help) ~= 'function' then
                 request.render = nil
-                return { { title = L['Help'], text = L['Help.Conditions.subject_missing'] } }
+                return { { title = L['Help'], text = L["This registered condition does not provide Help."] } }
             end
 
             return {}

@@ -21,7 +21,7 @@ local function far(n)return negate({type='DISTANCE',unit='target',value=n})end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=8,
  blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=5,['mop.priest.shadow-cooldowns']=2},
- nameKey='Default.MoP.Priest.Shadow.Name',descriptionKey='Default.MoP.Priest.Shadow.Description',
+ nameKey="Recommended",descriptionKey="Shadow damage from level 10 to 90, chosen in the Shadow specialization. Opens with Mind Spike, Mind Blast or your DoTs. Devouring Plague at three Shadow Orbs (when Mind Blast is ready or still six seconds away), Mind Blast, Shadow Word: Death below 20% health, Mind Flay while your Devouring Plague is up if you took Solace and Insanity, Shadow Word: Pain and Vampiric Touch refreshed near the end on a target that will live, Mind Spike on Surge of Darkness, Halo, Cascade or Divine Star at their best range, then Mind Flay. A Mind Flay is cut short for Mind Blast or Shadow Word: Death, or after its second tick; other channels are never interrupted. While moving it suggests instants only. On five or more enemies: your tier-6 talent, DoTs on your target and Mind Sear. Reminders: Shadowform, Inner Fire, Fortitude, Silence on interruptible casts, Shadowfiend or Mindbender and Power Infusion on long fights, Vampiric Embrace, Desperate Prayer and Dispersion when low. Left to you: DoTs on other targets and where Mind Sear lands.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'shadow','dps','caster','leveling','endgame','icy-veins','method','wowtbc'},
  sources={

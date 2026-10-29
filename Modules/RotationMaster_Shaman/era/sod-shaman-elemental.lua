@@ -26,7 +26,7 @@ local refresh=any(negate(flamed),flame('LESSTHAN',3))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.shaman.elemental',revision=4,
  blocks={['era.shaman.manual-target']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.caster-totems']=1},
- nameKey='Default.SoD.Shaman.Elemental.Name',descriptionKey='Default.SoD.Shaman.Elemental.Description',
+ nameKey="Elemental (SoD)",descriptionKey="Season of Discovery Elemental from level 10 (most points in Elemental); built from simulator Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame Shock, Earth Shock at eight Lightning Shield charges, Lava Burst or Chain Lightning on a Power Surge proc. On three or more enemies: Flame Shock, Chain Lightning, Fire Nova, Lava Burst, Earth Shock at eight charges, Magma. Then Lava Burst on Power Surge, Flame Shock kept up, Lava Burst while your Flame Shock lasts, Earth Shock at eight charges, Chain Lightning on two enemies, Lightning Bolt. Reminders: Flametongue for Burn, Lightning Shield, Earth Shield on yourself, Spirit of the Alpha, Feral Spirit, Shamanistic Rage, Elemental Mastery, totems. Trinkets, Totemic Projection, dispels and purges stay with you.",
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
  tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowhead','icy-veins'},
  sources={

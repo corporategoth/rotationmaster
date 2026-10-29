@@ -22,7 +22,7 @@ local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='pl
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.mage.frost',revision=6,
  blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=3,['forever.mage.frostbolt']=1,['forever.mage.wand']=3,['forever.mage.upkeep']=2},
- nameKey='Default.Forever.Mage.Frost.Name',descriptionKey='Default.Forever.Mage.Frost.Description',
+ nameKey="Frost",descriptionKey="Frost from level 1 to 60, and the Forever Mage default before talent spells (Fireball until Frostbolt at level 4). Pulls with Frostbolt; then Ice Lance on Fingers of Frost or a frozen target (also while Frostbolt is still casting, to cancel or batch), Cone of Cold at five Winter's Chill stacks, Arcane Missiles on Missile Barrage, Frostbolt, and a wand when solo and you cannot afford Frostbolt. Moving: Ice Lance, else Fire Blast. Three or more enemies fighting you: Cone of Cold; five or more: Blizzard, or Arcane Explosion with a mob on you. Warcraft Tavern's Flamestrike and Arcane Explosion AoE is included but off. Reminders: Arcane Intellect, armor (Ice or Frost solo, Mage Armor in a group, never replacing one you chose), Ice Barrier, Counterspell, Remove Lesser Curse, Frost Nova when a mob reaches you, Cold Snap. Health and mana are hidden from addons on Forever, so finishing low targets with Fire Blast, Evocation and Ice Block are your call; Blink, kiting, Polymorph and mana gems stay with you too.",
  applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'frost','leveling','single-target','aoe','icy-veins'},
  sources={

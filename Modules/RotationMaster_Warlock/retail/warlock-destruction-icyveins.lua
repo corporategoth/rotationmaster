@@ -19,7 +19,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction.icyveins',revision=6,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey='Default.Retail.Warlock.Destruction.IcyVeins.Name',descriptionKey='Default.Retail.Warlock.Destruction.IcyVeins.Description',
+ nameKey="Chaos Bolt before capping reference (Icy Veins)",descriptionKey="Reference only, off by default: Icy Veins' Hellcaller order, which spends shards on Chaos Bolt before they cap and uses Shadowburn and Channel Demonfire on cooldown. Rain of Fire on three or more engaged enemies; Wither or Immolate kept up; Summon Infernal; Malevolence; Shadowburn; Soul Fire below 4 shards; Chaos Bolt at 4 or more; Cataclysm; Infernal Bolt below 4; Channel Demonfire; Conflagrate; Incinerate.",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'destruction','ranged','reference','single-target','aoe','icy-veins'},
  sources={

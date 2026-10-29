@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 retail/blocks.lua
 retail/warlock-initial.lua
 retail/warlock-affliction.lua

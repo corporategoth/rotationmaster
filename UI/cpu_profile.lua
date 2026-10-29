@@ -569,7 +569,7 @@ function addon:RunCPUProfileAction(action)
         end
 
         message = ok
-            and L['Memory capture started for 10 minutes. Normal polling is unchanged; attribution refreshes every 30 seconds and their cost is reported.']
+            and L["Memory capture started for 10 minutes. Normal polling is unchanged; attribution refreshes at capture start and completion, with their cost reported."]
             or L['Memory capture is unavailable: %s']:format(tostring(reason or L['Unknown']))
     elseif action == 'memorystop' then
         local reason
@@ -610,7 +610,7 @@ function addon:RunCPUProfileAction(action)
         message = failure(reason)
     else
         ok = false
-        message = L['Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe']
+        message = L["Usage: /rm perf cpu||runtime||memory [seconds||start||stop||report], or /rm perf probe"]
     end
 
     self:print(message)
@@ -673,7 +673,7 @@ end
 -- @return boolean  True when the command succeeded.
 -- @return string  The message printed ('' when a report window was opened).
 function addon:HandlePerformanceCommand(text)
-    local usage = L['Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe']
+    local usage = L["Usage: /rm perf cpu||runtime||memory [seconds||start||stop||report], or /rm perf probe"]
 
     -- Prints the message and returns the failure pair.
     -- @param message string  The message.
@@ -714,7 +714,7 @@ function addon:HandlePerformanceCommand(text)
 
     if name == 'engine' then
         if action ~= '' and not self:SetEvaluationEngine(action) then
-            return reject(L['Usage: /rm perf engine [lean|standard]'])
+            return reject(L["Usage: /rm perf engine [lean||standard]"])
         end
 
         local message = L['Evaluation engine: %s']:format(self:GetEvaluationEngine())

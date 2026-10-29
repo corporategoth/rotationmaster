@@ -18,7 +18,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=6,
  blocks={['era.priest.dps-boundaries']=2,['era.priest.shadowform']=1,['era.priest.moving']=2,
   ['era.priest.filler']=2,['era.priest.wand-fallback']=2,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1},
- nameKey='Default.Era.Priest.Dps.WarcraftTavern.Name',descriptionKey='Default.Era.Priest.Dps.WarcraftTavern.Description',
+ nameKey="Damage (Warcraft Tavern wand economy)",descriptionKey="Warcraft Tavern's low-downtime leveling style, an alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority. Solo: Mind Blast to pull, Shadow Word: Pain once, Mind Blast again only while the target is above 30%, and your wand between Mind Blasts instead of Smite or Mind Flay. No automatic shield before pulls. In a group: Shadow Word: Pain, Mind Blast, Mind Flay. Same reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','leveling','single-target','warcraft-tavern'},
  sources={

@@ -24,7 +24,7 @@ local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral.icyveins',revision=7,
  blocks={['mop.druid.melee-boundaries']=2,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=4,['mop.druid.feral-aoe']=2},
- nameKey='Default.MoP.Druid.Feral.IcyVeins.Name',descriptionKey='Default.MoP.Druid.Feral.IcyVeins.Description',
+ nameKey="Bite only in execute (Icy Veins)",descriptionKey="Icy Veins' Feral order (Wowhead's Bite rule agrees), an alternative to the recommended Feral premade: enable it and disable that one, or raise its priority. Same opener, Savage Roar, Healing Touch and AoE, but combo points above 25% target health go only to Rip and Savage Roar: Ferocious Bite only refreshes Rip in execute (or spends five points before you learn Rip). Rake refreshes at two seconds, Thrash only on Clearcasting, and Berserk waits for 90 energy with Tiger's Fury at least 15 seconds away.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'feral','leveling','single-target','aoe','icy-veins','wowhead'},
  sources={

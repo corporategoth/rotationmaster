@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.icyveins',revision=5,
  blocks={['tbc.warlock.boundaries']=3,['tbc.warlock.procs']=1,['tbc.warlock.moving']=2,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
   ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=2,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
- nameKey='Default.TBC.Warlock.DpsIcyVeins.Name',descriptionKey='Default.TBC.Warlock.DpsIcyVeins.Description',
+ nameKey="All trees (Icy Veins)",descriptionKey="Every talent tree from level 1 to 70. Curse, then Unstable Affliction, Immolate, Corruption and Siphon Life as learned, Shadow Bolt or Incinerate; Nightfall and Backlash procs first; Seed, Hellfire and Shadowfury for three or more enemies. Solo it drains when hurt, Life Taps, wands, and uses Drain Soul or a finisher on a dying target. Reminders: Fel Armor, Demon Armor or Demon Skin, your demon, sacrifice, Soul Link, Amplify Curse and Soulshatter. Fears and other curses stay with you.",
  applicability={families={'tbc'},actionContext='player',class='WARLOCK'},
  tags={'affliction','demonology','destruction','icy-veins','leveling','raid','single-target','aoe'},
  sources={

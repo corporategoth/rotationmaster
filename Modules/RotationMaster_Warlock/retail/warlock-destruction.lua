@@ -17,7 +17,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction',revision=6,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey='Default.Retail.Warlock.Destruction.Name',descriptionKey='Default.Retail.Warlock.Destruction.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Destruction in Midnight. Shows Blizzard's Assisted Combat suggestion (Immolate or Wither, Conflagrate, Chaos Bolt, Rain of Fire, Soul Fire, Malevolence), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Infernal in combat, an Imp between pulls unless you sacrificed your demon, Command Demon, Dark Pact, Unending Resolve. Havoc on a second target stays with you.",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'destruction','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

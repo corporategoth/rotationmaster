@@ -19,7 +19,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire.icyveins',revision=7,
  blocks={['forever.mage.boundaries']=3,['forever.mage.fire-moving']=2,['forever.mage.fire-aoe']=1,['forever.mage.wand']=3,['forever.mage.upkeep']=2},
- nameKey='Default.Forever.Mage.FireIcyVeins.Name',descriptionKey='Default.Forever.Mage.FireIcyVeins.Description',
+ nameKey="Fire leveling (Icy Veins)",descriptionKey="Icy Veins' Fire leveling build without Improved Scorch, an alternative to the recommended Fire premade, off by default: enable it and disable that one, or raise its priority. Pulls with Pyroblast, uses Fire Blast to spend Wake of Fire, Scorch as the mob closes (target health is hidden on Forever, so its low-target finishers are yours), then Frostfire Bolt (from 40) or Fireball. Same AoE, movement, wand and reminders as the Fire premade, without Combustion and Presence of Mind.",
  applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','icy-veins'},
  sources={

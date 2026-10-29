@@ -183,11 +183,26 @@ end
 -- @return table[]  Sections shaped { title, text }.
 function addon:WorkbenchWindowHelp()
     return {
-        section(L['Navigation'], L['Help.Window.navigation']),
-        section(L['Scale'], L['Help.Window.scale']),
-        section(L['Window controls'], L['Help.Window.controls']),
-        section(L['Apply / Discard'], L['Help.Window.drafts']),
-        section(L['Help'], L['Help.Window.help']),
+        section(
+            L['Navigation'],
+            L["Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page controls. Search and filters belong to the current page. Built In entries remain read-only; Duplicate creates an editable copy."]
+        ),
+        section(
+            L['Scale'],
+            L["Scale changes the whole workbench and its child windows from 70% to 130%. Drag the top-left slider or enter an integer percentage and press Enter. Escape restores the saved scale text. Drag the title bar to move; drag the lower-right corner to resize."]
+        ),
+        section(
+            L['Window controls'],
+            L["Close with X, Escape, or right-click inside the frontmost RM window. Child dialogs have their own close controls and follow the window scale. The language selector changes the workbench language; project links open a copyable address."]
+        ),
+        section(
+            L['Apply / Discard'],
+            L["Most settings and source editors keep drafts until Apply. Leaving a dirty page offers Apply, Discard or Cancel; invalid fields remain visible. Profile activation and confirmed replacement, action-bar binding and diagnostic capture have their own explicit actions. Help never applies or discards edits."]
+        ),
+        section(
+            L['Help'],
+            L["Gold question marks open full Help for their window, page or card. Hover controls for brief tips. Help does not save settings or commit pending text; spell and item fields keep their native reference tooltips."]
+        ),
     }
 end
 
@@ -315,12 +330,36 @@ end
 -- @return table[]  Entries shaped { id, title, text }.
 function addon:GetProfileOptionHelp()
     return {
-        { id = 'activate', title = L['Activate profile'], text = L['Help.Profiles.activate'] },
-        { id = 'copy', title = L['Copy from profile'], text = L['Help.Profiles.copy'] },
-        { id = 'reset', title = L['Reset current profile'], text = L['Help.Profiles.reset'] },
-        { id = 'delete', title = L['Delete'], text = L['Help.Profiles.delete'] },
-        { id = 'new_name', title = L['New profile name'], text = L['Help.Profiles.new_name'] },
-        { id = 'collections', title = L['New / Duplicate / Import / Compare'], text = L['Help.Profiles.collections'] },
+        {
+            id = 'activate',
+            title = L['Activate profile'],
+            text = L["Selecting a sidebar row only inspects that profile. Activate profile switches the live profile immediately, including its rotations and settings. The active profile shows Active profile instead. This operation does not wait for page Apply."],
+        },
+        {
+            id = 'copy',
+            title = L['Copy from profile'],
+            text = L["Choose a source to replace the active profile after confirmation. This copies settings and rotations into the active profile, even when the sidebar is inspecting a different profile. It does not switch to the source or rename the active profile. Cancel at the confirmation preserves the current profile."],
+        },
+        {
+            id = 'reset',
+            title = L['Reset current profile'],
+            text = L["Reset current profile replaces the active profile with its defaults after confirmation. Custom rotations and settings in it are replaced. The control is disabled while inspecting another profile. Reset is immediate after confirmation; there is no later page Apply to undo it."],
+        },
+        {
+            id = 'delete',
+            title = L['Delete'],
+            text = L["The red trash can permanently removes the selected inactive profile after confirmation. The active profile and Default cannot be deleted here. Selecting another profile does not delete or activate it."],
+        },
+        {
+            id = 'new_name',
+            title = L['New profile name'],
+            text = L["New and Duplicate open a named draft. Use a nonblank, unused name of at most 50 characters. Apply creates the profile; Cancel abandons creation. Creating a profile leaves the previously active profile active, so use Activate profile when you want to switch to the new copy."],
+        },
+        {
+            id = 'collections',
+            title = L['New / Duplicate / Import / Compare'],
+            text = L["The buttons below the list create a new profile, duplicate the selected profile, transfer profiles or compare saved settings. Search narrows the list without activating a profile. Import/Export shows the original name and lets you replace the selection or create a renamed copy. Importing a new profile opens a creation draft; Apply saves it. Replacing a selected profile happens when you confirm the import, and replacing the active profile updates its runtime settings. Compare does not apply changes."],
+        },
     }
 end
 
@@ -328,25 +367,45 @@ end
 -- @return table[]  Entries shaped { id, title, text }.
 function addon:GetIntegrationOptionHelp()
     return {
-        { id = 'lua_editor', title = L['Editor'], text = L['Help.Integrations.lua_editor'] },
-        { id = 'lua_line_numbers', title = L['Show line numbers'], text = L['Help.Integrations.lua_line_numbers'] },
-        { id = 'optional_addons', title = L['Optional addons'], text = L['Help.Integrations.optional_addons'] },
+        {
+            id = 'lua_editor',
+            title = L['Editor'],
+            text = L["Status pills show Not loaded, Supported, Disabled, Enabled or Selected. Click Enabled to Select or Disable. Disabling Selected chooses the sole enabled available editor, offers a choice when several exist, or leaves none selected. Enabling an editor when none is selected selects it automatically. Native is always available; its Syntax highlighting option is independent of editor selection. With no enabled editor, emergency plain text remains usable. Apply saves preferences for the next source-editor opening; Discard keeps saved settings. An open editor keeps its current provider."],
+        },
+        {
+            id = 'lua_line_numbers',
+            title = L['Show line numbers'],
+            text = L["Show line numbers controls the gutter in every condition and function code editor. It defaults to enabled. Apply saves the preference and updates open code panes; Discard keeps the saved setting. It does not change the Lua source or its line breaks."],
+        },
+        {
+            id = 'optional_addons',
+            title = L['Optional addons'],
+            text = L["Addon names open copyable official release and source links across available providers. Edition filtering follows declared support for the matching addon identity; unknown compatibility remains visible. An older release date alone does not prove incompatibility. Listed game-edition support describes publisher release evidence, not certification of the integration on your client. Some integrations have only historical or unverified releases. Not loaded means unavailable to RM; Supported identifies an available integration without an enable switch. Bundled libraries are excluded. Rotation Master does not install or enable other addons."],
+        },
         {
             id = 'preview_masque',
             title = L['Skin preview buttons with Masque'],
-            text = L['Help.Integrations.preview_masque'],
+            text = L["Enable separately installed Masque here and Apply. General > Preview then provides a Skin dropdown that updates the preview immediately. Masque owns the skin selection; /masque opens its other settings. The preview window keeps its native appearance. Missing or incompatible APIs and provider errors retain the native preview."],
         },
         {
             id = 'questie_enabled',
             title = L['Enable Questie integration'],
-            text = L['Help.Integrations.questie_enabled'],
+            text = L["Opt in to Questie callbacks for this profile, then Apply. Discard does not change the saved connection. Readiness, API compatibility, source-tested version and native acceptance are reported separately. The adapter retains recent update receipts only; they do not prove quest progress or completion and do not select rotations. No background polling is used."],
         },
-        { id = 'encounter_provider', title = L['Boss mods'], text = L['Help.Integrations.encounter_provider'] },
-        { id = 'top_panels', title = L['Top panels'], text = L['Help.Integrations.top_panels'] },
+        {
+            id = 'encounter_provider',
+            title = L['Boss mods'],
+            text = L["Enable DBM or BigWigs to feed the Boss Mod conditions (encounter, stage and ability timers), then Apply. Only one boss mod can be enabled; enabling one disables the other. RM listens to the boss mod's own callbacks and never polls it or changes its settings. With none enabled, or the enabled addon not loaded, Boss Mod conditions are unavailable. Supported on Classic Era, TBC and Classic progression clients."],
+        },
+        {
+            id = 'top_panels',
+            title = L['Top panels'],
+            text = L["Rotation Master publishes a LibDataBroker data source with the active rotation, a tooltip and click menus. Titan Panel and other LibDataBroker displays show it without further setup: in Titan, add Rotation Master from the plugin menu. Panel absence has no effect on rotation selection."],
+        },
         {
             id = 'native_highlighting',
             title = L['Syntax highlighting'],
-            text = L['Help.Integrations.native_highlighting'],
+            text = L["Syntax highlighting applies only to the Native Lua editor. Apply saves this preference for the next source-editor opening; it does not switch a selected external editor. Show line numbers under the editor heading applies to every provider."],
         },
     }
 end
@@ -416,7 +475,7 @@ function addon:WorkbenchInteractionHelp(kind)
 
     result[#result + 1] = section(
         L['Help and saving'],
-        L['The question mark explains the visible controls. With condition fields open, it adds that condition’s help below the fields. Undo / Redo affect the draft. Apply saves; Discard or Cancel abandons draft changes. Red borders mark invalid or incomplete data.']
+        L["The question mark opens full Help for its subject. Hover controls for brief tips. Undo / Redo affect the draft. Apply saves; Discard or Cancel abandons draft changes. Red borders mark invalid or incomplete data."]
     )
 
     return result
@@ -450,12 +509,18 @@ function addon:WorkbenchPageHelp(topic)
                 L['Editing code'],
                 L['Undo and Redo edit the Lua body. Reset restores the saved body or new-function template and can be undone. Check syntax executes no custom Lua. Apply saves the body and metadata together; Discard abandons the draft. Leaving with changes offers Apply, Discard or Cancel.']
             ),
-            section(L['Function dependencies'], L['Help.Functions.bindings']),
+            section(
+                L['Function dependencies'],
+                L["Choose a source helper and its name in this Lua body, such as custom.ready or utils.getCached. These are dependency records even when the source and local names match; a different local name is an optional alias. The records identify helpers for loading, export and availability checks. Accepting a completion records the dependency automatically. Typing a call does not infer a dependency: add its qualified name explicitly or accept a completion. WoW globals and existing addon APIs remain directly available. Namespaces are private to this callback and do not supply self. Pass a method receiver explicitly in a namespaced dot call; object:method(x) is shorthand for object.method(object, x). Click the bound source name to open its function; the adjacent arrow changes the mapping. Pending edits offer Apply, Discard or Cancel before navigation. Renaming a function, namespace or binding does not rewrite code. Missing, disabled or invalid dependencies keep consumers unavailable."]
+            ),
             section(
                 L['Import/Export'],
                 L['Include custom function dependencies exports their source with the selected definition. Without it, the bundle records required helper identities and versions. Review source shows every imported Lua body. Resolve each original name and destination with Reuse, Replace or a new identifier. Apply import saves the complete reviewed bundle and can register imported Lua. Only apply code you trust.']
             ),
-            section(L['Window controls'], L['Help.Window.controls']),
+            section(
+                L['Window controls'],
+                L["Close with X, Escape, or right-click inside the frontmost RM window. Child dialogs have their own close controls and follow the window scale. The language selector changes the workbench language; project links open a copyable address."]
+            ),
         }
     end
 
@@ -470,7 +535,7 @@ function addon:WorkbenchPageHelp(topic)
         Rotations = L['Search or filter the rotation roster, then select a rotation. Blue Built In rotations use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation.'],
     }
 
-    description.Integrations = L['Help.Integrations.overview']
+    description.Integrations = L["Review supported addons, detected versions and status by integration type. Expand or collapse each integration group. Click an addon name to choose a copyable release or source link. Configure editor and optional provider preferences here; Apply saves preferences for this profile and Discard keeps saved settings."]
     local result = { section(L['Using this page'], description[topic] or L['Optional addon settings.']) }
 
     if topic ~= 'Profiles' and topic ~= 'Rotations' and topic ~= 'About' then
@@ -526,7 +591,10 @@ function addon:WorkbenchPageHelp(topic)
             result[#result + 1] = entry
         end
     elseif topic == 'Announces' then
-        result[#result + 1] = section(L['Editing settings'], L['Help.Announces.editing'])
+        result[#result + 1] = section(
+            L['Editing settings'],
+            L["Announcement details stay always expanded while editing. Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid fields must be corrected before Apply; Discard abandons pending changes. Searchable selectors open on click and filter as you type. The page Help icon explains every option and text substitution."]
+        )
     elseif topic ~= 'Profiles' and topic ~= 'About' then
         result[#result + 1] = section(
             L['Editing settings'],
@@ -534,7 +602,11 @@ function addon:WorkbenchPageHelp(topic)
         )
     end
 
-    result[#result + 1] = section(L['Window controls'], L['Help.Window.controls'])
+    result[#result + 1] = section(
+        L['Window controls'],
+        L["Close with X, Escape, or right-click inside the frontmost RM window. Child dialogs have their own close controls and follow the window scale. The language selector changes the workbench language; project links open a copyable address."]
+    )
+
     return result
 end
 

@@ -19,7 +19,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration.hekili',revision=6,
  blocks={['mop.shaman.manual']=3,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
- nameKey='Default.MoP.Shaman.Restoration.Hekili.Name',descriptionKey='Default.MoP.Shaman.Restoration.Hekili.Description',
+ nameKey="Health ladder (Hekili)",descriptionKey="Off by default; same switch as the recommended Restoration premade, so enable it and disable that one to use it. Hekili's list keeps Earth Shield and Riptide on your target and Healing Stream and Healing Rain going whenever they are down, then heals by the average health of your group within 40 yards: Chain Heal below 80%, Healing Wave on a target below 70%, Greater Healing Wave below 60%, Healing Surge below 40%, with Healing Tide, Ancestral Guidance and Mana Tide on the same ladder. An attackable target gets damage plus Earth Shock.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'restoration','healer','caster','endgame','hekili'},
  sources={{url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/ShamanRestoration.simc',title='Hekili (MoP fork): Restoration Shaman priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},

@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged',revision=5,
  blocks={['era.hunter.boundaries']=3,['era.hunter.dead-zone']=3,['era.hunter.opening']=3,['era.hunter.solo']=2,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1,['era.hunter.cooldowns']=1},
- nameKey='Default.Era.Hunter.Ranged.Name',descriptionKey='Default.Era.Hunter.Ranged.Description',
+ nameKey="Ranged",descriptionKey="Every Hunter from level 1 to 60, all talent trees. Pull with Hunter's Mark, Aimed Shot and Auto Shot. Solo, the pet tanks: your own Serpent Sting, then Aimed Shot, Arcane Shot and Multi-Shot only while mana is above half, Concussive Shot to kite before you have a pet. In a group, Aimed Shot and Multi-Shot right after an Auto Shot so it is never delayed, Serpent Sting outside raids, Arcane Shot only before Aimed Shot or on a dying target. Melee buttons when an enemy is too close, instants while moving, Multi-Shot and Volley on three or more enemies. Reminders: Hawk (Monkey before it), Trueshot Aura, pet care, Rapid Fire, Bestial Wrath and racials on elites and in instances, Intimidation and Feign Death. Traps, Wing Clip, Feed Pet, Tranquilizing Shot and positioning stay with you.",
  applicability={families={'era'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','leveling','endgame','icy-veins','warcraft-tavern'},
  sources={

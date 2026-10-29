@@ -25,7 +25,7 @@ local clearcasting,soul,surge=buff(263725),buff(451038),buff(365362)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=8,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
- nameKey='Default.Retail.Mage.ArcaneGuide.Name',descriptionKey='Default.Retail.Mage.ArcaneGuide.Description',
+ nameKey="Reference (Icy Veins and SimulationCraft)",descriptionKey="Reference only, off by default: the guides' Arcane priority. Arcane Salvo and Clearcasting are hidden from addons in Midnight combat (only Arcane Charges stay visible), so it cannot run there; mana is hidden on Retail, so the low-mana Evocation is yours; read it, or clone it to experiment. Pulls with Arcane Blast. Sunfury: Arcane Missiles on Clearcasting below 12 Salvo, Prismatic Bolt outside Arcane Soul, Arcane Barrage at four charges with 12 Salvo and Clearcasting or 25 Salvo, or with Arcane Soul at any charge count, Prismatic Bolt, Arcane Orb below three charges, Arcane Pulse on three enemies or at no charges, Arcane Blast. Spellslinger (Splintering Sorcery known): Prismatic Bolt, Orb on packs, Barrage at 20 Salvo (only at four charges against two or more enemies), Missiles on Clearcasting below 15 Salvo, Orb and Pulse below three charges (no Pulse in Arcane Surge), Arcane Blast. Arcane Barrage when Blast cannot be cast. Reminders: Arcane Surge, Touch of the Magi after a Barrage or Prismatic Bolt in or well before Surge, Presence of Mind at no charges after a Barrage, plus the Assisted premade's reminders.",
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'arcane','caster','reference','icy-veins','simulationcraft'},
  sources={

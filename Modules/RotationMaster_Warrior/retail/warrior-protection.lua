@@ -17,7 +17,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection',revision=6,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1},
- nameKey='Default.Retail.Warrior.Protection.Name',descriptionKey='Default.Retail.Warrior.Protection.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat suggestion for your damage and threat, and stops while you cast or have no enemy targeted. The suggestion never casts Shield Block or Ignore Pain, so both are reminders whenever they are usable and your target is attacking you; the game hides rage, so Ignore Pain will light more often than you need it. Other reminders: Avatar, Demoralizing Shout and Champion's Spear in combat, Shield Wall and Last Stand whenever they are ready in combat (health is hidden on Retail, so when to use them is your call), Taunt in a group when your target attacks someone else, Battle Shout between pulls, Pummel.",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'protection','tank','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

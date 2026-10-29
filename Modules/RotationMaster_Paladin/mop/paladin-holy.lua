@@ -23,7 +23,7 @@ local function onFocus(...)local list={};for i,id in ipairs({...})do list[i]={ty
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=6,
  blocks={['mop.paladin.boundaries']=3,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2},
- nameKey='Default.MoP.Paladin.Holy.Name',descriptionKey='Default.MoP.Paladin.Holy.Description',
+ nameKey="Recommended",descriptionKey="For Holy, from level 10 in the Holy specialization. With a friend targeted it heals: at 3 Holy Power (or Divine Purpose) Light of Dawn when three people near you are hurt, else Eternal Flame on a target without it, else Word of Glory; Holy Shock on cooldown; Infusion of Light into Holy Radiance or Divine Light, three Selfless Healer stacks into Holy Radiance or Flash of Light; Flash of Light below 35%; Holy Radiance for a hurt group; Divine Light, then Holy Light to top off. With an enemy targeted it deals damage: Holy Shock, Judgment, Crusader Strike, Holy Prism, Execution Sentence, Hammer of Wrath, Denounce. Reminders: Seal of Insight when another seal (except Righteousness) or none is active, blessings, Rebuke, Beacon of Light and Sacred Shield on your focus (set the tank as focus), Divine Plea below 60% mana, Light's Hammer and your healing cooldowns when three people are below 70%, Lay on Hands on a dying target. Choosing whom to heal, dispels and mouseover healing stay with you.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'holy','healer','leveling','icy-veins','warcraft-tavern'},
  sources={

@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 era/blocks.lua
 era/paladin-retribution.lua
 era/paladin-retribution-twist.lua

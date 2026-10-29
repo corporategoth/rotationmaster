@@ -28,7 +28,8 @@ class BundleTests(unittest.TestCase):
         for bundle in self.bundles:
             self.assertTrue(bundle.module.startswith('RotationMaster_'), bundle.module)
             self.assertTrue(bundle.directory.is_dir(), bundle.directory)
-            self.assertGreater(len(L.english(bundle)), 0, f'{bundle.name} holds no text')
+            if bundle.is_class:
+                self.assertGreater(len(L.english(bundle)), 0, f'{bundle.name} holds no text')
 
     def test_every_bundle_key_is_translated_in_every_language_from_the_current_english(self):
         problems = []
@@ -62,6 +63,14 @@ class BundleTests(unittest.TestCase):
 
     def test_each_bundle_is_a_load_on_demand_addon_listing_every_language(self):
         for bundle in self.bundles:
+            if bundle.is_class:
+                xml = (bundle.directory / 'locales.xml').read_text(encoding='utf-8')
+                listed = [line.split('"')[1] for line in xml.splitlines() if '<Script file=' in line]
+                self.assertEqual(listed[-1], 'Locales\\enUS.lua')
+                for locale in L.LOCALES:
+                    self.assertIn(f'Locales\\{locale}.lua', listed)
+                    self.assertTrue(bundle.path(locale).exists())
+                continue
             toc = L.toc_path(bundle).read_text(encoding='utf-8')
             self.assertIn('## LoadOnDemand: 1', toc, bundle.module)
             self.assertIn('## Dependencies: RotationMaster', toc, bundle.module)

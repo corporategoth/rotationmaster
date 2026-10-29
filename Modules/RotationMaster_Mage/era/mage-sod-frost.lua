@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost',revision=6,
  blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.balefire-brain-freeze']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
- nameKey='Default.SoD.Mage.Frost.Name',descriptionKey='Default.SoD.Mage.Frost.Description',
+ nameKey="Frost (SoD)",descriptionKey="Season of Discovery Frost from level 10, chosen when Frost is your main tree. Fingers of Frost goes into Ice Lance at three or more of your Glaciate stacks, otherwise into Deep Freeze; Balefire Bolt on a Brain Freeze proc and otherwise when safe, never at four Balefire stacks or more; Living Bomb and Living Flame when engraved; Spellfrost Bolt, else Frostfire Bolt, else Frostbolt. Ice Lance, Frozen Orb, Living Bomb and Fire Blast while moving; Frozen Orb, Living Flame, Living Bomb, Blizzard and Cone of Cold on packs. Reminders: Frozen Orb, Icy Veins, Cold Snap, armor, mana gems and the other Mage reminders. Queuing a spell as a bolt lands stays with you.",
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'frost','raid','single-target','aoe','season-of-discovery'},
  sources={

@@ -76,7 +76,7 @@ local function bind(namespace)
     return true
 end
 
-_G.RotationMasterBuiltIns = { Bind = bind }
+_G.RotationMasterBuiltIns = { Bind = bind, localeName = addon_name }
 
 -- Reports whether a value from the client may be inspected; guards the class token read from UnitClass.
 -- @param platform table|nil  The Platform adapter; nil makes the answer falsy.

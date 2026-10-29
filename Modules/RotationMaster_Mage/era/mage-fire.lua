@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire',revision=5,
  blocks={['era.mage.boundaries']=3,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
- nameKey='Default.Era.Mage.Fire.Name',descriptionKey='Default.Era.Mage.Fire.Description',
+ nameKey="Fire",descriptionKey="Fire from level 10 to 60, chosen when you have Fire points and none in Frost, or Fire is your main tree. Pyroblast (else Fireball) opens; Pyroblast after Presence of Mind; Scorch keeps five Fire Vulnerability stacks with Improved Scorch on targets that will live; Fire Blast and Scorch finish; Fireball fills. Three or more engaged enemies: Blast Wave, Flamestrike, Arcane Explosion, Cone of Cold, Blizzard. Reminders: Combustion at five Scorch stacks on elites and long fights, armor, Arcane Intellect, mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, Remove Lesser Curse, Ice Block, Presence of Mind. Off by default: weaving Fire Blast whenever it is ready.",
  applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'fire','leveling','raid','single-target','aoe'},
  sources={

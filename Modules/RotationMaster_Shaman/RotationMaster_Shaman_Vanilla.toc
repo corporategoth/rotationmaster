@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 era/blocks.lua
 era/shaman-enhancement.lua
 era/shaman-enhancement-warcrafttavern.lua

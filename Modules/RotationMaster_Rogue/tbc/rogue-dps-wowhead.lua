@@ -15,7 +15,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowhead',revision=7,
  blocks={['tbc.rogue.opening']=4,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
- nameKey='Default.TBC.Rogue.DPS.Wowhead.Name',descriptionKey='Default.TBC.Rogue.DPS.Wowhead.Description',
+ nameKey="Melee DPS (Wowhead)",descriptionKey="Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and reminders as the simulator version, but Slice and Dice starts from one combo point and every five-point finisher is Eviscerate: no Rupture. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you. An alternative to the recommended simulator melee DPS premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'tbc'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/rogue/dps-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Rogue DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-02-10'},

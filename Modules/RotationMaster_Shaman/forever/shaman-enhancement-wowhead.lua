@@ -20,7 +20,7 @@ local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement.wowhead',revision=6,
  blocks={['forever.shaman.manual-target']=2,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1},
- nameKey='Default.Forever.Shaman.Enhancement.Wowhead.Name',descriptionKey='Default.Forever.Shaman.Enhancement.Wowhead.Description',
+ nameKey="Enhancement, mana-efficient (Wowhead)",descriptionKey="Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work, Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in the rotation (shocks pull and interrupt), and in groups or on packs Searing Totem with Fire Nova on cooldown. Same imbue, shield and interrupt reminders as the Icy Veins premade. Choose it instead of that premade if mana runs out. An alternative to the recommended Enhancement premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','aoe','wowhead','mobalytics'},
  sources={{url='https://www.wowhead.com/forever/guide/classes/shaman/enhancement/level-30-dps-overview',title='Wowhead: Forever level 30 Enhancement Shaman',reviewedAt='2026-10-23',revision='2026-10-17'},

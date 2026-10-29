@@ -22,7 +22,7 @@ local function spell(id,action,conditions,ranked)return{id=id,type='spell',actio
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.druid.restoration',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=2},
- nameKey='Default.SoD.Druid.Restoration.Name',descriptionKey='Default.SoD.Druid.Restoration.Description',
+ nameKey="Restoration (SoD)",descriptionKey="Season of Discovery Restoration, chosen when Lifebloom is engraved (or Restoration is your main tree without another legs rune). Heals your current friendly target: instant Healing Touch after Nature's Swiftness or Fury of Stormrage, Wild Growth when two or more nearby are hurt, Swiftmend on your HoT for Efflorescence or below 40%, three Lifebloom stacks refreshed with a second left, Rejuvenation, Regrowth below 60%, Nourish, rank 4 Healing Touch. On an enemy: Sunfire, Moonfire, Wrath. Reminders: Tree of Life and Survival Instincts in heavy moments, Nature's Swiftness, Tranquility, Innervate, Rebirth, Revive, dispels. Choosing whom to heal stays with you.",
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','leveling','endgame','restoration','healer','group','icy-veins','warcraft-tavern'},
  sources={

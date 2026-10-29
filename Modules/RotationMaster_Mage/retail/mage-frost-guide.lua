@@ -23,7 +23,7 @@ local frozenRain=all(buff(270232),engaged(3))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost.guide',revision=7,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
- nameKey='Default.Retail.Mage.FrostGuide.Name',descriptionKey='Default.Retail.Mage.FrostGuide.Description',
+ nameKey="Reference (Icy Veins and SimulationCraft)",descriptionKey="Reference only, off by default: the guides' Frost priority for each hero tree. Procs, Freezing stacks and cooldowns are hidden in Midnight combat, so it cannot run there. Pulls with Frostfire Bolt or Frostbolt. Frostfire (Frostfire Bolt known): Glacial Spike when ready, Comet Storm on one or two enemies, Flurry on Brain Freeze without Thermal Void, Ice Lance on two Fingers of Frost, Ray of Frost, Frozen Orb, Blizzard on Freezing Rain with three enemies, Ice Lance on Fingers of Frost with Thermal Void or at twelve Freezing, Flurry, Ice Nova or Cone of Cold on five, then Glacial Spike or Frostfire Bolt. Spellslinger: Comet Storm, Flurry on Brain Freeze, Ice Lance on two Fingers, Frozen Orb, Glacial Spike when ready, Blizzard on Freezing Rain, Ice Lance on Fingers of Frost or six Freezing, Ray of Frost, Flurry, Ice Nova or Cone of Cold on four, Blizzard on seven, then Glacial Spike or Frostbolt. Ice Lance while moving. Reminders: Summon Water Elemental, Ice Barrier and the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'frost','caster','reference','icy-veins','simulationcraft'},
  sources={

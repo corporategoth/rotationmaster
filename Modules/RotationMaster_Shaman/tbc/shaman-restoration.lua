@@ -14,7 +14,7 @@ local function group()return{type='GROUP'}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.restoration',revision=4,
  blocks={['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1},
- nameKey='Default.TBC.Shaman.Restoration.Name',descriptionKey='Default.TBC.Shaman.Restoration.Description',
+ nameKey="Restoration",descriptionKey="Healing for the Restoration talent tree, on your friendly target (or yourself with no target): Nature's Swiftness and Healing Wave or Lesser Healing Wave in emergencies, Cure Poison and Cure Disease, Earth Shield on your focus, Chain Heal when three nearby allies are hurt, Healing Wave otherwise. With a hostile target it switches to Flame Shock and Lightning Bolt for soloing. Reminders: Water Shield, Earth Shield on your focus (set the tank as focus), Mana Tide, Mana Spring and Strength of Earth in a group, Bloodlust/Heroism. Choosing whom to heal and which rank stays with you.",
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
  tags={'leveling','endgame','restoration','healer','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/tbc-classic/restoration-shaman-healer-pve-rotation-cooldowns-abilities',title='Icy Veins: Restoration Shaman rotation',reviewedAt='2026-10-23',revision='2026-01-12'},

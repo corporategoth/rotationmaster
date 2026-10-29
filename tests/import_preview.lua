@@ -316,12 +316,17 @@ test('tooltips and help tell the two actions apart: what you would get, and what
     local d = a:ShowRotationTransfer(0, reference(a))
 
     local compare, preview, inspect =
-        L['Help.Transfers.compare'], L['Help.Transfers.preview'], L['Help.Transfers.inspect']
+        L["Compare import shows what would change in the entry you are replacing, side by side with its current content. Nothing is saved."],
+        L["Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."],
+        L["Check import lists problems with the text instead of its content: why it cannot be imported and any unsupported data. It does not import or change anything."]
 
     assert(
-        compare ~= 'Help.Transfers.compare'
-            and preview ~= 'Help.Transfers.preview'
-            and inspect ~= 'Help.Transfers.inspect',
+        compare
+            ~= "Compare import shows what would change in the entry you are replacing, side by side with its current content. Nothing is saved."
+            and preview
+                ~= "Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."
+            and inspect
+                ~= "Check import lists problems with the text instead of its content: why it cannot be imported and any unsupported data. It does not import or change anything.",
         'help texts are defined'
     )
 
@@ -337,7 +342,7 @@ test('tooltips and help tell the two actions apart: what you would get, and what
     assert(briefs.preview(d) == compare and briefs.inspect == inspect)
     d.destination:Click()
     assert(d.preview.tooltip == preview and briefs.preview(d) == preview)
-    local general = L['Help.Transfers.rotation_preview']
+    local general = L["With Replace selected entry ticked, the button reads Compare import and shows what would change in that rotation. For a new named copy it reads Preview import and shows everything the import contains, read-only, as the rotation editor shows it. Neither saves anything. Import is enabled only for a ready preview or comparison; changing the text requires another one. Check import shows read-only diagnostics, including unsupported data that prevents import."]
 
     assert(
         general:find('Compare import', 1, true)
@@ -347,8 +352,11 @@ test('tooltips and help tell the two actions apart: what you would get, and what
     )
 
     assert(
-        L['Help.Transfers.preview_view']:find('read%-only')
-            and L['Help.Transfers.preview_view_brief'] ~= 'Help.Transfers.preview_view_brief'
+        L["This view shows the rotation as it would be imported: name, specializations, switch condition, steps and cooldowns. It is read-only and works on a copy; it saves and changes nothing. Close it to choose the destination and import from the transfer dialog. A changed text, closed transfer or changed profile retires this Help."]:find(
+            'read%-only'
+        )
+            and L["Explain this read-only preview of the incoming rotation."]
+                ~= "Explain this read-only preview of the incoming rotation."
     )
 end)
 
@@ -373,10 +381,21 @@ test('the help tooltip of the first button is read when it opens, so it follows 
     }
 
     d.preview.scripts.OnEnter(d.preview)
-    assert(lines[#lines] == L['Help.Transfers.compare'], tostring(lines[#lines]))
+
+    assert(
+        lines[#lines]
+            == L["Compare import shows what would change in the entry you are replacing, side by side with its current content. Nothing is saved."],
+        tostring(lines[#lines])
+    )
+
     d.destination:Click()
     d.preview.scripts.OnEnter(d.preview)
-    assert(lines[#lines] == L['Help.Transfers.preview'], tostring(lines[#lines]))
+
+    assert(
+        lines[#lines]
+            == L["Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."],
+        tostring(lines[#lines])
+    )
 end)
 
 test('Compare import (replacing) still shows the comparison and never the full view', function()

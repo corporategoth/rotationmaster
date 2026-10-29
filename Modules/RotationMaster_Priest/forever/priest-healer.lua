@@ -28,7 +28,7 @@ local function dispel(kind)return{type='DISPELLABLE',unit='target',debufftype=ki
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=7,
  blocks={['forever.priest.boundaries']=3,['forever.priest.upkeep']=1,['forever.priest.wand']=2},
- nameKey='Default.Forever.Priest.Healer.Name',descriptionKey='Default.Forever.Priest.Healer.Description',
+ nameKey="Discipline and Holy healing",descriptionKey="Group healing once Discipline or Holy is your main talent tree and you do not know Shadowform. Heals your current friendly target: before the pull Power Word: Shield, Prayer of Mending and Renew; Dispel Magic and Abolish or Cure Disease; Prayer of Mending; Holy Nova on Holy Purpose; Penance; Renew when missing; Heal (Lesser Heal before it). On an enemy: Shadow Word: Pain, Holy Fire, Penance, Smite, wand. Reminders: Inner Fire, Fortitude, Divine Spirit, Power Infusion on another player, Inner Focus in combat and the racial spells. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing; emergency heals, Prayer of Healing, Binding Heal, Greater and Flash Heal, Desperate Prayer and Dark Sacrifice are your call. You pick who to heal and the rank; a Discipline healer before Penance (20–29) selects it by hand.",
  applicability={families={'forever'},actionContext='player',class='PRIEST'},
  tags={'discipline','holy','healer','group','icy-veins','wowhead'},
  sources={

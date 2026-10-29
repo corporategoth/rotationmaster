@@ -927,7 +927,7 @@ function addon:HandleCommand(str)
         addon:print(L["/rm enable              - Enable battle rotation."])
         addon:print(L["/rm toggle              - Toggle between enabled and disabled."])
         addon:print(L["/rm current             - Print out the name of the current rotation."])
-        addon:print(L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."])
+        addon:print(L["/rm set [auto||profile]  - Switch to a specific rotation, or use automatic switching again."])
 
         addon:print(
             L["                          Manual choices are remembered for this character, specialization and action context."]
@@ -946,9 +946,9 @@ function addon:HandleCommand(str)
         addon:print(L["/rm check               - Check the database integrity."])
         addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
-        addon:print(L['/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations.'])
+        addon:print(L["/rm perf cpu||runtime||memory [seconds||stop||report] - Capture performance observations."])
         addon:print(L['/rm perf probe - Check native profiler access.'])
-        addon:print(L['/rm perf engine [lean|standard] - Show or choose the rotation evaluation engine.'])
+        addon:print(L["/rm perf engine [lean||standard] - Show or choose the rotation evaluation engine."])
     elseif cmd == "config" then
         self:ShowConfig("Rotations")
     elseif cmd == "errors" then

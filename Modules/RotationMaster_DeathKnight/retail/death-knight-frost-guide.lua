@@ -28,7 +28,7 @@ aoe[#aoe+1]=spell('fguide-aoe-obliterate',49020);aoe[#aoe+1]=spell('fguide-aoe-f
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost.guide',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey='Default.Retail.DeathKnight.FrostGuide.Name',descriptionKey='Default.Retail.DeathKnight.FrostGuide.Description',
+ nameKey="Reference (Icy Veins and SimulationCraft)",descriptionKey="Reference only, off by default: the guides' Frost priority. Killing Machine, Rime and Razorice are hidden in Midnight combat, so it cannot run there; runic power is hidden on Retail, so there is no cap check. Obliterate on two Killing Machines or one with three runes, Frost Strike into five Razorice with Shattering Blade, Howling Blast on Rime, Obliterate on Killing Machine, Frost Strike, Obliterate; three or more enemies swap in Frostscythe and Glacial Advance; Howling Blast out of melee. Reminders: Remorseless Winter, Pillar of Frost, Breath of Sindragosa and Frostwyrm's Fury in Pillar, Reaper's Mark, Raise Dead, Empower Rune Weapon at two charges, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'frost','melee','reference','icy-veins','simulationcraft'},
  sources={

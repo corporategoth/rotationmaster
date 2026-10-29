@@ -14,7 +14,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey='Default.Retail.DemonHunter.Havoc.Name',descriptionKey='Default.Retail.DemonHunter.Havoc.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Havoc. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what the game's assistant leaves to you: Metamorphosis and The Hunt in combat, Vengeful Retreat if you have Inertia or Exergy, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call. Movement, Darkness and trinkets stay with you.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'havoc','melee','assisted-combat'},
  sources={

@@ -16,7 +16,7 @@ local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INT
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey='Default.Retail.Druid.Guardian.Name',descriptionKey='Default.Retail.Druid.Guardian.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Guardian. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; Assisted Combat plays for damage only. Alongside it, reminders for what it leaves to you: Berserk (or Incarnation) and Convoke the Spirits in combat, Ironfur, Frenzied Regeneration, Survival Instincts, Barkskin and your racial cooldown whenever they are ready in combat, Skull Bash on an interruptible cast, and Bear Form and Mark of the Wild between pulls. Enemy casts are hidden in combat, so Skull Bash lights only where the game shows them; health and rage are hidden on Retail, so when to use the defensives is your call and Ironfur cannot wait for a rage threshold.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'guardian','tank','assisted-combat'},
  sources={

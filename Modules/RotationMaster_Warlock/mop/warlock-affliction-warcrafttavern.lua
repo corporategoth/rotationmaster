@@ -17,7 +17,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.affliction.warcrafttavern',revision=7,
  blocks={['mop.warlock.boundaries']=4,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1,['mop.warlock.affliction-upkeep']=1,
   ['mop.warlock.affliction-dots']=3,['mop.warlock.affliction-filler']=1},
- nameKey='Default.MoP.Warlock.Affliction.WarcraftTavern.Name',descriptionKey='Default.MoP.Warlock.Affliction.WarcraftTavern.Description',
+ nameKey="Pool Haunt (Warcraft Tavern)",descriptionKey="Off by default. Warcraft Tavern's and Method's shard policy: the same DoT upkeep as the recommended Affliction premade, but Haunt is saved for four shards or Dark Soul: Misery, and below 20% Soulburn and Soul Swap refresh every DoT whenever you have a shard. Enable it and disable the recommended Affliction premade to use it.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'affliction','dps','caster','ranged','leveling','endgame','warcraft-tavern','method'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-affliction-warlock-rotations-cooldowns/',title='Warcraft Tavern: Affliction Warlock rotation (MoP)',reviewedAt='2026-10-23'},

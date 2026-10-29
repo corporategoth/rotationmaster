@@ -19,7 +19,7 @@ local function spell(id,action,conditions,ranked)return{id=id,type='spell',actio
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration',revision=5,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=2},
- nameKey='Default.Era.Druid.Restoration.Name',descriptionKey='Default.Era.Druid.Restoration.Description',
+ nameKey="Restoration",descriptionKey="Restoration from level 10 when Restoration is your main talent tree. Heals your current friendly target: Healing Touch after Nature's Swiftness, Swiftmend below 40% on your own HoT, Rejuvenation and Regrowth kept rolling, Regrowth as the main heal with Improved Regrowth, full Healing Touch below 45% or on a Nature's Grace proc, rank 4 Healing Touch otherwise. On an enemy: Moonfire, Insect Swarm and Wrath. Silent in Cat or Bear Form. Reminders: Mark of the Wild, Omen of Clarity, Nature's Swiftness, Tranquility, Innervate, Rebirth, poison and curse removal. Choosing whom to heal stays with you.",
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','restoration','healer','group','icy-veins','wowhead'},
  sources={

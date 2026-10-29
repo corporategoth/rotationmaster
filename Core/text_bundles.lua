@@ -9,24 +9,9 @@
 
 local addon_name, addon = ...
 
--- Load-on-demand text. Most of Rotation Master's English (and its ten translations) is read only when a window is
--- opened, a report is written or a condition is described, never while the game is loading. Keeping all of it in the
--- one AceLocale table makes every player carry it: past 4096 entries the table's hash part doubles (about 177 KB
--- resident, for every player, whatever language they play in).
---
--- The text is split into bundles (Locales/bundles.json): each is a load-on-demand add-on under Modules/ that holds the
--- English and the ten translations of its keys by stable ID, in an AceLocale application of its own. This file makes
--- that invisible to the rest of the addon: `L["English text"]` reads the same wherever the text lives. A read that the
--- main table cannot answer asks which bundle owns the key (Data/text_bundle_index.lua) and loads that add-on the first
--- time. The bundle's files turn their ID tables into `key = text` entries as they run, exactly as the main catalog does;
--- this file then moves every entry into the main table and releases the bundle's own table, so afterwards the bundle
--- is simply part of `L`. A bundle that cannot load (disabled, missing) answers with the key, which is the English text.
--- Nothing a bundle holds may be read while the game is loading: tests/text_bundles.lua proves a normal start loads
--- none, and tools/locales.py (check) proves a key lives in exactly one catalog.
---
--- An English game has no translation to apply: a key that is its own English needs no bundle at all. Only the keys read
--- under another key (the `symbolic` list of the index, such as "Help.Effects.delete", "TalentTree.Arms" or a key whose
--- English doubles its pipes) load one, for their English.
+-- General text is loaded at startup. Class-specific Built In names and descriptions live in each class module's
+-- locale files. A translated game can load the owning class on the first missing-key read; English text is already
+-- the lookup key. An unavailable class falls back to the key. Legacy text modules are empty compatibility modules.
 local ace = LibStub("AceLocale-3.0")
 local L = ace:GetLocale(addon_name)
 local mainMeta = getmetatable(L)

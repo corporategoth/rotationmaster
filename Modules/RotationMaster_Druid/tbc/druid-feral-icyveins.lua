@@ -16,7 +16,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.icyveins',revision=5,
  blocks={['tbc.druid.boundaries']=4,['tbc.druid.upkeep']=1,['tbc.druid.feral-cooldowns']=2,['tbc.druid.cat-opening']=2,
   ['tbc.druid.cat-builders']=1,['tbc.druid.bear-core']=2,['tbc.druid.feral-humanoid']=2},
- nameKey='Default.TBC.Druid.Feral.IcyVeins.Name',descriptionKey='Default.TBC.Druid.Feral.IcyVeins.Description',
+ nameKey="Feral (Icy Veins, Warcraft Tavern & simulator)",descriptionKey="Cat and bear for the Feral tree, following your form. Cat: stealth opener (Pounce, Ravage or Shred), Faerie Fire (Feral), Rip at four combo points on a target that lives, Ferocious Bite between Rips without Clearcasting, Mangle kept up, Shred from behind or Mangle/Claw when the target is on you. Bear: Faerie Fire, Lacerate saved before it drops, Demoralizing Roar unless a warrior's Shout is up, Swipe for packs, Mangle, five Lacerates, Swipe. In caster form it suggests Cat (or Bear) Form. Reminders: Mark, Thorns, Omen, Maul with spare rage, Tiger's Fury before a pull, Frenzied Regeneration. Powershifting is an optional step that starts off (it needs a powershift macro).",
  applicability={families={'tbc'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','feral','melee','tank','single-target','aoe','icy-veins','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/tbc-classic/feral-druid-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2026-01-12'},

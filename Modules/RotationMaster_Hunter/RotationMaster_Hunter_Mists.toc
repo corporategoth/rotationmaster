@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 mop/blocks.lua
 mop/hunter-unspecialized.lua
 mop/hunter-beast-mastery.lua

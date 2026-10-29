@@ -229,9 +229,9 @@ addon:RegisterCondition("WEAPON_TYPE", {
     -- Builds the help page for the WEAPON_TYPE condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.WEAPON_TYPE"]))
+        frame:AddChild(helpers.CreateText(L["What is equipped in the main hand, off hand or ranged slot: nothing, any weapon, a one-handed, two-handed or ranged weapon, a shield, an off-hand item, or one weapon type such as Daggers. Types are read from the item's class and subclass, so they work in every language. The answer is cached until your equipment changes."]))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.WEAPON_TYPE.examples"]))
+        frame:AddChild(helpers.CreateText(L["Dual wielding: off hand holds any weapon. Titan's Grip: off hand holds a two-handed weapon. Backstab and Ambush: main hand holds Daggers. Shield Slam or a tank set: off hand holds a shield. The ranged slot exists only before Mists of Pandaria; elsewhere, and while item data is still loading, this condition is unavailable, including under NOT."]))
     end,
 })
 

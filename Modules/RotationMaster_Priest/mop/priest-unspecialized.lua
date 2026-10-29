@@ -16,7 +16,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.priest.unspecialized',revision=5,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2},
- nameKey='Default.MoP.Priest.Unspecialized.Name',descriptionKey='Default.MoP.Priest.Unspecialized.Description',
+ nameKey="Unspecialized",descriptionKey="For levels 1 to 9, or any priest who has not chosen a specialization yet. On an enemy: Shadow Word: Pain when it will live long enough, then Smite. On a friend: Flash Heal when they are low, otherwise Power Word: Shield. Reminders: Inner Fire, and a shield on yourself when you are solo and hurt. Choosing a specialization at 10 switches to its own premade.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'dps','caster','leveling','icy-veins'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/shadow-priest-leveling',title='Icy Veins: Shadow Priest leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},

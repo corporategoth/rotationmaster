@@ -19,7 +19,7 @@ local function far(n)return negate({type='DISTANCE',unit='target',value=n})end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow.warcrafttavern',revision=7,
  blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=5,['mop.priest.shadow-cooldowns']=2},
- nameKey='Default.MoP.Priest.Shadow.WarcraftTavern.Name',descriptionKey='Default.MoP.Priest.Shadow.WarcraftTavern.Description',
+ nameKey="No Insanity priority (Warcraft Tavern)",descriptionKey="Off by default. Warcraft Tavern's Shadow order: Devouring Plague at three Shadow Orbs, Shadow Word: Death below 20%, Mind Blast, Vampiric Touch, Shadow Word: Pain, Mind Spike on Surge of Darkness, your tier-6 talent, Mind Flay. Unlike the recommended Shadow premade it never raises Mind Flay under Devouring Plague and does not hold Devouring Plague for Mind Blast. Same opener, movement, pack and reminder steps; enable it and disable the recommended one to use it.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'shadow','dps','caster','leveling','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-shadow-priest-rotations-cooldowns/',title='Warcraft Tavern: Shadow Priest rotation (MoP Classic)',reviewedAt='2026-10-23'}},

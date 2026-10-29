@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 tbc/blocks.lua
 tbc/rogue-dps-simulator.lua
 tbc/rogue-dps-wowhead.lua

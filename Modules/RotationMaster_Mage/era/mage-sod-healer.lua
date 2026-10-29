@@ -24,7 +24,7 @@ local fingers=any(buff(400647),buff(400669),buff(400670))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=6,
  blocks={['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
- nameKey='Default.SoD.Mage.Healer.Name',descriptionKey='Default.SoD.Mage.Healer.Description',
+ nameKey="Healer (SoD)",descriptionKey="Season of Discovery Mage healing, chosen when Regeneration or Mass Regeneration is engraved. With a friendly target: Rewind Time and Chronostatic Preservation below half health, Regeneration when your Temporal Beacon is missing, Mass Regeneration, Temporal Anomaly. With an enemy target, damage that heals your beacons: Spellfrost Bolt for Frost healers, otherwise Arcane Missiles on Missile Barrage, Arcane Barrage at two Arcane Blast stacks, Balefire Bolt when safe (never at four Balefire stacks or more) and Arcane Blast. Reminders: Arcane Power, Presence of Mind, Frozen Orb and the other Mage reminders. Off by default: Arcane Explosion on packs, and Ice Lance and Deep Freeze for Frost healers. While you channel Mass Regeneration the next spell already shows, so you can cancel it at once (its direct healing is small). Choosing whom to heal stays with you.",
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'arcane','healer','group','season-of-discovery'},
  sources={

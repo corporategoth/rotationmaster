@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.icyveins',revision=7,
  blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
   ['mop.shaman.enhancement-upkeep']=2},
- nameKey='Default.MoP.Shaman.Enhancement.IcyVeins.Name',descriptionKey='Default.MoP.Shaman.Enhancement.IcyVeins.Description',
+ nameKey="Lava Lash first (Icy Veins)",descriptionKey="Off by default; same switch as the recommended Enhancement premade, so enable it and disable that one to use it. Icy Veins' order: Stormstrike, then Lava Lash before spending Maelstrom Weapon, Lightning Bolt at five stacks or from three when it lands before your next swing, Unleash Elements then Flame Shock, Earth Shock. On four or more enemies it spreads Flame Shock with Lava Lash and uses Fire Nova; Chain Lightning replaces Lightning Bolt on packs. Shamanistic Rage is suggested on cooldown in combat; other reminders as the recommended premade.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'enhancement','dps','melee','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/enhancement-shaman-pve-rotation-cooldowns-abilities',title='Icy Veins: Enhancement Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'},

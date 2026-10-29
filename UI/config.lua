@@ -631,13 +631,13 @@ local function newShell()
     end)
 
     addon:BindWorkbenchHelp(shell.help, {
-        brief = L['Help.Brief.window'],
+        brief = L["Explain window navigation, scaling, closing and drafts."],
         valid = function() return window:IsShown() end,
     })
 
     for _, control in ipairs({ shell.scaleSlider, shell.scaleValue }) do
         addon:BindWorkbenchHelp(control, {
-            brief = L['Help.Brief.scale'],
+            brief = L["Set the workbench and child-window scale from 70% to 130%; enter a whole percentage or drag the slider."],
             valid = function() return window:IsShown() end,
         })
     end
@@ -683,7 +683,11 @@ local function newShell()
             self:ShowHelp(key, current)
         end))
 
-        addon:BindWorkbenchHelp(self.pageHelp, { brief = L['Help.Brief.page'], valid = current })
+        addon:BindWorkbenchHelp(self.pageHelp, {
+            brief = L["Open full Help for this page without switching tabs or applying edits."],
+            valid = current,
+        })
+
         local existing = pane.fields and pane.fields.announce_help
         -- The page "?" shares the first row; it never adds header height.
         self.paneHeaderHeight = 0

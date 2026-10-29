@@ -11,7 +11,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation',revision=6,
  blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
- nameKey='Default.Retail.Evoker.Devastation.Name',descriptionKey='Default.Retail.Evoker.Devastation.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Devastation. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast, channel Disintegrate or hold an empowered spell. Choosing the empower rank is up to you. Alongside it, reminders in combat for Dragonrage, Deep Breath and Tip the Scales, Quell on an interruptible cast and Obsidian Scales whenever it is ready, and out of combat Blessing of the Bronze when it is missing and Source of Magic on a friendly target in your group. Enemy casts are hidden in combat, so Quell lights only where the game shows them; health is hidden on Retail, so when to use Obsidian Scales is your call.",
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'devastation','ranged','assisted-combat'},
  sources={

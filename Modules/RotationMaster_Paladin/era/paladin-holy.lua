@@ -18,7 +18,7 @@ local function noSeal()local out={};for i,id in ipairs({20154,21084,20375,21082,
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.paladin.holy',revision=5,
  blocks={['era.paladin.holy-upkeep']=2,['era.paladin.boundaries']=2,['era.paladin.cleanse']=1},
- nameKey='Default.Era.Paladin.Holy.Name',descriptionKey='Default.Era.Paladin.Holy.Description',
+ nameKey="Holy",descriptionKey="Healing in a group with the Holy tree, from level 10. Acts on your friendly target and picks the heal by missing health: Cleanse or Purify, Holy Shock while you move, maximum-rank Holy Light below 40%, rank-6 Holy Light below 65%, maximum-rank Flash of Light below 85%, rank-4 Flash of Light below 95%. With an enemy in melee range: Seal of Wisdom and, outside raids, Judgement. Reminders: Concentration or Devotion Aura, Blessing of Wisdom, Divine Favor and Lay on Hands for a target that is very low. Choosing whom to heal stays with you; soloing Holy Paladins get the Retribution premade.",
  applicability={families={'era'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','holy','healer','dungeon','raid','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/holy-paladin-healer-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Holy Paladin rotation',reviewedAt='2026-10-23',revision='2024-11-18'},

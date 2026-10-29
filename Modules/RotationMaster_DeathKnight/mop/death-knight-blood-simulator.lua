@@ -21,7 +21,7 @@ local shield={type='BUFF',unit='player',spell=77535,ownbuff=true}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.blood.simulator',revision=6,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=2},
- nameKey='Default.MoP.DeathKnight.Blood.Simulator.Name',descriptionKey='Default.MoP.DeathKnight.Blood.Simulator.Description',
+ nameKey="Health-reactive (simulator)",descriptionKey="An alternative to the recommended Blood premade for raid tanks with healers, off by default: enable it and disable that one, or raise its priority. Death Strike only below 70% health, when Blood Shield is missing or about to fade, or before the Frost and Unholy runes cap, instead of on every rune; a lone Blood rune goes to Heart Strike when the Frost and Unholy runes are more than a second away. It has no area-of-effect section, and the same reminders as the recommended one.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','single-target'},
  sources={},

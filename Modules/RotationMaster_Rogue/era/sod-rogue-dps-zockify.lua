@@ -19,7 +19,7 @@ local unsliced=negate({type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.zockify',revision=7,
  blocks={['era.rogue.boundaries']=3,['era.rogue.sod-opener']=4,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3},
- nameKey='Default.SoD.Rogue.DPS.Zockify.Name',descriptionKey='Default.SoD.Rogue.DPS.Zockify.Description',
+ nameKey="Melee DPS, lean Envenom (SoD, Zockify)",descriptionKey="Zockify's lean Season of Discovery list, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. No bleeds and no Expose Armor. Poisoned Knife at four poison stacks, Slice and Dice when missing (from two points, four with Saber Slash), Envenom at five, then the glove-rune builder. The Vanish and Cold Blood burst stays with you.",
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
  tags={'dps','melee','endgame','season-of-discovery','zockify'},
  sources={{url='https://www.zockify.com/wowclassic/rogue/dps/',title='Zockify: SoD DPS Rogue (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-07'}},

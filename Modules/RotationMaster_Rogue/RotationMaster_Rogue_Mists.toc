@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 mop/blocks.lua
 mop/rogue-assassination.lua
 mop/rogue-assassination-icyveins.lua

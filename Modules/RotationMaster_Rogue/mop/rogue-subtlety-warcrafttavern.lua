@@ -30,7 +30,7 @@ local ruptureDue=any(negate(mine(1943)),remain(1943,'LESSTHANOREQUALS',2))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.subtlety.warcrafttavern',revision=7,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
- nameKey='Default.MoP.Rogue.Subtlety.WarcraftTavern.Name',descriptionKey='Default.MoP.Rogue.Subtlety.WarcraftTavern.Description',
+ nameKey="Subterfuge (Warcraft Tavern)",descriptionKey="Chosen automatically instead of the Shadow Focus premade when your tier-1 talent is Subterfuge (Warcraft Tavern's build). Premeditation and Slice and Dice before the pull; in Stealth, Shadow Dance or the Subterfuge linger, finishers at five points and then Ambush as often as it lands. Two or three enemies: keep Rupture up and spend five points on Crimson Tempest instead of Eviscerate; four or more add Fan of Knives. One target: Slice and Dice, Rupture, Eviscerate, Hemorrhage for its bleed, Backstab from behind with a dagger, else Hemorrhage. Shadow Dance and Vanish are reminders at 60 energy with Slice and Dice up; timing them to trinket procs, as Tavern suggests, is up to you.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'subtlety','dps','melee','leveling','endgame','subterfuge','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-subtlety-rogue-dps-rotations-cooldowns/',title='Warcraft Tavern: Subtlety Rogue rotation (MoP Classic)',reviewedAt='2026-10-23'},

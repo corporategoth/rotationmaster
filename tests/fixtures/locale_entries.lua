@@ -22,7 +22,15 @@ function M.catalogs(bundles)
 
     if bundles then
         for module in read('Locales/bundles.json'):gmatch('"module"%s*:%s*"([^"]+)"') do
-            found[#found + 1] = 'Modules/' .. module
+            local dir = 'Modules/' .. module
+            local classLocale = io.open(dir .. '/Locales/enUS.lua', 'rb')
+
+            if classLocale then
+                classLocale:close()
+                dir = dir .. '/Locales'
+            end
+
+            found[#found + 1] = dir
         end
     end
 
@@ -40,7 +48,9 @@ local function run(path, addon, into)
     })
 
     local env = setmetatable({
-        LibStub = function() return { NewLocale = function() return target end } end,
+        LibStub = function()
+            return { NewLocale = function() return target end, GetLocale = function() return target end }
+        end,
         NORMAL_FONT_COLOR_CODE = '|cffffd200',
     }, { __index = _G })
 

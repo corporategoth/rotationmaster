@@ -1,7 +1,7 @@
 # Translating Rotation Master
 
 Rotation Master uses the game client's own language; there is no language picker. English (`Locales/enUS.lua`) is the
-source. Ten translations exist, each a generated file (the main catalog in `Locales/`, plus the same files in each text bundle under `Modules/`):
+source. Ten translations exist, each a generated file (the main catalog in `Locales/`, plus each class module’s `Locales/` directory):
 
 | Code | Language | Style notes |
 | --- | --- | --- |
@@ -16,14 +16,12 @@ source. Ten translations exist, each a generated file (the main catalog in `Loca
 | zhCN | Chinese (Simplified) | |
 | zhTW | Chinese (Traditional) | |
 
-A string missing from a locale shows in English, so a translation can be finished in stages. (The strings of the load-on-demand text bundles in `Modules/` are the exception: all ten languages must be complete for them, and `tests/test_locale_bundles.py` fails otherwise.) Nothing here needs a
+A string missing from a locale shows in English, so a translation can be finished in stages. Nothing here needs a
 programmer except running the tools below.
 
 ## How the files work
 
-Every string has a **stable ID**, a number from `tools/locale_registry.json` that is never reused and never derived from the
-wording. Code still reads `L["English text"]`; `Locales/enUS.lua` binds the English to the number, `N["English text"] = 1234`, with a hash of that English
-above it. A translation file maps the ID to the translation, with the English it was made from in the comment above:
+Every string has a **stable ID** within its own catalog, recorded in `tools/locale_registry.json`. IDs may overlap between catalogs; a removed ID is not reused within its catalog. Code reads `L["English text"]`; the catalog’s `enUS.lua` binds the exact English text to its number, `T["English text"] = 1234`, with a hash above it. At load time the matching translation is written to `L[English text]`; the numbers are not needed for lookups. A translation file maps the ID to the translation, with the English it was made from in the comment above:
 
 ```lua
 -- 1a2b3c4d English: Choose a duration from 1 to %d seconds.
@@ -37,7 +35,7 @@ above it. A translation file maps the ID to the translation, with the English it
   translation was made from. When the English later changes (a typo fix, a reworded sentence) the ID stays, your translation
   stays and the game keeps showing it, but the hash no longer matches: the entry is **stale** and `python3 tools/locales.py
   missing <xx>` lists it, with the English it was made from. Fix it, or - if the old translation is still right - confirm it
-  with `python3 tools/locales.py accept <xx> <id>`.
+  with `python3 tools/locales.py accept <xx> <id>` for the main catalog or `<catalog>:<id>` for a class catalog.
 - **`-- Context:` lines** say where a short or abstract string appears and what it does ("Step type dropdown entry in the
   rotation editor: the step casts a pet ability"), so you can tell a verb from a noun and a button from a heading.
 - **`-- %s #1: ...` lines** say what each placeholder receives, in order, with an example (`the profile name, e.g.
@@ -53,7 +51,8 @@ above it. A translation file maps the ID to the translation, with the English it
 ### Where is this string used?
 
 ```sh
-python3 tools/locales.py where 1234                  # by ID
+python3 tools/locales.py where 1234                  # main catalog ID
+python3 tools/locales.py where class-shaman:1        # class catalog ID
 python3 tools/locales.py where "Pet Spell"           # exact English, or a unique part of it
 python3 tools/locales.py where -C 5 1234             # five lines around each use, merged like grep
 python3 tools/locales.py where --id 1234 --json      # for editors
@@ -96,7 +95,7 @@ python3 tools/locales.py check
 4. **Apply.** `translation_apply.py <locale> <file>` validates everything first and writes nothing unless every translation
    passes; `--dry-run` only validates. It then writes the locale files through `tools/locales.py` and re-reads them to prove
    that exactly the supplied entries changed and each has the right hash. It restores the previous files if that proof
-   fails. A work file may also be a plain JSON object `{"1234": "translation"}`; the English key works in place of an ID.
+   fails. A work file may also be a plain JSON object `{"1234": "translation", "class-shaman:1": "translation"}`; the exact English key also works in place of an ID.
 5. **Check.** `python3 tools/locales.py check` must pass for every locale. Commit the locale files with a message that says
    which language and how many strings, and how they were produced and reviewed.
 
@@ -146,9 +145,7 @@ that still lacks one.
 `python3 tools/locales.py reword "old English" "new English"` rewrites every `L["old English"]` in the addon (the whole
 literal only, in the quote style it uses, escapes handled), changes the enUS text and hash, **keeps the ID** and leaves every
 translation in place, stale by hash. Plain strings equal to the old English are listed, not changed (`--all-literals`
-changes them); `tests/` is listed, not changed (`--tests` rewrites its `L[...]` sites). `--dry-run` shows the plan. Text
-whose code key is symbolic (`Default.*`, `Help.*`) is reworded by its English text and no code changes. Adding is
-`locales.py add "New text"` (or `sync` after writing `L["New text"]` in code); `remove` retires the ID; `move` keeps IDs.
+changes them); `tests/` is listed, not changed (`--tests` rewrites its `L[...]` sites). `--dry-run` shows the plan. Built In rotation names and descriptions are English literals in the rotation source; use `--all-literals` to update them. Adding is `locales.py add "New text"` (or `sync` after adding the source literal); `remove` retires the catalog ID. Moving text between catalogs assigns a new destination ID and preserves its translations. `sync --prune-class` removes class translations no longer referenced by that class’s rotations.
 
 ## What the tools check
 

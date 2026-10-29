@@ -59,6 +59,14 @@ def references(source):
         yield key, line
 
 
+def manifest_references(source):
+    """English source literals used by Built In rotation names and descriptions."""
+    ts = tokens(source)
+    for i in range(len(ts) - 2):
+        if ts[i][1] in ('nameKey', 'descriptionKey') and ts[i + 1][1] == '=' and ts[i + 2][0] in ('string', 'long'):
+            yield decode_string(ts[i + 2][1]), ts[i + 2][2]
+
+
 LOCALE_NAMES = {'enUS', 'deDE', 'esES', 'esMX', 'frFR', 'itIT', 'koKR', 'ptBR', 'ruRU', 'zhCN', 'zhTW'}
 
 
@@ -72,13 +80,17 @@ def bundle_modules(root):
 
 def bundle_english(root):
     """Paths of each text bundle's enUS.lua, which define keys just as Locales/enUS.lua does."""
-    return [Path(root) / 'Modules' / module / 'enUS.lua' for module in bundle_modules(root)
-            if (Path(root) / 'Modules' / module / 'enUS.lua').exists()]
+    manifest = Path(root) / 'Locales/bundles.json'
+    if not manifest.exists():
+        return []
+    rows = json.loads(manifest.read_text(encoding='utf-8')).get('bundles', [])
+    paths = [Path(root) / 'Modules' / row['module'] / ('Locales' if row.get('kind') == 'class' else '') / 'enUS.lua' for row in rows]
+    return [path for path in paths if path.exists()]
 
 
 def is_bundle_locale_file(root, path):
     relative = path.relative_to(root).parts
-    return len(relative) == 3 and relative[0] == 'Modules' and relative[1] in bundle_modules(root) and path.stem in LOCALE_NAMES
+    return len(relative) in (3, 4) and relative[0] == 'Modules' and relative[1] in bundle_modules(root) and path.stem in LOCALE_NAMES
 
 
 def sources(root):
@@ -97,18 +109,44 @@ def check(root):
     issues, known = [], {}
     for path in [root / 'Locales/enUS.lua'] + bundle_english(root):
         label = path.relative_to(root).as_posix()
-        entries, problems = locale_format.parse_english(path.read_text(encoding='utf-8'))
+        text = path.read_text(encoding='utf-8')
+        entries, problems = locale_format.parse_english(text)
         issues.extend(f'{label}: {problem}' for problem in problems)
+        if re.search(r'(?m)^(?:local S\s*=|local P\s*=|local N\s*=|N\[)', text):
+            issues.append(f'{label}: English entries must be direct T[english] = id assignments')
         for entry in entries:
+            if entry.key != entry.text:
+                issues.append(f'{label}:{entry.line}: English key differs from its displayed text')
             if entry.key in known:
                 issues.append(f'{label}:{entry.line}: {entry.key!r} is also defined in {known[entry.key]}')
             known.setdefault(entry.key, label)
     for path in sources(root):
         if 'Locales' in path.relative_to(root).parts:
             continue
-        for key, line in references(path.read_text()):
+        source = path.read_text()
+        keys = list(references(source))
+        if path.relative_to(root).parts[0] == 'Modules':
+            keys.extend(manifest_references(source))
+        for key, line in keys:
             if key not in known:
                 issues.append(f'{path.relative_to(root)}:{line}: missing enUS key {key!r}')
+    manifest = root / 'Locales/bundles.json'
+    if manifest.exists():
+        for row in json.loads(manifest.read_text(encoding='utf-8')).get('bundles', []):
+            if row.get('kind') != 'class':
+                continue
+            module = root / 'Modules' / row['module']
+            english_file = module / 'Locales/enUS.lua'
+            if not english_file.exists():
+                continue
+            used = set()
+            for source in module.rglob('*.lua'):
+                if 'Locales' not in source.relative_to(module).parts:
+                    used.update(key for key, _ in manifest_references(source.read_text(encoding='utf-8')))
+            entries, _ = locale_format.parse_english(english_file.read_text(encoding='utf-8'))
+            for entry in entries:
+                if entry.key not in used:
+                    issues.append(f'{english_file.relative_to(root)}:{entry.line}: unused class rotation text {entry.key!r}')
     return issues
 
 

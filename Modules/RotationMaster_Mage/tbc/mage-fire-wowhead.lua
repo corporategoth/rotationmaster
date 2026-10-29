@@ -13,7 +13,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.wowhead',revision=6,
  blocks={['tbc.mage.boundaries']=3,['tbc.mage.wand-finish']=2,['tbc.mage.moving-fire-blast']=2,['tbc.mage.fire-aoe']=1,
   ['tbc.mage.improved-scorch']=1,['tbc.mage.armor-molten']=1,['tbc.mage.upkeep']=1},
- nameKey='Default.TBC.Mage.FireWowhead.Name',descriptionKey='Default.TBC.Mage.FireWowhead.Description',
+ nameKey="Fire (Wowhead)",descriptionKey="Fire after Wowhead and simulator. Like the Icy Veins Fire premade, but it weaves Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with Fireball instead of Pyroblast. An alternative to the recommended Icy Veins Fire premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'tbc'},actionContext='player',class='MAGE'},
  tags={'fire','wowhead','leveling','raid','single-target','aoe'},
  sources={

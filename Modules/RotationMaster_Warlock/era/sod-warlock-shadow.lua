@@ -33,7 +33,7 @@ local blocks={['era.warlock.boundaries']=3,['era.warlock.procs']=1,['era.warlock
  ['era.warlock.sustain']=3,['era.warlock.filler']=2,['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow',revision=6,blocks=blocks,
- nameKey='Default.SoD.Warlock.Shadow.Name',descriptionKey='Default.SoD.Warlock.Shadow.Description',
+ nameKey="Shadow, Affliction and Felguard (SoD)",descriptionKey="Season of Discovery Affliction and Felguard builds, and every SoD Warlock no other premade fits; built from simulator Phase 6, Wowhead and Icy Veins. Nightfall procs; Shadowburn or Drain Soul to finish a group target; a dying solo target gets Drain Soul, not DoTs; instants while moving; Lake of Fire and Hellfire on packs; a curse (Recklessness in a group when nobody has it, else Agony); Unstable Affliction, Master Channeler Drain Life, Shadowflame (Immolate before it), Corruption, Haunt, Siphon Life (each renewed under 6 seconds with Invocation engraved); Drain Soul below 20% with Soul Siphon engraved; solo sustain and the wand; Shadow Bolt. Reminders: Fel Armor, your pet (a Felguard once engraved), Life Tap for a pet low on mana, Amplify Curse and the safety reminders. Curse assignments and Shadow Bolt Volley packs stay with you.",
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowhead','icy-veins'},
  sources={

@@ -22,7 +22,7 @@ local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLA
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration',revision=4,
  blocks={['era.shaman.manual']=3,['era.shaman.cures']=1,['era.shaman.healer-damage']=2},
- nameKey='Default.Era.Shaman.Restoration.Name',descriptionKey='Default.Era.Shaman.Restoration.Description',
+ nameKey="Restoration",descriptionKey="Restoration from level 10 (most points in Restoration); built from Icy Veins and Wowhead. On your friendly target: Healing Wave under Nature's Swiftness, Nature's Swiftness below 30%, Lesser Healing Wave below 40%, Cure Poison or Cure Disease, Chain Heal when three group members near you are below 85%, otherwise Healing Wave below 90%. On an enemy it fights: Earth Shock interrupt, Chain Lightning on packs, Flame Shock, Lightning Bolt from range, melee. Reminders: Lightning Shield and Rockbiter solo, Mana Tide in a group, Mana Spring, Strength of Earth, Searing. Choosing whom to heal, downranking and Tremor or cleansing totems stay with you; keeping Healing Way on the tank is listed off.",
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'healer','leveling','endgame','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/restoration-shaman-healer-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Restoration Shaman healer rotation',reviewedAt='2026-10-23',revision='2024-11-17'},

@@ -30,7 +30,7 @@ local stacked=all({type='DEBUFF',unit='target',spell=7386,anyrank=true},{type='D
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection',revision=5,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
- nameKey='Default.Era.Warrior.Protection.Name',descriptionKey='Default.Era.Warrior.Protection.Description',
+ nameKey="Tank",descriptionKey="Chosen whenever you are in Defensive Stance (Protection, Fury-Prot or a two-hander tank); built from Icy Veins and MaxDps. On four or more enemies: Demoralizing Shout and Battle Shout for threat. Then Revenge, Shield Slam, Bloodthirst, Sunder Armor to five, Demoralizing Shout on elites, Sunder Armor as the filler, and Rend before Shield Slam or Bloodthirst. Shield Slam and Shield Block only with a shield on. Reminders: Battle Shout, Shield Block while the target hits you, Bloodrage, Heroic Strike and Cleave from 50 rage, Shield Bash, Last Stand. Taunt, Shield Wall and Death Wish are listed off; Battle Stance for Execute (the DPS premade takes over) and Challenging Shout stay with you.",
  applicability={families={'era'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','aoe','icy-veins','maxdps'},
  sources={{url='https://www.icy-veins.com/wow-classic/warrior-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Warrior tank rotation',reviewedAt='2026-10-23',revision='2024-11-17'},

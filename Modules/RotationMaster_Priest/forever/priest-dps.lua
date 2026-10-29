@@ -22,7 +22,7 @@ local unshielded=negate({type='DEBUFF',unit='player',spell=6788})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=6,
  blocks={['forever.priest.dps-boundaries']=2,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=2},
- nameKey='Default.Forever.Priest.Dps.Name',descriptionKey='Default.Forever.Priest.Dps.Description',
+ nameKey="Shadow and solo damage",descriptionKey="Shadow, and every Priest's solo play, from level 1 to 60; the Forever Priest default. Pulls with Power Word: Shield (solo) and Mind Blast (Holy Fire for Holy and Discipline, Smite before Mind Blast). Then Shadowform once learned, your own Shadow Word: Pain and Devouring Plague, Mind Blast, Holy Fire into Penance for Discipline, Mind Flay in Shadowform; solo before Shadowform, Holy Nova on three enemies with Holy Purpose, then the wand (Smite without one). Moving: Pain, Plague. Reminders: Inner Fire, Fortitude, Divine Spirit, racial buffs, Vampiric Embrace, Inner Focus, Silence, Elune's Light; Psychic Scream is off by default. Health and mana are hidden from addons on Forever, so executing with Shadow Word: Death, healing yourself and Dark Sacrifice are your call. Built from level-30 beta guides; Shadowform play follows Mobalytics.",
  applicability={families={'forever'},actionContext='player',class='PRIEST'},
  tags={'shadow','leveling','single-target','icy-veins','wowhead'},
  sources={

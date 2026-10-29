@@ -43,13 +43,13 @@ class Sandbox(unittest.TestCase):
         (self.root / 'tools').mkdir()
         (self.root / 'locales.xml').write_text(XML)
         (self.root / 'Locales/bundles.json').write_text(json.dumps({'bundles': [
-            {'id': 'help', 'module': 'RotationMaster_HelpText', 'title': 'Help text', 'notes': 'Help.'}]}))
+            {'id': 'help', 'module': 'RotationMaster_HelpText', 'title': 'Help text', 'notes': 'Help.', 'kind': 'class'}]}))
         (self.root / 'main.lua').write_text(SOURCE)
         model = L.Model()
         for key, text in [('Old text', None), ('Old text and more', None), ('Single quoted "inside"', None), ('Cast', None),
-                          ('Cast Spell', None), ('Hello %s, you are %d', None), ('Pipe [a|b]', 'Pipe [a||b]')]:
+                          ('Cast Spell', None), ('Hello %s, you are %d', None), ('Pipe [a||b]', None)]:
             model.add(key, text)
-        model.add('Help.One', 'The first help text.', 'help')
+        model.add('The first help text.', catalog='help')
         model.write()
         self.date = '2026-01-02'
         import os
@@ -102,36 +102,16 @@ class FormatTests(unittest.TestCase):
         for text in ['plain', 'quote " and \\ and \n newline', '\x01\x7f control', 'ünï 日本語 🙂', '|cffff0000red|r %s %d']:
             self.assertEqual(F.decode_lua_string(F.lua_string(text)), text)
 
-    def test_english_file_round_trip_with_symbolic_entries(self):
+    def test_english_file_round_trip_uses_direct_text_keys(self):
         entries = [F.English(1, 'Plain', 'Plain', F.text_hash('Plain'), 0),
-                   F.English(2, 'Default.X.Name', 'Arms', F.text_hash('Arms'), 0),
-                   F.English(3, 'A [b|c]', 'A [b||c]', F.text_hash('A [b||c]'), 0)]
+                   F.English(2, 'Arms', 'Arms', F.text_hash('Arms'), 0),
+                   F.English(3, 'A [b||c]', 'A [b||c]', F.text_hash('A [b||c]'), 0)]
         text = F.render_english(entries, 'x')
         self.assertEqual(text.split('\n', 1)[0], F.COPYRIGHT)
+        self.assertIn('T["Arms"] = 2', text)
         parsed, problems = F.parse_english(text)
         self.assertEqual(problems, [])
-        self.assertEqual(sorted((e.id, e.key, e.text, e.hash) for e in parsed), sorted((e.id, e.key, e.text, e.hash) for e in entries))
-
-    def test_the_english_binds_text_to_id_once_and_derivable_pairs_are_not_pairs(self):
-        entries = [F.English(1, 'Plain', 'Plain', F.text_hash('Plain'), 0),
-                   F.English(2, 'Default.X.Name', 'Arms Warrior', F.text_hash('Arms Warrior'), 0),
-                   F.English(3, 'Use [a|b]', 'Use [a||b]', F.text_hash('Use [a||b]'), 0),
-                   F.English(4, 'TalentTree.Arms', 'Arms', F.text_hash('Arms'), 0)]
-        self.assertEqual([F.kind_of(e.key, e.text) for e in entries], ['plain', 'symbolic', 'piped', 'prefixed'])
-        text = F.render_english(entries, 'x')
-        self.assertIn('\nN["Plain"] = 1\n', text)
-        self.assertIn('\nN["Use [a|b]"] = 3\n', text)
-        # Only a real difference between key and text is a pair; the others are derived.
-        self.assertIn('[2] = { "Default.X.Name", "Arms Warrior" },', text)
-        self.assertNotIn('"Use [a||b]"', text)
-        self.assertIn('[4] = "Arms",', text)
-        self.assertNotIn('"TalentTree.Arms"', text)
-        # The English game returns before N is built; N is a local, never L.
-        self.assertLess(text.index('if not T then'), text.index('local N = {}'))
-        self.assertNotRegex(text, r'\nL\[[^\n]*\] = \d')
-        parsed, problems = F.parse_english(text)
-        self.assertEqual(problems, [])
-        self.assertEqual(sorted((e.id, e.key, e.text, e.kind) for e in parsed), sorted((e.id, e.key, e.text, e.kind) for e in entries))
+        self.assertEqual([(e.id, e.key, e.text) for e in parsed], [(e.id, e.key, e.text) for e in entries])
 
     def test_a_translation_line_holds_only_the_id_and_the_string(self):
         entries = [F.Translation(5, 'Übersetzt "so"', F.text_hash('English'), 'English', 0)]
@@ -142,17 +122,25 @@ class FormatTests(unittest.TestCase):
 
 
 class IdTests(Sandbox):
-    def test_ids_are_sequential_unique_across_catalogs_and_never_reused(self):
+    def test_catalog_scoped_ids_do_not_overwrite_or_remove_other_translations(self):
+        self.translate('deDE', {'1': 'Alter Text', 'help:1': 'Hilfetext'})
+        self.assertEqual(dict(L.locale_entries('deDE'))['Old text'], 'Alter Text')
+        self.assertEqual(dict(L.locale_entries('deDE'))['The first help text.'], 'Hilfetext')
+        self.assertEqual(self.run_tool('remove', 'The first help text.')[0], 0)
+        self.assertEqual(dict(L.locale_entries('deDE'))['Old text'], 'Alter Text')
+        self.assertEqual(self.check()[0], 0)
+
+    def test_ids_are_scoped_to_each_catalog_and_never_reused(self):
         ids = self.ids()
-        self.assertEqual(sorted(ids.values()), list(range(1, 9)))
-        self.assertEqual(self.ids()['Help.One'], 8)
+        self.assertEqual(ids['Old text'], 1)
+        self.assertEqual(ids['The first help text.'], 1)
         code, out, err = self.run_tool('remove', 'Cast')
         self.assertEqual(code, 0, err)
         registry = json.loads((self.root / L.REGISTRY_FILE).read_text())
         self.assertIn(ids['Cast'], registry['retired'])
         self.run_tool('add', 'Brand new')
-        self.assertEqual(self.ids()['Brand new'], 9)
-        self.assertNotIn(ids['Cast'], self.ids().values())
+        self.assertEqual(self.ids()['Brand new'], 8)
+        self.assertNotIn(ids['Cast'], [e.id for e in L.english_entries(L.catalog_named('main'))])
         self.assertEqual(self.check()[0], 0)
 
     def test_check_fails_on_a_retired_duplicate_unknown_or_missing_id(self):
@@ -202,8 +190,8 @@ class RuntimeShapeTests(Sandbox):
     def setUp(self):
         super().setUp()
         model = L.Model()
-        model.add('TalentTree.Arms', 'Arms')
-        model.add('Default.X.Name', 'Arms Warrior')
+        model.add('Arms')
+        model.add('Arms Warrior')
         model.write()
         for name in ('Libs/LibStub', 'Libs/AceLocale-3.0'):
             shutil.copytree(ROOT / name, self.root / name)
@@ -223,30 +211,31 @@ class RuntimeShapeTests(Sandbox):
     def test_english_and_untranslated_strings_read_as_before(self):
         self.translate('deDE', {'Cast': 'Zaubern'})
         for client in ('enUS', 'deDE'):
-            self.assertEqual(self.read('Pipe [a|b]', client), 'Pipe [a||b]', client)
-            self.assertEqual(self.read('TalentTree.Arms', client), 'Arms', client)
-            self.assertEqual(self.read('Default.X.Name', client), 'Arms Warrior', client)
+            self.assertEqual(self.read('Pipe [a||b]', client), 'Pipe [a||b]', client)
+            self.assertEqual(self.read('Arms', client), 'Arms', client)
+            self.assertEqual(self.read('Arms Warrior', client), 'Arms Warrior', client)
             self.assertEqual(self.read('Old text', client), 'Old text', client)
         self.assertEqual(self.read('Cast', 'deDE'), 'Zaubern')
         self.assertEqual(self.read('Cast', 'enUS'), 'Cast')
 
     def test_translations_of_derived_pairs_apply(self):
-        self.translate('deDE', {'Pipe [a|b]': 'Rohr [a||b]', 'TalentTree.Arms': 'Waffen', 'Default.X.Name': 'Waffenkrieger'})
-        self.assertEqual(self.read('Pipe [a|b]', 'deDE'), 'Rohr [a||b]')
-        self.assertEqual(self.read('TalentTree.Arms', 'deDE'), 'Waffen')
-        self.assertEqual(self.read('Default.X.Name', 'deDE'), 'Waffenkrieger')
-        self.assertEqual(self.read('TalentTree.Arms', 'enUS'), 'Arms')
+        self.translate('deDE', {'Pipe [a||b]': 'Rohr [a||b]', 'Arms': 'Waffen', 'Arms Warrior': 'Waffenkrieger'})
+        self.assertEqual(self.read('Pipe [a||b]', 'deDE'), 'Rohr [a||b]')
+        self.assertEqual(self.read('Arms', 'deDE'), 'Waffen')
+        self.assertEqual(self.read('Arms Warrior', 'deDE'), 'Waffenkrieger')
+        self.assertEqual(self.read('Arms', 'enUS'), 'Arms')
 
     def test_the_english_game_builds_no_table_of_texts(self):
         text = (self.root / 'Locales/enUS.lua').read_text()
-        self.assertLess(text.index('if not T then'), text.index('N["Old text"]'))
+        self.assertIn('T["Old text"]', text)
         self.assertEqual(self.check()[0], 0)
 
     def test_rewording_a_derived_pair_keeps_it_correct(self):
+        (self.root / 'main.lua').write_text((self.root / 'main.lua').read_text() + 'print(L["Arms"])\n')
         self.assertEqual(self.run_tool('reword', 'Arms', 'Arms Tree')[0], 0)
-        entry = L.by_key()['TalentTree.Arms']
-        self.assertEqual((entry.text, entry.kind), ('Arms Tree', 'symbolic'))
-        self.assertEqual(self.read('TalentTree.Arms', 'enUS'), 'Arms Tree')
+        entry = L.by_key()['Arms Tree']
+        self.assertEqual(entry.text, 'Arms Tree')
+        self.assertEqual(self.read('Arms Tree', 'enUS'), 'Arms Tree')
         self.assertEqual(self.check()[0], 0)
 
 
@@ -256,7 +245,7 @@ class MissingTests(Sandbox):
         ids = self.ids()
         code, out, _ = self.run_tool('missing', 'deDE')
         rows = json.loads(out)
-        self.assertEqual({r['id'] for r in rows}, set(ids.values()) - {ids['Cast'], ids['Old text'], ids['Cast Spell']})
+        self.assertEqual({r['key'] for r in rows}, set(ids) - {'Cast', 'Old text', 'Cast Spell'})
         self.assertEqual({r['reason'] for r in rows}, {'untranslated'})
         # Reword one translated string: it becomes stale and is the only stale one.
         self.assertEqual(self.run_tool('reword', 'Cast Spell', 'Cast a Spell')[0], 0)
@@ -341,9 +330,9 @@ class RewordTests(Sandbox):
         self.assertEqual(self.check()[0], 0)
 
     def test_pipe_escaped_text_keeps_its_escaping(self):
-        (self.root / 'main.lua').write_text((self.root / 'main.lua').read_text() + 'print(L["Pipe [a|b]"])\n')
-        self.assertEqual(self.run_tool('reword', 'Pipe [a|b]', 'Pipe [c|d]')[0], 0)
-        entry = L.by_key()['Pipe [c|d]']
+        (self.root / 'main.lua').write_text((self.root / 'main.lua').read_text() + 'print(L["Pipe [a||b]"])\n')
+        self.assertEqual(self.run_tool('reword', 'Pipe [a||b]', 'Pipe [c||d]')[0], 0)
+        entry = L.by_key()['Pipe [c||d]']
         self.assertEqual(entry.text, 'Pipe [c||d]')
 
     def test_refusals(self):
@@ -360,17 +349,14 @@ class RewordTests(Sandbox):
         self.assertNotEqual(code, 0)
         self.assertIn('no L["..."] site', err)
 
-    def test_a_symbolic_text_reword_changes_the_text_and_not_the_key(self):
+    def test_reword_updates_the_english_key_in_source(self):
         model = L.Model()
-        model.add('Default.X.Name', 'Arms')
+        model.add('Arms')
         model.write()
-        (self.root / 'main.lua').write_text((self.root / 'main.lua').read_text() + 'print(L["Default.X.Name"])\n')
-        before = (self.root / 'main.lua').read_text()
+        (self.root / 'main.lua').write_text((self.root / 'main.lua').read_text() + 'print(L["Arms"])\n')
         self.assertEqual(self.run_tool('reword', 'Arms', 'Arms Warrior')[0], 0)
-        self.assertEqual((self.root / 'main.lua').read_text(), before)
-        entry = L.by_key()['Default.X.Name']
-        self.assertEqual(entry.text, 'Arms Warrior')
-        self.assertEqual(self.run_tool('reword', 'Default.X.Name', 'Other')[0] != 0, True)
+        self.assertIn('L["Arms Warrior"]', (self.root / 'main.lua').read_text())
+        self.assertEqual(L.by_key()['Arms Warrior'].text, 'Arms Warrior')
 
     def test_tests_directory_is_reported_not_edited_unless_asked(self):
         (self.root / 'tests').mkdir()
@@ -410,23 +396,23 @@ class BuildTests(Sandbox):
         self.assertNotEqual(self.run_tool('build', 'deDE', str(work))[0], 0)
 
     def test_a_bundle_gets_its_own_file_and_the_toc_lists_the_english_last(self):
-        self.translate('deDE', {'Help.One': 'Der erste Hilfetext.', 'Cast': 'Zaubern'})
+        self.translate('deDE', {'The first help text.': 'Der erste Hilfetext.', 'Cast': 'Zaubern'})
         bundle = self.root / 'Modules/RotationMaster_HelpText'
-        self.assertTrue((bundle / 'deDE.lua').exists())
-        toc = (bundle / 'RotationMaster_HelpText.toc').read_text().split()
-        self.assertEqual([t for t in toc if t.endswith('.lua')], ['deDE.lua', 'enUS.lua'])
+        self.assertTrue((bundle / 'Locales/deDE.lua').exists())
+        toc = (bundle / 'locales.xml').read_text().splitlines()
+        self.assertLess('\n'.join(toc).index('deDE.lua'), '\n'.join(toc).index('enUS.lua'))
         xml = (self.root / 'locales.xml').read_text()
         self.assertLess(xml.index('deDE.lua'), xml.index('enUS.lua'))
         self.assertEqual(self.check()[0], 0)
 
-    def test_move_keeps_the_id_and_the_translation(self):
+    def test_move_assigns_a_destination_id_and_keeps_the_translation(self):
         ids = self.ids()
         self.translate('deDE', {'Cast': 'Zaubern'})
         keys = self.root / 'keys.json'
         keys.write_text(json.dumps(['Cast']))
         self.assertEqual(self.run_tool('move', 'help', str(keys))[0], 0)
         self.assertEqual(L.by_key()['Cast'].catalog.name, 'help')
-        self.assertEqual(L.by_key()['Cast'].id, ids['Cast'])
+        self.assertEqual(L.by_key()['Cast'].id, 2)
         self.assertEqual(dict(L.locale_entries('deDE', L.catalog_named('help'))), {'Cast': 'Zaubern'})
         self.assertEqual(self.check()[0], 0)
         self.assertEqual(self.run_tool('move', 'main', str(keys))[0], 0)
@@ -438,6 +424,15 @@ class BuildTests(Sandbox):
         self.assertEqual(self.run_tool('sync')[0], 0)
         self.assertIn('Fresh from code', self.ids())
         self.assertEqual(self.run_tool('sync', '--dry-run')[0], 0)
+
+    def test_sync_tracks_and_prunes_class_rotation_text(self):
+        module = self.root / 'Modules/RotationMaster_HelpText'
+        (module / 'rotation.lua').write_text('return {nameKey = "Class rotation"}\n')
+        self.translate('deDE', {'The first help text.': 'Hilfetext'})
+        self.assertEqual(self.run_tool('sync', '--prune-class')[0], 0)
+        self.assertEqual(L.by_key()['Class rotation'].catalog.name, 'help')
+        self.assertNotIn('The first help text.', L.by_key())
+        self.assertNotIn('The first help text.', dict(L.locale_entries('deDE')))
 
 
 class CreditTests(Sandbox):
@@ -454,7 +449,7 @@ class CreditTests(Sandbox):
 
     def test_humans_are_listed_deduplicated_and_merged_into_the_main_file(self):
         self.translate('deDE', {'Cast': 'Zaubern'}, '--translator', 'Claude', '--ai')
-        self.translate('deDE', {'Cast Spell': 'Zauber wirken', 'Help.One': 'Hilfe'}, '--translator', 'Anna Beispiel', '--url', 'https://example.org/anna')
+        self.translate('deDE', {'Cast Spell': 'Zauber wirken', 'The first help text.': 'Hilfe'}, '--translator', 'Anna Beispiel', '--url', 'https://example.org/anna')
         self.translate('deDE', {'Old text': 'Alter Text'}, '--translator', 'anna beispiel')
         self.translate('deDE', {'Old text and more': 'Mehr'}, '--translator', 'Bruno')
         humans, header = self.humans()
@@ -470,7 +465,7 @@ class CreditTests(Sandbox):
     def test_the_game_credits_the_humans_of_its_language_and_only_that_language(self):
         """End to end: the data table in the locale files is what the About page reads at runtime."""
         self.translate('deDE', {'Cast': 'Zaubern'}, '--translator', 'Claude', '--ai')
-        self.translate('deDE', {'Help.One': 'Hilfe', 'Cast Spell': 'Zauber wirken'}, '--translator', 'Anna Beispiel')
+        self.translate('deDE', {'The first help text.': 'Hilfe', 'Cast Spell': 'Zauber wirken'}, '--translator', 'Anna Beispiel')
         self.translate('deDE', {'Old text': 'Alter Text'}, '--translator', 'Bruno')
         self.translate('frFR', {'Cast': 'Lancer'}, '--translator', 'Claude', '--ai')
         for name in ('Libs/LibStub', 'Libs/AceLocale-3.0'):
@@ -523,7 +518,7 @@ class NotesTests(Sandbox):
         self.assertIn(f'-- {digest} English: Hello %s, you are %d\n-- %s #1: the player name, e.g. "Anna"\n-- %d #2: the level, e.g. 70\n[{ids["Hello %s, you are %d"]}] = "Hallo %s, du bist %d",', german)
         self.assertIn(f'-- {F.text_hash("Cast")} English: Cast\n-- Context: Button on the action bar that starts a spell.\n[{ids["Cast"]}]', german)
         english = (self.root / 'Locales/enUS.lua').read_text()
-        self.assertIn(f'-- {digest}\n-- %s #1: the player name, e.g. "Anna"\n-- %d #2: the level, e.g. 70\nN["Hello %s, you are %d"] = {ids["Hello %s, you are %d"]}\n', english)
+        self.assertIn(f'-- {digest}\n-- %s #1: the player name, e.g. "Anna"\n-- %d #2: the level, e.g. 70\nT["Hello %s, you are %d"] = {ids["Hello %s, you are %d"]}\n', english)
         # the translation line holds only the key and the string
         for line in german.split('\n'):
             if line.startswith('['):
@@ -568,7 +563,7 @@ class NotesTests(Sandbox):
         keys = self.root / 'keys.json'
         keys.write_text(json.dumps(['Cast now']))
         self.assertEqual(self.run_tool('move', 'help', str(keys))[0], 0)
-        self.assertIn('-- Context: A verb.', (self.root / 'Modules/RotationMaster_HelpText/enUS.lua').read_text())
+        self.assertIn('-- Context: A verb.', (self.root / 'Modules/RotationMaster_HelpText/Locales/enUS.lua').read_text())
         self.assertEqual(self.check()[0], 0)
 
     def test_requirements_are_off_by_default_and_list_what_is_missing(self):
@@ -698,13 +693,14 @@ class ShippedFiles(unittest.TestCase):
                 self.assertEqual(len(header), 1, catalog.path(locale))
                 self.assertIn('Claude (AI-assisted, not yet reviewed by a native speaker', header[0])
 
-    def test_every_string_has_one_id_across_all_catalogs_and_a_matching_hash(self):
+    def test_every_string_has_one_id_within_its_catalog_and_a_matching_hash(self):
         seen = {}
         for e in L.english_entries():
-            self.assertNotIn(e.id, seen)
-            seen[e.id] = e
+            slot = (e.catalog.name, e.id)
+            self.assertNotIn(slot, seen)
+            seen[slot] = e
             self.assertEqual(e.hash, F.text_hash(e.text))
-        self.assertGreaterEqual(len(seen), 4042)
+        self.assertGreaterEqual(len(seen), 3500)
 
     def test_every_locale_is_complete_and_current(self):
         for locale in L.LOCALES:

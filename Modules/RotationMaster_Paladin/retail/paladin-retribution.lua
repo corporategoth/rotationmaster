@@ -13,7 +13,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.retribution',revision=6,
  blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2},
- nameKey='Default.Retail.Paladin.Retribution.Name',descriptionKey='Default.Retail.Paladin.Retribution.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Retribution in Midnight. In combat the game now hides buffs, debuffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation) on your action bars, and stops while you cast or have no enemy targeted. It also reminds you of what that suggestion never covers: an aura between pulls, Rebuke on an interruptible cast, and Divine Protection whenever it is ready in combat. Health is hidden on Retail, so when to use Divine Protection and Lay on Hands is your call. Trinkets and racials stay with you.",
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'retribution','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

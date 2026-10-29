@@ -11,7 +11,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.mage.initial',revision=5,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
- nameKey='Default.Retail.Mage.Initial.Name',descriptionKey='Default.Retail.Mage.Initial.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended before you choose a specialization (while the game reports the Mage's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Mage premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over.",
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'leveling','assisted-combat'},
  sources={

@@ -31,7 +31,7 @@ local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=7,
  blocks={['mop.monk.upkeep']=1},
- nameKey='Default.MoP.Monk.Mistweaver.Name',descriptionKey='Default.MoP.Monk.Mistweaver.Description',
+ nameKey="Recommended",descriptionKey="Picked automatically in the Mistweaver specialization. With a friendly target it heals that target: Renewing Mist on cooldown, Uplift when three or more nearby allies are hurt, Expel Harm and your Chi talent for Chi, Rushing Jade Wind or Spinning Crane Kick for a hurt group, Surging Mist on five Vital Mists, Soothing Mist when the target is below 80%, then Enveloping Mist and Surging Mist inside that channel. With an enemy target it fistweaves: Tiger Palm and Blackout Kick on Muscle Memory to keep Tiger Power and Serpent's Zeal, Blackout Kick when Chi is full, Surging Mist on five Vital Mists, Renewing Mist and Expel Harm for Chi, Jab. Reminders: Wise Serpent, Legacy of the Emperor, the Jade Serpent Statue in a group, Mana Tea in quiet moments, Thunder Focus Tea, Chi Brew, Life Cocoon on a friend below 35%, Xuen, Detox, defensives, Spear Hand Strike. You choose whom to heal; Revival (reminder off) and Healing Sphere stay with you.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'mistweaver','healer','leveling','icy-veins','wowhead'},
  sources={

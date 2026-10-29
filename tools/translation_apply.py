@@ -67,9 +67,15 @@ def read_work(path):
 def to_keys(incoming):
     """Work-file names (an id or a key) as keys; an unknown name is left for validate to reject."""
     by_id = L.by_id()
+    model = L.Model()
     out = {}
     for name, text in incoming.items():
-        key = by_id[int(name)].key if str(name).isdigit() and int(name) in by_id else name
+        if isinstance(name, str) and re.fullmatch(r'[^:]+:\d+', name):
+            catalog, number = name.rsplit(':', 1)
+            match = model.find_id(int(number), catalog) if any(c.name == catalog for c in model.catalogs) else None
+            key = match.key if match else name
+        else:
+            key = by_id[int(name)].key if str(name).isdigit() and int(name) in by_id else name
         if key in out:
             raise SystemExit(f'{name!r} names a string that is supplied twice')
         out[key] = text

@@ -103,6 +103,17 @@ env.C_AddOns = {
             end
         end
 
+        local xmlFile = io.open(root .. '/' .. dir .. '/locales.xml', 'rb')
+
+        if xmlFile then
+            local xmlText = xmlFile:read('*a')
+            xmlFile:close()
+
+            for file in xmlText:gmatch('<Script file="([^"]+)"') do
+                load(dir .. '/' .. file:gsub('\\', '/'), name, namespace)
+            end
+        end
+
         loaded[#loaded + 1] = name
         return true
     end,

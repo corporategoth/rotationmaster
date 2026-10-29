@@ -14,7 +14,7 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
   ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.bear']=2,
   ['sod.druid.caster-pull']=3},
- nameKey='Default.SoD.Druid.Balance.IcyVeins.Name',descriptionKey='Default.SoD.Druid.Balance.IcyVeins.Description',
+ nameKey="Balance (SoD, Icy Veins)",descriptionKey="Icy Veins' Season of Discovery list, an alternative to the recommended Season of Discovery Balance premade, off by default: enable it and disable that one, or raise its priority. Starsurge on cooldown, Hurricane on four or more enemies (for Gale Winds), Starfire when Starsurge empowers it, Moonfire, Sunfire and Insect Swarm all kept up, Wrath as the filler. Reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','balance','caster','single-target','aoe','icy-veins'},
  sources={

@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 tbc/blocks.lua
 tbc/mage-frost.lua
 tbc/mage-fire-icyveins.lua

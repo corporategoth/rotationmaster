@@ -329,9 +329,9 @@ addon:RegisterCondition("SPECIALIZATION", {
     --
     -- Help page: the general text, then the per-edition notes.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.SPECIALIZATION"]))
+        frame:AddChild(helpers.CreateText(L["Your talent specialization. Choose a class, then one of its specializations; your own class is selected first, and other classes are offered for rotations shared between characters. A specialization of another class is always false."]))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.SPECIALIZATION.editions"]))
+        frame:AddChild(helpers.CreateText(L["Retail and Mists of Pandaria Classic compare your active specialization. Classic Era, Burning Crusade and Wrath compare your primary talent tree, the one tree with the most points; Feral and Guardian both mean Feral Combat there. Forever cannot tell its specializations apart this way. No specialization yet, tied or unspent trees and unreadable values are unavailable, including under NOT. The answer is cached until your talents or specialization change."]))
     end,
 })
 

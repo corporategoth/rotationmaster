@@ -20,7 +20,7 @@ local harmony=known(1262765)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster.guide',revision=7,
  blocks={['retail.monk.boundaries']=3,['retail.monk.utility']=2},
- nameKey='Default.Retail.Monk.BrewmasterGuide.Name',descriptionKey='Default.Retail.Monk.BrewmasterGuide.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: Icy Veins' Brewmaster priority (SimulationCraft agrees in shape). Blackout Combo, Empty Barrel and charges are hidden in Midnight combat, so it cannot run there. Pulls with Keg Smash. Blackout Kick; Chi Burst (Master of Harmony); Tiger Palm on Blackout Combo; Keg Smash at full charges or with Empty Barrel; Breath of Fire; Rushing Jade Wind before Exploding Keg; Chi Burst (Shado-Pan); Keg Smash; Rushing Jade Wind and Spinning Crane Kick on three or more enemies; Tiger Palm; Expel Harm. Reminders: Black Ox Brew once Purifying and Celestial Brew are spent, Invoke Niuzao, Purifying Brew, Celestial Brew or Infusion, Touch of Death, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'brewmaster','tank','reference','icy-veins','simulationcraft'},
  sources={

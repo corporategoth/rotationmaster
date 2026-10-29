@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.unholy.simulator',revision=5,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.unholy-upkeep']=2,['mop.deathknight.unholy-open']=2,
   ['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
- nameKey='Default.MoP.DeathKnight.Unholy.Simulator.Name',descriptionKey='Default.MoP.DeathKnight.Unholy.Simulator.Description',
+ nameKey="Unholy, rune-cap pooling (simulator)",descriptionKey="An alternative to the recommended Unholy premade, as the simulator, wowtbc.gg, Method and MaxDps play it; off by default: enable it and disable that one, or raise its priority. While Dark Transformation is down Death Coil goes to rebuilding Shadow Infusion, Scourge Strike comes first when both Unholy or both Death runes are ready, and Festering Strike first when both Blood and both Frost runes are; otherwise the same opening, diseases, AoE and reminders as the recommended one.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','single-target','aoe'},
  sources={

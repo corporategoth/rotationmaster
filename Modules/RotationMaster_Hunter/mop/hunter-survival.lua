@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.survival',revision=7,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=2},
- nameKey='Default.MoP.Hunter.Survival.Name',descriptionKey='Default.MoP.Hunter.Survival.Description',
+ nameKey="Recommended",descriptionKey="Chosen automatically in the Survival specialization. Opens with Hunter's Mark, Black Arrow and Explosive Shot, then: Explosive Shot on cooldown and on every Lock and Load, Kill Shot, Black Arrow on targets that will live, your talents, Serpent Sting kept up by Cobra Shot, Arcane Shot at 75 focus, with Thrill of the Hunt, or at 55 when Black Arrow is not coming up, then Cobra Shot (Steady Shot before 81). Two or more enemies: Multi-Shot first on Lock and Load with full focus, Explosive Shot up to five targets, Kill Shot, Black Arrow, Explosive Trap from three, Multi-Shot to spend. Same reminders as the other Hunter premades; traps for Lock and Load procs stay with you.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'survival','leveling','single-target','aoe','wowhead'},
  sources={

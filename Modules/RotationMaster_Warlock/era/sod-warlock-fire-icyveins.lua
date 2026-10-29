@@ -22,7 +22,7 @@ local summon=all(negate({type='PET'}),negate(combat()))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire.icyveins',revision=6,
  blocks={['era.warlock.boundaries']=3,['era.warlock.armor']=1,['era.warlock.safety']=1},
- nameKey='Default.SoD.Warlock.Fire.IcyVeins.Name',descriptionKey='Default.SoD.Warlock.Fire.IcyVeins.Description',
+ nameKey="Fire, Conflagrate on cooldown (SoD, Icy Veins)",descriptionKey="Icy Veins' and Warcraft Tavern's Season of Discovery Destruction, an alternative to the recommended Season of Discovery Fire premade, off by default: enable it and disable that one, or raise its priority. Immolate kept up, Conflagrate and Chaos Bolt on cooldown (Chaos Bolt also below 35%), Incinerate's buff, Soul Fire under Decimation below 35%, Incinerate filler; the damage curse only while moving, with Recklessness in a group when nobody has it.",
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'dps','ranged','caster','endgame','aoe','season-of-discovery','icy-veins','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/destruction-warlock-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Destruction Warlock DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},

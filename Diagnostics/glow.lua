@@ -1334,5 +1334,5 @@ function addon:HandleDebugCommand(args)
         return self:RunRaidMarkDiagnostic()
     end
 
-    self:print(L['Usage: /rm debug glow [seconds|show], /rm debug talents [views] or /rm debug editor'])
+    self:print(L["Usage: /rm debug glow [seconds||show], /rm debug talents [views] or /rm debug editor"])
 end

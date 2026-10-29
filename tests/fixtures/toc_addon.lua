@@ -545,6 +545,10 @@ function T.new(o)
         for _, line in ipairs(lines(toc)) do
             if line:match('%.lua$') then
                 load(dir .. '/' .. line, name, namespace)
+            elseif line:match('%.xml$') then
+                for _, path in ipairs(xmlFiles(dir .. '/' .. line)) do
+                    load(path, name, namespace)
+                end
             end
         end
 

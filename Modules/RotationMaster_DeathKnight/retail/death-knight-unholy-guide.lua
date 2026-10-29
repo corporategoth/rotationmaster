@@ -20,7 +20,7 @@ local ghouls=buff(1254252)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.guide',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey='Default.Retail.DeathKnight.UnholyGuide.Name',descriptionKey='Default.Retail.DeathKnight.UnholyGuide.Description',
+ nameKey="Reference (Icy Veins and Wowhead)",descriptionKey="Reference only, off by default: the guides' Unholy priority. Procs and plagues are hidden in Midnight combat, so it cannot run there; runic power and the target's health are hidden on Retail, so the execute window and the San'layn runic power spend are left out. Raise Dead without a ghoul; Festering Scythe to keep its plague haste up; Soul Reaper on Reaping; Putrefy during Dark Transformation; Death Coil (Epidemic on four or more enemies) on Sudden Doom or Forbidden Knowledge; Festering Strike with no Lesser Ghoul charges, Scourge Strike with them; Death Coil. Reminders: Army of the Dead, Dark Transformation, Outbreak when your plagues are missing, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','melee','pet','reference','icy-veins','wowhead'},
  sources={

@@ -23,7 +23,7 @@ local judged={type='DEBUFF',unit='target',spell=20185,anyrank=true,owndebuff=tru
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.holy.wowhead',revision=6,
  blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.dispel']=1,['forever.paladin.healer-upkeep']=2},
- nameKey='Default.Forever.Paladin.HolyWowhead.Name',descriptionKey='Default.Forever.Paladin.HolyWowhead.Description',
+ nameKey="Holy, Holy Shock on cooldown (Wowhead)",descriptionKey="Wowhead's healing style, an alternative to the recommended Holy premade, off by default: enable it and disable that one, or raise its priority. Holy Shock as a routine heal on cooldown, dispels, Flash of Light (health is hidden on Forever, so Holy Light for big deficits is your call). On an enemy it keeps your Judgement of Light up by swapping to Seal of Light, judging and swapping back to Seal of Righteousness, then Holy Strike, Exorcism on Undead and Demons, Holy Shock and Consecration. Same reminders as the Holy premade.",
  applicability={families={'forever'},actionContext='player',class='PALADIN'},
  tags={'holy','healer','group','wowhead'},
  sources={

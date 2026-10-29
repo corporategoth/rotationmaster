@@ -18,7 +18,7 @@ local rake={type='DEBUFF',unit='target',spell=1822,anyrank=true,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank.simulator',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=2,['sod.druid.tank-humanoid']=2},
- nameKey='Default.SoD.Druid.Tank.Simulator.Name',descriptionKey='Default.SoD.Druid.Tank.Simulator.Description',
+ nameKey="Bear tank (SoD, simulator cat weave)",descriptionKey="Off by default; for experts whose gear also grants Savage Roar. The simulator Phase 7 cat weave: leave Bear for Cat when your Rake is down, keep Savage Roar and Rake up (Tiger's Fury, Mangle to build), then return to Dire Bear and play the tank list. Reminders as the recommended tank premade.",
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','feral','tank','melee','single-target'},
  sources={},

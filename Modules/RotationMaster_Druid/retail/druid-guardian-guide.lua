@@ -16,7 +16,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian.guide',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey='Default.Retail.Druid.GuardianGuide.Name',descriptionKey='Default.Retail.Druid.GuardianGuide.Description',
+ nameKey="Reference (Icy Veins and Wowhead)",descriptionKey="Reference only, off by default: the guides' Guardian priority. Debuffs and procs are hidden in Midnight combat, so it cannot run there; rage and health are hidden on Retail, so the 80-rage Raze and Maul dump is left to you. Thrash and Mangle on cooldown, Red Moon on a single target, Moonfire when missing or on Galactic Guardian, Swipe. Reminders whenever they are ready in combat: Ironfur, Frenzied Regeneration, Survival Instincts; Bear Form between pulls; Berserk or Incarnation, Lunar Beam, Convoke, Heart of the Wild, Skull Bash, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'guardian','tank','reference','icy-veins','wowhead'},
  sources={

@@ -24,7 +24,7 @@ local madness=dot(335467)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow.icyveins',revision=8,
  blocks={['retail.priest.upkeep']=2},
- nameKey='Default.Retail.Priest.Shadow.IcyVeins.Name',descriptionKey='Default.Retail.Priest.Shadow.IcyVeins.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft order reads DoT timers, Madness and Voidform, which Midnight hides in combat; Insanity and health are hidden on Retail, so the Insanity-cap Madness, the Shadow Word: Death execute and Desperate Prayer are left to you. Vampiric Touch before the pull; Tentacle Slam to apply Vampiric Touch; Vampiric Touch and Shadow Word: Pain refreshed in their last 30%; Shadow Word: Madness when it is ending or in Voidform; Void Blast during Madness; Tentacle Slam at two charges; Void Torrent; Mind Blast; Tentacle Slam; Mind Flay: Insanity during Madness; Void Volley; Death and Pain while moving; Mind Flay, clipped for a ready Mind Blast. Reminders: Halo, Voidform with both DoTs up, Power Infusion in Voidform.",
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
  tags={'shadow','ranged','reference','single-target','icy-veins','simulationcraft'},
  sources={

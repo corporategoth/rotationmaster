@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.unholy',revision=5,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.unholy-upkeep']=2,['mop.deathknight.unholy-open']=2,
   ['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
- nameKey='Default.MoP.DeathKnight.Unholy.Name',descriptionKey='Default.MoP.DeathKnight.Unholy.Description',
+ nameKey="Unholy",descriptionKey="Recommended for Unholy, and the premade for any Death Knight Blood and Frost do not claim, including one without a specialization. Pulls from range with Outbreak or Icy Touch (Death Grip solo). Death Strike on Dark Succor or below 35% health, diseases (Unholy Blight, Outbreak, Plague Strike, Icy Touch), Blood Tap at eleven charges, Soul Reaper under 35%, Dark Transformation at five Shadow Infusion stacks, Death Coil near the runic power cap, Death and Decay on a target that will live, Scourge Strike, Death Coil on Sudden Doom or at 40, Outbreak while Unholy Strength is up, Festering Strike (Blood Strike before you learn it), Plague Leech, Horn of Winter. Three enemies on you: a disease spread, Death and Decay, Blood Boil and Icy Touch on a Frost rune. Reminders: Unholy Presence, your ghoul, Summon Gargoyle under Bloodlust or on a long elite fight, Unholy Frenzy, Empower Rune Weapon, Horn of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a group boss; Anti-Magic Shell is off.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','leveling','single-target','aoe','icy-veins'},
  sources={

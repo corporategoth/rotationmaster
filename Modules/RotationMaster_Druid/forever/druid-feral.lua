@@ -63,7 +63,7 @@ local casterSection={
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=7,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1},
- nameKey='Default.Forever.Druid.Feral.Name',descriptionKey='Default.Forever.Druid.Feral.Description',
+ nameKey="Feral, Cat and Bear",descriptionKey="Cat and Bear in one premade, chosen by your form; it takes over once Feral is your main talent tree (or has 11 points), or when you shift into Cat or Bear Form. Cat: Ravage or Shred from Prowl, Faerie Fire, Rip at four combo points, Ferocious Bite once Rip runs, Rake, then Shred when the target is not facing you (Claw otherwise). Bear: Faerie Fire and Feral Charge at range, Demoralizing Roar in a group or on two enemies, Primal Bite, Swipe on three or more, Lacerate, Swipe. In caster form it suggests Cat Form (Bear before you have Cat). Reminders: Maul whenever you can afford it in Bear Form, Enrage, Berserk on big pulls or elites, Innervate while solo, Mark of the Wild, Thorns. Health, energy, rage and mana are hidden from addons on Forever, so powershifting, Frenzied Regeneration and healing yourself are your call. Taunts, interrupts and positioning stay with you.",
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'feral','cat','bear','tank','melee','leveling','icy-veins'},
  sources={

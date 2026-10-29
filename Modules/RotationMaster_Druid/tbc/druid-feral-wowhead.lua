@@ -14,7 +14,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.druid.feral.wowhead',revision=6,
  blocks={['tbc.druid.boundaries']=4,['tbc.druid.upkeep']=1,['tbc.druid.feral-cooldowns']=2,['tbc.druid.cat-opening']=2,
   ['tbc.druid.cat-builders']=1,['tbc.druid.bear-core']=2,['tbc.druid.feral-humanoid']=2},
- nameKey='Default.TBC.Druid.Feral.Wowhead.Name',descriptionKey='Default.TBC.Druid.Feral.Wowhead.Description',
+ nameKey="Feral (Wowhead)",descriptionKey="Wowhead's Feral, an alternative to the recommended Icy Veins Feral premade, off by default: enable it and disable that one, or raise its priority. Rip whenever it is down at four combo points and Ferocious Bite only on a target about to die (no bite-weaving); bears spend free global cooldowns on Lacerate before Swipe. Innervate when a cat runs low on mana. Otherwise the same as the Icy Veins variant.",
  applicability={families={'tbc'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','feral','melee','tank','single-target','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/druid/feral/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2026-02-10'},

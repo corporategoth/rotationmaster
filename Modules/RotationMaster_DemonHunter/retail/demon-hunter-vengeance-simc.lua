@@ -21,7 +21,7 @@ local charged={type='SPELL_CHARGES',spell=263642,operator='GREATERTHANOREQUALS',
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance.simc',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey='Default.Retail.DemonHunter.VengeanceSimc.Name',descriptionKey='Default.Retail.DemonHunter.VengeanceSimc.Description',
+ nameKey="Reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Vengeance lists. Hidden combat data keeps it from running in Midnight combat, and Fury is hidden on Retail, so its Fury thresholds are left out. Aldrachi Reaver: Sigil of Flame and Immolation Aura first, Metamorphosis, the Reaver's Glaive cycle with Felblade, Fiery Brand, Sigil of Spite, Spirit Bomb on packs, Soul Carver in Fiery Demise, then Fracture, Soul Cleave, Felblade, Fel Devastation. Annihilator: spend a ready Voidfall with Spirit Bomb or Soul Cleave, Fracture at two Voidfall stacks, Metamorphosis, Spirit Bomb, Sigil of Spite, Fracture at full charges, Immolation Aura, Sigil of Flame, Fracture, Soul Cleave, Felblade, Throw Glaive. Reminders: Demon Spikes, Disrupt, Blur.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'vengeance','tank','reference','simulationcraft'},
  sources={

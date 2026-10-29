@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.priest.dps-boundaries']=2,['era.priest.shadowform']=1,['era.priest.pull']=3,['era.priest.pull-shield']=1,
   ['era.priest.moving']=2,['era.priest.wand-finish']=2,['era.priest.pain']=1,['era.priest.filler']=2,['era.priest.wand-fallback']=2,
   ['era.priest.upkeep']=1},
- nameKey='Default.Era.Priest.Dps.Simulator.Name',descriptionKey='Default.Era.Priest.Dps.Simulator.Description',
+ nameKey="Damage (simulator Undead raid)",descriptionKey="The recommended damage priority with simulator' raid choice for Undead priests: Inner Focus is spent on Devouring Plague instead of Mind Blast, and Devouring Plague is cast in raids too, so use it only where your raid has debuff slots to spare. No Vampiric Embrace. An alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'era'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','raid','single-target'},
  sources={},

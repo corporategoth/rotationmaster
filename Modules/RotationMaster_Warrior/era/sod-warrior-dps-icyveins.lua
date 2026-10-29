@@ -21,7 +21,7 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps.icyveins',revision=6,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
- nameKey='Default.SoD.Warrior.DPS.IcyVeins.Name',descriptionKey='Default.SoD.Warrior.DPS.IcyVeins.Description',
+ nameKey="Melee DPS (SoD, Icy Veins)",descriptionKey="Icy Veins' Season of Discovery Fury and Arms pages, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Execute near the top below 20% or on Sudden Death, Slam on Blood Surge, Bloodthirst or Mortal Strike, Whirlwind, Overpower, Raging Blow, then Quick Strike and Hamstring only above 60 rage; no Rend; Heroic Strike only above 80 rage. Same reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
  tags={'dps','melee','endgame','season-of-discovery','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-classic/fury-warrior-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Fury Warrior DPS rotation (Phase 6)',reviewedAt='2026-10-23',revision='2025-04-08'},

@@ -18,7 +18,7 @@ local function sealed()local out={};for i,id in ipairs({20154,21084,20375,21082,
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection',revision=5,
  blocks={['era.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=3},
- nameKey='Default.Era.Paladin.Protection.Name',descriptionKey='Default.Era.Paladin.Protection.Description',
+ nameKey="Protection",descriptionKey="Tanking from level 1 to 60, chosen by Righteous Fury or the Protection tree. Seal of Righteousness (Seal of Wisdom when mana drops below 40%), Holy Shield and Judgement to pull, Holy Shield kept up, Consecration and Holy Wrath (Undead and Demons) when two or more enemies are on you, otherwise Judgement of the Crusader once, then Judgement and Consecration with mana to spare, Exorcism on Undead and Demons. Reminders: Righteous Fury, Devotion Aura, Sanctuary, Kings or Might, Lay on Hands when nearly dead. Taunting, Blessing of Kings spam and spell ranks stay with you.",
  applicability={families={'era'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','protection','tank','single-target','aoe','wowhead','icy-veins'},
  sources={{url='https://www.wowhead.com/classic/guide/lights-bulwark-protection-paladin-tanking',title='Wowhead: Protection Paladin tanking guide (Askalon)',reviewedAt='2026-10-23',revision='2024-11-21'},

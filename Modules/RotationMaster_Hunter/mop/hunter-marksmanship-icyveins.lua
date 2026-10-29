@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship.icyveins',revision=7,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1},
- nameKey='Default.MoP.Hunter.Marksmanship.IcyVeins.Name',descriptionKey='Default.MoP.Hunter.Marksmanship.IcyVeins.Description',
+ nameKey="Arcane Shot dump (Icy Veins)",descriptionKey="An alternative to the Marksmanship premade, as Icy Veins, Method, wowtbc.gg and Hekili play it: Aimed Shot is hard-cast only above 80% target health or under Rapid Fire or Bloodlust, and spare focus goes to Arcane Shot at 60 instead. Steady Focus is refreshed under 4 seconds; on four or more enemies Multi-Shot comes first. Off by default: enable it and disable the Marksmanship premade, or raise its priority.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'marksmanship','leveling','single-target','aoe','icy-veins','hekili'},
  sources={

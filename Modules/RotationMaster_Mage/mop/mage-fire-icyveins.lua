@@ -17,7 +17,7 @@ local PYRO,HEAT,ALTER=48108,48107,110909
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire.icyveins',revision=7,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=3,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=2},
- nameKey='Default.MoP.Mage.Fire.IcyVeins.Name',descriptionKey='Default.MoP.Mage.Fire.IcyVeins.Description',
+ nameKey="Hold Pyroblast! (Icy Veins)",descriptionKey="Icy Veins', Method's and wowtbc.gg's Fire play, an alternative to the recommended Fire premade: a Pyroblast! proc is held until a Heating Up joins it, then cast together with your Fireball, and spent alone only when it is about to expire. Everything else matches the recommended one. Off by default: enable it and disable the recommended Fire premade, or raise its priority.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','icy-veins'},
  sources={

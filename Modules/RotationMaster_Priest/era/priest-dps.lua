@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.priest.dps-boundaries']=2,['era.priest.shadowform']=1,['era.priest.pull']=3,['era.priest.pull-shield']=1,
   ['era.priest.moving']=2,['era.priest.wand-finish']=2,['era.priest.pain']=1,['era.priest.filler']=2,['era.priest.wand-fallback']=2,
   ['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1},
- nameKey='Default.Era.Priest.Dps.Name',descriptionKey='Default.Era.Priest.Dps.Description',
+ nameKey="Damage",descriptionKey="Damage from level 1 to 60, and the Priest default whenever the healer premade does not apply (solo, Shadow, or no talents yet). Shadowform when learned; before a pull a shield when solo, then Holy Fire (without Shadowform), Mind Blast or Smite. Shadow Word: Pain once per target that will live, Mind Blast on cooldown, Mind Flay as the filler (Smite and Holy Nova before you have it), and the wand on a dying target or when your mana runs low while solo. Vampiric Embrace and Devouring Plague on long fights, never in raids. Reminders: Inner Fire, Fortitude, racial buffs, Inner Focus with Mind Blast, Psychic Scream when two enemies reach you at half health, Fade when your target turns on you, Desperate Prayer. Target choice, multi-dotting and downranking stay with you.",
  applicability={families={'era'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','leveling','raid','single-target','icy-veins','wowhead'},
  sources={

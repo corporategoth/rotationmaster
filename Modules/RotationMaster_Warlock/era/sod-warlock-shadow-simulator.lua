@@ -22,7 +22,7 @@ local others={type='OR',value={}};for i,id in ipairs(curses)do if id~=980 then o
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow.simulator',revision=6,
  blocks={['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1},
- nameKey='Default.SoD.Warlock.Shadow.Simulator.Name',descriptionKey='Default.SoD.Warlock.Shadow.Simulator.Description',
+ nameKey="Shadow, Drain Soul filler (SoD, simulator)",descriptionKey="The simulator Phase 6 Affliction list for a Soul Siphon build, an alternative to the recommended Season of Discovery Shadow premade, off by default: enable it and disable that one, or raise its priority. Drain Soul is the filler at any health, and the next step shows as soon as it is due so you can clip the channel for it; any other channel is left to finish. Unstable Affliction and Shadowflame renewed with 7.5 seconds left, Agony and Corruption with 6, Master Channeler Drain Life, Haunt, Shadow Bolt only on a Shadow Trance proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
  tags={'dps','ranged','caster','endgame','season-of-discovery'},
  sources={},

@@ -17,7 +17,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow',revision=6,
  blocks={['retail.priest.boundaries']=3,['retail.priest.upkeep']=2},
- nameKey='Default.Retail.Priest.Shadow.Name',descriptionKey='Default.Retail.Priest.Shadow.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Shadow in Midnight. In combat the game now hides your DoTs, buffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which keeps your DoTs, Shadowform and Voidform going and lets Mind Flay finish), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Power Infusion in the 20 seconds after you cast Voidform, Shadowform and Power Word: Fortitude between pulls, Silence on an interruptible cast (it lights only where the game lets the cast be read). Health is hidden on Retail, so Desperate Prayer is your call.",
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
  tags={'shadow','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

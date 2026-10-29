@@ -98,15 +98,14 @@ test(
 
 test('the names the user asked for, and Season of Discovery keeps its mark', function()
     assert(
-        names['Default.Retail.Monk.Brewmaster.Name'] == 'Blizzard Assisted with brews',
-        names['Default.Retail.Monk.Brewmaster.Name']
+        names["Blizzard Assisted with brews"] == 'Blizzard Assisted with brews',
+        names["Blizzard Assisted with brews"]
     )
 
-    assert(names['Default.Retail.Monk.BrewmasterGuide.Name'] == 'Reference (Icy Veins)')
+    assert(names["Reference (Icy Veins)"] == 'Reference (Icy Veins)')
 
     assert(
-        names['Default.SoD.Druid.Balance.Name'] == 'Balance (SoD)'
-            and names['Default.Era.Druid.Balance.Name'] == 'Balance',
+        names["Balance (SoD)"] == 'Balance (SoD)' and names["Balance"] == 'Balance',
         'Classic Era packs load on Season of Discovery too, so its packs say so'
     )
 end)

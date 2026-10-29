@@ -29,7 +29,7 @@ local kill=any(buff(471878),buff(472324),buff(472325),buff(1276720),{type='SPELL
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=8,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
- nameKey='Default.Retail.Hunter.BeastMasteryGuide.Name',descriptionKey='Default.Retail.Hunter.BeastMasteryGuide.Description',
+ nameKey="Reference (SimulationCraft and Icy Veins)",descriptionKey="Reference only, off by default: the optimized Beast Mastery priority. Charges, cooldowns and procs are hidden from addons in Midnight combat, so it cannot run there; read it, or clone it to experiment. Focus is hidden on Retail. Calls your pet, marks the target before the pull. Barbed Shot just before Bestial Wrath or before it caps; Bestial Wrath; Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off; Cobra Shot on Cobra Fang; Cobra Shot; Barbed Shot when Cobra Shot is unaffordable. Dark Ranger: Black Arrow during Withering Fire and Wailing Arrow as it ends. Three or more enemies (two with Beast Cleave): Wild Thrash to start Beast Cleave, then Kill Command, Barbed Shot and Cobra Shot while it lasts. Reminders: Bloodshed and the Assisted premade's utility reminders.",
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'beast-mastery','ranged','pet','reference','simulationcraft','icy-veins'},
  sources={

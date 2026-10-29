@@ -123,10 +123,12 @@ for module in modules:
         files = toc_files(toc)
         if not files or files[0] != 'bind.lua':
             errors.append(f'Module TOC must load bind.lua first: {toc.relative_to(root)}')
+        if len(files) < 2 or files[1] != 'locales.xml':
+            errors.append(f'Module TOC must load class locales after bind.lua: {toc.relative_to(root)}')
         for line in files:
             path = module / line.replace('\\', '/')
             walk(path)
-            if line != 'bind.lua':
+            if line not in ('bind.lua', 'locales.xml'):
                 if not line.startswith(edition + '/'):
                     errors.append(f'{toc.relative_to(root)} lists a file outside {edition}/: {line}')
                 listings.setdefault(path.resolve(), []).append(toc)
@@ -138,7 +140,7 @@ for module in modules:
             errors.append(f'Module bootstrap differs from the others: {(module / "bind.lua").relative_to(root)}')
 for module in modules:
     for path in sorted(module.rglob('*.lua')):
-        if path.name == 'bind.lua' and path.parent == module:
+        if (path.name == 'bind.lua' and path.parent == module) or path.parent == module / 'Locales':
             continue
         count = len(listings.get(path.resolve(), []))
         if count != 1:

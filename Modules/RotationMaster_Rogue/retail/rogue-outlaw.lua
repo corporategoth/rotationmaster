@@ -16,7 +16,7 @@ local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw',revision=6,
  blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
- nameKey='Default.Retail.Rogue.Outlaw.Name',descriptionKey='Default.Retail.Rogue.Outlaw.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Outlaw in Midnight. Shows Blizzard's Assisted Combat suggestion (it handles the stealth opener, Roll the Bones, Blade Flurry, Adrenaline Rush, Between the Eyes and the finishers), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: poisons and Stealth between pulls, Vanish when you are out of stealth in combat, Kick. Health is hidden on Retail, so Crimson Vial is your call. Keep It Rolling stays with you: the game hides how many Roll the Bones buffs you have.",
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'outlaw','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

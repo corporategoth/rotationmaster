@@ -15,7 +15,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.shaman.restoration.warcrafttavern',revision=5,
  blocks={['era.shaman.manual']=3,['era.shaman.cures']=1,['era.shaman.healer-damage']=2},
- nameKey='Default.Era.Shaman.Restoration.WarcraftTavern.Name',descriptionKey='Default.Era.Shaman.Restoration.WarcraftTavern.Description',
+ nameKey="Restoration, Chain Heal first (Warcraft Tavern)",descriptionKey="Warcraft Tavern's Restoration, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. Chain Heal is the heal for anyone below 90%, with Lesser Healing Wave for someone about to die; Healing Wave is only for an assigned tank healer with Healing Way (listed off). Same cures, damage on enemies and totem reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'healer','endgame','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/pve-restoration-shaman/',title='Warcraft Tavern: Classic PvE Restoration Shaman',reviewedAt='2026-10-23'}},

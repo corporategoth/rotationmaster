@@ -24,7 +24,7 @@ local rolled=any(own(193356),own(199600),own(193358),own(193357),own(199603),own
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw.icyveins',revision=6,
  blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
- nameKey='Default.Retail.Rogue.Outlaw.IcyVeins.Name',descriptionKey='Default.Retail.Rogue.Outlaw.IcyVeins.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins, SimulationCraft and Wowhead order reads Roll the Bones buffs, Opportunity stacks and energy, which Midnight hides in combat. From stealth Ambush. One combo point short of full or more: Between the Eyes, Killing Spree, Coup de Grace, Dispatch. Otherwise Ambush with Audacity, Pistol Shot at six Opportunity stacks (three when low on combo points), Ambush, Sinister Strike. Reminders: Roll the Bones with no roll up, Adrenaline Rush at two or fewer combo points, Blade Flurry kept up on two or more enemies, Blade Rush, Preparation when Adrenaline Rush, Between the Eyes and Blade Rush are all cooling. Keep It Rolling stays manual.",
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'outlaw','melee','reference','single-target','aoe','icy-veins','simulationcraft','wowhead'},
  sources={

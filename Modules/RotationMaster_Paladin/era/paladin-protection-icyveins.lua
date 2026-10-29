@@ -17,7 +17,7 @@ local function sealed()local out={};for i,id in ipairs({20154,21084,20375,21082,
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.paladin.protection.icyveins',revision=6,
  blocks={['era.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=3},
- nameKey='Default.Era.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.Era.Paladin.Protection.IcyVeins.Description',
+ nameKey="Protection, Seal of Wisdom (Icy Veins)",descriptionKey="Icy Veins' raid tanking with Wowhead's Wisdom rotation, an alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority. Keeps Seal of Wisdom up and judges it whenever the target lacks Judgement of Wisdom, otherwise judges only to pull; Holy Shield, Consecration every cooldown, Holy Wrath on Undead and Demon packs, Exorcism, and Greater Blessing of Kings as the threat filler in a raid. Same reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='PALADIN'},
  tags={'endgame','raid','protection','tank','single-target','aoe','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/protection-paladin-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Protection Paladin rotation',reviewedAt='2026-10-23',revision='2024-11-18'},

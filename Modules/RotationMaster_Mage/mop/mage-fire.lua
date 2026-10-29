@@ -20,7 +20,7 @@ local PYRO,HEAT,ALTER=48108,48107,110909
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire',revision=7,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=3,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=2},
- nameKey='Default.MoP.Mage.Fire.Name',descriptionKey='Default.MoP.Mage.Fire.Description',
+ nameKey="Recommended",descriptionKey="Recommended for Fire, from level 10 to 90 (selected in the Fire specialization). Opens with a hard Pyroblast, then Inferno Blast (Fire Blast before 24) turns Heating Up into a Pyroblast! proc, which is cast at once unless Combustion is about to come off cooldown; then it waits for the next Heating Up while you cast Fireball. Combustion lights right after a Pyroblast while Ignite and the Pyroblast burn are on the target; the addon cannot see how big Ignite is, so judge a weak one yourself. Keeps your talented bomb up, spreads with Inferno Blast when two or more enemies fight you, Cone of Cold and Arcane Explosion for five close by, Scorch on the move. Reminders: Molten Armor, Presence of Mind, Alter Time with both procs, Mana Gem, Arcane Brilliance, Counterspell, Mirror Image, Ice Barrier, Ice Floes, Invocation or Rune of Power. Dragon's Breath, Time Warp and Spellsteal are off.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','wowhead'},
  sources={

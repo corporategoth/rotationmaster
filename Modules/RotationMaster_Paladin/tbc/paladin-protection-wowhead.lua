@@ -19,7 +19,7 @@ local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,34870
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.wowhead',revision=6,
  blocks={['tbc.paladin.tank-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
- nameKey='Default.TBC.Paladin.Protection.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Protection.Wowhead.Description',
+ nameKey="Protection (Wowhead & simulator)",descriptionKey="Tanking for the Protection tree or any Paladin with Righteous Fury on. Pulls with Holy Shield, Avenger's Shield and Judgement; against a crushing target (world boss or three or more levels above you) Holy Shield comes first; then Consecration, Exorcism on Undead and Demons, Judgement, Holy Shield, Holy Wrath on undead packs, Avenger's Shield except on crushing targets. Seal of Wisdom on packs when mana is short, Righteousness otherwise. Reminders: Righteous Fury, Devotion Aura, Sanctuary (or Kings, or Wisdom), Avenging Wrath, Lay on Hands. Taunts and target swaps stay with you.",
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','protection','tank','single-target','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/paladin/tank-rotation-cooldowns-abilities-pve',title='Wowhead: Protection Paladin tank rotation',reviewedAt='2026-10-23',revision='2026-02-10'},

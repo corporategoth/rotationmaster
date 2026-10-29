@@ -175,7 +175,7 @@ addon:RegisterCondition("GROUP_COUNT", {
     -- Builds the help page for the GROUP_COUNT condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.GROUP_COUNT"]))
+        frame:AddChild(helpers.CreateText(L["Counts the players in your party or raid, always including you: the whole group, the members holding an assigned role (Tank, Healer or damage dealer) or the members who are dead or ghosts. Tick the box to compare a percent of the whole group instead of a number of players, for example more than 50 percent dead. Alone, the group is 1 player. A member with no assigned role is not counted under any role. A member the game cannot report makes the count unavailable rather than too low."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Group Count"], L["Value"],
             L["A number of players, or a percent of the whole group when the box is ticked. You are always part of the group and of every count you fit."])

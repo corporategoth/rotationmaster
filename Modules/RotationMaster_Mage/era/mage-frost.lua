@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost',revision=5,
  blocks={['era.mage.boundaries']=3,['era.mage.frostbolt']=1,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
- nameKey='Default.Era.Mage.Frost.Name',descriptionKey='Default.Era.Mage.Frost.Description',
+ nameKey="Frost",descriptionKey="Frost from level 1 to 60, also for Arcane builds and the Mage default before talents. Frostbolt (Fireball before level 4); Frost Nova when a mob reaches you, except on raid bosses; Arcane Missiles once a mob reaches you if you have Improved Arcane Missiles; Cone of Cold, Arcane Explosion and Blizzard when three or more enemies are engaged; Fire Blast while moving with mana to spare; Fire Blast and the wand finish ordinary mobs when solo; wand when out of mana. Reminders: armor (Ice Armor solo, Mage Armor in a group, never replacing one you chose), Arcane Intellect, conjuring and using mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, Remove Lesser Curse, Ice Block, Cold Snap, Arcane Power and Presence of Mind. Off by default: the Shatter Flamestrike and rank-1 Frostbolt to stack Winter's Chill. Blink, Polymorph, kiting and target choice stay with you.",
  applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'frost','arcane','leveling','raid','single-target','aoe'},
  sources={

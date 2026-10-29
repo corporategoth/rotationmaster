@@ -29,7 +29,7 @@ local function rend()return spell('warrior-prot-rend',772,negate(debuff(772,true
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.protection',revision=6,
  blocks={['forever.warrior.boundaries']=3,['forever.warrior.upkeep']=2},
- nameKey='Default.Forever.Warrior.Protection.Name',descriptionKey='Default.Forever.Warrior.Protection.Description',
+ nameKey="Protection (Icy Veins)",descriptionKey="Tanking whenever you are in Defensive Stance, from level 10 to 60. Charges to pull (in Defensive Stance once you have Vanguard), Victory Rush, and on two or more enemies Thunder Clap on cooldown, Demoralizing Shout, Shield Slam, Revenge and Rend. On one target: Shield Slam, Revenge, Demoralizing Shout, Rend, Sunder Armor (five on elites) and Thunder Clap on dangerous targets. Reminders: Battle Shout, Bloodrage, Shield Bash, Shield Block while you hold the target, Heroic Strike while Shield Slam and Revenge are both recovering, Cleave on packs; Taunt and Shield Wall are listed but off. Rage, health and the target's mana are hidden from addons on Forever, so the rage thresholds, casters and Last Stand are your call. Left to you: swapping to Battle Stance to Charge before Vanguard, taunting other enemies and picking up loose ones.",
  applicability={families={'forever'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','aoe','icy-veins','method'},
  sources={{url='https://www.icy-veins.com/wow-forever/protection-warrior-tank-pve-guide',title='Icy Veins: Forever Protection Warrior tank PvE guide',reviewedAt='2026-10-23',revision='2026-10-17'},

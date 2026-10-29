@@ -16,7 +16,7 @@ local function remain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyran
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection.simulator',revision=7,
  blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
- nameKey='Default.SoD.Paladin.Protection.Simulator.Name',descriptionKey='Default.SoD.Paladin.Protection.Simulator.Description',
+ nameKey="Protection (SoD, simulator)",descriptionKey="The simulator tank list, an alternative to the recommended Season of Discovery Protection premade, off by default: enable it and disable that one, or raise its priority. Judgement whenever a seal is up, the seal renewed just before it runs out, Holy Shield, Avenger's Shield, Hammer of the Righteous, Exorcism, Shield of Righteousness last. Same reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','protection','tank','single-target','season-of-discovery'},
  sources={},

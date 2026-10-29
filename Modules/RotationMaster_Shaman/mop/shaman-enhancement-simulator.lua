@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement.simulator',revision=7,
  blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
   ['mop.shaman.enhancement-upkeep']=2,['mop.shaman.enhancement-aoe']=1},
- nameKey='Default.MoP.Shaman.Enhancement.Simulator.Name',descriptionKey='Default.MoP.Shaman.Enhancement.Simulator.Description',
+ nameKey="Weave every stack (simulator)",descriptionKey="Off by default; same switch as the recommended Enhancement premade, so enable it and disable that one to use it. The simulator's list for players who time casts between swings: Lightning Bolt, Elemental Blast or Chain Lightning on any number of Maelstrom Weapon stacks whenever the cast finishes before your next main-hand swing, Unleash Elements also whenever Flame Shock is missing, and Earth Shock only below two stacks. Reminders as the recommended premade.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'enhancement','dps','melee','endgame','wowtbc'},
  sources={

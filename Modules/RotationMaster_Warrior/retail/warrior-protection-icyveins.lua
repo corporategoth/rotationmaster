@@ -19,7 +19,7 @@ local tanking={type='THREAT',unit='target',threat=3}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection.icyveins',revision=7,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1,['retail.warrior.charge']=3},
- nameKey='Default.Retail.Warrior.Protection.IcyVeins.Name',descriptionKey='Default.Retail.Warrior.Protection.IcyVeins.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft order reads Shield Block, Thunder Blast and Colossal Might, which Midnight hides in combat; rage and health are hidden on Retail. Charge to open; Ravager; Thunder Blast at two stacks; Demolish at five Colossal Might; Shield Charge; Thunder Blast; Shield Slam; Thunder Clap; Execute; Revenge; Devastate. Reminders: Shield Block when its buff is down and you are tanking, Ignore Pain, Avatar, Demoralizing Shout, Champion's Spear, Shield Wall and Last Stand whenever they are ready in combat, Battle Shout, Pummel.",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'protection','tank','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={

@@ -26,7 +26,7 @@ local nearly=all(mw(8),any(soon(470057),soon(187874)))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.enhancement.stormbringer',revision=6,
  blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
- nameKey='Default.Retail.Shaman.Enhancement.Stormbringer.Name',descriptionKey='Default.Retail.Shaman.Enhancement.Stormbringer.Description',
+ nameKey="Stormbringer reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Stormbringer list (Icy Veins and Wowhead agree) reads Flame Shock, Crash Lightning, Lashing Flames and cooldown timers, which Midnight hides in combat. On three or more engaged enemies: Crash Lightning for its buff, Tempest at 10 Maelstrom Weapon, Chain Lightning at 9, Crash Lightning, Lava Lash, Sundering. Then Primordial Storm at 9, Voltaic Blaze or Flame Shock when Flame Shock is missing, Sundering, Crash Lightning for its buff, Lava Lash for Lashing Flames, Windstrike, Tempest or Lightning Bolt at 10 (8 with Voltaic Blaze or Crash Lightning about ready), Stormstrike at two charges, Lava Lash, Stormstrike, Voltaic Blaze, Crash Lightning, Lightning Bolt at 5, Flame Shock. Reminders: Doom Winds, Ascendance outside Doom Winds, Feral Spirit, and the shared ones.",
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'enhancement','melee','reference','stormbringer','single-target','aoe','icy-veins','simulationcraft','wowhead'},
  sources={

@@ -286,7 +286,7 @@ function addon:BuildProfileSettings(p)
                         help = {
                             heading = L['Profiles'],
                             owner = selectedName,
-                            brief = L['Help.Transfers.profile_brief'],
+                            brief = L["Explain profile import destinations and when changes are saved."],
                             briefs = self:TransferHelpBriefs(),
                             valid = function()
                                 if not selected then
@@ -300,11 +300,15 @@ function addon:BuildProfileSettings(p)
                             end,
                             sections = function(dialog)
                                 return {
-                                    { title = L['Import/Export'], text = L['Help.Transfers.profile_overview'] },
+                                    {
+                                        title = L['Import/Export'],
+                                        text = L["Copy the text to export a profile, or paste profile text to import. The destination controls choose a new profile or replacement of the selected saved profile. Opening Help does not decode, import, or apply the text."],
+                                    },
                                     {
                                         title = L['Destination'],
-                                        text = dialog.mode == 'replace' and L['Help.Transfers.profile_replace']
-                                            or L['Help.Transfers.profile_new'],
+                                        text = dialog.mode == 'replace'
+                                            and L["REPLACE applies immediately to the selected saved profile after Import. Replacing the active profile resets it and applies the imported settings; replacing another profile writes that profile. Reopen the import if the selected saved profile changes."]
+                                            or L["NEW stages the imported profile in the Profiles editor. Import fills a new-profile draft; the new profile is not saved or activated until you complete the creation controls in that editor. Give it an unused name."],
                                     },
                                 }
                             end,

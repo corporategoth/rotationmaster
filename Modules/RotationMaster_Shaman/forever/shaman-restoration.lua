@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.restoration',revision=6,
  blocks={['forever.shaman.manual']=3,['forever.shaman.upkeep']=2,['forever.shaman.group-totems']=1,
   ['forever.shaman.caster-aoe']=1,['forever.shaman.stormstrike-hybrid']=1},
- nameKey='Default.Forever.Shaman.Restoration.Name',descriptionKey='Default.Forever.Shaman.Restoration.Description',
+ nameKey="Restoration",descriptionKey="Healing once Restoration is your main talent tree with 16 points (Mana Tide Totem's tier), after Icy Veins. With a friendly target: an instant Healing Wave once you use Nature's Swiftness, Cure Poison and Cure Disease, Riptide on a target without it, Chain Heal in a group, Healing Wave. You pick who to heal by targeting them; health and mana are hidden from addons on Forever, so when to use Nature's Swiftness and Lesser Healing Wave is your call. With a hostile target and nothing to heal: Fire Nova and Chain Lightning on packs, Stormstrike and Earth Shock if you know Stormstrike, Flame Shock on elites and bosses, Lightning Bolt, then melee. Reminders: Water Shield, the Earth Shock interrupt, Mana Tide and group buff totems. Left to you: downranking, other totems, Purge and Ghost Wolf.",
  applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'healer','caster','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-forever/restoration-shaman-leveling',title='Icy Veins: Forever Restoration Shaman leveling',reviewedAt='2026-10-23',revision='2026-10-18'},

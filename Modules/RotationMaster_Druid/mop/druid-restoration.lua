@@ -21,7 +21,7 @@ local still=negate({type='MOVING'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration',revision=6,
  blocks={['mop.druid.boundaries']=4,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=3},
- nameKey='Default.MoP.Druid.Restoration.Name',descriptionKey='Default.MoP.Druid.Restoration.Description',
+ nameKey="Recommended",descriptionKey="Recommended for Restoration from level 10, after Wowhead's Phase 5 group healing. Heals your current friendly target, or you with no target; choosing whom to heal is up to you. Swiftmend on a target with your HoT when it is low, when Harmony has dropped, or into Wild Growth with Soul of the Forest; Wild Growth when three people nearby are hurt; instant Healing Touch on Nature's Swiftness; Regrowth on Clearcasting or a dying target; Rejuvenation; then Healing Touch and Nourish while standing still. An attackable target gets Moonfire and Wrath. Reminders: Lifebloom stacks and Ironbark on your focus (set the tank as focus), Wild Mushroom: Bloom on group damage, Force of Nature, Incarnation, Nature's Vigil, Nature's Swiftness, Innervate, Nature's Cure, Cenarion Ward, Barkskin, Mark of the Wild. Wild Mushroom placement, Tranquility and Genesis reminders are off by default.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'restoration','healer','leveling','wowhead','icy-veins'},
  sources={

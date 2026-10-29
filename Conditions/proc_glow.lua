@@ -108,7 +108,7 @@ addon:RegisterCondition("SPELL_GLOW", {
     --
     -- Help page: the condition's own text, then the shared spell widget help.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.SPELL_GLOW"]))
+        frame:AddChild(helpers.CreateText(L["Matches while the game shows the activation glow on this spell, the golden border an action button gets when a proc makes the spell castable or stronger. It asks the game directly, so it still reads when the buff behind the proc is hidden from addons in combat. Choose the spell as it appears on your bars; its base and override forms are checked too. Unavailable, never simply false, if the game cannot answer."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellwidget_help(frame)
     end,

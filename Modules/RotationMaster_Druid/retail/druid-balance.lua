@@ -15,7 +15,7 @@ local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INT
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey='Default.Retail.Druid.Balance.Name',descriptionKey='Default.Retail.Druid.Balance.Description',
+ nameKey="Blizzard Assisted",descriptionKey="Recommended for Balance. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Celestial Alignment (or Incarnation) in combat, Solar Beam on an interruptible cast, Moonkin Form and Mark of the Wild between pulls, and Barkskin and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Solar Beam lights only where the game shows them; health is hidden on Retail, so when to use Barkskin is your call.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'balance','ranged','assisted-combat'},
  sources={

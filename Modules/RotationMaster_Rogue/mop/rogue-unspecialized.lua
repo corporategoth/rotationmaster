@@ -16,7 +16,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.unspecialized',revision=6,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
- nameKey='Default.MoP.Rogue.Unspecialized.Name',descriptionKey='Default.MoP.Rogue.Unspecialized.Description',
+ nameKey="Unspecialized",descriptionKey="For levels 1 to 9, or a rogue who has not chosen a specialization yet; each specialization's premade takes over once you pick one. Opens from Stealth with Cheap Shot when solo, Ambush or Sinister Strike; suggests Stealth out of combat; Slice and Dice from two points, Recuperate and Kidney Shot when solo and hurt, Eviscerate at four points (two when the target is about to die), Sinister Strike. Reminders: poisons once learned, Kick, Evasion solo.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','warcraft-tavern','icy-veins'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/rogue-leveling-guide/',title='Warcraft Tavern: Rogue leveling guide (MoP Classic)',reviewedAt='2026-10-23'},

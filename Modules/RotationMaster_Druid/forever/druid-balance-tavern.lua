@@ -15,7 +15,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=6,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1},
- nameKey='Default.Forever.Druid.BalanceTavern.Name',descriptionKey='Default.Forever.Druid.BalanceTavern.Description',
+ nameKey="Balance, Multi-DoT (Warcraft Tavern)",descriptionKey="Warcraft Tavern's Multi-DoT leveling style, an alternative to the recommended Balance premade, off by default: enable it and disable that one, or raise its priority. Pulls with Wrath, keeps your Moonfire and Insect Swarm on the target, roots it with Entangling Roots once both are running while another enemy is fighting you, then Wrath. No Starfire (the build skips Eclipse). Switching to the next enemy is up to you. Reminders: Mark of the Wild, Thorns while solo.",
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'balance','leveling','multi-dot','warcraft-tavern'},
  sources={

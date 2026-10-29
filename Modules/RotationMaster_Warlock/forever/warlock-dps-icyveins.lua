@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.icyveins',revision=6,
  blocks={['forever.warlock.boundaries']=3,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
   ['forever.warlock.moving']=3,['forever.warlock.aoe']=2,['forever.warlock.wand']=2},
- nameKey='Default.Forever.Warlock.DPS.IcyVeins.Name',descriptionKey='Default.Forever.Warlock.DPS.IcyVeins.Description',
+ nameKey="All trees (Icy Veins)",descriptionKey="Icy Veins' Warlock leveling: the wand is the solo filler, Voidwalker is the default demon, Affliction and Destruction sacrifice their demon and play without one (from 41 and 55), Demonology keeps Demonic Brand up and uses Immolate only as a filler, and Destruction puts Bane of Havoc on the durable enemy of a pack and Conflagrates on cooldown once Incinerate is known. Choose it instead of the recommended Warlock premade if you follow Icy Veins. Health, mana and time to die are hidden from addons on Forever, so Drain Life when hurt, Life Tap and which targets will live long enough for DoTs are your call. An alternative to the recommended Warlock DPS premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'forever'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-forever/affliction-warlock-leveling',title='Icy Veins: Forever Affliction Warlock leveling',reviewedAt='2026-10-23',revision='2026-10-17'},

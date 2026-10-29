@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.priest.healer',revision=5,
  blocks={['era.priest.boundaries']=3,['era.priest.enemy-target']=2,['era.priest.dispels']=1,['era.priest.big-heal']=1,['era.priest.renew']=1,
   ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1},
- nameKey='Default.Era.Priest.Healer.Name',descriptionKey='Default.Era.Priest.Healer.Description',
+ nameKey="Healer",descriptionKey="Chosen in a group when Holy or Discipline is your main talent tree. Heals the friendly unit you target: Power Word: Shield below 30%, Flash Heal below 40%, dispels, Prayer of Healing when three of your party are hurt, Greater Heal (Heal or Lesser Heal before you learn it) below half health, Renew while moving or on light damage, then Heal rank 3 as the efficient top-up. Out of combat it offers Fortitude on your target. Targeting an enemy gives Shadow Word: Pain and Smite. Reminders: Inner Fire, Fortitude, Divine Spirit, Inner Focus, Desperate Prayer; Power Infusion is off by default. Choosing whom to heal and downranking stay with you.",
  applicability={families={'era'},actionContext='player',class='PRIEST'},
  tags={'holy','discipline','healer','dungeon','raid','icy-veins','wowhead'},
  sources={

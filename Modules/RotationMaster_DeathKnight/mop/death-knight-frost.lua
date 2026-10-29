@@ -16,7 +16,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.frost',revision=6,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.frost-upkeep']=2,['mop.deathknight.frost-open']=2,
   ['mop.deathknight.frost-tail']=1,['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
- nameKey='Default.MoP.DeathKnight.Frost.Name',descriptionKey='Default.MoP.DeathKnight.Frost.Description',
+ nameKey="Two-hander",descriptionKey="Frost with a two-handed weapon, the usual leveling setup; chosen in the Frost specialization whenever the two-weapon premade does not apply. Same opening, diseases, survival and AoE as the two-weapon premade, then Obliterate on Killing Machine, Frost Strike above 76 runic power, Howling Blast on Rime, Obliterate whenever a rune pair is full, Obliterate, Howling Blast, Plague Leech, Frost Strike at 40 and Horn of Winter. Before Obliterate (58) Death Strike spends your Unholy runes. Same reminders as the two-weapon premade.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'frost','leveling','single-target','aoe','hekili'},
  sources={

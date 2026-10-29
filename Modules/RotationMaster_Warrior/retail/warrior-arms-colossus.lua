@@ -22,7 +22,7 @@ local engaged={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms.colossus',revision=7,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1,['retail.warrior.charge']=3},
- nameKey='Default.Retail.Warrior.Arms.Colossus.Name',descriptionKey='Default.Retail.Warrior.Arms.Colossus.Description',
+ nameKey="Colossus reference (SimulationCraft)",descriptionKey="Reference only, off by default: the Colossus order from SimulationCraft and Icy Veins builds Colossal Might with Mortal Strike and reads buffs Midnight hides in combat. Charge to open; Sweeping Strikes on two or more; Mortal Strike below five Colossal Might; Rend before Colossus Smash; Ravager; Execute at two Sudden Death; Colossus Smash; Champion's Spear; Demolish in Colossus Smash with Colossal Might; Heroic Strike; Mortal Strike; Execute; Overpower; Rend under 5 seconds; Bladestorm on two or more; Slam. Reminders: Avatar, Die by the Sword, Battle Shout, Pummel.",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'arms','melee','reference','colossus','single-target','aoe','icy-veins','simulationcraft'},
  sources={

@@ -27,7 +27,7 @@ local instant={8928,8927,8926,6950,6949,6947}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.tank',revision=6,
  blocks={['era.rogue.boundaries']=3},
- nameKey='Default.SoD.Rogue.Tank.Name',descriptionKey='Default.SoD.Rogue.Tank.Description',
+ nameKey="Tank (SoD)",descriptionKey="Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built from simulator Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on cooldown, Blade Dance from one combo point (renewed from three), Slice and Dice from three (renewed from four), Fan of Knives, Crimson Tempest and Blunderbuss on three or more enemies, Blunderbuss while Blade Dance is up, Eviscerate at five with both buffs up, Poisoned Knife at low energy, then Saber Slash, Mutilate or Sinister Strike. Reminders: Tease in a group when your target attacks someone else, Kick, Evasion below half health, Blade Flurry, Adrenaline Rush, Thistle Tea and weapon poisons (the off-hand one only with an off-hand weapon). Shadowstep and Sebacious Poison duty stay with you.",
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
  tags={'tank','melee','endgame','aoe','season-of-discovery','icy-veins','zockify','warcraft-tavern'},
  sources={

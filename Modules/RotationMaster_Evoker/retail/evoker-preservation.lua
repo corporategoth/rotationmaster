@@ -14,7 +14,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.preservation',revision=6,
  blocks={['retail.evoker.heal-boundaries']=2,['retail.evoker.utility']=2},
- nameKey='Default.Retail.Evoker.Preservation.Name',descriptionKey='Default.Retail.Evoker.Preservation.Description',
+ nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default. Ally health, Echo, Reversion, Essence Burst and every cooldown are hidden from addons in Midnight combat, Rotation Master cannot choose whom to heal, and Blizzard has no Assisted Combat rotation for healers, so this premade does not heal. It reminds you of Blessing of the Bronze and Source of Magic out of combat, and when your target is an enemy it suggests damage: Fire Breath, Disintegrate, Living Flame, and Azure Strike while moving. Quell and Obsidian Scales reminders as in the other Evoker premades. Healing stays with you.",
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'preservation','healer','reference','icy-veins'},
  sources={

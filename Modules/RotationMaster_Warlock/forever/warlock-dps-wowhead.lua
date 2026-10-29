@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps.wowhead',revision=6,
  blocks={['forever.warlock.boundaries']=3,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
   ['forever.warlock.moving']=3,['forever.warlock.wand']=2},
- nameKey='Default.Forever.Warlock.DPS.Wowhead.Name',descriptionKey='Default.Forever.Warlock.DPS.Wowhead.Description',
+ nameKey="All trees (Wowhead)",descriptionKey="Wowhead's level-30 Warlock: Affliction and Demonology drain-tank with the Succubus (Corruption and Agony, no Immolate, then Drain Life for the rest of the fight; health and mana are hidden on Forever, so Life Tap is your call), Demonology keeps Demonic Brand up and Agonies only big targets, Destruction puts Agony, Corruption and Immolate on every mob, Conflagrates just before Immolate ends, saves Shadowburn for the killing blow and wands with the Voidwalker. Amplify Curse on every cooldown; Curse of the Elements and Bane of Doom only on elites and bosses; no pack section. Wowhead's guides stop at level 30. An alternative to the recommended Warlock DPS premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'forever'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','wowhead'},
  sources={{url='https://www.wowhead.com/forever/guide/classes/warlock/affliction/level-30-dps-overview',title='Wowhead: Forever level 30 Affliction Warlock',reviewedAt='2026-10-23',revision='2026-10-09'},

@@ -507,7 +507,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
     help = function(frame)
         itemHelp(frame)
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Trinket Slot"] .. color.RESET .. " - " .. L["Help.Conditions.ITEM_COOLDOWN_SLOT"]))
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Trinket Slot"] .. color.RESET .. " - " .. L["Choose a trinket slot to read whatever is equipped there, so one rotation works for every trinket; the item above is then ignored. An empty slot is false, and a trinket with no on-use effect is unavailable."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Item Cooldown"], L["Seconds"],
             "The number of seconds before you can use the top item found in " .. color.BLIZ_YELLOW .. L["Item Set"] ..

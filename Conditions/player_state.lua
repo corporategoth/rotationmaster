@@ -119,7 +119,7 @@ addon:RegisterCondition("PLAYER_STATE", {
     -- Builds the help page for the PLAYER_STATE condition.
     -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
-        frame:AddChild(helpers.CreateText(L["Help.Conditions.PLAYER_STATE"]))
+        frame:AddChild(helpers.CreateText(L["Matches while you are in the chosen state. Mounted, swimming (at the surface or under water), flying, falling and in a rested area (an inn or a capital city) describe where you are and how you move. Dead means you have died and not yet released your spirit; Ghost means you have released it. A state the game cannot report right now is unavailable rather than false. Being stealthed, outdoors or in control of your character have their own conditions, and Is Dead or Ghost tests any unit."]))
     end,
 })
 

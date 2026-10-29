@@ -22,7 +22,7 @@ local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection.icyveins',revision=6,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
- nameKey='Default.Era.Warrior.Protection.IcyVeins.Name',descriptionKey='Default.Era.Warrior.Protection.IcyVeins.Description',
+ nameKey="Tank, Battle Shout threat (Icy Veins)",descriptionKey="Icy Veins' \"sunderless\" tanking for groups where four or more players hear your shout (Phase 5 Battle Shout onward), an alternative to the recommended tank premade, off by default: enable it and disable that one, or raise its priority. Demoralizing Shout kept up, Revenge, Shield Slam or Bloodthirst, then Battle Shout as the threat filler instead of Sunder Armor; Shield Slam and Shield Block only with a shield on. Same reminders as the recommended tank; go back to Sunder when focusing one target in a crowd.",
  applicability={families={'era'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-classic/warrior-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Warrior tank rotation (Battle Shout tanking)',reviewedAt='2026-10-23',revision='2024-11-17'}},

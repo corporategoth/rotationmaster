@@ -17,7 +17,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.icyveins',revision=5,
  blocks={['era.hunter.boundaries']=3,['era.hunter.dead-zone']=3,['era.hunter.opening']=3,['era.hunter.solo']=2,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1},
- nameKey='Default.Era.Hunter.Ranged.IcyVeins.Name',descriptionKey='Default.Era.Hunter.Ranged.IcyVeins.Description',
+ nameKey="Ranged, clipped (Icy Veins)",descriptionKey="Off by default; enable it for a ranged weapon faster than 3.0 seconds. Like Hunter: Ranged, but in a group Aimed Shot and Multi-Shot go out as soon as they are ready, even if that delays an Auto Shot, Serpent Sting is never used, and Rapid Fire, Bestial Wrath and racials are used on every pull.",
  applicability={families={'era'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','leveling','endgame','icy-veins'},
  sources={

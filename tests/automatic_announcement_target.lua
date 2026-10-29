@@ -234,7 +234,9 @@ test('all announcement editors expose contextual target and macro guidance belon
 
     for _, text in ipairs(texts) do
         assert(
-            not text:find('/run RM_Annouce', 1, true) and text ~= f.translations['Help.Announces.macro.brief'],
+            not text:find('/run RM_Annouce', 1, true)
+                and text
+                    ~= f.translations["Invoke this saved identifier directly from your macro. The supplied unit controls Announcement target conditions and Whisper; there is no implicit target."],
             'inline macro help remains'
         )
     end

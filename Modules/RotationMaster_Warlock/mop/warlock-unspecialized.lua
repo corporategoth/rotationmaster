@@ -17,7 +17,7 @@ local petless=all(negate(combat()),negate({type='PET'}))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.unspecialized',revision=7,
  blocks={['mop.warlock.boundaries']=4},
- nameKey='Default.MoP.Warlock.Unspecialized.Name',descriptionKey='Default.MoP.Warlock.Unspecialized.Description',
+ nameKey="Unspecialized",descriptionKey="For a Warlock without a specialization (levels 1 to 9, or later before you choose one). Corruption to pull and kept up, Drain Life below half health, Shadow Bolt. Reminders: the Voidwalker when solo (the Imp in a group), and a Healthstone between pulls.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'dps','caster','ranged','leveling'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/affliction-warlock-leveling',title='Icy Veins: Affliction Warlock leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-10'},

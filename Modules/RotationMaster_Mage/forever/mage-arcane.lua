@@ -30,7 +30,7 @@ local function below(n)return any(negate(charged),stacks('LESSTHAN',n))end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=7,
  blocks={['forever.mage.boundaries']=3,['forever.mage.frostbolt']=1,['forever.mage.wand']=3,['forever.mage.upkeep']=2},
- nameKey='Default.Forever.Mage.Arcane.Name',descriptionKey='Default.Forever.Mage.Arcane.Description',
+ nameKey="Arcane",descriptionKey="Arcane once Arcane is your main talent tree with 11 points and you know Arcane Blast. Pulls with Frostbolt solo or Arcane Blast in a group; then Arcane Missiles on Missile Barrage, Arcane Blast on Clearcasting, Arcane Wrath at three Arcane Blast stacks, Arcane Blast up to four stacks on elites and two on other targets while you can afford it (mana is hidden on Forever), then Frostfire Bolt, Frostbolt or Fireball to fish for Missile Barrage, and a wand when solo and you cannot afford a spell. Without Arcane Wrath (the older beta design) Fire Blast spends the stacks. Moving: Fire Blast. Three or more enemies fighting you: Arcane Explosion. Reminders: Presence of Mind and Arcane Power on elites (Arcane Power no longer waits for half your mana), plus the Mage upkeep reminders.",
  applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'arcane','leveling','single-target','aoe','warcraft-tavern'},
  sources={

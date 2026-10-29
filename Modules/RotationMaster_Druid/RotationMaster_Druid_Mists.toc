@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 mop/blocks.lua
 mop/druid-unspecialized.lua
 mop/druid-balance.lua

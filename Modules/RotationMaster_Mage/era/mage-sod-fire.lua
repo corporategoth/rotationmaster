@@ -22,7 +22,7 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.mage.fire',revision=6,
  blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.balefire-scorched']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.overheat']=2,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
- nameKey='Default.SoD.Mage.Fire.Name',descriptionKey='Default.SoD.Mage.Fire.Description',
+ nameKey="Fire (SoD)",descriptionKey="Season of Discovery Fire from level 1 to 60, and the Mage default there. Uses the runes you have engraved: Pyroblast on Hot Streak at once; Living Bomb kept on targets that will live; Scorch with Improved Scorch while Fire Vulnerability is below two stacks or about to fade; Living Flame on cooldown; Balefire Bolt at five Fire Vulnerability stacks, never at four Balefire stacks or more (the fifth kills you); Frostfire Bolt, else Fireball. Living Bomb, Living Flame and Fire Blast while moving; Living Flame, Living Bomb, Blast Wave, Cone of Cold, Flamestrike and Blizzard on packs. Reminders: Fire Blast with Overheat, Combustion, Icy Veins and Cold Snap, Molten or other armor, Arcane Intellect, mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, curse removal, Ice Block. Spreading Living Bomb across targets stays with you.",
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'fire','leveling','raid','single-target','aoe','season-of-discovery'},
  sources={

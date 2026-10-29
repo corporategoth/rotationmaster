@@ -23,7 +23,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.holy',revision=7,
  blocks={['retail.paladin.upkeep']=2},
- nameKey='Default.Retail.Paladin.Holy.Name',descriptionKey='Default.Retail.Paladin.Holy.Description',
+ nameKey="Icy Veins",descriptionKey="Holy in Midnight, for reference: Rotation Master picks a spell, not a target, and the game hides everyone's health in combat, so this keeps your Holy Power and cooldowns turning over on whatever you target and leaves deciding who needs healing to you. Holy Power stays visible in combat, so it is spent at 5 first and at 3 or more after your other heals. On a friendly target: Eternal Flame or Word of Glory at 5 Holy Power, Flash of Light on Infusion of Light, Holy Shock, Eternal Flame or Word of Glory at 3 or more, Holy Light, Flash of Light; Light of Dawn is left to you. On an enemy: Shield of the Righteous at 5 Holy Power, Holy Shock, Shield of the Righteous at 3 or more, Judgment, Crusader Strike, Consecration. Reminders in combat: Divine Toll, Holy Prism, Holy Bulwark or Sacred Weapon, Beacon of Virtue on a friendly target, Divine Protection; an aura between pulls; Rebuke. Lay on Hands is left to you. Avenging Wrath and Aura Mastery are left to you.",
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'holy','healer','reference','icy-veins','wowhead'},
  sources={

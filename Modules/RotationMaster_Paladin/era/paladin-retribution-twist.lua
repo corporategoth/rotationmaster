@@ -18,7 +18,7 @@ local function sealed()local out={};for i,id in ipairs({20154,21084,20375,21082,
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.paladin.retribution.twist',revision=5,
  blocks={['era.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['era.paladin.undead']=1},
- nameKey='Default.Era.Paladin.Retribution.Twist.Name',descriptionKey='Default.Era.Paladin.Retribution.Twist.Description',
+ nameKey="Retribution, seal twisting",descriptionKey="Off by default; enable it if you twist seals. For a Retribution Paladin with Seal of Command: keeps Seal of Righteousness up, swaps to rank-1 Seal of Command in the last 0.4 seconds before a swing and back again, Judgement whenever it is ready, Exorcism and Holy Wrath on Undead and Demons, Hammer of Wrath, Consecration with Vengeance. Needs a lot of mana and good timing. Same reminders as the Retribution premade.",
  applicability={families={'era'},actionContext='player',class='PALADIN'},
  tags={'endgame','raid','retribution','melee','single-target','seal-twisting','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/pve-retribution-paladin-rotations-cooldowns/',title='Warcraft Tavern: Classic Retribution Paladin rotations (seal twisting)',reviewedAt='2026-10-23'},

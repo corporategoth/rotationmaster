@@ -16,7 +16,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.icyveins',revision=7,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
- nameKey='Default.SoD.Paladin.Retribution.IcyVeins.Name',descriptionKey='Default.SoD.Paladin.Retribution.IcyVeins.Description',
+ nameKey="Retribution (SoD, Icy Veins Phase 4)",descriptionKey="The older Phase 4 list from Icy Veins and Warcraft Tavern, also fine for leveling, an alternative to the recommended Season of Discovery Retribution premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader once on elites and long fights, Seal of Martyrdom, Exorcism, Crusader Strike, Divine Storm and Judgement on cooldown, Consecration with mana or three close enemies, Hammer of Wrath. Same reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','retribution','melee','single-target','season-of-discovery','icy-veins','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Retribution Paladin rotation (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-07'},

@@ -15,7 +15,7 @@ local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEB
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.frost',revision=5,
  blocks={['tbc.mage.boundaries']=3,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=2,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
- nameKey='Default.TBC.Mage.Frost.Name',descriptionKey='Default.TBC.Mage.Frost.Description',
+ nameKey="Frost",descriptionKey="Frost from level 1 to 70, and the Mage default before talents. Frostbolt (Fireball before level 4), Frost Nova when something hits you, Cone of Cold with Blizzard or Arcane Explosion when three or more enemies are engaged, Ice Lance on frozen targets and while moving, wand when out of mana. Reminders: armor, Arcane Intellect, mana gem, Evocation, Counterspell, Spellsteal, Ice Barrier, Icy Veins, Cold Snap and Water Elemental. Blink, Ice Block, kiting and target choice stay with you.",
  applicability={families={'tbc'},actionContext='player',class='MAGE'},
  tags={'frost','leveling','raid','single-target','aoe'},
  sources={

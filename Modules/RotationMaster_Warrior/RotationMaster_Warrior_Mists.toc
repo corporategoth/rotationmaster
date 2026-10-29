@@ -11,6 +11,7 @@
 ## X-License: MIT + Attribution
 
 bind.lua
+locales.xml
 mop/blocks.lua
 mop/warrior-arms.lua
 mop/warrior-arms-icyveins.lua

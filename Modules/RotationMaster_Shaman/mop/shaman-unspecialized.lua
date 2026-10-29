@@ -14,7 +14,7 @@ local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.unspecialized',revision=6,
  blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1},
- nameKey='Default.MoP.Shaman.Unspecialized.Name',descriptionKey='Default.MoP.Shaman.Unspecialized.Description',
+ nameKey="Unspecialized",descriptionKey="For levels 1 to 9, and any Shaman who has not chosen a specialization yet; every specialization premade takes over once you pick one. Lightning Bolt to pull from range, Healing Surge when you are low and alone, Primal Strike, Earth Shock, and Lightning Bolt while out of melee range. Keeps Lightning Shield up.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','wowhead'},
  sources={{url='https://www.wowhead.com/mop-classic/guide/classes/shaman/enhancement/dps-leveling-talent-builds-tips',title='Wowhead: Enhancement Shaman leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'}},
