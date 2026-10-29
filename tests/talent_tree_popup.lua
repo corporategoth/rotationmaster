@@ -798,7 +798,7 @@ test(
         local f = client({ spec = FIRE })
         local parent = editor(f, {}, FIRE)
         local button, box = treeButton(parent)
-        assert(button and box.children[3] == child(parent, 'Talent'), 'beside the list')
+        assert(button and box.children[#box.children - 1] == child(parent, 'Talent'), 'beside the list')
 
         assert(
             button.frame.tooltip:find('talent tree', 1, true)
