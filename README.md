@@ -7,8 +7,7 @@
 [![GitHub Activity][activity-badge]][commits]
 [![License: MIT + Attribution][license-badge]][license]
 
-[![WoW Retail and Forever][modern-badge]][client-support]
-[![WoW Classic][classic-badge]][client-support]
+[![Supported WoW clients][wow-badge]][client-support]
 
 Rotation Master is a World of Warcraft addon that highlights the next spell or item in a rotation you choose. Start with a
 Built In rotation for your class, or create your own in game. You press the buttons: the addon does not cast spells or play
@@ -40,14 +39,14 @@ Built In rotations are starting points, not guarantees of the best action for ev
 
 | Client | Interface |
 | --- | --- |
-| Classic Era / Season of Discovery 1.15 | 11509 |
-| TBC Anniversary 2.5 | 20506 |
-| Wrath of the Lich King Classic 3.4 | 30405 |
-| Wrath Titan Reforged 3.80 | 38002 |
-| Cataclysm Classic 4.4 | 40402 |
-| Mists of Pandaria Classic 5.5 | 50504 |
-| Retail (Midnight) 12.1 | 120105 |
-| WoW Forever 1.60 | 16001 |
+| Classic Era / Season of Discovery 1.15.9 | 11509 |
+| TBC Anniversary 2.5.6 | 20506 |
+| Wrath of the Lich King Classic 3.4.5 | 30405 |
+| Wrath Titan Reforged 3.80.2 | 38002 |
+| Cataclysm Classic 4.4.2 | 40402 |
+| Mists of Pandaria Classic 5.5.4 | 50504 |
+| Retail (Midnight) 12.1.5 | 120105 |
+| WoW Forever 1.60.1 | 16001 |
 
 These are the clients targeted by the beta; they have not all been verified in game. See [client support][client-support]
 for what has actually been tested. Retail and Forever restrict some game information and addon actions, so available
@@ -117,6 +116,5 @@ acknowledge Rotation Master and its original author, PreZ, in any credits or Abo
 [commits]: https://github.com/corporategoth/rotationmaster/commits/master
 [license-badge]: https://img.shields.io/badge/license-MIT%20%2B%20Attribution-blue?style=for-the-badge
 [license]: LICENSE
-[modern-badge]: https://img.shields.io/badge/WoW-Retail%20%7C%20Forever-blue?style=for-the-badge
-[classic-badge]: https://img.shields.io/badge/WoW-Classic%20%7C%20TBC%20%7C%20Progression-orange?style=for-the-badge
+[wow-badge]: https://img.shields.io/badge/WoW-Retail%20%7C%20Forever%20%7C%20Classic-blue?style=for-the-badge
 [client-support]: docs/quality/client-support.md
