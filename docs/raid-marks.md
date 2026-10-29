@@ -92,7 +92,8 @@ Both borrow a related condition's icon until artwork of their own is generated (
 A Set Mark step is part of the rotation list. It selects a unit (`player`, `target`, `focus`, `mouseover`, `pet`,
 `targettarget` or `focustarget`) and a marker (one of the eight icons, `highest_unset`, or `none` to clear). When its conditions match,
 the evaluator calls `SetRaidTarget(unit, index)` directly, then continues to the next step. It does not create a button
-or macro, check raid permissions, or check the existing marker. The player chooses the step's conditions; for example,
+or macro or check raid permissions. A specific marker is attempted without checking the unit's current marker; the
+highest-unset choice reads the marker table. The player chooses the step's conditions; for example,
 use a `MARKED` condition to avoid repeatedly applying the same mark. The client may reject the API call.
 
 Highest priority unset tries Skull, Cross, Square, Moon, Triangle, Diamond, Circle, then Star, skipping marks already held.

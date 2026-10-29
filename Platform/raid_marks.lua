@@ -10,8 +10,8 @@
 -- registered until something asks for marks (a mark unit type, MARKED, MARK_COUNT), and the events are dropped again
 -- when nothing has asked for a while.
 -- Every read goes through platform:CanReadValue: an unreadable answer is unavailable with a reason, never a guess.
--- Capability is detected from the client (the functions and events it has), never from its name or version. Loaded from
--- RotationMaster.toc after Platform/group_units.lua, which hands the mark unit types to ResolveRaidMarkUnit.
+-- Retail and Forever disable marker reads; other capabilities are detected from the functions and events the client has.
+-- Loaded from RotationMaster.toc after Platform/group_units.lua, which hands the mark unit types to ResolveRaidMarkUnit.
 local _, addon = ...
 local platform = addon.Platform
 
@@ -61,8 +61,8 @@ function platform:IsRaidMarkUnitKind(kind)
 end
 
 -- Tells why raid marks cannot be read on this client.
--- @return string|nil  nil when marks can be read; 'unsupported-policy' on a client with no known data policy;
---   'missing-api' when the client has no GetRaidTargetIndex.
+-- @return string|nil  nil when marks can be read; 'unsupported-client' on Retail and Forever, 'unsupported-policy' on
+--   a client with no known data policy, or 'missing-api' when the client has no GetRaidTargetIndex.
 function platform:GetRaidMarkSupport()
     local family = self:GetClientFamily()
 
@@ -138,7 +138,7 @@ end
 -- @param unit string  A unit token such as 'target' or 'raid3'; the unit need not exist.
 -- @return number|nil  0 for no mark, 1 (star) to 8 (skull); nil when it cannot be read.
 -- @return string|nil  Why the first return is nil: 'missing-api', 'invalid-unit' (unit is not a string), 'api-error',
---   'restricted-value' or 'invalid-api-result'; nil otherwise.
+--   'restricted-value', 'invalid-api-result', 'unsupported-client' or 'unsupported-policy'; nil otherwise.
 --
 -- The one place that calls GetRaidTargetIndex. A missing mark is 0 (the game returns nil for it).
 function platform:GetUnitRaidMark(unit)
