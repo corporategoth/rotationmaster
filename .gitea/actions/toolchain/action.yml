@@ -28,8 +28,9 @@ runs:
           SUDO="sudo"
         fi
         $SUDO apt-get update -qq
-        $SUDO apt-get install -y -qq --no-install-recommends lua5.1 luajit zip unzip jq curl git ca-certificates python3 python3-venv
+        $SUDO apt-get install -y -qq --no-install-recommends lua5.1 lua-bitop luajit zip unzip jq curl git ca-certificates python3 python3-venv
         lua5.1 -v
+        lua5.1 -e 'assert(require("bit"))'
         luac5.1 -v
         luajit -v | head -n 1
         python3 --version

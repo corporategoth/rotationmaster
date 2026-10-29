@@ -140,8 +140,11 @@ These are the features most likely to misbehave. If you can exercise one, please
 5. **Classic Era / SoD, Wrath, Titan, Cataclysm, Mists, Forever**: no in-game acceptance of startup or rotations yet.
 6. **The packaged layout**: 17 add-ons moved out of one folder. Only symlinked installs have been run, never the zip.
 7. **Integrations** (Masque, Questie, boss mods, EllesmereUI, Dominos) and the native profiler: tested with fakes only.
-8. **Translations**: ten languages, not all strings are translated and none are guaranteed reviewed by a native speaker.
+8. **Translations**: the ten non-English locales are complete, but the AI-assisted translations have not been reviewed by native speakers.
 9. **Premade quality**: the Built In rotations follow public guides; they are a starting point, not proof of an optimal rotation.
+10. **Raid markers**: mark conditions, marked units and the Set Mark step have only been tested with simulated clients. See
+    `docs/raid-marks.md` for in-game checks, including Retail restricted-data behavior.
+11. **German layout**: the specialization picker and rotation list have only been checked with estimated font widths.
 
 ## Thanks
 

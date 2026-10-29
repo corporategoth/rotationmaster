@@ -35,9 +35,8 @@ Optional **variables** (Settings > Actions > Variables): `WOWI_UPLOAD_BETA=true`
 release; without it the notice names the file's path in the repository).
 
 Nothing is passed to GitHub: it is a push mirror, a release is a Gitea object, and GitHub receives it through the mirror and
-its webhook, never from CI. `.github/workflows/main.yml` is the old four-pass GitHub workflow; Gitea ignores it once
-`.gitea/workflows` exists, but **GitHub still runs it on a tag pushed there** (and would upload a second time if secrets exist
-on that side). Retire it or remove the GitHub secrets before the first tag.
+its webhook, never from CI. Release workflows run on Gitea; check any future GitHub workflows before tagging so the mirror does
+not trigger a second upload.
 
 Runner assumptions (see `.gitea/workflows/test.yml`): the `ubuntu-latest` label is the Gitea Ubuntu image, root or sudo is
 available, apt and the internet work, and the runner takes one job at a time. A full release run is three test jobs plus
