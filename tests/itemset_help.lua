@@ -11,6 +11,19 @@ end
 
 test('item-set and item-list documents translate whole paragraphs and headings', function()
     local f = fixture()
+    local english = {}
+
+    for _, method in ipairs({
+        'GetDocument_layout_itemsets_options_help',
+        'GetDocument_layout_item_list_help',
+        'GetNativeItemListHelp',
+    }) do
+        english[method] = {}
+
+        for _, entry in ipairs(f.addon[method](f.addon)) do
+            english[method][entry.id] = entry.text
+        end
+    end
 
     for key in pairs(f.translations) do
         f.translations[key] = 'translated:' .. key
@@ -31,7 +44,7 @@ test('item-set and item-list documents translate whole paragraphs and headings',
             assert(entry.title:match('^translated:'), 'untranslated heading')
 
             assert(
-                entry.text == 'translated:Help.ItemSets.' .. entry.id,
+                entry.text == 'translated:' .. english[method][entry.id],
                 'fragment-built or untranslated paragraph: ' .. entry.id
             )
         end

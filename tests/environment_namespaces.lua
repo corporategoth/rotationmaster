@@ -255,6 +255,16 @@ test('only the explicitly repaired environment evaluators differ from prior sour
             source.evaluate = '\n        return Functions.cache.getCached(cache, IsOutdoors)\n    '
         end
 
+        -- Reconstruct the historical INSTANCE help key for the archived source hash.
+        if tag == 'INSTANCE' then
+            local current = [=[L["Instance Difficulty and Instance ID are optional. Every part you set must match, for example a Dungeon on Heroic difficulty, or one particular instance by its ID (the editor shows the ID of the instance you are in). The ID does not change with the game's language the way a zone name does."]]=]
+            local old = 'L["Help.Conditions.INSTANCE_DETAILS"]'
+            local first, last = source.help:find(current, 1, true)
+            assert(first, 'INSTANCE help changed')
+            assert(not source.help:find(current, last + 1, true), 'duplicate INSTANCE help')
+            source.help = source.help:sub(1, first - 1) .. old .. source.help:sub(last + 1)
+        end
+
         -- INSTANCE gained an optional difficulty and ID (this round); its source is hashed as it is now.
         if tag == 'ZONEPVP' then
             source.evaluate = dofile('tests/fixtures/restore_zone_pvp_repairs.lua')(source.evaluate, true)

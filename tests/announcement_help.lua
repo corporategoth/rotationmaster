@@ -12,6 +12,11 @@ end
 
 test('announcement paragraphs and headings are whole locale values', function()
     local f = fixture()
+    local english = {}
+
+    for _, entry in ipairs(f.addon:GetDocument_layout_announce_options_help()) do
+        english[entry.id] = entry.text
+    end
 
     for key in pairs(f.translations) do
         f.translations[key] = 'translated:' .. key
@@ -25,7 +30,7 @@ test('announcement paragraphs and headings are whole locale values', function()
         assert(entry.title:match('^translated:') and not entry.title:find('|c', 1, true), 'untranslated heading')
 
         assert(
-            entry.text == 'translated:Help.Announces.' .. entry.id,
+            entry.text == 'translated:' .. english[entry.id],
             'paragraph was not translated as a whole: ' .. entry.id
         )
     end
