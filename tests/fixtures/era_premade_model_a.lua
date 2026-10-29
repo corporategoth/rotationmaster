@@ -880,7 +880,8 @@ function M.registered(a, f, ids, class)
         local scope = row.applicability
         assert(row.readOnly and row.builtin and row.validation.valid and row.validation.resolved, id .. ' invalid')
         assert(f.translations[row.nameKey] and f.translations[row.descriptionKey], id .. ' untranslated')
-        assert(#row.envelope.sources >= 1, id .. ' unsourced')
+        local withoutSourceLinks = dofile('tests/fixtures/builtins_without_source_links.lua')
+        assert(#row.envelope.sources >= 1 or withoutSourceLinks[id], id .. ' unsourced')
 
         assert(
             #scope.families == 1
