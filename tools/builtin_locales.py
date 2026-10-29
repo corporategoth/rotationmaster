@@ -32,6 +32,16 @@ def read(path):
     return entries
 
 
+def write_credit_header(path, credits):
+    """Update only the translator credit on a directly edited Built In locale file."""
+    text = path.read_text(encoding='utf-8')
+    lines = text.splitlines()
+    header = F.translators_header(credits)
+    lines = [line for line in lines if not line.startswith('-- Translators: ')]
+    lines.insert(1, header)
+    path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
 def rotation_keys(module):
     ids = []
     for path in sorted(module.glob('*/*.lua')):
@@ -48,6 +58,8 @@ def rotation_keys(module):
 def check(root=ROOT):
     import locales
     issues = []
+    credit_file = Path(root) / 'tools/locale_translators.json'
+    credits = json.loads(credit_file.read_text(encoding='utf-8')) if credit_file.exists() else None
     for row in classes(root):
         module = Path(root) / 'Modules' / row['module']
         try:
@@ -56,6 +68,10 @@ def check(root=ROOT):
             for locale in ['enUS'] + F.LOCALES:
                 path = module / 'Locales' / (locale + '.lua')
                 entries = read(path)
+                if locale != 'enUS' and credits is not None:
+                    header = F.translators_header(credits.get(locale, {}).get(row['id'], []))
+                    if header not in path.read_text(encoding='utf-8').splitlines():
+                        issues.append(f'{path}: translator credit header does not match locale_translators.json')
                 for key in sorted(expected - entries.keys()):
                     issues.append(f'{path}: missing {key}')
                 for key in sorted(entries.keys() - expected):

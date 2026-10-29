@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+-- Translators: Claude (AI-assisted, not yet reviewed by a native speaker), Codex (AI-assisted, not yet reviewed by a native speaker)
 -- Built In rotation text: each key is the rotation ID plus .Name or .Description.
 if GetLocale() ~= "ptBR" then return end
 local addon_name = ...

@@ -440,6 +440,20 @@ class CreditTests(Sandbox):
         entries, header, problems = L.read_locale_file(locale, L.catalog_named(catalog))
         return header['humans'], header['translators']
 
+    def test_crediting_a_builtin_translator_updates_its_header_and_about_page(self):
+        manifest = self.root / 'Locales/bundles.json'
+        rows = json.loads(manifest.read_text())
+        rows['bundles'].append({'id': 'class-shaman', 'module': 'RotationMaster_Shaman', 'kind': 'builtin'})
+        manifest.write_text(json.dumps(rows))
+        directory = self.root / 'Modules/RotationMaster_Shaman/Locales'
+        directory.mkdir(parents=True)
+        for locale in ('enUS', 'deDE'):
+            (directory / f'{locale}.lua').write_text(F.COPYRIGHT + '\nL["rm.tbc.shaman.test.Name"] = "Name"\n')
+        self.translate('deDE', {'Cast': 'Zaubern'})
+        self.assertEqual(self.run_tool('credit', 'deDE', '--translator', 'Anna', '--catalog', 'class-shaman')[0], 0)
+        self.assertIn('-- Translators: Anna', (directory / 'deDE.lua').read_text())
+        self.assertEqual(self.humans()[0], ['Anna'])
+
     def test_the_ai_is_named_in_the_header_and_never_in_the_data(self):
         self.translate('deDE', {'Cast': 'Zaubern'}, '--translator', 'Claude', '--ai')
         humans, header = self.humans()

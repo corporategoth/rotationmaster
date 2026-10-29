@@ -9,7 +9,8 @@ translations, check them, reword English without losing translations, move text 
   python3 tools/locales.py build deDE translations.json [--translator "Name" [--url URL] [--human|--ai]]
                                                           merge {id: text} into the locale files deDE owns
   python3 tools/locales.py accept deDE [ID ...]           mark stale translations as still right for the current English
-  python3 tools/locales.py credit deDE --translator "Name" [--strings N] [--human|--ai]   credit without writing strings
+  python3 tools/locales.py credit deDE --translator "Name" [--catalog class-shaman] [--strings N] [--human|--ai]
+                                                          credit direct edits and update the About page
   python3 tools/locales.py check [--complete] [--require-notes] [--require-context]
                                                           validate every locale file against its English (IDs, hashes, placeholders,
                                                           headers, notes); the switches also fail for strings lacking notes/context
@@ -888,10 +889,23 @@ def cmd_accept(locale, id_args):
     print(f'{locale}: {count} stale translation(s) accepted')
 
 
-def cmd_credit(locale, translator, kind=None, url=None, strings=0):
+def cmd_credit(locale, translator, kind=None, url=None, strings=0, catalog_name=None):
     model = Model()
+    if catalog_name:
+        import builtin_locales
+        row = next((r for r in builtin_locales.classes(ROOT) if r['id'] == catalog_name), None)
+        if row:
+            path = ROOT / 'Modules' / row['module'] / 'Locales' / f'{locale}.lua'
+            if not path.exists():
+                raise SystemExit(f'{path.relative_to(ROOT)} does not exist')
+            model.credit(locale, catalog_name, translator, kind=kind, url=url, strings=strings)
+            model.write()
+            builtin_locales.write_credit_header(path, model.credit_list(locale, catalog_name))
+            print(f'{locale} ({catalog_name}): credited {translator}')
+            return
+        model.catalog(catalog_name)
     for each in model.catalogs:
-        if each.path(locale).exists():
+        if (not catalog_name or each.name == catalog_name) and each.path(locale).exists():
             model.translations(locale, each)
             model.credit(locale, each.name, translator, kind=kind, url=url, strings=strings)
             model.mark(locale, each)
@@ -1496,6 +1510,7 @@ def main(argv=None):
     p = sub.add_parser('credit')
     p.add_argument('locale', choices=LOCALES)
     p.add_argument('--strings', type=int, default=0)
+    p.add_argument('--catalog', help='credit only one catalog, for example class-shaman')
     credit_options(p, True)
     p = sub.add_parser('accept')
     p.add_argument('locale', choices=LOCALES)
@@ -1550,7 +1565,7 @@ def main(argv=None):
     elif args.command == 'build':
         cmd_build(args.locale, args.file, translator=args.translator, kind=args.kind, url=args.url)
     elif args.command == 'credit':
-        cmd_credit(args.locale, args.translator, kind=args.kind, url=args.url, strings=args.strings)
+        cmd_credit(args.locale, args.translator, kind=args.kind, url=args.url, strings=args.strings, catalog_name=args.catalog)
     elif args.command == 'accept':
         cmd_accept(args.locale, args.ids)
     elif args.command == 'check':

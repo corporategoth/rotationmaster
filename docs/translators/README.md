@@ -1,7 +1,7 @@
 # Translating Rotation Master
 
 Rotation Master uses the game client's own language; there is no language picker. English (`Locales/enUS.lua`) is the
-source. Ten translations exist, each a generated file (the main catalog in `Locales/`, plus each class module’s `Locales/` directory):
+source. Ten translations exist. General text is generated in `Locales/`; Built In rotation text is edited in each class module’s `Locales/` directory:
 
 | Code | Language | Style notes |
 | --- | --- | --- |
@@ -99,13 +99,13 @@ python3 tools/locales.py check
 4. **Apply.** `translation_apply.py <locale> <file>` validates everything first and writes nothing unless every translation
    passes; `--dry-run` only validates. It then writes the locale files through `tools/locales.py` and re-reads them to prove
    that exactly the supplied entries changed and each has the right hash. It restores the previous files if that proof
-   fails. A work file may also be a plain JSON object `{"1234": "translation", "class-shaman:1": "translation"}`; the exact English key also works in place of an ID.
+   fails. A work file may also be a plain JSON object `{"1234": "translation"}`; the exact English key also works in place of an ID. This workflow covers the main catalog; edit Built In rotation files directly as described below.
 5. **Check.** `python3 tools/locales.py check` must pass for every locale. Commit the locale files with a message that says
    which language and how many strings, and how they were produced and reviewed.
 
 ## Getting credited
 
-Every locale file starts with the copyright line, then a header that is **generated** from `tools/locale_translators.json`:
+Locale files start with a copyright line and a translator header generated from `tools/locale_translators.json`:
 
 ```lua
 -- Translators: Claude (AI-assisted, not yet reviewed by a native speaker; 3041 strings), Jane Doe <https://example.org/jane> (120 strings, 2026-11-02)
@@ -119,6 +119,23 @@ python3 tools/translation_apply.py deDE deDE.json --translator "Jane Doe" --url 
 python3 tools/locales.py build deDE translations.json --translator "Jane Doe"      # the same, without the validation tool
 python3 tools/locales.py credit deDE --translator "Jane Doe"                     # credit hand edits made in a locale file
 ```
+
+For a Built In rotation, find its class module under `Modules/RotationMaster_<Class>/Locales/`, open your language
+file, and edit the text after `L["<rotation ID>.Name"] =` or `L["<rotation ID>.Description"] =`. Leave the key intact.
+The same key in `enUS.lua` gives the English. Run `python3 tools/builtin_locales.py` to check all names, descriptions,
+and placeholders. These direct-key files do not currently track whether their English has changed.
+
+After editing a class file, credit yourself and optionally record the number of entries you translated:
+
+```sh
+python3 tools/locales.py credit deDE --catalog class-shaman --translator "Jane Doe" --url https://example.org/jane --strings 2
+```
+
+Replace `class-shaman` with the catalog for your class (`class-deathknight`, `class-demonhunter`, `class-druid`,
+`class-evoker`, `class-hunter`, `class-mage`, `class-monk`, `class-paladin`, `class-priest`, `class-rogue`,
+`class-shaman`, `class-warlock`, or `class-warrior`). The tool updates that file's header, records your credit, and
+adds human translators to the game's About page. It does not count direct edits automatically; omit `--strings` if you
+prefer not to provide a count. To credit an AI-assisted contribution, pass `--ai`; only human translators appear in About.
 
 `--translator` adds you to the header of **every file that application wrote** (the main file and each text bundle), counting
 the strings you changed (applying the same file again changes nothing); a second application only updates your counts and date
