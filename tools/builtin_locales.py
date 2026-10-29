@@ -9,7 +9,6 @@ import locale_format as F
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSIGNMENT = re.compile(r'^L\[(' + F.STRING + r')\] = (' + F.STRING + r')$')
-ROTATION = re.compile(r"id='(rm\.[^']+)',revision=\d+")
 
 
 def classes(root=ROOT):
@@ -43,13 +42,36 @@ def write_credit_header(path, credits):
 
 
 def rotation_keys(module):
+    import catalog_check
     ids = []
     for path in sorted(module.glob('*/*.lua')):
         source = path.read_text(encoding='utf-8')
-        found = ROTATION.findall(source)
-        if found and re.search(r'\b(?:nameKey|descriptionKey)\s*=', source):
-            raise ValueError(f'{path}: Built In locale keys are derived from the rotation ID')
-        ids.extend(found)
+        tokens = catalog_check.tokens(source)
+        for i, token in enumerate(tokens):
+            if token[1] != 'RegisterDefaultRotation':
+                continue
+            if i + 2 >= len(tokens) or tokens[i + 1][1] != '(' or tokens[i + 2][1] != '{':
+                raise ValueError(f'{path}:{token[2]}: expected a literal Built In rotation definition')
+            depth, identifier = 1, None
+            for j in range(i + 3, len(tokens)):
+                item = tokens[j][1]
+                if item == '{':
+                    depth += 1
+                elif item == '}':
+                    depth -= 1
+                    if depth == 0:
+                        break
+                elif depth == 1 and item in ('id', 'nameKey', 'descriptionKey') and j + 2 < len(tokens) and tokens[j + 1][1] == '=':
+                    if item != 'id':
+                        raise ValueError(f'{path}:{tokens[j][2]}: Built In locale keys are derived from the rotation ID')
+                    if tokens[j + 2][0] not in ('string', 'long'):
+                        raise ValueError(f'{path}:{tokens[j][2]}: Built In rotation ID must be a literal')
+                    identifier = catalog_check.decode_string(tokens[j + 2][1])
+            else:
+                raise ValueError(f'{path}:{token[2]}: unterminated Built In rotation definition')
+            if not identifier or not identifier.startswith('rm.'):
+                raise ValueError(f'{path}:{token[2]}: missing Built In rotation ID')
+            ids.append(identifier)
     if len(ids) != len(set(ids)):
         raise ValueError(f'{module}: duplicate Built In rotation ID')
     return {id + suffix for id in ids for suffix in ('.Name', '.Description')}
@@ -60,10 +82,15 @@ def check(root=ROOT):
     issues = []
     credit_file = Path(root) / 'tools/locale_translators.json'
     credits = json.loads(credit_file.read_text(encoding='utf-8')) if credit_file.exists() else None
+    owners = {}
     for row in classes(root):
         module = Path(root) / 'Modules' / row['module']
         try:
             expected = rotation_keys(module)
+            for key in expected:
+                if key in owners:
+                    issues.append(f'{module}: {key} also belongs to {owners[key]}')
+                owners[key] = module
             english = read(module / 'Locales/enUS.lua')
             for locale in ['enUS'] + F.LOCALES:
                 path = module / 'Locales' / (locale + '.lua')

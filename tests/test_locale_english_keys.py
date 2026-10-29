@@ -80,7 +80,7 @@ assert(main['Class name'] == 'Klassenname')
             module = root / 'Modules/RotationMaster_Shaman'
             (module / 'tbc').mkdir(parents=True)
             (module / 'Locales').mkdir()
-            (module / 'tbc/a.lua').write_text("id='rm.tbc.shaman.test',revision=1\n")
+            (module / 'tbc/a.lua').write_text('addon:RegisterDefaultRotation({\n id = "rm.tbc.shaman.test", revision = 1\n})\n')
             lines = 'L["rm.tbc.shaman.test.Name"] = "Name"\nL["rm.tbc.shaman.test.Description"] = "Description"\n'
             for locale in ['enUS'] + F.LOCALES:
                 (module / 'Locales' / f'{locale}.lua').write_text(lines)
