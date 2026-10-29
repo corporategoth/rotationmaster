@@ -508,6 +508,29 @@ end
 -- Requirement table
 -- ============================================================================
 
+-- Restricts rune engraving to the Classic Era client when its realm enables the feature.
+-- @return string|nil  The support reason, or nil when engraving may be available.
+local function engravingSupport()
+    local platform = addon.Platform
+
+    if not platform or type(platform.GetClientFamily) ~= 'function' then
+        return nil
+    end
+    if platform:GetClientFamily() ~= 'era' then
+        return 'unsupported-client'
+    end
+
+    local enabled = lookup('C_Engraving.IsEngravingEnabled')
+
+    if type(enabled) == 'function' then
+        local ok, value = pcall(enabled)
+
+        if ok and platform:CanReadValue(value) and value == false then
+            return 'unsupported-client'
+        end
+    end
+end
+
 -- Checks whether the client can read raid markers.
 -- @return string|nil  The support reason, or nil when marker reads are supported.
 local function raidMarkSupport()
@@ -659,7 +682,7 @@ local requirements = {
         { 'C_CVar.GetCVar', 'GetCVar' },
         distanceCountCombat,
     },
-    RUNE_ENGRAVED = { { 'C_Engraving.IsEngravingEnabled' } },
+    RUNE_ENGRAVED = { engravingSupport, { 'C_Engraving.IsEngravingEnabled' } },
     WEAPON_TYPE = { weaponSlot },
     PLAYER_STATE = {
         POLICY,

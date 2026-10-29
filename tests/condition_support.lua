@@ -30,6 +30,22 @@ local function client(project, expansion, class)
     return f, f.addon
 end
 
+test('rune engraving is offered only on Season of Discovery realms', function()
+    local value = { type = 'RUNE_ENGRAVED', rune = 1 }
+
+    for _, edition in ipairs({ { 5, 1 }, { 19, 4 }, { 1, 12 }, { 18, 12 } }) do
+        local f, a = client(edition[1], edition[2])
+        f.env.C_Engraving = { IsEngravingEnabled = function() return true end }
+        assert(a:GetConditionSupport(value.type, a.conditionDefinitions[value.type], value) == 'unsupported-client')
+    end
+
+    local f, era = client(2, 0)
+    f.env.C_Engraving = { IsEngravingEnabled = function() return false end }
+    assert(era:GetConditionSupport(value.type, era.conditionDefinitions[value.type], value) == 'unsupported-client')
+    f.env.C_Engraving.IsEngravingEnabled = function() return true end
+    assert(era:GetConditionSupport(value.type, era.conditionDefinitions[value.type], value) == nil)
+end)
+
 local function body(conditions)
     return {
         name = 'Support',
