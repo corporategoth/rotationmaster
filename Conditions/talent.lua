@@ -304,7 +304,7 @@ end
 -- @param value table  The saved condition fields; layout, node, entry, spell, operator and value are written.
 -- @param update function  Called with no arguments after every change to re-print the condition's summary.
 --
--- It has an optional specialization list, a talent list grouped by class, specialization and hero tree, a button for
+-- It has an optional specialization list, a tree selector, a talent list, a button for
 -- the drawn talent tree, and boxes for a node ID and a choice-node entry ID that stay valid when the lists cannot be
 -- filled (another class, in combat). Picking from the list also saves the talent's spell so the reference survives a
 -- renumbered tree. Every handler keeps the lists, the open tree window and the boxes in step through closures local to
@@ -325,18 +325,14 @@ local function traitsWidget(parent, spec, value, update)
     local note=addon:CreateConditionLabel();note:SetFullWidth(true);parent:AddChild(note)
     local groups,selectedGroup,selectedTalent={},nil,nil
     local groupNames,groupOrder={},{}
-    -- The talent list: with a specialization list, every group under its own
-    -- heading; without one (Forever's three trees), the chosen tree's talents.
+    -- The talent list contains only the selected class, specialization or hero tree.
     local list,order,positions={},{},{}
     local talentIcon,talentPicker,groupPicker,nodeBox,entryBox,operators,specPicker,treeButton
     local treeOwner={}
     local function rebuild()
         list,order,positions={},{},{}
         for groupIndex,candidate in ipairs(groups) do
-            if specs or groupIndex==selectedGroup then
-                if specs and #groups>1 then
-                    list[#list+1]={text=groupLabel(candidate),header=true,disabled=true};order[#order+1]=#list
-                end
+            if groupIndex==selectedGroup then
                 for talentIndex,talent in ipairs(candidate.talents) do
                     list[#list+1]={text=talent.entry and string.format(L["%s (choice)"],talent.name) or talent.name,icon=talent.icon}
                     order[#order+1]=#list;positions[#list]={group=groupIndex,talent=talentIndex}
@@ -398,14 +394,12 @@ local function traitsWidget(parent, spec, value, update)
         specPicker.configure=function() specPicker:SetList(specNames,specOrder);specPicker:SetValue(shown) end
     end
     reload()
-    if not specs then
-        groupPicker=dropdown(box,L["Talent Tree"],function(selected)
-            if selected==selectedGroup then return end
-            selectedGroup,selectedTalent=selected,nil;rebuild()
-            talentPicker:SetList(list,order);talentPicker:SetValue(nil);talentPicker:SetDisabled(#order==0)
-        end)
-        groupPicker.configure=show
-    end
+    groupPicker=dropdown(box,L["Talent Tree"],function(selected)
+        if selected==selectedGroup then return end
+        selectedGroup,selectedTalent=selected,nil;rebuild()
+        talentPicker:SetList(list,order);talentPicker:SetValue(nil);talentPicker:SetDisabled(#order==0)
+    end)
+    groupPicker.configure=show
     local function currentSelection()
         if traitShape(value) and value.node then return {node=value.node,entry=value.entry,spell=value.spell} end
     end

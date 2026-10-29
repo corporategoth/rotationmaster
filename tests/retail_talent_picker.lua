@@ -159,6 +159,27 @@ end
 local ARCANE, FIRE, FROST = Tree.SPECS.Arcane, Tree.SPECS.Fire, Tree.SPECS.Frost
 
 test(
+    'the Retail talent tree selector filters class specialization and hero talents without changing saved values',
+    function()
+        local f = client({ spec = FIRE, scale = 100 })
+        local value = { layout = 'traits', node = 2203, spell = 257541, operator = 'EQUALS', value = 2 }
+        local parent = editor(f, value, FIRE)
+        local trees = assert(child(parent, 'Talent Tree'), 'Retail needs a talent tree selector')
+        local talents = assert(child(parent, 'Talent'))
+        trees.configure()
+        talents.configure()
+        assert(trees.list[1] == 'Class talents' and trees.list[2] == 'Specialization talents')
+        assert(trees.list[3] == 'Hero talents: Frostfire' and trees.list[4] == 'Hero talents: Sunfury')
+        assert(trees.value == 2 and entryNamed(talents, 'Phoenix Flames'))
+        trees:Fire('OnValueChanged', 3)
+        assert(entryNamed(talents, 'Frostfire Bolt') and not entryNamed(talents, 'Phoenix Flames'))
+        assert(value.node == 2203 and value.spell == 257541, 'browsing a tree changed the saved talent')
+        talents:Fire('OnValueChanged', assert(entryNamed(talents, 'Frostfire Bolt')))
+        assert(value.node == 2411 and value.spell == 431044)
+    end
+)
+
+test(
     'the played specialization lists its class and specialization talents and only its own hero trees, by name with icon',
     function()
         local f, a = client({ spec = FIRE })
@@ -507,7 +528,7 @@ test(
 )
 
 test(
-    'editing a rotation for another specialization shows that specialization\'s talents, grouped under headings, with icons, and the played one\'s on request',
+    'editing another specialization filters its talents by tree and preserves the saved choice when browsing',
     function()
         local state = { spec = FIRE }
         local f, a, e = client(state)
@@ -522,30 +543,19 @@ test(
             'specialization list'
         )
 
-        assert(child(parent, 'Talent Tree') == nil, 'the hero trees are headings of the one list, not another list')
+        local trees = assert(child(parent, 'Talent Tree'))
+        trees.configure()
         local picker = assert(child(parent, 'Talent'))
         picker.configure()
         assert(not picker.disabled, 'the talent list starts disabled')
-        local headings = {}
 
-        for index, entry in ipairs(picker.list) do
+        for _, entry in ipairs(picker.list) do
             assert(entry.text, 'list entry without a name')
-
-            if entry.header then
-                assert(entry.disabled and entry.icon == nil, 'a heading can be picked')
-                headings[#headings + 1] = entry.text
-            else
-                assert(entry.icon, 'list entry without icon: ' .. entry.text)
-            end
+            assert(entry.icon and not entry.header, 'list entry without an icon')
         end
 
-        assert(
-            table.concat(headings, '|')
-                == 'Class and specialization talents|Hero talents: Frostfire|Hero talents: Spellslinger',
-            table.concat(headings, '|')
-        )
-
-        assert(picker.list[1].header and picker.list[2].header == nil, 'the first heading is not first')
+        assert(trees.list[1] == 'Class and specialization talents' and trees.list[2] == 'Hero talents: Frostfire')
+        assert(trees.list[3] == 'Hero talents: Spellslinger')
         local frostOrb = assert(entryNamed(picker, 'Frozen Orb'))
         assert(#picker.order == #picker.list)
         picker:Fire('OnValueChanged', frostOrb)
@@ -585,7 +595,7 @@ test(
         local combustion = entryNamed(picker, 'Combustion')
         assert(combustion and picker.value == nil)
         assert(value.node == 2301, 'viewing another list changed the saved talent')
-        -- A hero talent is under its own heading; a choice is written with its entry.
+        -- The choice entry is saved, then the hero tree selector filters the talent list.
         local kindling
 
         for index, entry in ipairs(picker.list) do
@@ -596,6 +606,7 @@ test(
 
         picker:Fire('OnValueChanged', kindling)
         assert(value.node == 2204 and value.entry and value.spell == 155148)
+        trees:Fire('OnValueChanged', 2)
         picker:Fire('OnValueChanged', assert(entryNamed(picker, 'Frostfire Bolt')))
         assert(value.node == 2411 and value.spell == 431044 and value.entry == nil)
         -- A hand-typed node no longer goes with the spell of the picked talent.
@@ -685,7 +696,7 @@ test('a rotation for another class gets no list of your talents, only the node I
     assert(not picker.disabled and #picker.order > 0, 'the player\'s own class lost its list')
 end)
 
-test('the icon is the left column of a two-row block: specialization above, talent below, then the rest', function()
+test('the icon is beside specialization, tree and talent selectors', function()
     local state = { spec = FIRE }
     local f, a = client(state)
     local value = { layout = 'traits', node = 2203, spell = 257541, operator = 'EQUALS', value = 2 }
@@ -702,7 +713,8 @@ test('the icon is the left column of a two-row block: specialization above, tale
         ','
     ))
 
-    assert(box.children[2].caption:GetText() == 'Specialization' and box.children[3].caption:GetText() == 'Talent')
+    assert(box.children[2].caption:GetText() == 'Specialization' and box.children[3].caption:GetText() == 'Talent Tree')
+    assert(box.children[4].caption:GetText() == 'Talent')
     local icon = box.children[1]
 
     assert(
@@ -755,21 +767,10 @@ test(
         )
 
         local parent = editor(f, {}, FIRE)
-        local picker = child(parent, 'Talent')
-        picker.configure()
-        local headings = {}
-
-        for _, entry in ipairs(picker.list) do
-            if entry.header then
-                headings[#headings + 1] = entry.text
-            end
-        end
-
-        assert(
-            table.concat(headings, '|')
-                == 'Class talents|Specialization talents|Hero talents: Frostfire|Hero talents: Sunfury',
-            table.concat(headings, '|')
-        )
+        local trees = child(parent, 'Talent Tree')
+        trees.configure()
+        assert(trees.list[1] == 'Class talents' and trees.list[2] == 'Specialization talents')
+        assert(trees.list[3] == 'Hero talents: Frostfire' and trees.list[4] == 'Hero talents: Sunfury')
 
         -- No gap between the two (overlapping columns): one group, not a guess.
         f, a = client({ spec = FIRE })
@@ -811,17 +812,9 @@ test(
         )
 
         local parent = editor(f, {}, FIRE)
-        local picker = child(parent, 'Talent')
-        picker.configure()
-        local headings = {}
-
-        for _, entry in ipairs(picker.list) do
-            if entry.header then
-                headings[#headings + 1] = entry.text
-            end
-        end
-
-        assert(headings[3] == 'Hero Talents' and headings[4] == 'Hero talents: Sunfury', table.concat(headings, '|'))
+        local trees = child(parent, 'Talent Tree')
+        trees.configure()
+        assert(trees.list[3] == 'Hero Talents' and trees.list[4] == 'Hero talents: Sunfury')
     end
 )
 
