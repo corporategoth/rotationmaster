@@ -9276,6 +9276,8 @@ N["Assistant"] = 4098
 N["Leader"] = 4099
 -- 901e4ca6
 N["you {{!are|are not}} a raid %s"] = 4100
+-- b1df5d42
+N["{unit} {{!exist|do not exist}}"] = 4102
 
 for text, id in pairs(N) do
     local translation = T[id]

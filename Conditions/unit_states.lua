@@ -141,7 +141,7 @@ addon:RegisterCondition('UNIT_EXISTS', {
     -- @param value table  The condition fields.
     -- @return string  The condition summary.
     print = function(_, value)
-        return addon.Functions.presentation.phrase(L['{unit} {{!exists|does not exist}}'], {unit = addon.units[value.unit] or L['<unit>']})
+        return addon.Functions.presentation.phrase(value.unit == 'player' and L['{unit} {{!exist|do not exist}}'] or L['{unit} {{!exists|does not exist}}'], {unit = addon.units[value.unit] or L['<unit>']})
     end,
     widget = widget,
     -- Builds the condition's help text.

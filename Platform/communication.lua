@@ -65,13 +65,7 @@ function platform:GetPlayerRaidRole()
         return 'leader'
     end
 
-    local assistant, assistantReason
-
-    if type(UnitIsGroupAssistant) == 'function' then
-        assistant, assistantReason = read(UnitIsGroupAssistant, 'player')
-    else
-        assistant, assistantReason = read(IsRaidOfficer)
-    end
+    local assistant, assistantReason = read(UnitIsGroupAssistant, 'player')
 
     if assistant == nil then
         return nil, assistantReason
