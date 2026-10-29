@@ -961,6 +961,7 @@ def main():
             [sys.executable, 'tests/test_talent_trees.py'],
             [sys.executable, 'tests/test_us_spelling.py'],
             [sys.executable, 'tests/test_rank_wording.py'],
+            [sys.executable, 'tests/test_release_routing.py'],
             [sys.executable, 'tests/test_format_lua.py'],
         ])
     for command in commands:

@@ -21,27 +21,21 @@ in the addon compares versions.
 
 ## One-time setup
 
-Repository **Settings > Actions > Secrets** (never in a file; the workflows and tools never ask for the values):
+GitHub repository **Settings > Secrets and variables > Actions** supplies the publisher's credentials:
 
 | Secret | Used for |
 | --- | --- |
-| `CF_API_KEY` | CurseForge upload (project id 301085, from `## X-Curse-Project-ID`). Create it under the CurseForge account's API tokens |
-| `WAGO_API_TOKEN` | Wago Addons upload (project `vEGPM4N1`, from `## X-Wago-ID`) |
-| `WOWI_API_TOKEN` | WoWInterface upload (addon 25079, from `## X-WoWI-ID`); stable tags and, with the variable, betas |
-| `RELEASE_TOKEN` | *Optional.* A Gitea access token with permission to write releases, if the workflow's built-in token cannot |
+| `CF_API_KEY` | CurseForge upload (project id 301085) |
+| `WAGO_API_TOKEN` | Wago Addons upload (project `vEGPM4N1`) |
+| `WOWI_API_TOKEN` | WoWInterface upload (addon 25079); stable tags and explicitly enabled betas |
 
-Optional **variables** (Settings > Actions > Variables): `WOWI_UPLOAD_BETA=true` (also upload betas to WoWInterface) and
-`BETA_GUIDE_URL` (the public web address of `docs/release/BETA.md`, used in the test-release notice on CurseForge and the Gitea
-release; without it the notice names the file's path in the repository).
+Presence of a secret does not prove the token is still valid. Set optional GitHub Actions variables
+`WOWI_UPLOAD_BETA=true` to upload betas to WoWInterface, and `BETA_GUIDE_URL` to link the beta guide in the notes.
+Gitea only needs its built-in release token, or an optional `RELEASE_TOKEN` if that token cannot write releases.
 
-Nothing is passed to GitHub: it is a push mirror, a release is a Gitea object, and GitHub receives it through the mirror and
-its webhook, never from CI. Release workflows run on Gitea; check any future GitHub workflows before tagging so the mirror does
-not trigger a second upload.
-
-Runner assumptions (see `.gitea/workflows/test.yml`): the `ubuntu-latest` label is the Gitea Ubuntu image, root or sudo is
-available, apt and the internet work, and the runner takes one job at a time. A full release run is three test jobs plus
-packaging and takes the better part of an hour (the suite without the single slowest test was about 21 minutes on a loaded workstation; that test alone passes in about
-35 more); the job timeouts are 120 minutes.
+GitHub Actions is the **only** publisher to the addon sites. The Gitea workflow creates the Gitea release and its
+asset; the configured mirror and webhook carry the tag and release to GitHub. Do not add a second addon-site upload
+to Gitea or another GitHub tag workflow.
 
 ## Before tagging
 
@@ -76,7 +70,7 @@ packaging and takes the better part of an hour (the suite without the single slo
    python3 tools/release_plan.py --tag 2.0.0-beta.1 --dry-run           # sites and packager flags
    ```
 5. **Install the zip** from the Tests run's `RotationMaster-<sha>` artifact (or your local build) into a clean `Interface/AddOns`
-   in a real client before tagging a first beta: the layout of 14 moved modules has never run from a zip.
+   in a real client before tagging a first beta. The `2.0.0-beta.1` package loaded in TBC Anniversary and ran a rotation.
 6. Update `docs/release/BETA.md` (supported clients, known risks) if it changed.
 7. If the website pins this addon (catalogs), regenerate and release it in step with the tag.
 
@@ -88,30 +82,27 @@ git push origin 2.0.0-beta.1
 ```
 
 Push the tag to **Gitea** only. Do not move or delete a published tag; fix forward with the next number
-(`2.0.0-beta.2`).
+(`2.0.0-beta.2`). Before pushing, confirm the GitHub mirror's `master` has received the commit: the GitHub publisher
+refuses a tag that is not reachable from its `master`.
 
-## What CI does (`.gitea/workflows/release.yml`)
+## What CI does
 
-1. **Static checks**: pre-commit on every file, workflow lint.
-2. **Tests** on Lua 5.1, LuaJIT and Python (`tools/check_all.py`), with no known-failures list. Any failure stops the release.
-3. **Package and publish**:
-   1. confirms the checkout is the tag;
-   2. `tools/release_plan.py` prints the release type, which sites will get the file and the packager flags, and fails if a
-      site that should receive the file has no secret;
-   3. `tools/release_notes.py` writes `CHANGELOG.md` (sent to CurseForge; `.pkgmeta` keeps it out of the zip) and the Gitea release body;
-   4. verifies the vendored `release.sh` checksum, builds the package with it (`-d`, no secrets in the environment);
-   5. `tools/package_release.py --check-zip` on that exact zip (only files the client loads plus license and notice files, every TOC lists files that exist, supported
-      Interface numbers, no oversize file);
-   6. creates or updates the **Gitea release** (prerelease for beta and alpha) with the zip attached (`tools/gitea_release.py`);
-   7. runs the packager again with the secrets to upload to CurseForge, Wago and (per the table above) WoWInterface.
+A tag pushed to Gitea is mirrored to GitHub. Both services run their release workflows for the same tag:
 
-**Dry run.** Actions > Release > Run workflow, enter an existing tag, leave `dry_run` on: it does everything except create the
-release and upload. `gitea_release` and `upload_sites` re-run only that half after a failure (the Gitea step is idempotent:
-it updates the release and replaces the asset). `allow_known_failures` and `allow_missing_tokens` exist for emergencies.
+- `.gitea/workflows/release.yml` runs static checks and Lua 5.1, LuaJIT and Python tests, builds and checks the
+  package, then creates or updates the Gitea release. It does not upload to addon sites.
+- `.github/workflows/release.yml` independently runs static checks and those three test suites, verifies that the tag
+  points at a commit on `master`, generates the release plan and notes, checks the vendored packager, builds and checks
+  the ZIP, then uploads to CurseForge, Wago and, when the release plan allows, WoWInterface. A missing required GitHub
+  secret stops the run before uploading. The publisher does not create a second GitHub release.
+
+For a dry run, use **GitHub Actions > Publish addon > Run workflow**, enter an existing tag and leave `dry_run` enabled.
+A manual run with `dry_run` disabled publishes to the sites; do not rerun a successful publication because the sites
+may create duplicate files. Gitea's Release workflow has its own dry-run option for checking its package and release.
 
 ## After the run: verify
 
-- The run is green, and its log shows the plan you expected (`type=beta`, `sites=curseforge wago`).
+- Both release runs are green, and the GitHub run shows the plan you expected (`type=beta`, `sites=curseforge wago`).
 - The Gitea release exists, is marked prerelease for a beta, has the notes and the zip.
 - **CurseForge** lists a *Beta* file with the right game versions; **Wago** shows it as beta; **WoWInterface** shows no new file
   for a beta. If a game version was rejected (CurseForge may not know `38002` or `16001` yet), the upload step says so.
@@ -134,4 +125,4 @@ it updates the release and replaces the asset). `allow_known_failures` and `allo
 `.pkgmeta` (generated by `tools/generate_artwork_catalog.py`; the ignore list, `move-folders` for the 17 modules, the manual
 changelog), `tools/package_release.py`, `tools/release_notes.py`, `tools/release_plan.py`, `tools/gitea_release.py`,
 `tools/vendor/bigwigs-packager/` (the pinned upstream `release.sh`, checked against the SHA-256 in `UPSTREAM.json`),
-`.gitea/workflows/{test,release,nightly}.yml`, `.gitea/actions/toolchain/action.yml`.
+`.gitea/workflows/{test,release,nightly}.yml`, `.github/workflows/release.yml`, `.gitea/actions/toolchain/action.yml`.

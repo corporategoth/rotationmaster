@@ -1,16 +1,13 @@
 # Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
-# Release: runs on a pushed version tag, re-tests, builds the package, creates the Gitea release and uploads to
-# CurseForge, Wago and (stable tags only, unless WOWI_UPLOAD_BETA=true) WoWInterface.
+# Release: re-tests, builds the package and creates the Gitea release.
+# GitHub Actions publishes to the addon sites using its repository secrets.
 #
 # Tags: `2.0.0` is a release, `2.0.0-beta.1` a beta, `2.0.0-alpha.1` an alpha. The word beta or alpha anywhere in the tag
 # makes CurseForge and Wago mark the file that way and the Gitea release a prerelease; the packager decides from the
 # tag name, tools/release_plan.py states the decision in the log before anything is uploaded.
 #
-# Credentials come from repository secrets only (Settings > Actions > Secrets): CF_API_KEY, WOWI_API_TOKEN,
-# WAGO_API_TOKEN, and optionally RELEASE_TOKEN (a Gitea token allowed to write releases, if the built-in token cannot).
-# No GitHub credential is used anywhere: GitHub is a push mirror and receives the release from Gitea.
-# Optional repository variable: WOWI_UPLOAD_BETA=true uploads betas to WoWInterface as well.
+# RELEASE_TOKEN is optional when the built-in token cannot write Gitea releases.
 #
 # Run it by hand from the Actions tab (workflow_dispatch) with dry_run=true to do everything except upload and create the
 # release. docs/release/RELEASING.md has the full procedure.
@@ -37,18 +34,8 @@ on:
         required: false
         default: true
         type: boolean
-      upload_sites:
-        description: Upload to CurseForge, Wago and WoWInterface
-        required: false
-        default: true
-        type: boolean
       allow_known_failures:
         description: Let suites listed in tools/known_failures.txt fail
-        required: false
-        default: false
-        type: boolean
-      allow_missing_tokens:
-        description: Skip a site whose secret is missing instead of failing
         required: false
         default: false
         type: boolean
@@ -64,9 +51,7 @@ env:
   TAG: ${{ github.event.inputs.tag || github.ref_name }}
   DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'false' }}
   GITEA_RELEASE: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.gitea_release != 'false' }}
-  UPLOAD_SITES: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.upload_sites != 'false' }}
   ALLOW_KNOWN_FAILURES: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.allow_known_failures == 'true' }}
-  ALLOW_MISSING_TOKENS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.allow_missing_tokens == 'true' }}
 
 jobs:
   verify-static:
@@ -142,23 +127,12 @@ jobs:
             [ "${fail}" = "0" ] || exit 1
           fi
 
-      # Says what will happen before it happens: release type, which sites, the packager flags. Fails when a site that
-      # should receive the file has no secret. Only whether a secret is set is read here; values are never printed.
+      # GitHub publishes to addon sites; this plan only determines the Gitea release type.
       - name: Release plan
         id: plan
-        env:
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
-          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
-          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
-          WOWI_UPLOAD_BETA: ${{ vars.WOWI_UPLOAD_BETA }}
         run: |
           set -euo pipefail
-          args=(--tag "${TAG}")
-          [ "${DRY_RUN}" = "true" ] && args+=(--dry-run)
-          [ "${UPLOAD_SITES}" != "true" ] && args+=(--dry-run)
-          [ "${WOWI_UPLOAD_BETA}" = "true" ] && args+=(--wowi-beta)
-          [ "${ALLOW_MISSING_TOKENS}" = "true" ] && args+=(--allow-missing-tokens)
-          python3 tools/release_plan.py "${args[@]}" | tee plan.env
+          python3 tools/release_plan.py --tag "${TAG}" --dry-run | tee plan.env
           cat plan.env >> "${GITHUB_OUTPUT}"
 
       # Hand-written notes (docs/release/notes/<tag>.md) are required for a stable tag; a beta falls back to a
@@ -214,20 +188,6 @@ jobs:
           [ "${{ steps.plan.outputs.prerelease }}" = "true" ] && flag=(--prerelease)
           python3 tools/gitea_release.py --tag "${TAG}" --notes release-notes-gitea.md --asset "${ZIP}" "${flag[@]}"
 
-      # Pass two: the same packager run again without -d, now with the credentials, uploading what the plan allows (the
-      # plan's flags also switch off a site that should not get this tag, or that has no secret and was allowed to skip).
-      - name: Upload to CurseForge, Wago and WoWInterface
-        if: ${{ env.DRY_RUN != 'true' && env.UPLOAD_SITES == 'true' }}
-        env:
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
-          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
-          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
-        run: |
-          set -euo pipefail
-          echo "Uploading to: ${{ steps.plan.outputs.sites }}"
-          # shellcheck disable=SC2086
-          bash tools/vendor/bigwigs-packager/release.sh ${{ steps.plan.outputs.packager }} -r "${GITHUB_WORKSPACE}/.release"
-
       - name: Summary
         if: ${{ always() }}
         run: |
@@ -236,6 +196,6 @@ jobs:
             echo
             echo "- type: ${{ steps.plan.outputs.type }}"
             echo "- dry run: ${DRY_RUN}"
-            echo "- sites: ${{ steps.plan.outputs.sites }}"
+            echo "- addon site publisher: GitHub Actions"
             echo "- package: ${ZIP:-not built}"
           } >> "${GITHUB_STEP_SUMMARY:-/dev/null}"

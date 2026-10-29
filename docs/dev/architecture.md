@@ -323,6 +323,6 @@ it to `embeds.xml`. Keep its license file with it; the package ships `Libs/`.
 folder as `Interface/AddOns/RotationMaster_*` (the client only scans top-level folders). `@project-version@` shows
 literally in a symlink install. Reload with `/reload`.
 
-*Release.* Merge to the default branch, write `docs/release/notes/<tag>.md`, tag, push. CI re-runs the suites, builds the
-package with the vendored BigWigs packager, creates the Gitea release and uploads to CurseForge, Wago and (stable tags)
+*Release.* Merge to the default branch, write `docs/release/notes/<tag>.md`, tag, push. Gitea CI creates the Gitea
+release; GitHub Actions re-runs the suites, checks the package and publishes to CurseForge, Wago and (stable tags)
 WoWInterface. The version is the tag name. See `docs/release/RELEASING.md`; beta testers use `docs/release/BETA.md`.

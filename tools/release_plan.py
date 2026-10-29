@@ -20,7 +20,8 @@ Rules:
   - a site that should receive the file but has no credential fails the plan, so a release can never silently
     skip a site; --allow-missing-tokens turns that into a warning and skips the site;
   - --dry-run builds the package and uploads nothing (the packager's -d).
-GitHub is never written to: the repository is a push mirror, so no GitHub credential is passed to the packager.
+GitHub Actions publishes to addon sites without passing a GitHub release credential to the packager; the Gitea
+release is mirrored separately.
 """
 import argparse
 import os

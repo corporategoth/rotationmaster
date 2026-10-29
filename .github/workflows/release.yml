@@ -1,0 +1,126 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+# GitHub is the sole publisher to CurseForge, Wago and WoWInterface. Gitea creates the mirrored release record.
+name: Publish addon
+
+on:
+  push:
+    tags:
+      - '[0-9]*'
+      - 'v[0-9]*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to publish
+        required: true
+        type: string
+      dry_run:
+        description: Build and check without uploading
+        required: false
+        default: true
+        type: boolean
+
+concurrency:
+  group: addon-publish-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'false' }}
+
+jobs:
+  static:
+    name: Static checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: refs/tags/${{ github.event.inputs.tag || github.ref_name }}
+      - uses: ./.gitea/actions/toolchain
+        with:
+          pre-commit: 'true'
+      - name: Pre-commit checks
+        run: pre-commit run --all-files --show-diff-on-failure --color never
+      - name: Validate Gitea workflow files
+        run: .venv-ci/bin/python tools/lint_workflows.py --require-yaml
+
+  tests:
+    name: Tests (${{ matrix.runtime }})
+    needs: [static]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [lua5.1, luajit, python]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: refs/tags/${{ github.event.inputs.tag || github.ref_name }}
+      - uses: ./.gitea/actions/toolchain
+      - name: Run the suite
+        env:
+          RUNTIME: ${{ matrix.runtime }}
+        run: python3 tools/check_all.py --runtime "${RUNTIME}"
+
+  publish:
+    name: Package and publish
+    needs: [static, tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: refs/tags/${{ github.event.inputs.tag || github.ref_name }}
+          fetch-depth: 0
+      - uses: ./.gitea/actions/toolchain
+      - name: Verify tag and master ancestry
+        run: |
+          set -euo pipefail
+          git tag --points-at HEAD | grep -Fx -- "${TAG}"
+          git merge-base --is-ancestor HEAD origin/master
+      - name: Release plan
+        id: plan
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+          WOWI_UPLOAD_BETA: ${{ vars.WOWI_UPLOAD_BETA }}
+        run: |
+          set -euo pipefail
+          args=(--tag "${TAG}")
+          [ "${DRY_RUN}" = "true" ] && args+=(--dry-run)
+          [ "${WOWI_UPLOAD_BETA}" = "true" ] && args+=(--wowi-beta)
+          python3 tools/release_plan.py "${args[@]}" | tee plan.env
+          cat plan.env >> "${GITHUB_OUTPUT}"
+      - name: Release notes
+        env:
+          BETA_GUIDE_URL: ${{ vars.BETA_GUIDE_URL }}
+          RELEASE_TYPE: ${{ steps.plan.outputs.type }}
+        run: |
+          set -euo pipefail
+          args=()
+          [ "${RELEASE_TYPE}" = "release" ] && args+=(--require-curated)
+          [ -n "${BETA_GUIDE_URL}" ] && args+=(--beta-url "${BETA_GUIDE_URL}")
+          python3 tools/release_notes.py --tag "${TAG}" --target curseforge --out CHANGELOG.md "${args[@]}"
+      - name: Build and check the package
+        run: |
+          set -euo pipefail
+          expected="$(jq -r .sha256 tools/vendor/bigwigs-packager/UPSTREAM.json)"
+          echo "${expected}  tools/vendor/bigwigs-packager/release.sh" | sha256sum -c -
+          bash tools/vendor/bigwigs-packager/release.sh -d -u -e -l -r "${GITHUB_WORKSPACE}/.release"
+          python3 tools/package_release.py --check-zip ".release/RotationMaster-${TAG}.zip" --version "${TAG}"
+      - name: Upload to addon sites
+        if: ${{ env.DRY_RUN != 'true' }}
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+          PACKAGER_FLAGS: ${{ steps.plan.outputs.packager }}
+        run: |
+          set -euo pipefail
+          read -r -a args <<< "${PACKAGER_FLAGS}"
+          bash tools/vendor/bigwigs-packager/release.sh "${args[@]}" -r "${GITHUB_WORKSPACE}/.release"

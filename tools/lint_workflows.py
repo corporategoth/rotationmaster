@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
-"""Check the Gitea workflows and composite actions: structure, pinning, shell syntax, secret handling.
+"""Check the Gitea and GitHub workflows and composite actions: structure, pinning, shell syntax, secret handling.
 
-  python3 tools/lint_workflows.py              every file under .gitea/workflows and .gitea/actions
+  python3 tools/lint_workflows.py              every GitHub/Gitea workflow and Gitea composite action
   python3 tools/lint_workflows.py --require-yaml    fail instead of skipping when PyYAML is not installed
 
 This is not a substitute for running the workflow (see docs/release/RELEASING.md for what has and has not been run),
@@ -121,7 +121,9 @@ def main(argv=None):
     except ImportError:
         print('lint_workflows: PyYAML is not installed; skipped (pre-commit installs it)')
         return 1 if args.require_yaml else 0
-    files = sorted((ROOT / '.gitea' / 'workflows').glob('*.yml')) + sorted((ROOT / '.gitea' / 'actions').glob('*/action.yml'))
+    files = (sorted((ROOT / '.gitea' / 'workflows').glob('*.yml'))
+             + sorted((ROOT / '.github' / 'workflows').glob('*.yml'))
+             + sorted((ROOT / '.gitea' / 'actions').glob('*/action.yml')))
     problems = []
     for path in files:
         lint_workflow(path, problems)
