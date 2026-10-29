@@ -8,26 +8,18 @@
 -- Retail, so the 70-Focus Multi-Shot dump is left out). Disabled: procs and charges are secret in
 -- Midnight combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local AIMED,RAPID,TRUESHOT,EXPLOSIVE,VOLLEY,KILLSHOT,MULTI,ARCANE,STEADY,BLACK,WAILING,CHAKRAM=19434,257044,288613,212431,260243,53351,257620,185358,56641,466930,392060,1264949
 local precise=buff(260242)
 local trueshot=buff(TRUESHOT)
 local trick=buff(257622)
 local aimedCap={type='SPELL_CHARGES',spell=AIMED,operator='GREATERTHANOREQUALS',value=2}
-local hydra=all(precise,engaged(2),known(470945))
+local hydra=BuiltinConditions.all(precise,engaged(2),BuiltinConditions.known(470945))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=8,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
- nameKey="Reference (SimulationCraft and Icy Veins)",descriptionKey="Reference only, off by default: the optimized Marksmanship priority, which spends Precise Shots before the next Aimed Shot. Procs and charges are hidden in Midnight combat, so it cannot run there; Focus is hidden on Retail, so the 70-Focus Multi-Shot dump on packs is left out. Marks the target and opens with Aimed Shot. Sentinel: Explosive Shot, Volley, Trueshot, Moonlight Chakram before its window ends, Aimed Shot in Trueshot without Precise Shots, Rapid Fire, Kill Shot, Multi-Shot (two enemies with Aspect of the Hydra) or Arcane Shot on Precise Shots, Aimed Shot, Moonlight Chakram, Steady Shot. Dark Ranger: Black Arrow on Precise Shots first, no Explosive Shot during Lock and Load, Aimed Shot before it caps, Wailing Arrow. Three or more enemies with Trick Shots: Explosive Shot, Volley, Multi-Shot to apply Trick Shots, Trueshot, then Rapid Fire and Aimed Shot while it lasts. Calling Trueshot for 30 Bullseye stacks or an unmarked target stays with you.",
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'marksmanship','ranged','reference','simulationcraft','icy-veins'},
  sources={
@@ -35,46 +27,46 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/marksmanship-hunter-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Marksmanship Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-14'},
  },
  body={priority=10,disabled=true,specs={254},
-  cooldowns={block('mmguide-utility','retail.hunter.utility','mmguide-')},
+  cooldowns={BuiltinConditions.block('mmguide-utility','retail.hunter.utility','mmguide-')},
   rotation={
-   block('mmguide-boundaries','retail.hunter.boundaries','mmguide-'),
-   spell('mmguide-call-pet',883,all(known(1223323),negate({type='PET'}))),
-   {id='mmguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    block('mmguide-pull-mark','retail.hunter.mark','mmguide-pull-'),spell('mmguide-pull-aimed',AIMED),stop('mmguide-pull-stop')}},
-   {id='mmguide-aoe',type='branch',conditions=all(known(257621),engaged(3)),onFalse={},onTrue={
-    spell('mmguide-aoe-explosive',EXPLOSIVE),spell('mmguide-aoe-volley',VOLLEY),
-    spell('mmguide-aoe-black-arrow',BLACK,precise),
-    spell('mmguide-aoe-trick',MULTI,negate(trick)),
-    spell('mmguide-aoe-trueshot',TRUESHOT),
-    spell('mmguide-aoe-rapid',RAPID,trick),spell('mmguide-aoe-aimed',AIMED,trick),
-    spell('mmguide-aoe-steady',STEADY),stop('mmguide-aoe-stop')}},
-   {id='mmguide-dark-ranger',type='branch',conditions=known(BLACK),
+   BuiltinConditions.block('mmguide-boundaries','retail.hunter.boundaries','mmguide-'),
+   BuiltinConditions.spell('mmguide-call-pet',883,BuiltinConditions.all(BuiltinConditions.known(1223323),BuiltinConditions.negate({type='PET'}))),
+   {id='mmguide-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.block('mmguide-pull-mark','retail.hunter.mark','mmguide-pull-'),BuiltinConditions.spell('mmguide-pull-aimed',AIMED),BuiltinConditions.stop('mmguide-pull-stop')}},
+   {id='mmguide-aoe',type='branch',conditions=BuiltinConditions.all(BuiltinConditions.known(257621),engaged(3)),onFalse={},onTrue={
+    BuiltinConditions.spell('mmguide-aoe-explosive',EXPLOSIVE),BuiltinConditions.spell('mmguide-aoe-volley',VOLLEY),
+    BuiltinConditions.spell('mmguide-aoe-black-arrow',BLACK,precise),
+    BuiltinConditions.spell('mmguide-aoe-trick',MULTI,BuiltinConditions.negate(trick)),
+    BuiltinConditions.spell('mmguide-aoe-trueshot',TRUESHOT),
+    BuiltinConditions.spell('mmguide-aoe-rapid',RAPID,trick),BuiltinConditions.spell('mmguide-aoe-aimed',AIMED,trick),
+    BuiltinConditions.spell('mmguide-aoe-steady',STEADY),BuiltinConditions.stop('mmguide-aoe-stop')}},
+   {id='mmguide-dark-ranger',type='branch',conditions=BuiltinConditions.known(BLACK),
     onTrue={
-     spell('mmguide-dr-black-arrow',BLACK,precise),
-     spell('mmguide-dr-explosive',EXPLOSIVE,negate(buff(194594))),
-     spell('mmguide-dr-volley',VOLLEY),
-     spell('mmguide-dr-aimed-window',AIMED,any(all(trueshot,negate(precise),{type='SPELL_AVAIL',spell=BLACK}),aimedCap)),
-     spell('mmguide-dr-trueshot',TRUESHOT),
-     spell('mmguide-dr-rapid',RAPID),
-     spell('mmguide-dr-wailing',WAILING),
-     spell('mmguide-dr-multi',MULTI,hydra),
-     spell('mmguide-dr-arcane',ARCANE,precise),
-     spell('mmguide-dr-aimed',AIMED),
-     spell('mmguide-dr-black-arrow-filler',BLACK),
-     spell('mmguide-dr-steady',STEADY)},
+     BuiltinConditions.spell('mmguide-dr-black-arrow',BLACK,precise),
+     BuiltinConditions.spell('mmguide-dr-explosive',EXPLOSIVE,BuiltinConditions.negate(buff(194594))),
+     BuiltinConditions.spell('mmguide-dr-volley',VOLLEY),
+     BuiltinConditions.spell('mmguide-dr-aimed-window',AIMED,BuiltinConditions.any(BuiltinConditions.all(trueshot,BuiltinConditions.negate(precise),{type='SPELL_AVAIL',spell=BLACK}),aimedCap)),
+     BuiltinConditions.spell('mmguide-dr-trueshot',TRUESHOT),
+     BuiltinConditions.spell('mmguide-dr-rapid',RAPID),
+     BuiltinConditions.spell('mmguide-dr-wailing',WAILING),
+     BuiltinConditions.spell('mmguide-dr-multi',MULTI,hydra),
+     BuiltinConditions.spell('mmguide-dr-arcane',ARCANE,precise),
+     BuiltinConditions.spell('mmguide-dr-aimed',AIMED),
+     BuiltinConditions.spell('mmguide-dr-black-arrow-filler',BLACK),
+     BuiltinConditions.spell('mmguide-dr-steady',STEADY)},
     onFalse={
-     spell('mmguide-sen-explosive',EXPLOSIVE),
-     spell('mmguide-sen-volley',VOLLEY),
-     spell('mmguide-sen-trueshot',TRUESHOT),
-     spell('mmguide-sen-chakram-ending',CHAKRAM,{type='BUFF_REMAIN',unit='player',spell=1264946,ownbuff=true,operator='LESSTHAN',value=5}),
-     spell('mmguide-sen-aimed-window',AIMED,all(trueshot,negate(precise))),
-     spell('mmguide-sen-rapid',RAPID,any(negate(precise),trueshot)),
-     spell('mmguide-sen-kill-shot',KILLSHOT,precise),
-     spell('mmguide-sen-multi',MULTI,hydra),
-     spell('mmguide-sen-arcane',ARCANE,precise),
-     spell('mmguide-sen-aimed',AIMED),
-     spell('mmguide-sen-chakram',CHAKRAM),
-     spell('mmguide-sen-steady',STEADY)}},
+     BuiltinConditions.spell('mmguide-sen-explosive',EXPLOSIVE),
+     BuiltinConditions.spell('mmguide-sen-volley',VOLLEY),
+     BuiltinConditions.spell('mmguide-sen-trueshot',TRUESHOT),
+     BuiltinConditions.spell('mmguide-sen-chakram-ending',CHAKRAM,{type='BUFF_REMAIN',unit='player',spell=1264946,ownbuff=true,operator='LESSTHAN',value=5}),
+     BuiltinConditions.spell('mmguide-sen-aimed-window',AIMED,BuiltinConditions.all(trueshot,BuiltinConditions.negate(precise))),
+     BuiltinConditions.spell('mmguide-sen-rapid',RAPID,BuiltinConditions.any(BuiltinConditions.negate(precise),trueshot)),
+     BuiltinConditions.spell('mmguide-sen-kill-shot',KILLSHOT,precise),
+     BuiltinConditions.spell('mmguide-sen-multi',MULTI,hydra),
+     BuiltinConditions.spell('mmguide-sen-arcane',ARCANE,precise),
+     BuiltinConditions.spell('mmguide-sen-aimed',AIMED),
+     BuiltinConditions.spell('mmguide-sen-chakram',CHAKRAM),
+     BuiltinConditions.spell('mmguide-sen-steady',STEADY)}},
   },
  },
 }))

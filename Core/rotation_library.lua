@@ -44,6 +44,32 @@ local activeCurrent = addon.IsActiveRotationTransitionCurrent
 local beginActive = addon.BeginActiveRotationTransition
 local retireActive = addon.RetireActiveRotationTransition
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
+
+-- Shared constructors used by Built In rotation and block declarations.
+addon.BuiltInConditionHelpers = {
+    all = function(...) return { type = "AND", value = { ... } } end,
+    any = function(...) return { type = "OR", value = { ... } } end,
+    negate = function(condition) return { type = "NOT", value = condition } end,
+    combat = function() return { type = "COMBAT", unit = "player" } end,
+    spell = function(id, action, conditions)
+        return { id = id, type = "spell", action = action, ranked = false, conditions = conditions or {} }
+    end,
+    block = function(id, name, prefix)
+        return { id = id .. "-block", type = "block", block = name, prefix = prefix }
+    end,
+    stop = function(id, conditions)
+        return { id = id, type = "stop", suppress_attack = true, conditions = conditions or {} }
+    end,
+    known = function(id) return { type = "SPELL_KNOWN", spell = id } end,
+    ownBuff = function(id) return { type = "BUFF", unit = "player", spell = id, ownbuff = true } end,
+    buff = function(id) return { type = "BUFF", unit = "player", spell = id } end,
+    classified = function(kind) return { type = "CLASSIFICATION", unit = "target", value = kind } end,
+    lifetime = function(op, value)
+        return { type = "TT_HEALTH", unit = "target", health = 0, operator = op, value = value }
+    end,
+    form = function(id) return { type = "FORM", form = id } end,
+}
+
 -- The registered Built In envelopes by id, and a counter that is bumped on every registration so caches can tell the
 -- set changed.
 local definitions, definitionVersion = {}, 0
@@ -56,13 +82,15 @@ local definitions, definitionVersion = {}, 0
 -- an export carries that key beside the body. The key must never be shown as a name. The locale table is read
 -- with rawget: AceLocale reports a missing key to the error handler, and a user's own rotation name is not a key.
 -- Only a Default.*.Name key that the locale registers is resolved; anything else a user typed stays as typed.
-local BUILTIN_NAME_KEY = "^Default%.[%w%.]+%.Name$"
+local function builtinNameKey(key)
+    return key:find("^Default%.[%w%.]+%.Name$") or key:find("^rm%.[%w%._%-]+%.Name$")
+end
 
 -- Returns the translated text for a Built In locale key.
 -- @param key any  The candidate key.
 -- @return string|nil  The text; nil when the value is not such a key or the locale has no text for it.
 local function registeredBuiltinName(key)
-    if type(key) ~= "string" or not key:find(BUILTIN_NAME_KEY) then
+    if type(key) ~= "string" or not builtinNameKey(key) then
         return nil
     end
 
@@ -129,7 +157,7 @@ function addon:RotationDisplayName(rotation)
         return nil
     end
 
-    return registeredBuiltinName(key) or key:find(BUILTIN_NAME_KEY) and readableBuiltinKey(key) or key
+    return registeredBuiltinName(key) or builtinNameKey(key) and readableBuiltinKey(key) or key
 end
 
 -- The built library for the current profile (catalog, views, runtime bodies, clone scopes and generation), or nil until
@@ -1164,6 +1192,12 @@ function addon:RegisterDefaultRotation(envelope)
     if not copy then
         return false, why.code
     end
+
+    if type(copy.id) == "string" then
+        copy.nameKey = copy.nameKey or copy.id .. ".Name"
+        copy.descriptionKey = copy.descriptionKey or copy.id .. ".Description"
+    end
+
     if copy.format ~= "RotationMaster" or copy.schemaVersion ~= 1 or not data.ValidateEnvelope(copy).valid then
         return false, "invalid-envelope"
     end

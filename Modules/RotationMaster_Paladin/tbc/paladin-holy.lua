@@ -7,12 +7,11 @@
 -- a soloing Holy paladin melees with a Retribution premade.
 -- Shared blocks: Defaults/blocks/paladin.lua. Original priority data, no guide prose.
 local _,addon=...
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.holy',revision=5,
  blocks={['tbc.paladin.holy-upkeep']=2,['tbc.paladin.boundaries']=2,['tbc.paladin.holy-hostile']=2,['tbc.paladin.holy-emergency']=2},
- nameKey="Holy (Icy Veins & Wowhead)",descriptionKey="Healing for a Holy Paladin in a group, on your friendly target: Lay on Hands or Holy Shock for a dying target, Cleanse (Purify before 42), Holy Shock while moving, Holy Light for heavy damage, rank-5 Holy Light to keep Light's Grace up, Flash of Light otherwise. With a hostile target it keeps Judgement of Wisdom up. Reminders: Concentration Aura, Blessing of Wisdom, Divine Illumination and Divine Favor. A soloing Holy Paladin gets a Retribution premade instead.",
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','holy','healer','dungeon','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/tbc-classic/holy-paladin-healer-pve-rotation-cooldowns-abilities',title='Icy Veins: Holy Paladin rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
@@ -26,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
    },onFalse={
     {id='holy-emergency',type='block',block='tbc.paladin.holy-emergency',prefix='holy-'},
     {id='holy-light-heavy',type='spell',action=635,ranked=false,conditions=hurt(0.5)},
-    {id='holy-light-grace',type='spell',action=1042,ranked=true,conditions={type='AND',value={negate({type='BUFF',unit='player',spell=31834,ownbuff=true}),hurt(0.8)}}},
+    {id='holy-light-grace',type='spell',action=1042,ranked=true,conditions={type='AND',value={BuiltinConditions.negate({type='BUFF',unit='player',spell=31834,ownbuff=true}),hurt(0.8)}}},
     {id='holy-flash',type='spell',action=19750,ranked=false,conditions=hurt(0.9)},
     {id='holy-stop',type='stop',suppress_attack=true,conditions={}},
    }},

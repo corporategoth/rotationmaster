@@ -11,7 +11,7 @@ local test, finish = F.suite()
 local corpus = dofile('tests/fixtures/default_corpus.lua')
 local modules = dofile('tools/builtin_modules.lua')
 
-local names = dofile('tests/fixtures/locale_entries.lua').english()
+local names = dofile('tests/fixtures/locale_entries.lua').english(true)
 
 local function packs()
     local f = corpus.load(5, 1, 'ROGUE', { modules = false })
@@ -50,7 +50,7 @@ test(
         local seen, bad = {}, {}
 
         for _, p in ipairs(list) do
-            local name = names[p.nameKey]
+            local name = names[p.id .. '.Name']
             local ap = p.applicability
 
             if type(name) ~= 'string' or name == '' then
@@ -97,17 +97,15 @@ test(
 )
 
 test('the names the user asked for, and Season of Discovery keeps its mark', function()
-    assert(
-        names["Blizzard Assisted with brews"] == 'Blizzard Assisted with brews',
-        names["Blizzard Assisted with brews"]
-    )
+    local found = {}
 
-    assert(names["Reference (Icy Veins)"] == 'Reference (Icy Veins)')
+    for _, name in pairs(names) do
+        found[name] = true
+    end
 
-    assert(
-        names["Balance (SoD)"] == 'Balance (SoD)' and names["Balance"] == 'Balance',
-        'Classic Era packs load on Season of Discovery too, so its packs say so'
-    )
+    assert(found['Blizzard Assisted with brews'])
+    assert(found['Reference (Icy Veins)'])
+    assert(found['Balance (SoD)'] and found['Balance'], 'Season of Discovery packs keep their mark')
 end)
 
 finish()

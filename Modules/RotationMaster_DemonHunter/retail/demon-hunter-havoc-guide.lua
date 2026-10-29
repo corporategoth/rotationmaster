@@ -6,22 +6,15 @@
 -- Glaive (Fury is secret on Retail, so Felblade does not wait for room). Disabled: procs,
 -- Metamorphosis and Essence Break are secret in Midnight combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local aldrachi=known(442294)
-local glaive=any(buff(444686),buff(444764))
-local scarredMeta=all(negate(aldrachi),buff(162264))
+local aldrachi=BuiltinConditions.known(442294)
+local glaive=BuiltinConditions.any(buff(444686),buff(444764))
+local scarredMeta=BuiltinConditions.all(BuiltinConditions.negate(aldrachi),buff(162264))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc.guide',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey="Reference (Icy Veins, SimulationCraft and Wowhead)",descriptionKey="Reference only, off by default: the guides' Havoc priority. Your procs, Metamorphosis and Essence Break are hidden from addons in Midnight combat, so this list cannot run there; read it, or clone it to experiment. Fury is hidden on Retail, so Felblade does not wait for room. Aldrachi Reaver: Reaver's Glaive when neither Rending Strike nor Glaive Flurry is up, Chaos Strike on Rending Strike. Fel-Scarred: Essence Break, Blade Dance and Chaos Strike in Metamorphosis. Then Blade Dance and Chaos Strike inside Essence Break, Immolation Aura at two charges, Eye Beam, Felblade for Inertia, Essence Break when Eye Beam is over 4 seconds away, Blade Dance, Immolation Aura on two enemies, Chaos Strike, Felblade, Immolation Aura, Throw Glaive, Fel Rush. Reminders: Metamorphosis once Eye Beam and Blade Dance are spent, The Hunt, Vengeful Retreat, plus Disrupt and Blur.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'havoc','melee','reference','icy-veins','simulationcraft','wowhead'},
  sources={
@@ -31,30 +24,30 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={577},
   cooldowns={
-   block('hguide-utility','retail.demonhunter.utility','hguide-'),
-   spell('hguide-metamorphosis',191427,all(combat(),negate({type='SPELL_AVAIL',spell=198013}),negate({type='SPELL_AVAIL',spell=188499}))),
-   spell('hguide-the-hunt',370965,all(combat(),any(all(aldrachi,negate(glaive)),all(negate(aldrachi),{type='SPELL_COOLDOWN',spell=198013,operator='LESSTHAN',value=10})))),
-   spell('hguide-vengeful-retreat',198793,all(combat(),any(known(388108),known(206476)))),
+   BuiltinConditions.block('hguide-utility','retail.demonhunter.utility','hguide-'),
+   BuiltinConditions.spell('hguide-metamorphosis',191427,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate({type='SPELL_AVAIL',spell=198013}),BuiltinConditions.negate({type='SPELL_AVAIL',spell=188499}))),
+   BuiltinConditions.spell('hguide-the-hunt',370965,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(BuiltinConditions.all(aldrachi,BuiltinConditions.negate(glaive)),BuiltinConditions.all(BuiltinConditions.negate(aldrachi),{type='SPELL_COOLDOWN',spell=198013,operator='LESSTHAN',value=10})))),
+   BuiltinConditions.spell('hguide-vengeful-retreat',198793,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(BuiltinConditions.known(388108),BuiltinConditions.known(206476)))),
   },
   rotation={
-   block('hguide-boundaries','retail.demonhunter.boundaries','hguide-'),
-   spell('hguide-reavers-glaive',185123,all(aldrachi,glaive,negate(buff(442442)),negate(buff(442435)))),
-   spell('hguide-rending-strike',162794,all(aldrachi,buff(442442))),
-   spell('hguide-surge-essence-break',258860,scarredMeta),
-   {id='hguide-window',type='branch',conditions=any({type='DEBUFF',unit='target',spell=320338,owndebuff=true},scarredMeta),onFalse={},onTrue={
-    spell('hguide-window-blade-dance',188499),
-    spell('hguide-window-chaos-strike',162794)}},
-   spell('hguide-immolation-charges',258920,{type='SPELL_CHARGES',spell=258920,operator='GREATERTHANOREQUALS',value=2}),
-   spell('hguide-eye-beam',198013),
-   spell('hguide-inertia-felblade',232893,all(known(427640),negate(buff(427641)))),
-   spell('hguide-essence-break',258860,{type='SPELL_COOLDOWN',spell=198013,operator='GREATERTHAN',value=4}),
-   spell('hguide-blade-dance',188499),
-   spell('hguide-immolation-cleave',258920,engaged(2)),
-   spell('hguide-chaos-strike',162794),
-   spell('hguide-felblade',232893),
-   spell('hguide-immolation-aura',258920),
-   spell('hguide-throw-glaive',185123),
-   spell('hguide-fel-rush',195072),
+   BuiltinConditions.block('hguide-boundaries','retail.demonhunter.boundaries','hguide-'),
+   BuiltinConditions.spell('hguide-reavers-glaive',185123,BuiltinConditions.all(aldrachi,glaive,BuiltinConditions.negate(buff(442442)),BuiltinConditions.negate(buff(442435)))),
+   BuiltinConditions.spell('hguide-rending-strike',162794,BuiltinConditions.all(aldrachi,buff(442442))),
+   BuiltinConditions.spell('hguide-surge-essence-break',258860,scarredMeta),
+   {id='hguide-window',type='branch',conditions=BuiltinConditions.any({type='DEBUFF',unit='target',spell=320338,owndebuff=true},scarredMeta),onFalse={},onTrue={
+    BuiltinConditions.spell('hguide-window-blade-dance',188499),
+    BuiltinConditions.spell('hguide-window-chaos-strike',162794)}},
+   BuiltinConditions.spell('hguide-immolation-charges',258920,{type='SPELL_CHARGES',spell=258920,operator='GREATERTHANOREQUALS',value=2}),
+   BuiltinConditions.spell('hguide-eye-beam',198013),
+   BuiltinConditions.spell('hguide-inertia-felblade',232893,BuiltinConditions.all(BuiltinConditions.known(427640),BuiltinConditions.negate(buff(427641)))),
+   BuiltinConditions.spell('hguide-essence-break',258860,{type='SPELL_COOLDOWN',spell=198013,operator='GREATERTHAN',value=4}),
+   BuiltinConditions.spell('hguide-blade-dance',188499),
+   BuiltinConditions.spell('hguide-immolation-cleave',258920,engaged(2)),
+   BuiltinConditions.spell('hguide-chaos-strike',162794),
+   BuiltinConditions.spell('hguide-felblade',232893),
+   BuiltinConditions.spell('hguide-immolation-aura',258920),
+   BuiltinConditions.spell('hguide-throw-glaive',185123),
+   BuiltinConditions.spell('hguide-fel-rush',195072),
   },
  },
 }))

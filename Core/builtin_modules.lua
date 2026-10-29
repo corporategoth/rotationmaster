@@ -73,6 +73,7 @@ local function bind(namespace)
 
     namespace.RegisterDefaultBlock = function(_, block) return addon:RegisterDefaultBlock(block) end
     namespace.RegisterDefaultRotation = function(_, envelope) return addon:RegisterDefaultRotation(envelope) end
+    namespace.BuiltInConditionHelpers = addon.BuiltInConditionHelpers
     return true
 end
 

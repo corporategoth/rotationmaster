@@ -10,27 +10,21 @@
 -- Battle Stance swap for Execute (the DPS premade takes over), Challenging Shout; Taunt, Shield
 -- Wall and Death Wish are listed off.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function rage(op,n)return{type='POWER',unit='player',operator=op,value=n}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
 local function queued(id)return{type='SPELL_ACTIVE',spell=id,ranked=false}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function optional(step)step.disabled=true;return step end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
+local big=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
 local shield={type='WEAPON_TYPE',slot='offhand',kind='shield'}
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
-local unqueued=all(negate(queued(78)),negate(queued(845)))
-local demoralized=any({type='DEBUFF',unit='target',spell=1160,anyrank=true},{type='DEBUFF',unit='target',spell=99,anyrank=true})
-local stacked=all({type='DEBUFF',unit='target',spell=7386,anyrank=true},{type='DEBUFF_STACKS',unit='target',spell=7386,anyrank=true,operator='GREATERTHANOREQUALS',value=5})
+local unqueued=BuiltinConditions.all(BuiltinConditions.negate(queued(78)),BuiltinConditions.negate(queued(845)))
+local demoralized=BuiltinConditions.any({type='DEBUFF',unit='target',spell=1160,anyrank=true},{type='DEBUFF',unit='target',spell=99,anyrank=true})
+local stacked=BuiltinConditions.all({type='DEBUFF',unit='target',spell=7386,anyrank=true},{type='DEBUFF_STACKS',unit='target',spell=7386,anyrank=true,operator='GREATERTHANOREQUALS',value=5})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.warrior.protection',revision=5,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
- nameKey="Tank",descriptionKey="Chosen whenever you are in Defensive Stance (Protection, Fury-Prot or a two-hander tank); built from Icy Veins and MaxDps. On four or more enemies: Demoralizing Shout and Battle Shout for threat. Then Revenge, Shield Slam, Bloodthirst, Sunder Armor to five, Demoralizing Shout on elites, Sunder Armor as the filler, and Rend before Shield Slam or Bloodthirst. Shield Slam and Shield Block only with a shield on. Reminders: Battle Shout, Shield Block while the target hits you, Bloodrage, Heroic Strike and Cleave from 50 rage, Shield Bash, Last Stand. Taunt, Shield Wall and Death Wish are listed off; Battle Stance for Execute (the DPS premade takes over) and Challenging Shout stay with you.",
  applicability={families={'era'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','aoe','icy-veins','maxdps'},
  sources={{url='https://www.icy-veins.com/wow-classic/warrior-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Warrior tank rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
@@ -38,27 +32,27 @@ assert(addon:RegisterDefaultRotation({
  {url='https://github.com/kaminaris/MaxDps-Warrior/blob/c3bf773f3709514aae9aad8647cd6a4ae7fc8756/Specialization/Classic/Protection.lua',title='MaxDps-Warrior: Classic Protection',reviewedAt='2026-10-23',revision='c3bf773f3709514aae9aad8647cd6a4ae7fc8756'}},
  body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='FORM',form=71}}},
  cooldowns={block('era.warrior.upkeep','warrior-prot-'),
-  spell('warrior-prot-shield-block',2565,all(combat(),shield,tanked,negate({type='CASTING',unit='target'}),negate({type='BUFF',unit='player',spell=2565}))),
-  spell('warrior-prot-bloodrage',2687,all(combat(),rage('LESSTHAN',60),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5})),
-  spell('warrior-prot-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2),rage('GREATERTHANOREQUALS',50))),
-  spell('warrior-prot-cleave',845,all(combat(),unqueued,enemies('GREATERTHANOREQUALS',2),rage('GREATERTHANOREQUALS',50))),
-  spell('warrior-prot-last-stand',12975,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.3})),
-  optional(spell('warrior-prot-shield-wall',871,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.2}))),
-  optional(spell('warrior-prot-taunt',355,all(combat(),{type='GROUP'},negate(tanked)))),
-  optional(spell('warrior-prot-death-wish',12328,all(combat(),{type='TIME_IN_COMBAT',operator='LESSTHAN',value=5}))),
+  BuiltinConditions.spell('warrior-prot-shield-block',2565,BuiltinConditions.all(BuiltinConditions.combat(),shield,tanked,BuiltinConditions.negate({type='CASTING',unit='target'}),BuiltinConditions.negate({type='BUFF',unit='player',spell=2565}))),
+  BuiltinConditions.spell('warrior-prot-bloodrage',2687,BuiltinConditions.all(BuiltinConditions.combat(),rage('LESSTHAN',60),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5})),
+  BuiltinConditions.spell('warrior-prot-heroic-strike',78,BuiltinConditions.all(BuiltinConditions.combat(),unqueued,enemies('LESSTHAN',2),rage('GREATERTHANOREQUALS',50))),
+  BuiltinConditions.spell('warrior-prot-cleave',845,BuiltinConditions.all(BuiltinConditions.combat(),unqueued,enemies('GREATERTHANOREQUALS',2),rage('GREATERTHANOREQUALS',50))),
+  BuiltinConditions.spell('warrior-prot-last-stand',12975,BuiltinConditions.all(BuiltinConditions.combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.3})),
+  optional(BuiltinConditions.spell('warrior-prot-shield-wall',871,BuiltinConditions.all(BuiltinConditions.combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.2}))),
+  optional(BuiltinConditions.spell('warrior-prot-taunt',355,BuiltinConditions.all(BuiltinConditions.combat(),{type='GROUP'},BuiltinConditions.negate(tanked)))),
+  optional(BuiltinConditions.spell('warrior-prot-death-wish',12328,BuiltinConditions.all(BuiltinConditions.combat(),{type='TIME_IN_COMBAT',operator='LESSTHAN',value=5}))),
  },
  rotation={
  block('era.warrior.boundaries','warrior-prot-'),
  {id='warrior-prot-pack',type='branch',conditions=enemies('GREATERTHANOREQUALS',4),onFalse={},onTrue={
-  spell('warrior-prot-pack-demoralizing',1160,negate(demoralized)),
-  spell('warrior-prot-pack-battle-shout',6673),
+  BuiltinConditions.spell('warrior-prot-pack-demoralizing',1160,BuiltinConditions.negate(demoralized)),
+  BuiltinConditions.spell('warrior-prot-pack-battle-shout',6673),
  }},
- spell('warrior-prot-revenge',6572),
- spell('warrior-prot-shield-slam',23922,shield),
- spell('warrior-prot-bloodthirst',23881),
- spell('warrior-prot-sunder',7386,negate(stacked)),
- spell('warrior-prot-demoralizing',1160,all(big,negate(demoralized))),
- spell('warrior-prot-sunder-filler',7386),
- spell('warrior-prot-rend',772,all(negate(known(23922)),negate(known(23881)),negate({type='DEBUFF',unit='target',spell=772,anyrank=true,owndebuff=true}))),
+ BuiltinConditions.spell('warrior-prot-revenge',6572),
+ BuiltinConditions.spell('warrior-prot-shield-slam',23922,shield),
+ BuiltinConditions.spell('warrior-prot-bloodthirst',23881),
+ BuiltinConditions.spell('warrior-prot-sunder',7386,BuiltinConditions.negate(stacked)),
+ BuiltinConditions.spell('warrior-prot-demoralizing',1160,BuiltinConditions.all(big,BuiltinConditions.negate(demoralized))),
+ BuiltinConditions.spell('warrior-prot-sunder-filler',7386),
+ BuiltinConditions.spell('warrior-prot-rend',772,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(23922)),BuiltinConditions.negate(BuiltinConditions.known(23881)),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=772,anyrank=true,owndebuff=true}))),
  }},
 }))

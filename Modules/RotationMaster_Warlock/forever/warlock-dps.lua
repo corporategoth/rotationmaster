@@ -14,26 +14,20 @@
 -- Recklessness/Tongues/Weakness, Fear, Healthstones, multi-dotting other targets and putting
 -- Bane of Havoc on a second enemy (only reminded).
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local function big()return any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})end
-local function havoc()return any(own(1324473),own(1225228))end
-local function sacrificed()return any(buff(18789),buff(18790),buff(18791),buff(18792))end
-local function pact()return all(known(19028),{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=40})end
-local function summon()return all(negate({type='PET'}),any(negate(combat()),buff(18708)),any(negate(sacrificed()),pact()))end
-local function ownCurse()return any(own(704),own(702),own(1714),own(18223))end
+local function big()return BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})end
+local function havoc()return BuiltinConditions.any(own(1324473),own(1225228))end
+local function sacrificed()return BuiltinConditions.any(buff(18789),buff(18790),buff(18791),buff(18792))end
+local function pact()return BuiltinConditions.all(BuiltinConditions.known(19028),{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=40})end
+local function summon()return BuiltinConditions.all(BuiltinConditions.negate({type='PET'}),BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.combat()),buff(18708)),BuiltinConditions.any(BuiltinConditions.negate(sacrificed()),pact()))end
+local function ownCurse()return BuiltinConditions.any(own(704),own(702),own(1714),own(18223))end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.warlock.dps',revision=6,
  blocks={['forever.warlock.boundaries']=3,['forever.warlock.upkeep']=2,['forever.warlock.procs']=1,
   ['forever.warlock.moving']=3,['forever.warlock.aoe']=2,['forever.warlock.wand']=2},
- nameKey="All trees",descriptionKey="Every Warlock talent tree from level 1 to 60, merged from Icy Veins, Wowhead and Method; the steps for a tree appear once you know its talent spells. Pulls with Immolate and Bane of Agony (Destruction precasts Shadow Bolt), uses Nightfall and Decimation procs, keeps Demonic Brand up with Searing Pain. While moving it casts only instants. On packs: Hellfire in a group, Rain of Fire, Corruption and Agony. Then Bane of Doom on elites and bosses or Bane of Agony, Curse of the Elements in groups and on elites, Immolate, Corruption, Siphon Life, Conflagrate and Shadowburn; solo it fills with Wrack, Drain Life (with a drain talent) or the wand; otherwise Incinerate or Shadow Bolt. Reminders: armor, a demon (Succubus, else Voidwalker, else Imp), Fel Domination, Demonic Sacrifice with Demonic Pact, Soul Link, weapon stones, Amplify Curse and Bane of Havoc for a second enemy. Left to you: sending the pet in, other curses, Fear, Healthstones and other targets. Health and mana are hidden from addons on Forever, so the execute window (Drain Soul, Shadowburn as the killing blow), Life Tap, Health Funnel and draining when hurt are your call.",
  applicability={families={'forever'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','icy-veins','wowhead','method'},
  sources={{url='https://www.icy-veins.com/wow-forever/affliction-warlock-leveling',title='Icy Veins: Forever Affliction Warlock leveling',reviewedAt='2026-10-23',revision='2026-10-17'},
@@ -45,37 +39,37 @@ assert(addon:RegisterDefaultRotation({
  {url='https://worldofwarcraft.blizzard.com/en-us/news/24310968',title='Blizzard: Forever class deep dives, Rogue and Warlock',reviewedAt='2026-10-23',revision='2026-10-07'}},
  body={priority=10,
  cooldowns={block('forever.warlock.upkeep','warlock-'),
-  spell('warlock-summon-succubus',712,summon()),
-  spell('warlock-summon-voidwalker',697,all(negate(known(712)),summon())),
-  spell('warlock-summon-imp',688,all(negate(known(712)),negate(known(697)),summon())),
-  spell('warlock-amplify-curse',18288,all(combat(),big(),negate(own(980)))),
-  spell('warlock-havoc-reminder',1225228,all(combat(),{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},negate(havoc())))},
+  BuiltinConditions.spell('warlock-summon-succubus',712,summon()),
+  BuiltinConditions.spell('warlock-summon-voidwalker',697,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(712)),summon())),
+  BuiltinConditions.spell('warlock-summon-imp',688,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(712)),BuiltinConditions.negate(BuiltinConditions.known(697)),summon())),
+  BuiltinConditions.spell('warlock-amplify-curse',18288,BuiltinConditions.all(BuiltinConditions.combat(),big(),BuiltinConditions.negate(own(980)))),
+  BuiltinConditions.spell('warlock-havoc-reminder',1225228,BuiltinConditions.all(BuiltinConditions.combat(),{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},BuiltinConditions.negate(havoc())))},
  rotation={
  block('forever.warlock.boundaries','warlock-'),
- {id='warlock-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-  spell('warlock-pull-incinerate',412758),
-  spell('warlock-pull-bolt',686,known(1293817)),
-  spell('warlock-pull-immolate',348,negate(own(348))),
-  spell('warlock-pull-agony',980,negate(own(980))),
+ {id='warlock-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+  BuiltinConditions.spell('warlock-pull-incinerate',412758),
+  BuiltinConditions.spell('warlock-pull-bolt',686,BuiltinConditions.known(1293817)),
+  BuiltinConditions.spell('warlock-pull-immolate',348,BuiltinConditions.negate(own(348))),
+  BuiltinConditions.spell('warlock-pull-agony',980,BuiltinConditions.negate(own(980))),
   {id='warlock-pull-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  block('forever.warlock.procs','warlock-'),
  block('forever.warlock.moving','warlock-'),
  block('forever.warlock.aoe','warlock-'),
- spell('warlock-doom',603,all(big(),negate(havoc()))),
- spell('warlock-agony',980,all(negate(own(980)),negate(own(603)),negate(havoc()))),
- spell('warlock-elements',440892,all(any({type='GROUP'},big()),negate({type='DEBUFF',unit='target',spell=440892,anyrank=true}),negate(ownCurse()))),
- spell('warlock-immolate',348,negate(own(348))),
- spell('warlock-corruption',172,all(negate(own(172)),negate(all(known(1293817),{type='GROUP'})))),
- spell('warlock-siphon-life',18265,negate(own(18265))),
- spell('warlock-conflagrate',1293817,all(own(348),any(known(412758),{type='DEBUFF_REMAIN',unit='target',spell=348,anyrank=true,owndebuff=true,operator='LESSTHANOREQUALS',value=3}))),
- spell('warlock-shadowburn',17877,all(known(412758),{type='CARRYING',item={6265},operator='GREATERTHANOREQUALS',value=2})),
+ BuiltinConditions.spell('warlock-doom',603,BuiltinConditions.all(big(),BuiltinConditions.negate(havoc()))),
+ BuiltinConditions.spell('warlock-agony',980,BuiltinConditions.all(BuiltinConditions.negate(own(980)),BuiltinConditions.negate(own(603)),BuiltinConditions.negate(havoc()))),
+ BuiltinConditions.spell('warlock-elements',440892,BuiltinConditions.all(BuiltinConditions.any({type='GROUP'},big()),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=440892,anyrank=true}),BuiltinConditions.negate(ownCurse()))),
+ BuiltinConditions.spell('warlock-immolate',348,BuiltinConditions.negate(own(348))),
+ BuiltinConditions.spell('warlock-corruption',172,BuiltinConditions.all(BuiltinConditions.negate(own(172)),BuiltinConditions.negate(BuiltinConditions.all(BuiltinConditions.known(1293817),{type='GROUP'})))),
+ BuiltinConditions.spell('warlock-siphon-life',18265,BuiltinConditions.negate(own(18265))),
+ BuiltinConditions.spell('warlock-conflagrate',1293817,BuiltinConditions.all(own(348),BuiltinConditions.any(BuiltinConditions.known(412758),{type='DEBUFF_REMAIN',unit='target',spell=348,anyrank=true,owndebuff=true,operator='LESSTHANOREQUALS',value=3}))),
+ BuiltinConditions.spell('warlock-shadowburn',17877,BuiltinConditions.all(BuiltinConditions.known(412758),{type='CARRYING',item={6265},operator='GREATERTHANOREQUALS',value=2})),
  {id='warlock-solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
-  spell('warlock-solo-wrack',1316697),
-  spell('warlock-solo-drain-filler',689,any(known(18708),known(19028),known(18223),known(18265),known(1316697))),
+  BuiltinConditions.spell('warlock-solo-wrack',1316697),
+  BuiltinConditions.spell('warlock-solo-drain-filler',689,BuiltinConditions.any(BuiltinConditions.known(18708),BuiltinConditions.known(19028),BuiltinConditions.known(18223),BuiltinConditions.known(18265),BuiltinConditions.known(1316697))),
   block('forever.warlock.wand','warlock-solo-'),
  }},
- spell('warlock-incinerate',412758),
- spell('warlock-bolt',686),
+ BuiltinConditions.spell('warlock-incinerate',412758),
+ BuiltinConditions.spell('warlock-bolt',686),
  }},
 }))

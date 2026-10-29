@@ -5,13 +5,10 @@
 -- Around it, highlights for what Assisted Combat leaves to you: Void Metamorphosis, The Hunt and
 -- Voidblade, which its model marks as outside the assistant, plus Disrupt and Blur.
 local _,addon=...
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Devourer. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel Void Ray. Alongside it, reminders for what the assistant leaves to you: Void Metamorphosis, The Hunt and Voidblade whenever they are ready in combat, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'devourer','ranged','assisted-combat'},
  sources={
@@ -21,13 +18,13 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={1480},
   cooldowns={
-   block('devourer-utility','retail.demonhunter.utility','devourer-'),
-   spell('devourer-void-metamorphosis',1217605,combat()),
-   spell('devourer-the-hunt',1246167,combat()),
-   spell('devourer-voidblade',1245412,combat()),
+   BuiltinConditions.block('devourer-utility','retail.demonhunter.utility','devourer-'),
+   BuiltinConditions.spell('devourer-void-metamorphosis',1217605,BuiltinConditions.combat()),
+   BuiltinConditions.spell('devourer-the-hunt',1246167,BuiltinConditions.combat()),
+   BuiltinConditions.spell('devourer-voidblade',1245412,BuiltinConditions.combat()),
   },
   rotation={
-   block('devourer-boundaries','retail.demonhunter.boundaries','devourer-'),
+   BuiltinConditions.block('devourer-boundaries','retail.demonhunter.boundaries','devourer-'),
    {id='devourer-assisted',type='assisted',conditions={}},
   },
  },

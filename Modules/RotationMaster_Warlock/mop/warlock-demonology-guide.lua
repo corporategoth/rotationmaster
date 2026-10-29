@@ -6,14 +6,12 @@
 -- Fire only at eight Molten Core stacks or below 25%, so the stacks are spent in demon form. Metamorphosis
 -- itself and the Shadowflame weave are the recommended premade's. Shared parts: mop/blocks.lua.
 local _,addon=...
-local function any(...)return{type='OR',value={...}}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.demonology.guide',revision=7,
  blocks={['mop.warlock.boundaries']=4,['mop.warlock.upkeep']=1,['mop.warlock.demonology-upkeep']=2,['mop.warlock.demonology-demon']=2,
   ['mop.warlock.demonology-pull']=3,['mop.warlock.demonology-caster']=2,['mop.warlock.demonology-filler']=1},
- nameKey="Pool Molten Core (guides)",descriptionKey="Off by default. The guide consensus (Method, wowtbc.gg, Warcraft Tavern, Wowhead): the recommended Demonology premade, except that in caster form Metamorphosis waits for 900 fury or Dark Soul and Soul Fire is only cast at eight Molten Core stacks or below 25%, so the stacks are spent in demon form. Enable it and disable the recommended Demonology premade to use it.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'demonology','dps','caster','ranged','pet','leveling','endgame','method','wowtbc','warcraft-tavern','wowhead'},
  sources={{url='https://www.method.gg/mop-classic/demonology-warlock-class-guide-mop-classic',title='Method: Demonology Warlock guide (MoP Classic)',reviewedAt='2026-10-23',revision='2025-07-23'},
@@ -29,9 +27,9 @@ assert(addon:RegisterDefaultRotation({
   onTrue={block('mop.warlock.demonology-demon','warlock-demo-')},
   onFalse={
   block('mop.warlock.demonology-caster','warlock-demo-'),
-  spell('warlock-demo-guide-metamorphosis',103958,any({type='BUFF',unit='player',spell=113861,ownbuff=true},
+  BuiltinConditions.spell('warlock-demo-guide-metamorphosis',103958,BuiltinConditions.any({type='BUFF',unit='player',spell=113861,ownbuff=true},
    {type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=900})),
-  spell('warlock-demo-guide-soul-fire',6353,any({type='BUFF_STACKS',unit='player',spell=122355,ownbuff=true,operator='GREATERTHANOREQUALS',value=8},
+  BuiltinConditions.spell('warlock-demo-guide-soul-fire',6353,BuiltinConditions.any({type='BUFF_STACKS',unit='player',spell=122355,ownbuff=true,operator='GREATERTHANOREQUALS',value=8},
    {type='HEALTHPCT',unit='target',operator='LESSTHANOREQUALS',value=.25})),
   block('mop.warlock.demonology-filler','warlock-demo-'),
  }},

@@ -6,28 +6,20 @@
 -- Blows and Faerie Fire for Weakened Armor, Mangle on cooldown, Thrash and Swipe at three enemies,
 -- Lacerate, Thrash and Faerie Fire as fillers. A short Cat arm serves Heart of the Wild damage.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function bleed(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function cp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function rage(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
+local function off(id,action,conditions)local step=BuiltinConditions.spell(id,action,conditions);step.disabled=true;return step end
 local function swing(id,conditions)return{id=id,type='stop',conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local BEAR,DEFENSE=5487,132402
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
-local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
-local cleave=any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},{type='CLASSIFICATION',unit='target',value='worldboss'})
+local elite=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
+local cleave=BuiltinConditions.any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.druid.guardian',revision=7,
  blocks={['mop.druid.melee-boundaries']=2,['mop.druid.mark']=1},
- nameKey="Recommended",descriptionKey="Recommended for Guardian tanks from level 10, after simulator and Wowhead's Phase 5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened Blows up with Thrash and Weakened Armor with Faerie Fire on elites, uses a Dream of Cenarius Healing Touch when hurt, Mangle on cooldown, Thrash and Swipe at three enemies, then Lacerate, Thrash and Faerie Fire. In Cat Form (Heart of the Wild) it gives a short damage list. Reminders: Savage Defense whenever it is down, Enrage for rage, Frenzied Regeneration when low or rage-capped, Maul above 90 rage or on Tooth and Claw, Barkskin while the target attacks you, Survival Instincts when low, Berserk and Incarnation on two enemies or a boss, Force of Nature, Nature's Vigil, Cenarion Ward, Skull Bash, Mark of the Wild. Taunting and Might of Ursoc stay manual (both reminders are off by default).",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'guardian','tank','leveling','single-target','aoe','wowhead'},
  sources={
@@ -38,48 +30,48 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={104},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('guardian-mark','mop.druid.mark','guardian-'),
-   spell('guardian-savage-defense',62606,all(combat(),{type='FORM',form=BEAR},negate(own(DEFENSE)))),
-   spell('guardian-enrage',5229,all(combat(),{type='FORM',form=BEAR},negate(own(DEFENSE)),rage('LESSTHAN',60))),
-   spell('guardian-frenzied',22842,all(combat(),any(all(health('LESSTHAN',.4),{type='SPELL_CHARGES',spell=62606,operator='EQUALS',value=0}),
-    all(health('LESSTHAN',.7),rage('GREATERTHANOREQUALS',90))))),
-   spell('guardian-maul',6807,all({type='FORM',form=BEAR},any(rage('GREATERTHANOREQUALS',90),all(own(135286),own(DEFENSE),rage('GREATERTHANOREQUALS',30))))),
-   spell('guardian-barkskin',22812,all(combat(),tanked)),
-   spell('guardian-survival-instincts',61336,all(combat(),health('LESSTHAN',.35))),
-   off('guardian-might-of-ursoc',106922,all(combat(),health('LESSTHAN',.3))),
-   spell('guardian-berserk',106952,all(combat(),cleave,negate(own(102558)))),
-   spell('guardian-incarnation',102558,all(combat(),cleave,negate(own(50334)))),
-   spell('guardian-force-of-nature',102706,all(combat(),any({type='SPELL_CHARGES',spell=102706,operator='EQUALS',value=3},own(50334)))),
-   spell('guardian-natures-vigil',124974,all(combat(),elite)),
-   spell('guardian-cenarion-ward',102351,health('LESSTHAN',.9)),
-   spell('guardian-rejuvenation',774,all(own(108293),negate({type='BUFF',unit='player',spell=774,ownbuff=true}))),
-   spell('guardian-skull-bash',106839,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
-   off('guardian-growl',6795,all({type='GROUP'},combat(),negate(tanked))),
+   BuiltinConditions.block('guardian-mark','mop.druid.mark','guardian-'),
+   BuiltinConditions.spell('guardian-savage-defense',62606,BuiltinConditions.all(BuiltinConditions.combat(),{type='FORM',form=BEAR},BuiltinConditions.negate(BuiltinConditions.ownBuff(DEFENSE)))),
+   BuiltinConditions.spell('guardian-enrage',5229,BuiltinConditions.all(BuiltinConditions.combat(),{type='FORM',form=BEAR},BuiltinConditions.negate(BuiltinConditions.ownBuff(DEFENSE)),rage('LESSTHAN',60))),
+   BuiltinConditions.spell('guardian-frenzied',22842,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(BuiltinConditions.all(health('LESSTHAN',.4),{type='SPELL_CHARGES',spell=62606,operator='EQUALS',value=0}),
+    BuiltinConditions.all(health('LESSTHAN',.7),rage('GREATERTHANOREQUALS',90))))),
+   BuiltinConditions.spell('guardian-maul',6807,BuiltinConditions.all({type='FORM',form=BEAR},BuiltinConditions.any(rage('GREATERTHANOREQUALS',90),BuiltinConditions.all(BuiltinConditions.ownBuff(135286),BuiltinConditions.ownBuff(DEFENSE),rage('GREATERTHANOREQUALS',30))))),
+   BuiltinConditions.spell('guardian-barkskin',22812,BuiltinConditions.all(BuiltinConditions.combat(),tanked)),
+   BuiltinConditions.spell('guardian-survival-instincts',61336,BuiltinConditions.all(BuiltinConditions.combat(),health('LESSTHAN',.35))),
+   off('guardian-might-of-ursoc',106922,BuiltinConditions.all(BuiltinConditions.combat(),health('LESSTHAN',.3))),
+   BuiltinConditions.spell('guardian-berserk',106952,BuiltinConditions.all(BuiltinConditions.combat(),cleave,BuiltinConditions.negate(BuiltinConditions.ownBuff(102558)))),
+   BuiltinConditions.spell('guardian-incarnation',102558,BuiltinConditions.all(BuiltinConditions.combat(),cleave,BuiltinConditions.negate(BuiltinConditions.ownBuff(50334)))),
+   BuiltinConditions.spell('guardian-force-of-nature',102706,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any({type='SPELL_CHARGES',spell=102706,operator='EQUALS',value=3},BuiltinConditions.ownBuff(50334)))),
+   BuiltinConditions.spell('guardian-natures-vigil',124974,BuiltinConditions.all(BuiltinConditions.combat(),elite)),
+   BuiltinConditions.spell('guardian-cenarion-ward',102351,health('LESSTHAN',.9)),
+   BuiltinConditions.spell('guardian-rejuvenation',774,BuiltinConditions.all(BuiltinConditions.ownBuff(108293),BuiltinConditions.negate({type='BUFF',unit='player',spell=774,ownbuff=true}))),
+   BuiltinConditions.spell('guardian-skull-bash',106839,BuiltinConditions.any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
+   off('guardian-growl',6795,BuiltinConditions.all({type='GROUP'},BuiltinConditions.combat(),BuiltinConditions.negate(tanked))),
   },
   rotation={
-   block('guardian-boundaries','mop.druid.melee-boundaries','guardian-'),
+   BuiltinConditions.block('guardian-boundaries','mop.druid.melee-boundaries','guardian-'),
    {id='guardian-cat',type='branch',conditions={type='FORM',form=768},onFalse={},onTrue={
-    spell('guardian-cat-rake',1822,negate(bleed(1822))),
-    spell('guardian-cat-rip',1079,all(cp('GREATERTHANOREQUALS',5),any(negate(bleed(1079)),{type='DEBUFF_REMAIN',unit='target',spell=1079,owndebuff=true,operator='LESSTHAN',value=4}))),
-    spell('guardian-cat-bite',22568,cp('GREATERTHANOREQUALS',5)),
-    spell('guardian-cat-mangle',33917),
+    BuiltinConditions.spell('guardian-cat-rake',1822,BuiltinConditions.negate(bleed(1822))),
+    BuiltinConditions.spell('guardian-cat-rip',1079,BuiltinConditions.all(cp('GREATERTHANOREQUALS',5),BuiltinConditions.any(BuiltinConditions.negate(bleed(1079)),{type='DEBUFF_REMAIN',unit='target',spell=1079,owndebuff=true,operator='LESSTHAN',value=4}))),
+    BuiltinConditions.spell('guardian-cat-bite',22568,cp('GREATERTHANOREQUALS',5)),
+    BuiltinConditions.spell('guardian-cat-mangle',33917),
     swing('guardian-cat-stop')}},
    {id='guardian-shift',type='branch',conditions={type='FORM',form=BEAR},onTrue={},onFalse={
-    spell('guardian-bear-form',BEAR),stop('guardian-shift-stop')}},
-   {id='guardian-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    spell('guardian-pull-faerie-fire',770,{type='BEYOND_MELEE',unit='target'}),
-    spell('guardian-pull-mangle',33917),
+    BuiltinConditions.spell('guardian-bear-form',BEAR),BuiltinConditions.stop('guardian-shift-stop')}},
+   {id='guardian-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.spell('guardian-pull-faerie-fire',770,{type='BEYOND_MELEE',unit='target'}),
+    BuiltinConditions.spell('guardian-pull-mangle',33917),
     swing('guardian-pull-stop')}},
-   spell('guardian-weakened-blows',106832,negate({type='DEBUFF',unit='target',spell=115798})),
-   spell('guardian-weakened-armor',770,all(elite,negate({type='DEBUFF',unit='target',spell=113746}))),
-   spell('guardian-dream',5185,all(own(145162),health('LESSTHAN',.7))),
-   spell('guardian-mangle',33917),
+   BuiltinConditions.spell('guardian-weakened-blows',106832,BuiltinConditions.negate({type='DEBUFF',unit='target',spell=115798})),
+   BuiltinConditions.spell('guardian-weakened-armor',770,BuiltinConditions.all(elite,BuiltinConditions.negate({type='DEBUFF',unit='target',spell=113746}))),
+   BuiltinConditions.spell('guardian-dream',5185,BuiltinConditions.all(BuiltinConditions.ownBuff(145162),health('LESSTHAN',.7))),
+   BuiltinConditions.spell('guardian-mangle',33917),
    {id='guardian-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell('guardian-aoe-thrash',106832),spell('guardian-aoe-swipe',106785),swing('guardian-aoe-stop')}},
-   spell('guardian-thrash-bleed',106832,negate(bleed(77758))),
-   spell('guardian-lacerate',33745),
-   spell('guardian-thrash',106832),
-   spell('guardian-faerie-fire',770),
+    BuiltinConditions.spell('guardian-aoe-thrash',106832),BuiltinConditions.spell('guardian-aoe-swipe',106785),swing('guardian-aoe-stop')}},
+   BuiltinConditions.spell('guardian-thrash-bleed',106832,BuiltinConditions.negate(bleed(77758))),
+   BuiltinConditions.spell('guardian-lacerate',33745),
+   BuiltinConditions.spell('guardian-thrash',106832),
+   BuiltinConditions.spell('guardian-faerie-fire',770),
   },
  },
 }))

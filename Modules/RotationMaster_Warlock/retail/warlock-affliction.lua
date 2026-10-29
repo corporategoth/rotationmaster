@@ -8,16 +8,12 @@
 -- Summon Darkglare in combat, a Felhunter between pulls unless you sacrificed it, Command Demon,
 -- Dark Pact, Unending Resolve.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.affliction',revision=6,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Affliction in Midnight. In combat the game now hides your DoTs, procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which keeps Agony and Corruption, spends shards on Unstable Affliction and handles Grimoire of Sacrifice), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Darkglare in combat, a Felhunter between pulls unless you sacrificed your demon, Command Demon on an interruptible cast (it lights only where the game lets the cast be read), Dark Pact and Unending Resolve whenever they are ready in combat (health is hidden on Retail, so when to use them is your call).",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'affliction','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
@@ -28,8 +24,8 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,specs={265},
   cooldowns={
    block('retail.warlock.upkeep','aff-'),
-   spell('aff-summon-felhunter',691,all(negate(combat()),negate({type='PET'}),negate({type='BUFF',unit='player',spell=196099,ownbuff=true}))),
-   spell('aff-darkglare',205180,fight),
+   BuiltinConditions.spell('aff-summon-felhunter',691,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate({type='PET'}),BuiltinConditions.negate({type='BUFF',unit='player',spell=196099,ownbuff=true}))),
+   BuiltinConditions.spell('aff-darkglare',205180,fight),
   },
   rotation={
    block('retail.warlock.boundaries','aff-'),

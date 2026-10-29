@@ -5,19 +5,13 @@
 -- differs: Mind Blast opens and goes before DoT refreshes, Vampiric Embrace only when your
 -- health drops, and a dying solo target gets spells (Spirit Tap) instead of the wand.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function healthy()return{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5}end
 local P='priest-wh-'
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.dps.wowhead',revision=7,
  blocks={['tbc.priest.dps-boundaries']=2,['tbc.priest.shadowform']=1,['tbc.priest.moving']=2,
   ['tbc.priest.dots']=1,['tbc.priest.filler']=2,['tbc.priest.upkeep']=1},
- nameKey="Damage (Wowhead)",descriptionKey="Damage after Wowhead's guides, an alternative to the recommended Icy Veins damage premade, off by default: enable it and disable that one, or raise its priority. Mind Blast opens and goes before DoT refreshes, Vampiric Embrace only when your health drops, and a dying target gets spells instead of the wand. Otherwise the same as the recommended premade.",
  applicability={families={'tbc'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','wowhead','leveling','raid','single-target'},
  sources={
@@ -28,22 +22,22 @@ assert(addon:RegisterDefaultRotation({
  body={
   priority=5,disabled=true,
   switch={type='SPELL_KNOWN',spell=585},
-  cooldowns={block(P..'upkeep','tbc.priest.upkeep',P),
-   spell(P..'inner-focus',14751,all({type='COMBAT',unit='player'},{type='SPELL_COOLDOWN',spell=8092,operator='LESSTHANOREQUALS',value=1.5})),
-   spell(P..'scream',8122,all({type='THREAT_COUNT',threat=3,operator='GREATERTHANOREQUALS',value=2},{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5}))},
+  cooldowns={BuiltinConditions.block(P..'upkeep','tbc.priest.upkeep',P),
+   BuiltinConditions.spell(P..'inner-focus',14751,BuiltinConditions.all({type='COMBAT',unit='player'},{type='SPELL_COOLDOWN',spell=8092,operator='LESSTHANOREQUALS',value=1.5})),
+   BuiltinConditions.spell(P..'scream',8122,BuiltinConditions.all({type='THREAT_COUNT',threat=3,operator='GREATERTHANOREQUALS',value=2},{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5}))},
   rotation={
-   block(P..'boundaries','tbc.priest.dps-boundaries',P),
-   block(P..'form','tbc.priest.shadowform',P),
+   BuiltinConditions.block(P..'boundaries','tbc.priest.dps-boundaries',P),
+   BuiltinConditions.block(P..'form','tbc.priest.shadowform',P),
    {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    spell(P..'pull-blast',8092),spell(P..'pull-touch',34914),spell(P..'pull-holy-fire',14914,negate(known(15407))),spell(P..'pull-smite',585),stop(P..'pull-stop')}},
-   block(P..'moving','tbc.priest.moving',P),
-   {id=P..'dying',type='branch',conditions=all(negate({type='GROUP'}),{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2}),onFalse={},onTrue={
-    spell(P..'dying-blast',8092),spell(P..'dying-death',32379,healthy()),spell(P..'dying-flay',15407),spell(P..'dying-smite',585),stop(P..'dying-stop')}},
-   spell(P..'embrace',15286,all(negate({type='DEBUFF',unit='target',spell=15286,owndebuff=true}),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.7})),
-   spell(P..'blast',8092),
-   block(P..'dots','tbc.priest.dots',P),
-   spell(P..'death',32379,healthy()),
-   block(P..'filler','tbc.priest.filler',P),
+    BuiltinConditions.spell(P..'pull-blast',8092),BuiltinConditions.spell(P..'pull-touch',34914),BuiltinConditions.spell(P..'pull-holy-fire',14914,BuiltinConditions.negate(BuiltinConditions.known(15407))),BuiltinConditions.spell(P..'pull-smite',585),BuiltinConditions.stop(P..'pull-stop')}},
+   BuiltinConditions.block(P..'moving','tbc.priest.moving',P),
+   {id=P..'dying',type='branch',conditions=BuiltinConditions.all(BuiltinConditions.negate({type='GROUP'}),{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2}),onFalse={},onTrue={
+    BuiltinConditions.spell(P..'dying-blast',8092),BuiltinConditions.spell(P..'dying-death',32379,healthy()),BuiltinConditions.spell(P..'dying-flay',15407),BuiltinConditions.spell(P..'dying-smite',585),BuiltinConditions.stop(P..'dying-stop')}},
+   BuiltinConditions.spell(P..'embrace',15286,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=15286,owndebuff=true}),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.7})),
+   BuiltinConditions.spell(P..'blast',8092),
+   BuiltinConditions.block(P..'dots','tbc.priest.dots',P),
+   BuiltinConditions.spell(P..'death',32379,healthy()),
+   BuiltinConditions.block(P..'filler','tbc.priest.filler',P),
   },
  },
 }))

@@ -92,7 +92,10 @@ function C.load(project, expansion, class, options)
         assert(ok, why)
 
         if why ~= 'other-character' then
-            packs[#packs + 1] = assert(a:ExpandDefaultRotation(pack))
+            local expanded = assert(a:ExpandDefaultRotation(pack))
+            expanded.nameKey = expanded.nameKey or expanded.id .. '.Name'
+            expanded.descriptionKey = expanded.descriptionKey or expanded.id .. '.Description'
+            packs[#packs + 1] = expanded
         end
 
         return ok, why

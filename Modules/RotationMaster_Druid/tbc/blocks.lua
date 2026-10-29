@@ -6,19 +6,14 @@
 -- bumped, and ledger rows in tests/fixtures/builtin_composition_ledger.lua.
 -- Forms are read by spell (FORM form): the shapeshift-bar index moves as forms are learned, the spell does not.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function form(id)return{type='FORM',form=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function anyBuff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function feral()return any(form(768),form(5487),form(9634))end
-local function travelling()return any(form(783),form(1066),form(33943),form(40120))end
+local function feral()return BuiltinConditions.any(BuiltinConditions.form(768),BuiltinConditions.form(5487),BuiltinConditions.form(9634))end
+local function travelling()return BuiltinConditions.any(BuiltinConditions.form(783),BuiltinConditions.form(1066),BuiltinConditions.form(33943),BuiltinConditions.form(40120))end
 local function druid(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'tbc'},class='DRUID',steps=steps}))end
 -- Casts and channels (Starfire, Hurricane, Tranquility) and travel forms halt advice and Attack.
 druid('tbc.druid.boundaries',{
- {id='casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling())},
+ {id='casting',type='stop',suppress_attack=true,conditions=BuiltinConditions.any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},travelling())},
 },4)
 -- A caster spec in Cat or Bear form chose to be there; no caster advice.
 druid('tbc.druid.feral-form-stop',{
@@ -26,18 +21,18 @@ druid('tbc.druid.feral-form-stop',{
 },3)
 -- Balance: the same, or no attackable target (one Stop).
 druid('tbc.druid.feral-form-target',{
- {id='feral-form',type='stop',conditions=any(feral(),negate({type='ATTACKABLE',unit='target'}))},
+ {id='feral-form',type='stop',conditions=BuiltinConditions.any(feral(),BuiltinConditions.negate({type='ATTACKABLE',unit='target'}))},
 },2)
 -- Out-of-combat self buffs every source keeps: Mark (unless Gift is up), Thorns while
 -- soloing, Omen of Clarity once talented.
 druid('tbc.druid.upkeep',{
- {id='mark-of-the-wild',type='spell',action=1126,ranked=false,conditions=all(negate(combat()),negate(anyBuff(1126)),negate(anyBuff(21849)))},
- {id='thorns',type='spell',action=467,ranked=false,conditions=all(negate(combat()),negate({type='GROUP'}),negate(anyBuff(467)))},
- {id='omen-of-clarity',type='spell',action=16864,ranked=false,conditions=all(negate(combat()),negate(own(16864)))},
+ {id='mark-of-the-wild',type='spell',action=1126,ranked=false,conditions=BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate(anyBuff(1126)),BuiltinConditions.negate(anyBuff(21849)))},
+ {id='thorns',type='spell',action=467,ranked=false,conditions=BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate({type='GROUP'}),BuiltinConditions.negate(anyBuff(467)))},
+ {id='omen-of-clarity',type='spell',action=16864,ranked=false,conditions=BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate(BuiltinConditions.ownBuff(16864)))},
 })
 -- Shared cat finishers, Mangle upkeep and positional builder (both Feral sources).
 druid('tbc.druid.cat-builders',{
- {id='mangle-debuff',type='spell',action=33876,ranked=false,conditions=all(negate({type='DEBUFF',unit='target',spell=33876,anyrank=true}),negate({type='DEBUFF',unit='target',spell=33878,anyrank=true}))},
+ {id='mangle-debuff',type='spell',action=33876,ranked=false,conditions=BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=33876,anyrank=true}),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=33878,anyrank=true}))},
  {id='facing',type='branch',conditions={type='ISSAME',unit='targettarget',otherunit='player'},onTrue={
   {id='front-mangle',type='spell',action=33876,ranked=false,conditions={}},
   {id='front-claw',type='spell',action=1082,ranked=false,conditions={}},
@@ -49,7 +44,7 @@ druid('tbc.druid.cat-builders',{
 -- Cat entry both Feral sources share: stop without a target, a stealth opener, a
 -- Faerie Fire (Feral) pull or debuff when nobody else has Faerie Fire up.
 druid('tbc.druid.cat-opening',{
- {id='no-target',type='stop',conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='no-target',type='stop',conditions=BuiltinConditions.negate({type='ATTACKABLE',unit='target'})},
  {id='stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
   {id='pounce',type='spell',action=9005,ranked=false,conditions={}},
   {id='ravage',type='spell',action=6785,ranked=false,conditions={}},
@@ -57,32 +52,32 @@ druid('tbc.druid.cat-opening',{
   {id='claw',type='spell',action=1082,ranked=false,conditions={}},
   {id='stealth-stop',type='stop',suppress_attack=true,conditions={}},
  }},
- {id='faerie-fire',type='spell',action=16857,ranked=false,conditions=all(negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}),
-  any({type='GROUP'},all(negate(combat()),{type='BEYOND_MELEE',unit='target'})))},
+ {id='faerie-fire',type='spell',action=16857,ranked=false,conditions=BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}),
+  BuiltinConditions.any({type='GROUP'},BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),{type='BEYOND_MELEE',unit='target'})))},
 },2)
 -- Bear upkeep both Feral sources share: Faerie Fire (Feral), a Lacerate stack about to
 -- drop, Demoralizing Roar unless a warrior's Shout already covers it, Swipe for packs, Mangle.
 druid('tbc.druid.bear-core',{
- {id='no-target',type='stop',conditions=negate({type='ATTACKABLE',unit='target'})},
- {id='faerie-fire',type='spell',action=16857,ranked=false,conditions=all(negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}))},
- {id='lacerate-save',type='spell',action=33745,ranked=false,conditions=all({type='DEBUFF_STACKS',unit='target',spell=33745,owndebuff=true,operator='GREATERTHANOREQUALS',value=5},
+ {id='no-target',type='stop',conditions=BuiltinConditions.negate({type='ATTACKABLE',unit='target'})},
+ {id='faerie-fire',type='spell',action=16857,ranked=false,conditions=BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}))},
+ {id='lacerate-save',type='spell',action=33745,ranked=false,conditions=BuiltinConditions.all({type='DEBUFF_STACKS',unit='target',spell=33745,owndebuff=true,operator='GREATERTHANOREQUALS',value=5},
   {type='DEBUFF_REMAIN',unit='target',spell=33745,owndebuff=true,operator='LESSTHANOREQUALS',value=1.5})},
- {id='demoralizing-roar',type='spell',action=99,ranked=false,conditions=all(negate({type='DEBUFF',unit='target',spell=99,anyrank=true}),negate({type='DEBUFF',unit='target',spell=1160,anyrank=true}))},
+ {id='demoralizing-roar',type='spell',action=99,ranked=false,conditions=BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=99,anyrank=true}),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1160,anyrank=true}))},
  {id='swipe-aoe',type='spell',action=779,ranked=false,conditions={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3}},
  {id='mangle',type='spell',action=33878,ranked=false,conditions={}},
 },2)
 -- Feral cooldowns both sources share: Maul as the bear's rage dump (off the GCD, so it
 -- is highlighted beside the priority) and Tiger's Fury only at full energy before a pull.
 druid('tbc.druid.feral-cooldowns',{
- {id='maul',type='spell',action=6807,ranked=false,conditions=all(any(form(5487),form(9634)),combat(),{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=50},negate({type='SPELL_ACTIVE',spell=6807}))},
- {id='tigers-fury',type='spell',action=5217,ranked=false,conditions=all(form(768),negate(combat()),{type='ATTACKABLE',unit='target'},{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=100})},
+ {id='maul',type='spell',action=6807,ranked=false,conditions=BuiltinConditions.all(BuiltinConditions.any(BuiltinConditions.form(5487),BuiltinConditions.form(9634)),BuiltinConditions.combat(),{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=50},BuiltinConditions.negate({type='SPELL_ACTIVE',spell=6807}))},
+ {id='tigers-fury',type='spell',action=5217,ranked=false,conditions=BuiltinConditions.all(BuiltinConditions.form(768),BuiltinConditions.negate(BuiltinConditions.combat()),{type='ATTACKABLE',unit='target'},{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=100})},
 },2)
 -- A Feral druid in caster form: shift (Cat once learned, else Bear), else caster filler.
 druid('tbc.druid.feral-humanoid',{
- {id='no-target',type='stop',conditions=negate({type='ATTACKABLE',unit='target'})},
+ {id='no-target',type='stop',conditions=BuiltinConditions.negate({type='ATTACKABLE',unit='target'})},
  {id='cat-form',type='spell',action=768,ranked=false,conditions={}},
- {id='dire-bear-form',type='spell',action=9634,ranked=false,conditions=negate({type='SPELL_KNOWN',spell=768})},
- {id='bear-form',type='spell',action=5487,ranked=false,conditions=negate({type='SPELL_KNOWN',spell=768})},
- {id='moonfire',type='spell',action=8921,ranked=false,conditions=negate({type='DEBUFF',unit='target',spell=8921,anyrank=true,owndebuff=true})},
- {id='wrath',type='spell',action=5176,ranked=false,conditions=negate({type='MOVING'})},
+ {id='dire-bear-form',type='spell',action=9634,ranked=false,conditions=BuiltinConditions.negate({type='SPELL_KNOWN',spell=768})},
+ {id='bear-form',type='spell',action=5487,ranked=false,conditions=BuiltinConditions.negate({type='SPELL_KNOWN',spell=768})},
+ {id='moonfire',type='spell',action=8921,ranked=false,conditions=BuiltinConditions.negate({type='DEBUFF',unit='target',spell=8921,anyrank=true,owndebuff=true})},
+ {id='wrath',type='spell',action=5176,ranked=false,conditions=BuiltinConditions.negate({type='MOVING'})},
 },2)

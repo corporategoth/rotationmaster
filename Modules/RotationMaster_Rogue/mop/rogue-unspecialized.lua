@@ -7,16 +7,12 @@
 -- Strike 1, Eviscerate 3, Stealth 5, Ambush 6) and Warcraft Tavern's and Icy Veins' levelling advice. Shared parts:
 -- mop/blocks.lua.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.unspecialized',revision=6,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
- nameKey="Unspecialized",descriptionKey="For levels 1 to 9, or a rogue who has not chosen a specialization yet; each specialization's premade takes over once you pick one. Opens from Stealth with Cheap Shot when solo, Ambush or Sinister Strike; suggests Stealth out of combat; Slice and Dice from two points, Recuperate and Kidney Shot when solo and hurt, Eviscerate at four points (two when the target is about to die), Sinister Strike. Reminders: poisons once learned, Kick, Evasion solo.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','warcraft-tavern','icy-veins'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/rogue-leveling-guide/',title='Warcraft Tavern: Rogue leveling guide (MoP Classic)',reviewedAt='2026-10-23'},
@@ -26,15 +22,15 @@ assert(addon:RegisterDefaultRotation({
  rotation={
  block('mop.rogue.boundaries','rogue-'),
  {id='rogue-starter-stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
-  spell('rogue-starter-cheap-shot',1833,negate({type='GROUP'})),
-  spell('rogue-starter-ambush',8676),
-  spell('rogue-starter-stealth-sinister',1752),
+  BuiltinConditions.spell('rogue-starter-cheap-shot',1833,BuiltinConditions.negate({type='GROUP'})),
+  BuiltinConditions.spell('rogue-starter-ambush',8676),
+  BuiltinConditions.spell('rogue-starter-stealth-sinister',1752),
   {id='rogue-starter-stealth-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  block('mop.rogue.out-of-combat','rogue-'),
- spell('rogue-starter-slice',5171,all(points('GREATERTHANOREQUALS',2),negate({type='BUFF',unit='player',spell=5171,ownbuff=true}))),
+ BuiltinConditions.spell('rogue-starter-slice',5171,BuiltinConditions.all(points('GREATERTHANOREQUALS',2),BuiltinConditions.negate({type='BUFF',unit='player',spell=5171,ownbuff=true}))),
  block('mop.rogue.solo','rogue-'),
- spell('rogue-starter-eviscerate',2098,any(points('GREATERTHANOREQUALS',4),all(points('GREATERTHANOREQUALS',2),{type='TT_HEALTH',unit='target',health=0,operator='LESSTHAN',value=4}))),
- spell('rogue-starter-sinister',1752),
+ BuiltinConditions.spell('rogue-starter-eviscerate',2098,BuiltinConditions.any(points('GREATERTHANOREQUALS',4),BuiltinConditions.all(points('GREATERTHANOREQUALS',2),{type='TT_HEALTH',unit='target',health=0,operator='LESSTHAN',value=4}))),
+ BuiltinConditions.spell('rogue-starter-sinister',1752),
  }},
 }))

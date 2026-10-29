@@ -8,16 +8,12 @@
 -- Tyrant while your Dreadstalkers are out (cast in the last 12 s), the Grimoires and Summon
 -- Doomguard in combat, a Felguard between pulls, Command Demon, Dark Pact, Unending Resolve.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology',revision=6,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Demonology in Midnight. Shows Blizzard's Assisted Combat suggestion (Call Dreadstalkers, Hand of Gul'dan, Demonbolt, Power Siphon and Tyrant), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Demonic Tyrant while the Dreadstalkers you called in the last 12 seconds are out, Grimoire: Imp Lord, Grimoire: Fel Ravager and Summon Doomguard in combat, a Felguard between pulls, Command Demon, Dark Pact, Unending Resolve.",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'demonology','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
@@ -29,11 +25,11 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,specs={266},
   cooldowns={
    block('retail.warlock.upkeep','demo-'),
-   spell('demo-summon-felguard',30146,all(negate(combat()),negate({type='PET'}))),
-   spell('demo-tyrant',265187,all(fight,{type='SPELL_HISTORY_TIME',spell=104316,operator='LESSTHAN',value=12})),
-   spell('demo-imp-lord',1276452,fight),
-   spell('demo-fel-ravager',1276467,fight),
-   spell('demo-doomguard',1276672,fight),
+   BuiltinConditions.spell('demo-summon-felguard',30146,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate({type='PET'}))),
+   BuiltinConditions.spell('demo-tyrant',265187,BuiltinConditions.all(fight,{type='SPELL_HISTORY_TIME',spell=104316,operator='LESSTHAN',value=12})),
+   BuiltinConditions.spell('demo-imp-lord',1276452,fight),
+   BuiltinConditions.spell('demo-fel-ravager',1276467,fight),
+   BuiltinConditions.spell('demo-doomguard',1276672,fight),
   },
   rotation={
    block('retail.warlock.boundaries','demo-'),

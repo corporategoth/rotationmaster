@@ -7,22 +7,16 @@
 -- only signal of who needs healing. On a hostile target: DoTs and Wrath. Solo Restoration levels
 -- with the Balance premade. The Icy Veins HoT-first variant is rm.forever.druid.restoration.icyveins.
 local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Balance, 2 Feral Combat, 3 Restoration; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
 local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
 local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,ownbuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration',revision=6,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=2,['forever.druid.dots']=2},
- nameKey="Restoration",descriptionKey="Group healing after Warcraft Tavern, once Restoration is your main talent tree with 11 points. Heals your current friendly target: Swiftmend on a target with your HoT, Wild Growth, Regrowth and Rejuvenation when missing, Healing Touch. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing. On a hostile target: Moonfire, Insect Swarm, Wrath. Reminders: Innervate in combat, Nature's Swiftness on a friendly target in combat, Remove Curse and Abolish Poison, Mark of the Wild; Tranquility is yours. You pick who to heal and the spell rank; solo Restoration uses the Balance premade.",
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','group','warcraft-tavern'},
  sources={
@@ -33,23 +27,23 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,
   -- From 11 Restoration points (Gift of the Earthmother's tier), so dungeon healers at 20-24 qualify.
-  switch=all({type='GROUP'},tree(3,11)),
+  switch=BuiltinConditions.all({type='GROUP'},tree(3,11)),
   cooldowns={
-   block('resto-upkeep','forever.druid.upkeep','resto-'),
-   block('resto-healer-upkeep','forever.druid.healer-upkeep','resto-'),
-   spell('resto-innervate',29166,{type='COMBAT',unit='player'}),
+   BuiltinConditions.block('resto-upkeep','forever.druid.upkeep','resto-'),
+   BuiltinConditions.block('resto-healer-upkeep','forever.druid.healer-upkeep','resto-'),
+   BuiltinConditions.spell('resto-innervate',29166,{type='COMBAT',unit='player'}),
   },
   rotation={
-   block('resto-boundaries','forever.druid.boundaries','resto-'),
+   BuiltinConditions.block('resto-boundaries','forever.druid.boundaries','resto-'),
    {id='resto-hostile',type='branch',conditions={type='ATTACKABLE',unit='target'},onFalse={},onTrue={
-    block('resto-damage','forever.druid.spare-damage','resto-hostile-')}},
-   stop('resto-target',negate(all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})))),
-   spell('resto-swiftmend',18562,any(hot(774),hot(8936))),
-   spell('resto-wild-growth',408120),
-   spell('resto-regrowth',8936,negate(hot(8936))),
-   spell('resto-rejuvenation',774,negate(hot(774))),
-   spell('resto-healing-touch',5185),
-   stop('resto-done'),
+    BuiltinConditions.block('resto-damage','forever.druid.spare-damage','resto-hostile-')}},
+   BuiltinConditions.stop('resto-target',BuiltinConditions.negate(BuiltinConditions.all({type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='DEAD',unit='target'})))),
+   BuiltinConditions.spell('resto-swiftmend',18562,BuiltinConditions.any(hot(774),hot(8936))),
+   BuiltinConditions.spell('resto-wild-growth',408120),
+   BuiltinConditions.spell('resto-regrowth',8936,BuiltinConditions.negate(hot(8936))),
+   BuiltinConditions.spell('resto-rejuvenation',774,BuiltinConditions.negate(hot(774))),
+   BuiltinConditions.spell('resto-healing-touch',5185),
+   BuiltinConditions.stop('resto-done'),
   },
  },
 }))

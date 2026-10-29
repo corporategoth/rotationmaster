@@ -6,13 +6,12 @@
 -- Hurricane on packs, Faerie Fire in a group. In Cat or Bear Form it plays the Feral sections.
 -- The Icy Veins Starfire-only list is rm.era.druid.balance.icyveins.
 local _,addon=...
-local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance',revision=5,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
   ['era.druid.cat']=1,['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear']=2,['era.druid.bear-pull']=3,
   ['era.druid.caster']=2,['era.druid.caster-pull']=3},
- nameKey="Balance",descriptionKey="Balance from level 1 to 60, and the Druid default before talents or when no other premade fits. Starfire as the filler once learned (Wrath before that, Starfire first on a Nature's Grace proc), Moonfire and Insect Swarm kept on targets that will live while your mana is above 30%, Hurricane when three or more enemies are on you, Faerie Fire in a group, instants while moving, melee when out of mana. In Cat or Bear Form it gives the Feral advice instead. Reminders: Mark of the Wild, Thorns when solo, Omen of Clarity, Moonkin Form when you are in no form, Innervate, Nature's Grasp. Downranking Starfire, roots and target choice stay with you.",
  applicability={families={'era'},actionContext='player',class='DRUID'},
  tags={'leveling','endgame','balance','caster','single-target','aoe','wowhead','warcraft-tavern'},
  sources={
@@ -23,12 +22,12 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/kaminaris/MaxDps-Druid/tree/0164267887c2efffb3068100a290c4513f961b7f/Specialization/Classic',title='MaxDps-Druid Classic modules',reviewedAt='2026-10-23',revision='0164267'},
  },
  body={priority=2,
-  cooldowns={ref('era-balance-upkeep','era.druid.upkeep','era-balance-'),ref('era-balance-caster-cooldowns','era.druid.caster-cooldowns','era-balance-'),
-   ref('era-balance-feral','era.druid.feral-cooldowns','era-balance-feral-')},
+  cooldowns={BuiltinConditions.block('era-balance-upkeep','era.druid.upkeep','era-balance-'),BuiltinConditions.block('era-balance-caster-cooldowns','era.druid.caster-cooldowns','era-balance-'),
+   BuiltinConditions.block('era-balance-feral','era.druid.feral-cooldowns','era-balance-feral-')},
   rotation={
-   ref('era-balance-boundaries','era.druid.boundaries','era-balance-'),
-   ref('era-balance-forms','era.druid.forms','era-balance-'),
-   ref('era-balance-caster','era.druid.caster','era-balance-'),
+   BuiltinConditions.block('era-balance-boundaries','era.druid.boundaries','era-balance-'),
+   BuiltinConditions.block('era-balance-forms','era.druid.forms','era-balance-'),
+   BuiltinConditions.block('era-balance-caster','era.druid.caster','era-balance-'),
   },
  },
 }))

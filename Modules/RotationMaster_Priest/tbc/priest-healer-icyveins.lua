@@ -5,19 +5,14 @@
 -- Shield, Binding Heal, Renew, Flash Heal, Greater Heal (any rank), group heals, and Prayer of
 -- Mending last; no pre-pull Prayer of Mending and no fixed top-up rank. You pick the target.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function pct(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
 local function own(id)return{type='BUFF',unit='target',spell=id,anyrank=true,ownbuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-heal-iv-'
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.icyveins',revision=6,
  blocks={['tbc.priest.boundaries']=4,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
   ['tbc.priest.healer-damage']=2,['tbc.priest.upkeep']=1},
- nameKey="Healer (Icy Veins)",descriptionKey="Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash Heal, Greater Heal (any rank), group heals, and Prayer of Mending last. You choose whom to heal. An alternative to the recommended Wowhead healer premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'tbc'},actionContext='player',class='PRIEST'},
  tags={'holy','discipline','healer','icy-veins','dungeon','raid'},
  sources={
@@ -29,24 +24,24 @@ assert(addon:RegisterDefaultRotation({
   priority=25,disabled=true,
   switch={type='AND',value={{type='GROUP'},{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
    {type='OR',value={{type='PRIMARY_TALENT_TREE',tree=2},{type='PRIMARY_TALENT_TREE',tree=1}}}}},
-  cooldowns={block(P..'upkeep','tbc.priest.upkeep',P),
-   spell(P..'divine-spirit',14752,all(negate({type='COMBAT',unit='player'}),negate({type='BUFF',unit='player',spell=14752,anyrank=true}),negate({type='BUFF',unit='player',spell=27681,anyrank=true}))),
-   spell(P..'inner-focus',14751,all({type='COMBAT',unit='player'},{type='MANAPCT',unit='player',operator='LESSTHAN',value=.8})),
-   spell(P..'pain-suppression',33206,all({type='COMBAT',unit='player'},{type='FRIENDLY',unit='target'},pct('target','LESSTHAN',.25)))},
+  cooldowns={BuiltinConditions.block(P..'upkeep','tbc.priest.upkeep',P),
+   BuiltinConditions.spell(P..'divine-spirit',14752,BuiltinConditions.all(BuiltinConditions.negate({type='COMBAT',unit='player'}),BuiltinConditions.negate({type='BUFF',unit='player',spell=14752,anyrank=true}),BuiltinConditions.negate({type='BUFF',unit='player',spell=27681,anyrank=true}))),
+   BuiltinConditions.spell(P..'inner-focus',14751,BuiltinConditions.all({type='COMBAT',unit='player'},{type='MANAPCT',unit='player',operator='LESSTHAN',value=.8})),
+   BuiltinConditions.spell(P..'pain-suppression',33206,BuiltinConditions.all({type='COMBAT',unit='player'},{type='FRIENDLY',unit='target'},pct('target','LESSTHAN',.25)))},
   rotation={
-   block(P..'boundaries','tbc.priest.boundaries',P),
-   {id=P..'friend',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),
-    onFalse={block(P..'damage','tbc.priest.healer-damage',P)},
+   BuiltinConditions.block(P..'boundaries','tbc.priest.boundaries',P),
+   {id=P..'friend',type='branch',conditions=BuiltinConditions.all({type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='DEAD',unit='target'})),
+    onFalse={BuiltinConditions.block(P..'damage','tbc.priest.healer-damage',P)},
     onTrue={
-     spell(P..'shield',17,all(pct('target','LESSTHAN',.35),negate({type='DEBUFF',unit='target',spell=6788}))),
-     block(P..'dispels','tbc.priest.dispels',P),
-     spell(P..'binding',32546,all(pct('player','LESSTHAN',.7),pct('target','LESSTHAN',.7),negate({type='ISSAME',unit='target',otherunit='player'}))),
-     spell(P..'renew',139,all(negate(own(139)),pct('target','LESSTHAN',.95))),
-     spell(P..'flash',2061,pct('target','LESSTHAN',.5)),
-     block(P..'big','tbc.priest.big-heal',P),
-     block(P..'group','tbc.priest.group-heal',P),
-     spell(P..'mending',33076,{type='COMBAT',unit='player'}),
-     stop(P..'friend-done')}},
+     BuiltinConditions.spell(P..'shield',17,BuiltinConditions.all(pct('target','LESSTHAN',.35),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=6788}))),
+     BuiltinConditions.block(P..'dispels','tbc.priest.dispels',P),
+     BuiltinConditions.spell(P..'binding',32546,BuiltinConditions.all(pct('player','LESSTHAN',.7),pct('target','LESSTHAN',.7),BuiltinConditions.negate({type='ISSAME',unit='target',otherunit='player'}))),
+     BuiltinConditions.spell(P..'renew',139,BuiltinConditions.all(BuiltinConditions.negate(own(139)),pct('target','LESSTHAN',.95))),
+     BuiltinConditions.spell(P..'flash',2061,pct('target','LESSTHAN',.5)),
+     BuiltinConditions.block(P..'big','tbc.priest.big-heal',P),
+     BuiltinConditions.block(P..'group','tbc.priest.group-heal',P),
+     BuiltinConditions.spell(P..'mending',33076,{type='COMBAT',unit='player'}),
+     BuiltinConditions.stop(P..'friend-done')}},
   },
  },
 }))

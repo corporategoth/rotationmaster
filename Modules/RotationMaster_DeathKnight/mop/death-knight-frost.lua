@@ -6,17 +6,13 @@
 -- Frost Strike only above 76 runic power and as a 40 filler, Howling Blast on Rime and with spare
 -- Frost or Death runes. With two one-handers rm.mop.deathknight.frost.dualwield takes over.
 local _,addon=...
-local function any(...)return{type='OR',value={...}}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function rp(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function rune(kind,n)return{type='RUNE',rune=kind,operator='EQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.frost',revision=6,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.frost-upkeep']=2,['mop.deathknight.frost-open']=2,
   ['mop.deathknight.frost-tail']=1,['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
- nameKey="Two-hander",descriptionKey="Frost with a two-handed weapon, the usual leveling setup; chosen in the Frost specialization whenever the two-weapon premade does not apply. Same opening, diseases, survival and AoE as the two-weapon premade, then Obliterate on Killing Machine, Frost Strike above 76 runic power, Howling Blast on Rime, Obliterate whenever a rune pair is full, Obliterate, Howling Blast, Plague Leech, Frost Strike at 40 and Horn of Winter. Before Obliterate (58) Death Strike spends your Unholy runes. Same reminders as the two-weapon premade.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'frost','leveling','single-target','aoe','hekili'},
  sources={
@@ -27,19 +23,19 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={251},
   cooldowns={
-   block('frost-upkeep','mop.deathknight.frost-upkeep','frost-'),
-   block('frost-class','mop.deathknight.upkeep','frost-'),
+   BuiltinConditions.block('frost-upkeep','mop.deathknight.frost-upkeep','frost-'),
+   BuiltinConditions.block('frost-class','mop.deathknight.upkeep','frost-'),
   },
   rotation={
-   block('frost-boundaries','mop.deathknight.boundaries','frost-'),
-   block('frost-open','mop.deathknight.frost-open','frost-'),
-   spell('frost-obliterate-km',49020,buff(51124)),
-   spell('frost-strike-cap',49143,rp('GREATERTHANOREQUALS',76)),
-   spell('frost-rime',49184,buff(59052)),
-   spell('frost-obliterate-capped',49020,any(rune(2,2),rune(3,2),rune(4,2))),
-   spell('frost-obliterate',49020),
-   spell('frost-howling-blast',49184),
-   block('frost-tail','mop.deathknight.frost-tail','frost-'),
+   BuiltinConditions.block('frost-boundaries','mop.deathknight.boundaries','frost-'),
+   BuiltinConditions.block('frost-open','mop.deathknight.frost-open','frost-'),
+   BuiltinConditions.spell('frost-obliterate-km',49020,BuiltinConditions.buff(51124)),
+   BuiltinConditions.spell('frost-strike-cap',49143,rp('GREATERTHANOREQUALS',76)),
+   BuiltinConditions.spell('frost-rime',49184,BuiltinConditions.buff(59052)),
+   BuiltinConditions.spell('frost-obliterate-capped',49020,BuiltinConditions.any(rune(2,2),rune(3,2),rune(4,2))),
+   BuiltinConditions.spell('frost-obliterate',49020),
+   BuiltinConditions.spell('frost-howling-blast',49184),
+   BuiltinConditions.block('frost-tail','mop.deathknight.frost-tail','frost-'),
   },
  },
 }))

@@ -7,22 +7,17 @@
 -- never at four of its own stacks or more; Frostfire Bolt, else Fireball. Overheat's Fire Blast and
 -- Combustion are reminders. Target switching for Living Bomb spread stays with the player.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function near(n)return{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=n}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-sfire-'
 local scorchTalent={type='TALENT',layout='tree',tree=2,talent=10,operator='GREATERTHANOREQUALS',value=1}
-local balefireStack=any({type='BUFF',unit='player',spell=428878},{type='DEBUFF',unit='player',spell=428878})
+local balefireStack=BuiltinConditions.any({type='BUFF',unit='player',spell=428878},{type='DEBUFF',unit='player',spell=428878})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.mage.fire',revision=6,
  blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.balefire-scorched']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.overheat']=2,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
- nameKey="Fire (SoD)",descriptionKey="Season of Discovery Fire from level 1 to 60, and the Mage default there. Uses the runes you have engraved: Pyroblast on Hot Streak at once; Living Bomb kept on targets that will live; Scorch with Improved Scorch while Fire Vulnerability is below two stacks or about to fade; Living Flame on cooldown; Balefire Bolt at five Fire Vulnerability stacks, never at four Balefire stacks or more (the fifth kills you); Frostfire Bolt, else Fireball. Living Bomb, Living Flame and Fire Blast while moving; Living Flame, Living Bomb, Blast Wave, Cone of Cold, Flamestrike and Blizzard on packs. Reminders: Fire Blast with Overheat, Combustion, Icy Veins and Cold Snap, Molten or other armor, Arcane Intellect, mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, curse removal, Ice Block. Spreading Living Bomb across targets stays with you.",
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'fire','leveling','raid','single-target','aoe','season-of-discovery'},
  sources={
@@ -34,34 +29,34 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=101,
-  cooldowns={block(P..'armor','sod.mage.armor',P),block(P..'overheat','sod.mage.overheat',P),
-   spell(P..'combustion',11129,all({type='COMBAT',unit='player'},{type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=5},
-    any(balefireStack,negate({type='RUNE_ENGRAVED',spell=428878})))),
-   block(P..'upkeep','sod.mage.upkeep',P)},
+  cooldowns={BuiltinConditions.block(P..'armor','sod.mage.armor',P),BuiltinConditions.block(P..'overheat','sod.mage.overheat',P),
+   BuiltinConditions.spell(P..'combustion',11129,BuiltinConditions.all({type='COMBAT',unit='player'},{type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=5},
+    BuiltinConditions.any(balefireStack,BuiltinConditions.negate({type='RUNE_ENGRAVED',spell=428878})))),
+   BuiltinConditions.block(P..'upkeep','sod.mage.upkeep',P)},
   rotation={
-   block(P..'boundaries','era.mage.boundaries',P),
+   BuiltinConditions.block(P..'boundaries','era.mage.boundaries',P),
    {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    block(P..'pull-balefire','sod.mage.balefire',P..'pull-'),spell(P..'pull-pyroblast',11366),
-    spell(P..'pull-frostfire',401502),spell(P..'pull-fireball',133),stop(P..'pull-stop')}},
-   spell(P..'hot-streak',11366,all({type='BUFF',unit='player',spell=48108},negate({type='BUFF',unit='player',spell=28682}))),
+    BuiltinConditions.block(P..'pull-balefire','sod.mage.balefire',P..'pull-'),BuiltinConditions.spell(P..'pull-pyroblast',11366),
+    BuiltinConditions.spell(P..'pull-frostfire',401502),BuiltinConditions.spell(P..'pull-fireball',133),stop(P..'pull-stop')}},
+   BuiltinConditions.spell(P..'hot-streak',11366,BuiltinConditions.all({type='BUFF',unit='player',spell=48108},BuiltinConditions.negate({type='BUFF',unit='player',spell=28682}))),
    {id=P..'moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
-    spell(P..'moving-living-bomb',400613,negate(own(400613))),spell(P..'moving-living-flame',401556),
-    spell(P..'moving-fire-blast',2136),stop(P..'moving-stop')}},
+    BuiltinConditions.spell(P..'moving-living-bomb',400613,BuiltinConditions.negate(own(400613))),BuiltinConditions.spell(P..'moving-living-flame',401556),
+    BuiltinConditions.spell(P..'moving-fire-blast',2136),stop(P..'moving-stop')}},
    {id=P..'aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell(P..'aoe-living-flame',401556),
-    spell(P..'aoe-living-bomb',400613,negate(own(400613))),
-    spell(P..'aoe-blast-wave',11113,near(2)),
-    spell(P..'aoe-cone',120,near(2)),
-    spell(P..'aoe-flamestrike',2120,negate(own(2120))),
-    spell(P..'aoe-blizzard',10)}},
-   block(P..'living-bomb','sod.mage.living-bomb',P),
-   spell(P..'scorch',2948,all(scorchTalent,any(negate({type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=2}),
+    BuiltinConditions.spell(P..'aoe-living-flame',401556),
+    BuiltinConditions.spell(P..'aoe-living-bomb',400613,BuiltinConditions.negate(own(400613))),
+    BuiltinConditions.spell(P..'aoe-blast-wave',11113,near(2)),
+    BuiltinConditions.spell(P..'aoe-cone',120,near(2)),
+    BuiltinConditions.spell(P..'aoe-flamestrike',2120,BuiltinConditions.negate(own(2120))),
+    BuiltinConditions.spell(P..'aoe-blizzard',10)}},
+   BuiltinConditions.block(P..'living-bomb','sod.mage.living-bomb',P),
+   BuiltinConditions.spell(P..'scorch',2948,BuiltinConditions.all(scorchTalent,BuiltinConditions.any(BuiltinConditions.negate({type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=2}),
     {type='DEBUFF_REMAIN',unit='target',spell=22959,operator='LESSTHANOREQUALS',value=3}))),
-   spell(P..'living-flame',401556),
-   block(P..'balefire','sod.mage.balefire-scorched',P),
-   spell(P..'frostfire',401502),
-   spell(P..'fireball',133),
-   block(P..'finish','era.mage.wand-finish',P),
+   BuiltinConditions.spell(P..'living-flame',401556),
+   BuiltinConditions.block(P..'balefire','sod.mage.balefire-scorched',P),
+   BuiltinConditions.spell(P..'frostfire',401502),
+   BuiltinConditions.spell(P..'fireball',133),
+   BuiltinConditions.block(P..'finish','era.mage.wand-finish',P),
   },
  },
 }))

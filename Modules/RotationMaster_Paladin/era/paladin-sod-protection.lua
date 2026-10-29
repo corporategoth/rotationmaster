@@ -7,46 +7,42 @@
 -- Hammer of the Righteous, Avenger's Shield, Consecration, Shield of Righteousness, Exorcism.
 -- Shared blocks: era/blocks.lua. Original priority data, no guide prose.
 local _,addon=...
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection',revision=6,
  blocks={['sod.paladin.tank-upkeep']=2,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
- nameKey="Protection (SoD)",descriptionKey="Season of Discovery tanking, chosen by Righteous Fury, an engraved Hammer of the Righteous or Shield of Righteousness, or the Protection tree. Seal of Martyrdom, a pull with Holy Shield, Avenger's Shield and Exorcism, Holy Shield kept up; on one target Hammer of the Righteous, Shield of Righteousness, Exorcism, Avenger's Shield, Judgement, Divine Storm, Consecration; with three or more enemies on you Hammer of the Righteous, Avenger's Shield, Consecration, Shield of Righteousness, Exorcism. Reminders: Righteous Fury, Holy Shield before a pull, Devotion Aura, Sanctuary or Kings, Avenging Wrath, Divine Protection below 40%, Lay on Hands, Hand of Reckoning in a group when your target attacks someone else.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','endgame','protection','tank','single-target','aoe','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/tank-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin tank rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-18'},
   {url='https://www.icy-veins.com/wow-classic/protection-paladin-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Protection Paladin rotation (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-05',notes='Hand of Reckoning on lost threat; Divine Storm if engraved.'}},
- body={priority=120,switch=any(own(407627),own(25780),rune(407632),rune(440658),{type='PRIMARY_TALENT_TREE',tree=2}),
-  cooldowns={block('sprot-upkeep','sod.paladin.tank-upkeep','sprot-upkeep-')},
+ body={priority=120,switch=BuiltinConditions.any(own(407627),own(25780),rune(407632),rune(440658),{type='PRIMARY_TALENT_TREE',tree=2}),
+  cooldowns={BuiltinConditions.block('sprot-upkeep','sod.paladin.tank-upkeep','sprot-upkeep-')},
   rotation={
-   block('sprot-opening','era.paladin.melee-opening','sprot-'),
-   block('sprot-seal','sod.paladin.seal','sprot-'),
+   BuiltinConditions.block('sprot-opening','era.paladin.melee-opening','sprot-'),
+   BuiltinConditions.block('sprot-seal','sod.paladin.seal','sprot-'),
    {id='sprot-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    spell('sprot-pull-holy-shield',20925,negate(own(20925))),
-    spell('sprot-pull-avengers-shield',407669),
-    spell('sprot-pull-exorcism',415068),
+    BuiltinConditions.spell('sprot-pull-holy-shield',20925,BuiltinConditions.negate(own(20925))),
+    BuiltinConditions.spell('sprot-pull-avengers-shield',407669),
+    BuiltinConditions.spell('sprot-pull-exorcism',415068),
     {id='sprot-pull-stop',type='stop',conditions={}},
    }},
-   spell('sprot-holy-shield',20925,negate(own(20925))),
+   BuiltinConditions.spell('sprot-holy-shield',20925,BuiltinConditions.negate(own(20925))),
    {id='sprot-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onTrue={
-    spell('sprot-aoe-hammer',407632),
-    spell('sprot-aoe-avengers-shield',407669),
-    spell('sprot-aoe-consecration',26573),
-    spell('sprot-aoe-shield',440658),
-    spell('sprot-aoe-exorcism',415068),
+    BuiltinConditions.spell('sprot-aoe-hammer',407632),
+    BuiltinConditions.spell('sprot-aoe-avengers-shield',407669),
+    BuiltinConditions.spell('sprot-aoe-consecration',26573),
+    BuiltinConditions.spell('sprot-aoe-shield',440658),
+    BuiltinConditions.spell('sprot-aoe-exorcism',415068),
    },onFalse={
-    spell('sprot-hammer',407632),
-    spell('sprot-shield',440658),
-    spell('sprot-exorcism',415068),
-    spell('sprot-avengers-shield',407669),
-    spell('sprot-judgement',20271),
-    spell('sprot-divine-storm',407778),
-    spell('sprot-consecration',26573),
+    BuiltinConditions.spell('sprot-hammer',407632),
+    BuiltinConditions.spell('sprot-shield',440658),
+    BuiltinConditions.spell('sprot-exorcism',415068),
+    BuiltinConditions.spell('sprot-avengers-shield',407669),
+    BuiltinConditions.spell('sprot-judgement',20271),
+    BuiltinConditions.spell('sprot-divine-storm',407778),
+    BuiltinConditions.spell('sprot-consecration',26573),
    }},
   },
  },

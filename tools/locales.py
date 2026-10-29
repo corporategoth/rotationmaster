@@ -121,6 +121,8 @@ def catalogs():
     manifest = ROOT / BUNDLES_JSON
     if manifest.exists():
         for row in json.loads(manifest.read_text(encoding='utf-8'))['bundles']:
+            if row.get('kind') == 'builtin':
+                continue
             found.append(Catalog(row['id'], ROOT / 'Modules' / row['module'], row['module'], row.get('title'), row.get('notes'), row.get('kind')))
     return found
 
@@ -230,6 +232,8 @@ def locale_files(locale):
 def is_locale_file(relative):
     """Whether a repository-relative path is a locale file of any catalog (they are text, not source code)."""
     relative = str(relative).replace('\\', '/')
+    if re.fullmatch(r'Modules/RotationMaster_[^/]+/Locales/(?:enUS|' + '|'.join(LOCALES) + r')\.lua', relative):
+        return True
     for each in catalogs():
         if relative.startswith(each.directory.relative_to(ROOT).as_posix() + '/') and Path(relative).stem in ['enUS'] + LOCALES:
             return True
@@ -713,6 +717,14 @@ def _chunks(hashes):
 
 def index_text(entries, cats):
     """Data/text_bundle_index.lua from {catalog name: [English entries]}."""
+    import builtin_locales
+    cats = list(cats)
+    entries = dict(entries)
+    for row in builtin_locales.classes(ROOT):
+        catalog = Catalog(row['id'], ROOT / 'Modules' / row['module'], row['module'], kind='builtin')
+        cats.append(catalog)
+        values = builtin_locales.read(catalog.directory / 'Locales/enUS.lua')
+        entries[catalog.name] = [F.English(0, key, value, text_hash(value), 0) for key, value in values.items()]
     rows, owner_of_hash = [], {}
     for each in cats:
         if each.is_main:

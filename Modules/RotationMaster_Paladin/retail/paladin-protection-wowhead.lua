@@ -6,12 +6,11 @@
 -- half health is left to you. Divine Toll only at 0 Holy Power, as Wowhead says (Holy Power
 -- is never secret for the player in Midnight).
 local _,addon=...
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.wowhead',revision=7,
  blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
- nameKey="Consecration filler reference (Wowhead)",descriptionKey="Reference only, off by default: Wowhead's tank order. Judgment on cooldown, Shield of the Righteous, Avenger's Shield, Divine Toll at 0 Holy Power, Blessed Hammer or Hammer of the Righteous, and Consecration only as the filler. Health is hidden on Retail, so Word of Glory below half health is left to you. Same reminders as the Icy Veins reference.",
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','reference','single-target','aoe','wowhead'},
  sources={
@@ -25,13 +24,13 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('retail.paladin.boundaries','protwh-'),
-   spell('protwh-judgment',275779),
-   spell('protwh-shield-of-the-righteous',53600),
-   spell('protwh-avengers-shield',31935),
-   spell('protwh-divine-toll',375576,{type='POINT',unit='player',operator='EQUALS',value=0}),
-   spell('protwh-blessed-hammer',204019),
-   spell('protwh-hammer-of-the-righteous',53595),
-   spell('protwh-consecration',26573),
+   BuiltinConditions.spell('protwh-judgment',275779),
+   BuiltinConditions.spell('protwh-shield-of-the-righteous',53600),
+   BuiltinConditions.spell('protwh-avengers-shield',31935),
+   BuiltinConditions.spell('protwh-divine-toll',375576,{type='POINT',unit='player',operator='EQUALS',value=0}),
+   BuiltinConditions.spell('protwh-blessed-hammer',204019),
+   BuiltinConditions.spell('protwh-hammer-of-the-righteous',53595),
+   BuiltinConditions.spell('protwh-consecration',26573),
   },
  },
 }))

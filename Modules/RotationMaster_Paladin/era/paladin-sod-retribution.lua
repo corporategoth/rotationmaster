@@ -8,50 +8,44 @@
 -- Purifying Power rune); Hammer of Wrath with mana to spare, or always with Improved Hammer of Wrath.
 -- Shared blocks: era/blocks.lua. Original priority data, no guide prose.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
+local undead=BuiltinConditions.any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 local holyPower={type='BUFF_STACKS',unit='player',spell=1226461,operator='GREATERTHANOREQUALS',value=3}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution',revision=6,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
- nameKey="Retribution (SoD)",descriptionKey="Season of Discovery melee from level 1 to 60, and the default for any Paladin there. Keeps Seal of Martyrdom up (Righteousness until you have it), opens with Exorcism, casts Divine Storm at three Holy Power, then by weapon speed: with a two-hander of 3.3 seconds or slower, Crusader Strike, Exorcism, Divine Storm and Judgement; with a faster one, Judgement only as the seal runs out, then Exorcism, Crusader Strike and Divine Storm. Consecration with mana or three close enemies, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Hammer of Wrath with mana to spare (always with Improved Hammer of Wrath engraved). Runes are used as you engrave them. Reminders: Sanctity Aura, a Blessing, Avenging Wrath with Aura Mastery, a heal between fights, Divine Shield when about to die.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','endgame','retribution','melee','single-target','season-of-discovery','wowhead','icy-veins'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin DPS rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-06-06'},
 
   {url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-leveling',title='Icy Veins: SoD Retribution Paladin leveling (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-02',notes='Leveling order and the mana-gated Hammer of Wrath.'}},
  body={priority=102,
-  cooldowns={block('sret-upkeep','sod.paladin.ret-upkeep','sret-'),block('sret-safety','era.paladin.safety','sret-')},
+  cooldowns={BuiltinConditions.block('sret-upkeep','sod.paladin.ret-upkeep','sret-'),BuiltinConditions.block('sret-safety','era.paladin.safety','sret-')},
   rotation={
-   block('sret-opening','era.paladin.melee-opening','sret-'),
-   block('sret-seal','sod.paladin.seal','sret-'),
+   BuiltinConditions.block('sret-opening','era.paladin.melee-opening','sret-'),
+   BuiltinConditions.block('sret-seal','sod.paladin.seal','sret-'),
    {id='sret-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    spell('sret-pull-exorcism',415068),
-    spell('sret-pull-judgement',20271,negate(known(415068))),
+    BuiltinConditions.spell('sret-pull-exorcism',415068),
+    BuiltinConditions.spell('sret-pull-judgement',20271,BuiltinConditions.negate(BuiltinConditions.known(415068))),
     {id='sret-pull-stop',type='stop',conditions={}},
    }},
-   spell('sret-divine-storm-power',407778,holyPower),
+   BuiltinConditions.spell('sret-divine-storm-power',407778,holyPower),
    {id='sret-slow',type='branch',conditions={type='SWING_TIME',offhand=false,operator='GREATERTHANOREQUALS',value=3.3},onTrue={
-    spell('sret-slow-crusader-strike',407676),
-    spell('sret-slow-exorcism',415068),
-    spell('sret-slow-divine-storm',407778),
-    spell('sret-slow-judgement',20271),
+    BuiltinConditions.spell('sret-slow-crusader-strike',407676),
+    BuiltinConditions.spell('sret-slow-exorcism',415068),
+    BuiltinConditions.spell('sret-slow-divine-storm',407778),
+    BuiltinConditions.spell('sret-slow-judgement',20271),
    },onFalse={
-    spell('sret-fast-judgement',20271,{type='BUFF_REMAIN',unit='player',spell=407798,ownbuff=true,operator='LESSTHAN',value=2}),
-    spell('sret-fast-exorcism',415068),
-    spell('sret-fast-crusader-strike',407676),
-    spell('sret-fast-divine-storm',407778,negate({type='BUFF',unit='player',spell=1226461})),
+    BuiltinConditions.spell('sret-fast-judgement',20271,{type='BUFF_REMAIN',unit='player',spell=407798,ownbuff=true,operator='LESSTHAN',value=2}),
+    BuiltinConditions.spell('sret-fast-exorcism',415068),
+    BuiltinConditions.spell('sret-fast-crusader-strike',407676),
+    BuiltinConditions.spell('sret-fast-divine-storm',407778,BuiltinConditions.negate({type='BUFF',unit='player',spell=1226461})),
    }},
-   spell('sret-consecration',26573,any(mana('GREATERTHANOREQUALS',0.4),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3})),
-   spell('sret-holy-wrath',2812,all(any(rune(429144),undead),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2})),
-   spell('sret-hammer-of-wrath',24275,any(rune(429152),mana('GREATERTHANOREQUALS',0.3))),
+   BuiltinConditions.spell('sret-consecration',26573,BuiltinConditions.any(mana('GREATERTHANOREQUALS',0.4),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3})),
+   BuiltinConditions.spell('sret-holy-wrath',2812,BuiltinConditions.all(BuiltinConditions.any(rune(429144),undead),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2})),
+   BuiltinConditions.spell('sret-hammer-of-wrath',24275,BuiltinConditions.any(rune(429152),mana('GREATERTHANOREQUALS',0.3))),
   },
  },
 }))

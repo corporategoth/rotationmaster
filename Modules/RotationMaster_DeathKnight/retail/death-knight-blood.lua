@@ -5,13 +5,10 @@
 -- Around it, highlights for what Assisted Combat leaves to you: Vampiric Blood, Raise Dead, Mind
 -- Freeze, Icebound Fortitude and racial cooldowns.
 local _,addon=...
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Blood. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Vampiric Blood and Raise Dead in combat, Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call. Active mitigation timing, Anti-Magic Shell, taunts and trinkets stay with you.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','assisted-combat'},
  sources={
@@ -21,12 +18,12 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={250},
   cooldowns={
-   block('blood-utility','retail.deathknight.utility','blood-'),
-   spell('blood-vampiric-blood',55233,combat()),
-   spell('blood-raise-dead',46585,combat()),
+   BuiltinConditions.block('blood-utility','retail.deathknight.utility','blood-'),
+   BuiltinConditions.spell('blood-vampiric-blood',55233,BuiltinConditions.combat()),
+   BuiltinConditions.spell('blood-raise-dead',46585,BuiltinConditions.combat()),
   },
   rotation={
-   block('blood-boundaries','retail.deathknight.boundaries','blood-'),
+   BuiltinConditions.block('blood-boundaries','retail.deathknight.boundaries','blood-'),
    {id='blood-assisted',type='assisted',conditions={}},
   },
  },

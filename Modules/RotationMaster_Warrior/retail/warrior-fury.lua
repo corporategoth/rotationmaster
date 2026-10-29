@@ -6,15 +6,12 @@
 -- what it leaves out (SimulationCraft's assisted_combat/warrior_fury.simc): Recklessness, Avatar
 -- and Champion's Spear in combat, Battle Shout between pulls, Pummel, Enraged Regeneration.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.fury',revision=6,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Fury in Midnight. Shows Blizzard's Assisted Combat suggestion (Rampage, Bloodthirst, Raging Blow, Execute, Odyn's Fury and Bladestorm), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Recklessness, Avatar and Champion's Spear in combat, Battle Shout between pulls, Pummel, Enraged Regeneration whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'fury','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
@@ -25,10 +22,10 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,specs={72},
   cooldowns={
    block('retail.warrior.upkeep','fury-'),
-   spell('fury-recklessness',1719,fight),
-   spell('fury-avatar',107574,fight),
-   spell('fury-champions-spear',376079,fight),
-   spell('fury-enraged-regeneration',184364,combat()),
+   BuiltinConditions.spell('fury-recklessness',1719,fight),
+   BuiltinConditions.spell('fury-avatar',107574,fight),
+   BuiltinConditions.spell('fury-champions-spear',376079,fight),
+   BuiltinConditions.spell('fury-enraged-regeneration',184364,BuiltinConditions.combat()),
   },
   rotation={
    block('retail.warrior.boundaries','fury-'),

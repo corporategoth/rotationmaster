@@ -12,18 +12,12 @@
 -- Virtue on cooldown in combat, aura, Rebuke, Divine Protection, Lay on Hands. The friendly test
 -- is guarded by "target level above 0", which is false (not unavailable) without a target.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function holyPower(v)return{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=v}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.holy',revision=7,
  blocks={['retail.paladin.upkeep']=2},
- nameKey="Icy Veins",descriptionKey="Holy in Midnight, for reference: Rotation Master picks a spell, not a target, and the game hides everyone's health in combat, so this keeps your Holy Power and cooldowns turning over on whatever you target and leaves deciding who needs healing to you. Holy Power stays visible in combat, so it is spent at 5 first and at 3 or more after your other heals. On a friendly target: Eternal Flame or Word of Glory at 5 Holy Power, Flash of Light on Infusion of Light, Holy Shock, Eternal Flame or Word of Glory at 3 or more, Holy Light, Flash of Light; Light of Dawn is left to you. On an enemy: Shield of the Righteous at 5 Holy Power, Holy Shock, Shield of the Righteous at 3 or more, Judgment, Crusader Strike, Consecration. Reminders in combat: Divine Toll, Holy Prism, Holy Bulwark or Sacred Weapon, Beacon of Virtue on a friendly target, Divine Protection; an aura between pulls; Rebuke. Lay on Hands is left to you. Avenging Wrath and Aura Mastery are left to you.",
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'holy','healer','reference','icy-veins','wowhead'},
  sources={
@@ -33,33 +27,33 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,specs={65},
   cooldowns={
    block('retail.paladin.upkeep','holy-'),
-   spell('holy-divine-toll',375576,combat()),
-   spell('holy-holy-prism',114165,combat()),
-   spell('holy-holy-bulwark',432459,combat()),
-   spell('holy-sacred-weapon',432472,combat()),
-   spell('holy-beacon-of-virtue',200025,all(combat(),{type='FRIENDLY',unit='target'})),
-   spell('holy-divine-protection',498,combat()),
+   BuiltinConditions.spell('holy-divine-toll',375576,BuiltinConditions.combat()),
+   BuiltinConditions.spell('holy-holy-prism',114165,BuiltinConditions.combat()),
+   BuiltinConditions.spell('holy-holy-bulwark',432459,BuiltinConditions.combat()),
+   BuiltinConditions.spell('holy-sacred-weapon',432472,BuiltinConditions.combat()),
+   BuiltinConditions.spell('holy-beacon-of-virtue',200025,BuiltinConditions.all(BuiltinConditions.combat(),{type='FRIENDLY',unit='target'})),
+   BuiltinConditions.spell('holy-divine-protection',498,BuiltinConditions.combat()),
   },
   rotation={
-   {id='holy-casting',type='stop',suppress_attack=false,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
-   {id='holy-friendly',type='branch',conditions=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),onFalse={},onTrue={
-    spell('holy-eternal-flame-capped',156322,holyPower(5)),
-    spell('holy-word-of-glory-capped',85673,holyPower(5)),
-    spell('holy-infusion',19750,own(54149)),
-    spell('holy-shock',20473),
-    spell('holy-eternal-flame',156322,holyPower(3)),
-    spell('holy-word-of-glory',85673,holyPower(3)),
-    spell('holy-light',82326),
-    spell('holy-flash-of-light',19750),
+   {id='holy-casting',type='stop',suppress_attack=false,conditions=BuiltinConditions.any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+   {id='holy-friendly',type='branch',conditions=BuiltinConditions.all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='DEAD',unit='target'})),onFalse={},onTrue={
+    BuiltinConditions.spell('holy-eternal-flame-capped',156322,holyPower(5)),
+    BuiltinConditions.spell('holy-word-of-glory-capped',85673,holyPower(5)),
+    BuiltinConditions.spell('holy-infusion',19750,BuiltinConditions.ownBuff(54149)),
+    BuiltinConditions.spell('holy-shock',20473),
+    BuiltinConditions.spell('holy-eternal-flame',156322,holyPower(3)),
+    BuiltinConditions.spell('holy-word-of-glory',85673,holyPower(3)),
+    BuiltinConditions.spell('holy-light',82326),
+    BuiltinConditions.spell('holy-flash-of-light',19750),
     {id='holy-friendly-stop',type='stop',suppress_attack=true,conditions={}},
    }},
-   {id='holy-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
-   spell('holy-shield-of-the-righteous-capped',415091,holyPower(5)),
-   spell('holy-shock-enemy',20473),
-   spell('holy-shield-of-the-righteous',415091,holyPower(3)),
-   spell('holy-judgment',275773),
-   spell('holy-crusader-strike',35395),
-   spell('holy-consecration',26573),
+   {id='holy-no-target',type='stop',suppress_attack=true,conditions=BuiltinConditions.negate({type='ATTACKABLE',unit='target'})},
+   BuiltinConditions.spell('holy-shield-of-the-righteous-capped',415091,holyPower(5)),
+   BuiltinConditions.spell('holy-shock-enemy',20473),
+   BuiltinConditions.spell('holy-shield-of-the-righteous',415091,holyPower(3)),
+   BuiltinConditions.spell('holy-judgment',275773),
+   BuiltinConditions.spell('holy-crusader-strike',35395),
+   BuiltinConditions.spell('holy-consecration',26573),
   },
  },
 }))

@@ -5,16 +5,12 @@
 -- kept up, Shadow Word: Death on cooldown, Penance, Mind Blast, Smite; on a friendly target
 -- Penance first. Same reminders as the Icy Veins premade.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
+local friend=BuiltinConditions.all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='DEAD',unit='target'}))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline.wowhead',revision=6,
  blocks={['retail.priest.upkeep']=2,['retail.priest.disc-cooldowns']=1},
- nameKey="Death first reference (Wowhead)",descriptionKey="Reference only, off by default: Wowhead's Season 1 Oracle order, which keeps Shadow Word: Pain up by reading the debuff that Midnight hides in combat. Shadow Word: Pain, Shadow Word: Death on cooldown, Penance, Mind Blast, Smite; Penance first on a friendly target. Same reminders as the Icy Veins premade.",
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
  tags={'discipline','healer','atonement','reference','wowhead'},
  sources={
@@ -26,19 +22,19 @@ assert(addon:RegisterDefaultRotation({
    block('retail.priest.disc-cooldowns','discwh-'),
   },
   rotation={
-   {id='discwh-casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+   {id='discwh-casting',type='stop',suppress_attack=true,conditions=BuiltinConditions.any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
    {id='discwh-friendly',type='branch',conditions=friend,onFalse={},onTrue={
-    spell('discwh-penance-heal',47540),
-    spell('discwh-shield',17),
-    spell('discwh-flash-heal',2061),
+    BuiltinConditions.spell('discwh-penance-heal',47540),
+    BuiltinConditions.spell('discwh-shield',17),
+    BuiltinConditions.spell('discwh-flash-heal',2061),
     {id='discwh-friendly-stop',type='stop',suppress_attack=true,conditions={}},
    }},
-   {id='discwh-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
-   spell('discwh-shadow-word-pain',589,any(negate({type='DEBUFF',unit='target',spell=589,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=589,owndebuff=true,operator='LESSTHAN',value=4.8})),
-   spell('discwh-shadow-word-death',32379),
-   spell('discwh-penance',47540),
-   spell('discwh-mind-blast',8092),
-   spell('discwh-smite',585),
+   {id='discwh-no-target',type='stop',suppress_attack=true,conditions=BuiltinConditions.negate({type='ATTACKABLE',unit='target'})},
+   BuiltinConditions.spell('discwh-shadow-word-pain',589,BuiltinConditions.any(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=589,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=589,owndebuff=true,operator='LESSTHAN',value=4.8})),
+   BuiltinConditions.spell('discwh-shadow-word-death',32379),
+   BuiltinConditions.spell('discwh-penance',47540),
+   BuiltinConditions.spell('discwh-mind-blast',8092),
+   BuiltinConditions.spell('discwh-smite',585),
   },
  },
 }))

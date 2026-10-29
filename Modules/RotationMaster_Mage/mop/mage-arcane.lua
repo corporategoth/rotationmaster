@@ -7,22 +7,16 @@
 -- with a proc, Missiles never left at two procs, Barrage every four charges with two or more enemies.
 -- The guides' rule (Barrage at four charges without a proc, no mana gate) is rm.mop.mage.arcane.icyveins.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function charges(v)return{type='DEBUFF_STACKS',unit='player',spell=36032,owndebuff=true,operator='GREATERTHANOREQUALS',value=v}end
 local function procs(v)return{type='BUFF_STACKS',unit='player',spell=79683,operator='EQUALS',value=v}end
 local function ending()return{type='TT_HEALTH',unit='target',health=0,operator='LESSTHAN',value=25}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local function off(id,action,conditions)local step=BuiltinConditions.spell(id,action,conditions);step.disabled=true;return step end
 local MISSILES=79683
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane',revision=7,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1,['mop.mage.arcane-open']=3,['mop.mage.arcane-aoe-moving']=2},
- nameKey="Recommended",descriptionKey="Recommended for Arcane, from level 10 to 90 (selected in the Arcane specialization). Arcane Blast builds four Arcane Charges; with four, an Arcane Missiles! proc is spent with Missiles, and without one Arcane Barrage comes out once your mana drops below 90%. Above 95% mana it keeps blasting, which is how the simulator plays it. Missiles is never left sitting on two procs, Barrage is cast before Alter Time snaps back, and with two or more enemies Barrage goes out every four charges; Cone of Cold and Arcane Explosion when five are close. Keeps your talented bomb up, and Fire Blast or Ice Lance while moving without Ice Floes. Reminders: Arcane Power and Alter Time at four charges with a proc, Frost Armor (Molten before 54), Arcane Brilliance, Counterspell, Mana Gem, Mirror Image, Ice Barrier, Ice Floes, Rune of Power or Invocation. Time Warp, Spellsteal and Presence of Mind are off; Rune of Power still needs placing by hand.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'arcane','leveling','single-target','aoe','hekili'},
  sources={
@@ -33,25 +27,25 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={62},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('arcane-armor','mop.mage.armor-frost','arcane-'),
-   block('arcane-upkeep','mop.mage.upkeep','arcane-'),
-   {id='arcane-mana-gem',type='item',action={36799,81901},conditions=all(combat(),mana('LESSTHAN',.84),charges(2))},
-   spell('arcane-power',12042,all(combat(),charges(4),buff(MISSILES))),
-   spell('arcane-alter-time',108978,all(combat(),charges(4),buff(MISSILES),buff(12042),negate(buff(110909)),{type='TIME_IN_COMBAT',operator='GREATERTHANOREQUALS',value=10})),
-   off('arcane-presence-of-mind',12043,all(combat(),negate(buff(110909)))),
+   BuiltinConditions.block('arcane-armor','mop.mage.armor-frost','arcane-'),
+   BuiltinConditions.block('arcane-upkeep','mop.mage.upkeep','arcane-'),
+   {id='arcane-mana-gem',type='item',action={36799,81901},conditions=BuiltinConditions.all(BuiltinConditions.combat(),mana('LESSTHAN',.84),charges(2))},
+   BuiltinConditions.spell('arcane-power',12042,BuiltinConditions.all(BuiltinConditions.combat(),charges(4),BuiltinConditions.buff(MISSILES))),
+   BuiltinConditions.spell('arcane-alter-time',108978,BuiltinConditions.all(BuiltinConditions.combat(),charges(4),BuiltinConditions.buff(MISSILES),BuiltinConditions.buff(12042),BuiltinConditions.negate(BuiltinConditions.buff(110909)),{type='TIME_IN_COMBAT',operator='GREATERTHANOREQUALS',value=10})),
+   off('arcane-presence-of-mind',12043,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(BuiltinConditions.buff(110909)))),
   },
   rotation={
-   block('arcane-boundaries','mop.mage.boundaries','arcane-'),
-   block('arcane-open','mop.mage.arcane-open','arcane-'),
-   spell('arcane-missiles-capped',5143,procs(2)),
-   block('arcane-aoe-moving','mop.mage.arcane-aoe-moving','arcane-'),
-   spell('arcane-end-missiles',5143,all(buff(MISSILES),ending())),
-   spell('arcane-end-blast',30451,ending()),
-   spell('arcane-blast-proc-high',30451,all(charges(4),procs(1),mana('GREATERTHANOREQUALS',.95))),
-   spell('arcane-missiles',5143,all(charges(4),buff(MISSILES))),
-   spell('arcane-blast-high',30451,all(charges(4),negate(buff(MISSILES)),mana('GREATERTHANOREQUALS',.95))),
-   spell('arcane-barrage',44425,all(charges(4),negate(buff(MISSILES)),mana('LESSTHAN',.9))),
-   spell('arcane-blast',30451),
+   BuiltinConditions.block('arcane-boundaries','mop.mage.boundaries','arcane-'),
+   BuiltinConditions.block('arcane-open','mop.mage.arcane-open','arcane-'),
+   BuiltinConditions.spell('arcane-missiles-capped',5143,procs(2)),
+   BuiltinConditions.block('arcane-aoe-moving','mop.mage.arcane-aoe-moving','arcane-'),
+   BuiltinConditions.spell('arcane-end-missiles',5143,BuiltinConditions.all(BuiltinConditions.buff(MISSILES),ending())),
+   BuiltinConditions.spell('arcane-end-blast',30451,ending()),
+   BuiltinConditions.spell('arcane-blast-proc-high',30451,BuiltinConditions.all(charges(4),procs(1),mana('GREATERTHANOREQUALS',.95))),
+   BuiltinConditions.spell('arcane-missiles',5143,BuiltinConditions.all(charges(4),BuiltinConditions.buff(MISSILES))),
+   BuiltinConditions.spell('arcane-blast-high',30451,BuiltinConditions.all(charges(4),BuiltinConditions.negate(BuiltinConditions.buff(MISSILES)),mana('GREATERTHANOREQUALS',.95))),
+   BuiltinConditions.spell('arcane-barrage',44425,BuiltinConditions.all(charges(4),BuiltinConditions.negate(BuiltinConditions.buff(MISSILES)),mana('LESSTHAN',.9))),
+   BuiltinConditions.spell('arcane-blast',30451),
   },
  },
 }))

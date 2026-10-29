@@ -8,22 +8,16 @@
 -- move; Frostfire Bolt or Frostbolt filler. Disabled: procs, Freezing stacks and cooldowns are secret
 -- in Midnight combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function freezing(v)return{type='DEBUFF_STACKS',unit='target',spell=1221389,owndebuff=true,operator='GREATERTHANOREQUALS',value=v}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local brainFreeze,fingers,thermal,spike=buff(190446),buff(44544),buff(1247730),buff(199844)
 local twoFingers={type='BUFF_STACKS',unit='player',spell=44544,ownbuff=true,operator='GREATERTHANOREQUALS',value=2}
-local frozenRain=all(buff(270232),engaged(3))
+local frozenRain=BuiltinConditions.all(buff(270232),engaged(3))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost.guide',revision=7,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
- nameKey="Reference (Icy Veins and SimulationCraft)",descriptionKey="Reference only, off by default: the guides' Frost priority for each hero tree. Procs, Freezing stacks and cooldowns are hidden in Midnight combat, so it cannot run there. Pulls with Frostfire Bolt or Frostbolt. Frostfire (Frostfire Bolt known): Glacial Spike when ready, Comet Storm on one or two enemies, Flurry on Brain Freeze without Thermal Void, Ice Lance on two Fingers of Frost, Ray of Frost, Frozen Orb, Blizzard on Freezing Rain with three enemies, Ice Lance on Fingers of Frost with Thermal Void or at twelve Freezing, Flurry, Ice Nova or Cone of Cold on five, then Glacial Spike or Frostfire Bolt. Spellslinger: Comet Storm, Flurry on Brain Freeze, Ice Lance on two Fingers, Frozen Orb, Glacial Spike when ready, Blizzard on Freezing Rain, Ice Lance on Fingers of Frost or six Freezing, Ray of Frost, Flurry, Ice Nova or Cone of Cold on four, Blizzard on seven, then Glacial Spike or Frostbolt. Ice Lance while moving. Reminders: Summon Water Elemental, Ice Barrier and the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'frost','caster','reference','icy-veins','simulationcraft'},
  sources={
@@ -32,48 +26,48 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={64},
   cooldowns={
-   block('frguide-utility','retail.mage.utility','frguide-'),
-   spell('frguide-barrier',11426,combat()),
-   spell('frguide-water-elemental',31687,negate({type='PET'})),
+   BuiltinConditions.block('frguide-utility','retail.mage.utility','frguide-'),
+   BuiltinConditions.spell('frguide-barrier',11426,BuiltinConditions.combat()),
+   BuiltinConditions.spell('frguide-water-elemental',31687,BuiltinConditions.negate({type='PET'})),
   },
   rotation={
-   block('frguide-boundaries','retail.mage.boundaries','frguide-'),
-   {id='frguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    spell('frguide-pull-frostfire',431044),spell('frguide-pull-frostbolt',116),stop('frguide-pull-stop')}},
+   BuiltinConditions.block('frguide-boundaries','retail.mage.boundaries','frguide-'),
+   {id='frguide-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.spell('frguide-pull-frostfire',431044),BuiltinConditions.spell('frguide-pull-frostbolt',116),BuiltinConditions.stop('frguide-pull-stop')}},
    {id='frguide-frostfire',type='branch',conditions={type='SPELL_KNOWN',spell=431044},
     onTrue={
-     spell('frguide-ff-glacial-spike',199786,spike),
-     spell('frguide-ff-comet-storm',153595,negate(engaged(3))),
-     spell('frguide-ff-brain-freeze',44614,all(brainFreeze,negate(thermal))),
-     spell('frguide-ff-two-fingers',30455,twoFingers),
-     spell('frguide-ff-ray-of-frost',205021),
-     spell('frguide-ff-frozen-orb',84714),
-     spell('frguide-ff-blizzard',190356,frozenRain),
-     spell('frguide-ff-thermal-void',30455,all(fingers,thermal)),
-     spell('frguide-ff-shatter',30455,freezing(12)),
-     spell('frguide-ff-flurry',44614),
-     spell('frguide-ff-ice-nova',157997,engaged(5)),
-     spell('frguide-ff-cone-of-cold',120,engaged(5)),
-     spell('frguide-ff-moving-lance',30455,{type='MOVING'}),
-     spell('frguide-ff-glacial-spike-filler',199786),
-     spell('frguide-ff-frostfire-bolt',431044)},
+     BuiltinConditions.spell('frguide-ff-glacial-spike',199786,spike),
+     BuiltinConditions.spell('frguide-ff-comet-storm',153595,BuiltinConditions.negate(engaged(3))),
+     BuiltinConditions.spell('frguide-ff-brain-freeze',44614,BuiltinConditions.all(brainFreeze,BuiltinConditions.negate(thermal))),
+     BuiltinConditions.spell('frguide-ff-two-fingers',30455,twoFingers),
+     BuiltinConditions.spell('frguide-ff-ray-of-frost',205021),
+     BuiltinConditions.spell('frguide-ff-frozen-orb',84714),
+     BuiltinConditions.spell('frguide-ff-blizzard',190356,frozenRain),
+     BuiltinConditions.spell('frguide-ff-thermal-void',30455,BuiltinConditions.all(fingers,thermal)),
+     BuiltinConditions.spell('frguide-ff-shatter',30455,freezing(12)),
+     BuiltinConditions.spell('frguide-ff-flurry',44614),
+     BuiltinConditions.spell('frguide-ff-ice-nova',157997,engaged(5)),
+     BuiltinConditions.spell('frguide-ff-cone-of-cold',120,engaged(5)),
+     BuiltinConditions.spell('frguide-ff-moving-lance',30455,{type='MOVING'}),
+     BuiltinConditions.spell('frguide-ff-glacial-spike-filler',199786),
+     BuiltinConditions.spell('frguide-ff-frostfire-bolt',431044)},
     onFalse={
-     spell('frguide-ss-comet-storm',153595),
-     spell('frguide-ss-brain-freeze',44614,all(brainFreeze,negate(thermal))),
-     spell('frguide-ss-two-fingers',30455,twoFingers),
-     spell('frguide-ss-frozen-orb',84714),
-     spell('frguide-ss-glacial-spike',199786,spike),
-     spell('frguide-ss-blizzard',190356,frozenRain),
-     spell('frguide-ss-fingers',30455,fingers),
-     spell('frguide-ss-shatter',30455,freezing(6)),
-     spell('frguide-ss-ray-of-frost',205021),
-     spell('frguide-ss-flurry',44614),
-     spell('frguide-ss-ice-nova',157997,engaged(4)),
-     spell('frguide-ss-cone-of-cold',120,engaged(4)),
-     spell('frguide-ss-packs-blizzard',190356,engaged(7)),
-     spell('frguide-ss-moving-lance',30455,{type='MOVING'}),
-     spell('frguide-ss-glacial-spike-filler',199786),
-     spell('frguide-ss-frostbolt',116)}},
+     BuiltinConditions.spell('frguide-ss-comet-storm',153595),
+     BuiltinConditions.spell('frguide-ss-brain-freeze',44614,BuiltinConditions.all(brainFreeze,BuiltinConditions.negate(thermal))),
+     BuiltinConditions.spell('frguide-ss-two-fingers',30455,twoFingers),
+     BuiltinConditions.spell('frguide-ss-frozen-orb',84714),
+     BuiltinConditions.spell('frguide-ss-glacial-spike',199786,spike),
+     BuiltinConditions.spell('frguide-ss-blizzard',190356,frozenRain),
+     BuiltinConditions.spell('frguide-ss-fingers',30455,fingers),
+     BuiltinConditions.spell('frguide-ss-shatter',30455,freezing(6)),
+     BuiltinConditions.spell('frguide-ss-ray-of-frost',205021),
+     BuiltinConditions.spell('frguide-ss-flurry',44614),
+     BuiltinConditions.spell('frguide-ss-ice-nova',157997,engaged(4)),
+     BuiltinConditions.spell('frguide-ss-cone-of-cold',120,engaged(4)),
+     BuiltinConditions.spell('frguide-ss-packs-blizzard',190356,engaged(7)),
+     BuiltinConditions.spell('frguide-ss-moving-lance',30455,{type='MOVING'}),
+     BuiltinConditions.spell('frguide-ss-glacial-spike-filler',199786),
+     BuiltinConditions.spell('frguide-ss-frostbolt',116)}},
   },
  },
 }))

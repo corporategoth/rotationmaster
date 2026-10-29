@@ -46,10 +46,11 @@ def git_show(rev, path):
 
 
 def current_names():
-    """English source text -> English, from the generated catalogs."""
+    """Built In locale key -> English name from each class module."""
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    import locales
-    return locales.english()
+    import builtin_locales
+    return {key: text for row in builtin_locales.classes(ROOT)
+            for key, text in builtin_locales.read(ROOT / 'Modules' / row['module'] / 'Locales/enUS.lua').items()}
 
 
 def read_names(text):
@@ -70,11 +71,7 @@ def packs():
         s = Path(f).read_text()
         for m in re.finditer(r"id='(rm\.[^']+)',revision=(\d+)", s):
             tail = s[m.end():]
-            import catalog_check
-            match = re.search(r'''nameKey=("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')''', tail)
-            if not match:
-                raise ValueError(f'{f}: missing literal nameKey')
-            nk = catalog_check.decode_string(match.group(1))
+            nk = m.group(1) + '.Name'
             head = tail[tail.index('body={'):][:160]
             head = head.split('switch=')[0].split('cooldowns=')[0].split('rotation=')[0]
             pr = re.search(r'priority=(-?\d+)', head)

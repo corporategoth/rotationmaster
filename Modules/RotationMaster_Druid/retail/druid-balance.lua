@@ -5,17 +5,11 @@
 -- highlights for what Assisted Combat leaves to you: Celestial Alignment (or Incarnation), Solar Beam,
 -- Moonkin Form between pulls, Mark of the Wild, Barkskin and racial cooldowns.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local interrupt=BuiltinConditions.any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Balance. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Celestial Alignment (or Incarnation) in combat, Solar Beam on an interruptible cast, Moonkin Form and Mark of the Wild between pulls, and Barkskin and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Solar Beam lights only where the game shows them; health is hidden on Retail, so when to use Barkskin is your call.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'balance','ranged','assisted-combat'},
  sources={
@@ -25,14 +19,14 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={102},
   cooldowns={
-   block('balance-utility','retail.druid.utility','balance-'),
-   spell('balance-solar-beam',78675,interrupt),
-   spell('balance-celestial-alignment',194223,combat()),
-   spell('balance-incarnation',102560,combat()),
-   spell('balance-moonkin-form',24858,all(negate(combat()),negate({type='BUFF',unit='player',spell=24858}),negate({type='BUFF',unit='player',spell=102560}))),
+   BuiltinConditions.block('balance-utility','retail.druid.utility','balance-'),
+   BuiltinConditions.spell('balance-solar-beam',78675,interrupt),
+   BuiltinConditions.spell('balance-celestial-alignment',194223,BuiltinConditions.combat()),
+   BuiltinConditions.spell('balance-incarnation',102560,BuiltinConditions.combat()),
+   BuiltinConditions.spell('balance-moonkin-form',24858,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate({type='BUFF',unit='player',spell=24858}),BuiltinConditions.negate({type='BUFF',unit='player',spell=102560}))),
   },
   rotation={
-   block('balance-boundaries','retail.druid.boundaries','balance-'),
+   BuiltinConditions.block('balance-boundaries','retail.druid.boundaries','balance-'),
    {id='balance-assisted',type='assisted',conditions={}},
   },
  },

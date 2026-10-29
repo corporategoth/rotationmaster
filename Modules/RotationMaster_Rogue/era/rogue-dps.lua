@@ -9,21 +9,16 @@
 -- Shared parts: era/blocks.lua. Left manual: Feint, Sprint, Blind, Sap and positioning; Vanish,
 -- Gouge, Preparation, Kidney Shot and racials are listed off.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function points(n)return{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=n}end
-local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local sliced={type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}
 -- A target worth a Slice: an elite or boss, or one above a fifth of its health.
-local lasting=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
+local lasting=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps',revision=5,
  blocks={['era.rogue.boundaries']=3,['era.rogue.opener']=3,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=2},
- nameKey="Melee DPS",descriptionKey="Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from simulator, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the target is not facing you, Cheap Shot solo, Garrote outside raids. In combat: Riposte, Slice and Dice from one combo point when it is missing on an elite or a healthy target (renewed at five points in its last three seconds), Expose Armor at five points in a group when you have Improved Expose Armor 2/2 and nobody Sunders, a two-point Eviscerate on a target about to die, otherwise Eviscerate at five and no builder past five. The builder follows what you know: Ghostly Strike and Hemorrhage outside raids, Backstab with a dagger when the target is not facing you, else Sinister Strike. Reminders: poisons on each weapon (Deadly on an off-hand weapon when carried), Kick, Thistle Tea, Blade Flurry and Adrenaline Rush on elites or two enemies with Slice and Dice up, Cold Blood at five, Evasion solo when hurt. Vanish, Gouge, Preparation, Kidney Shot and racials are listed off; Feint, Sprint, Blind, Sap and positioning stay with you.",
  applicability={families={'era'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','icy-veins','wowhead'},
  sources={
@@ -37,17 +32,17 @@ assert(addon:RegisterDefaultRotation({
  rotation={
  block('era.rogue.boundaries','rogue-'),
  {id='rogue-stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={block('era.rogue.opener','rogue-stealth-')}},
- spell('rogue-riposte',14251),
- spell('rogue-slice',5171,all(points(1),negate(sliced),lasting)),
+ BuiltinConditions.spell('rogue-riposte',14251),
+ BuiltinConditions.spell('rogue-slice',5171,BuiltinConditions.all(points(1),BuiltinConditions.negate(sliced),lasting)),
  block('era.rogue.expose-armor','rogue-'),
- spell('rogue-slice-refresh',5171,all(points(5),{type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=3})),
- spell('rogue-kill-shot',2098,all(points(2),lifetime('LESSTHAN',4))),
+ BuiltinConditions.spell('rogue-slice-refresh',5171,BuiltinConditions.all(points(5),{type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=3})),
+ BuiltinConditions.spell('rogue-kill-shot',2098,BuiltinConditions.all(points(2),BuiltinConditions.lifetime('LESSTHAN',4))),
  {id='rogue-finisher',type='branch',conditions=points(5),onFalse={},onTrue={
-  spell('rogue-eviscerate',2098),
+  BuiltinConditions.spell('rogue-eviscerate',2098),
   {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
- {id='rogue-kidney-shot',type='spell',action=408,ranked=false,disabled=true,conditions=all(negate({type='GROUP'}),points(3),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4})},
+ {id='rogue-kidney-shot',type='spell',action=408,ranked=false,disabled=true,conditions=BuiltinConditions.all(BuiltinConditions.negate({type='GROUP'}),points(3),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4})},
  block('era.rogue.builders','rogue-'),
- spell('rogue-sinister',1752),
+ BuiltinConditions.spell('rogue-sinister',1752),
  }},
 }))

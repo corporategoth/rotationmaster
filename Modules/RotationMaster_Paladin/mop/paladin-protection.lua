@@ -8,20 +8,11 @@
 -- enemies, Avenger's Shield, Hammer of Wrath, Crusader Strike, Judgment, tier-six talent,
 -- Consecration, Holy Wrath. The pool-to-five variant is rm.mop.paladin.protection.simulator.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local tanking={type='THREAT',unit='target',threat=3}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection',revision=7,
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=4,['mop.paladin.prot-aoe']=2},
- nameKey="Recommended",descriptionKey="Recommended for Protection, from level 10 in the Protection specialization. Pulls with Avenger's Shield, then Avenger's Shield on a Grand Crusader proc, Avenger's Shield, Hammer of Wrath, Crusader Strike, Judgment, your level-90 talent, Consecration, Holy Wrath and Sacred Shield. Three or more enemies on you switch to Avenger's Shield, Consecration, Hammer of the Righteous, Judgment and Holy Wrath. Shield of the Righteous, Eternal Flame and Word of Glory are off the global cooldown, so they light beside the rotation: Shield of the Righteous whenever you can afford it, Eternal Flame on yourself when it is running out with 3 Holy Power and three Bastion of Glory stacks, Word of Glory below half health without that talent. Other reminders: Righteous Fury, Seal of Insight when another seal (except Righteousness) or none is active, blessings, Rebuke, Sacred Shield, Avenging Wrath and Holy Avenger while you are tanking, and Guardian of Ancient Kings, Ardent Defender, Divine Protection and Lay on Hands by your health. It cannot see incoming damage, so plan big defensives yourself.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'protection','tank','leveling','single-target','aoe','icy-veins','hekili'},
  sources={
@@ -32,31 +23,31 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={66},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('prot-upkeep','mop.paladin.prot-upkeep','prot-'),
-   block('prot-class','mop.paladin.upkeep','prot-'),
-   spell('prot-shield-righteous',53600,combat()),
-   spell('prot-eternal-flame',114163,all(any(negate(own(114163)),{type='BUFF_REMAIN',unit='player',spell=114163,ownbuff=true,operator='LESSTHAN',value=3}),
-    {type='BUFF_STACKS',unit='player',spell=114637,operator='GREATERTHANOREQUALS',value=3},any({type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=3},buff(90174)))),
-   spell('prot-word-of-glory',85673,all(negate(known(114163)),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
-   spell('prot-sacred-shield',20925,any(negate(own(65148)),{type='BUFF_REMAIN',unit='player',spell=65148,ownbuff=true,operator='LESSTHAN',value=5})),
-   spell('prot-avenging-wrath',31884,all(combat(),tanking)),
-   spell('prot-holy-avenger',105809,all(combat(),tanking)),
+   BuiltinConditions.block('prot-upkeep','mop.paladin.prot-upkeep','prot-'),
+   BuiltinConditions.block('prot-class','mop.paladin.upkeep','prot-'),
+   BuiltinConditions.spell('prot-shield-righteous',53600,BuiltinConditions.combat()),
+   BuiltinConditions.spell('prot-eternal-flame',114163,BuiltinConditions.all(BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(114163)),{type='BUFF_REMAIN',unit='player',spell=114163,ownbuff=true,operator='LESSTHAN',value=3}),
+    {type='BUFF_STACKS',unit='player',spell=114637,operator='GREATERTHANOREQUALS',value=3},BuiltinConditions.any({type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=3},BuiltinConditions.buff(90174)))),
+   BuiltinConditions.spell('prot-word-of-glory',85673,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(114163)),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5})),
+   BuiltinConditions.spell('prot-sacred-shield',20925,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(65148)),{type='BUFF_REMAIN',unit='player',spell=65148,ownbuff=true,operator='LESSTHAN',value=5})),
+   BuiltinConditions.spell('prot-avenging-wrath',31884,BuiltinConditions.all(BuiltinConditions.combat(),tanking)),
+   BuiltinConditions.spell('prot-holy-avenger',105809,BuiltinConditions.all(BuiltinConditions.combat(),tanking)),
   },
   rotation={
-   block('prot-boundaries','mop.paladin.damage-boundaries','prot-'),
-   block('prot-open','mop.paladin.prot-open','prot-'),
-   spell('prot-grand-crusader',31935,buff(85416)),
-   block('prot-aoe','mop.paladin.prot-aoe','prot-'),
-   spell('prot-avengers-shield',31935),
-   spell('prot-hammer-wrath',24275),
-   spell('prot-crusader-strike',35395),
-   spell('prot-judgment',20271),
-   spell('prot-execution-sentence',114157),
-   spell('prot-lights-hammer',114158),
-   spell('prot-holy-prism',114165),
-   spell('prot-consecration',26573),
-   spell('prot-holy-wrath',119072),
-   spell('prot-sacred-shield-filler',20925),
+   BuiltinConditions.block('prot-boundaries','mop.paladin.damage-boundaries','prot-'),
+   BuiltinConditions.block('prot-open','mop.paladin.prot-open','prot-'),
+   BuiltinConditions.spell('prot-grand-crusader',31935,BuiltinConditions.buff(85416)),
+   BuiltinConditions.block('prot-aoe','mop.paladin.prot-aoe','prot-'),
+   BuiltinConditions.spell('prot-avengers-shield',31935),
+   BuiltinConditions.spell('prot-hammer-wrath',24275),
+   BuiltinConditions.spell('prot-crusader-strike',35395),
+   BuiltinConditions.spell('prot-judgment',20271),
+   BuiltinConditions.spell('prot-execution-sentence',114157),
+   BuiltinConditions.spell('prot-lights-hammer',114158),
+   BuiltinConditions.spell('prot-holy-prism',114165),
+   BuiltinConditions.spell('prot-consecration',26573),
+   BuiltinConditions.spell('prot-holy-wrath',119072),
+   BuiltinConditions.spell('prot-sacred-shield-filler',20925),
   },
  },
 }))

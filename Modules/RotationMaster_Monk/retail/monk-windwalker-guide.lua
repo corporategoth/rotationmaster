@@ -6,26 +6,20 @@
 -- and cooldown times are secret in Midnight combat; only Chi and your own casts stay readable. Energy
 -- is secret on Retail, so the Tiger Palm before the energy cap is left out.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function chi(op,v)return{type='POINT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 -- Combo Strikes: RM has no rotation-wide "not the previous cast" rule, so each step carries it.
 local function strike(id,action,conditions)
- local fresh=negate({type='SPELL_HISTORY',spell=action,operator='EQUALS',value=1})
- return spell(id,action,conditions and all(fresh,conditions)or fresh)
+ local fresh=BuiltinConditions.negate({type='SPELL_HISTORY',spell=action,operator='EQUALS',value=1})
+ return BuiltinConditions.spell(id,action,conditions and BuiltinConditions.all(fresh,conditions)or fresh)
 end
-local heart=any(buff(443421),buff(443616))
+local heart=BuiltinConditions.any(buff(443421),buff(443616))
 local zenith=buff(1249625)
 local bok={type='BUFF_STACKS',unit='player',spell=116768,ownbuff=true,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.monk.windwalker.guide',revision=6,
  blocks={['retail.monk.boundaries']=3,['retail.monk.utility']=2},
- nameKey="Reference (Icy Veins and SimulationCraft)",descriptionKey="Reference only, off by default: Icy Veins' Conduit of the Celestials priority. Every step keeps Combo Strikes (never the spell you cast last); Chi and your own casts stay readable, but Heart of the Jade Serpent, Zenith, Blackout Kick! and Dance of Chi-Ji are hidden in Midnight combat, so it cannot run there; energy is hidden on Retail, so the Tiger Palm before the energy cap is left out. Whirling Dragon Punch with Xuen over 10 seconds away; Zenith Stomp when low on Chi or as Zenith ends; Celestial Conduit without Heart; Fists of Fury as Heart ends; Celestial Conduit, Invoke Xuen, Fists of Fury, Whirling Dragon Punch, Strike of the Windlord; Blackout Kick when short of Chi for Fists; Rushing Wind Kick, Rising Sun Kick; Blackout Kick on two Blackout Kick! charges or in Zenith; Spinning Crane Kick in Zenith or on Dance of Chi-Ji; Touch of Death; Tiger Palm, Blackout Kick, Slicing Winds as fillers. Reminder: Touch of Karma, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'windwalker','melee','reference','icy-veins','simulationcraft'},
  sources={
@@ -34,15 +28,15 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={269},
   cooldowns={
-   block('wguide-utility','retail.monk.utility','wguide-'),
-   spell('wguide-touch-of-karma',122470,{type='COMBAT',unit='player'}),
+   BuiltinConditions.block('wguide-utility','retail.monk.utility','wguide-'),
+   BuiltinConditions.spell('wguide-touch-of-karma',122470,{type='COMBAT',unit='player'}),
   },
   rotation={
-   block('wguide-boundaries','retail.monk.boundaries','wguide-'),
-   strike('wguide-grace-dragon-punch',152175,any(negate(known(123904)),{type='SPELL_COOLDOWN',spell=123904,operator='GREATERTHAN',value=10})),
-   strike('wguide-zenith-stomp',1272696,any(chi('LESSTHAN',2),{type='BUFF_REMAIN',unit='player',spell=1249625,ownbuff=true,operator='LESSTHAN',value=2})),
-   strike('wguide-conduit-no-heart',443028,negate(heart)),
-   strike('wguide-heart-fists',113656,all(buff(443421),{type='BUFF_REMAIN',unit='player',spell=443421,ownbuff=true,operator='LESSTHAN',value=1})),
+   BuiltinConditions.block('wguide-boundaries','retail.monk.boundaries','wguide-'),
+   strike('wguide-grace-dragon-punch',152175,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.known(123904)),{type='SPELL_COOLDOWN',spell=123904,operator='GREATERTHAN',value=10})),
+   strike('wguide-zenith-stomp',1272696,BuiltinConditions.any(chi('LESSTHAN',2),{type='BUFF_REMAIN',unit='player',spell=1249625,ownbuff=true,operator='LESSTHAN',value=2})),
+   strike('wguide-conduit-no-heart',443028,BuiltinConditions.negate(heart)),
+   strike('wguide-heart-fists',113656,BuiltinConditions.all(buff(443421),{type='BUFF_REMAIN',unit='player',spell=443421,ownbuff=true,operator='LESSTHAN',value=1})),
    strike('wguide-conduit',443028),
    strike('wguide-invoke-xuen',123904),
    strike('wguide-fists-of-fury',113656),
@@ -51,8 +45,8 @@ assert(addon:RegisterDefaultRotation({
    strike('wguide-short-blackout-kick',100784,chi('LESSTHAN',3)),
    strike('wguide-rushing-wind-kick',467307),
    strike('wguide-rising-sun-kick',107428),
-   strike('wguide-stacked-blackout-kick',100784,any(bok,zenith)),
-   strike('wguide-zenith-crane-kick',101546,any(all(zenith,chi('GREATERTHAN',4)),buff(325202))),
+   strike('wguide-stacked-blackout-kick',100784,BuiltinConditions.any(bok,zenith)),
+   strike('wguide-zenith-crane-kick',101546,BuiltinConditions.any(BuiltinConditions.all(zenith,chi('GREATERTHAN',4)),buff(325202))),
    strike('wguide-touch-of-death',322109),
    strike('wguide-short-tiger-palm',100780,chi('LESSTHAN',2)),
    strike('wguide-proc-blackout-kick',100784,buff(116768)),

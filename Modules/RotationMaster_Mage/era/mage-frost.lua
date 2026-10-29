@@ -7,14 +7,10 @@
 -- and the wand finish ordinary mobs. Blink, kiting, Polymorph and Ice Block stay with the player.
 -- Optional (disabled): the Shatter Flamestrike and rank-1 Frostbolt to stack Winter's Chill.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function near(n)return{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=n}end
 local function talent(tree,index,v)return{type='TALENT',layout='tree',tree=tree,talent=index,operator='GREATERTHANOREQUALS',value=v or 1}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-frost-'
 local onMe={type='THREAT',unit='target',threat=3}
 local frozen={type='DEBUFF',unit='target',spell=122,anyrank=true}
@@ -22,7 +18,6 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost',revision=5,
  blocks={['era.mage.boundaries']=3,['era.mage.frostbolt']=1,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
- nameKey="Frost",descriptionKey="Frost from level 1 to 60, also for Arcane builds and the Mage default before talents. Frostbolt (Fireball before level 4); Frost Nova when a mob reaches you, except on raid bosses; Arcane Missiles once a mob reaches you if you have Improved Arcane Missiles; Cone of Cold, Arcane Explosion and Blizzard when three or more enemies are engaged; Fire Blast while moving with mana to spare; Fire Blast and the wand finish ordinary mobs when solo; wand when out of mana. Reminders: armor (Ice Armor solo, Mage Armor in a group, never replacing one you chose), Arcane Intellect, conjuring and using mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, Remove Lesser Curse, Ice Block, Cold Snap, Arcane Power and Presence of Mind. Off by default: the Shatter Flamestrike and rank-1 Frostbolt to stack Winter's Chill. Blink, Polymorph, kiting and target choice stay with you.",
  applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'frost','arcane','leveling','raid','single-target','aoe'},
  sources={
@@ -40,26 +35,26 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=1,
-  cooldowns={block(P..'armor','era.mage.armor',P),block(P..'upkeep','era.mage.upkeep',P)},
+  cooldowns={BuiltinConditions.block(P..'armor','era.mage.armor',P),BuiltinConditions.block(P..'upkeep','era.mage.upkeep',P)},
   rotation={
-   block(P..'boundaries','era.mage.boundaries',P),
+   BuiltinConditions.block(P..'boundaries','era.mage.boundaries',P),
    {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    block(P..'pull-filler','era.mage.frostbolt',P..'pull-'),stop(P..'pull-stop')}},
-   block(P..'moving','era.mage.moving',P),
-   block(P..'nova','era.mage.nova',P),
+    BuiltinConditions.block(P..'pull-filler','era.mage.frostbolt',P..'pull-'),stop(P..'pull-stop')}},
+   BuiltinConditions.block(P..'moving','era.mage.moving',P),
+   BuiltinConditions.block(P..'nova','era.mage.nova',P),
    -- Arcane leveling: channel Missiles once an enemy reaches you (Improved Arcane Missiles stops pushback).
-   spell(P..'arcane-missiles',5143,all(talent(1,3,3),near(1),onMe)),
+   BuiltinConditions.spell(P..'arcane-missiles',5143,BuiltinConditions.all(talent(1,3,3),near(1),onMe)),
    {id=P..'aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell(P..'aoe-cone',120,near(2)),
-    spell(P..'aoe-explosion',1449,near(3)),
-    {id=P..'aoe-shatter-flamestrike',type='spell',action=2120,ranked=false,disabled=true,conditions=all(frozen,talent(3,13))},
-    spell(P..'aoe-blizzard',10)}},
-   block(P..'execute','era.mage.execute',P),
+    BuiltinConditions.spell(P..'aoe-cone',120,near(2)),
+    BuiltinConditions.spell(P..'aoe-explosion',1449,near(3)),
+    {id=P..'aoe-shatter-flamestrike',type='spell',action=2120,ranked=false,disabled=true,conditions=BuiltinConditions.all(frozen,talent(3,13))},
+    BuiltinConditions.spell(P..'aoe-blizzard',10)}},
+   BuiltinConditions.block(P..'execute','era.mage.execute',P),
    -- Optional raid opener: rank-1 Frostbolt stacks Winter's Chill cheaply to five.
-   {id=P..'winters-chill',type='spell',action=116,ranked=true,disabled=true,conditions=all(talent(3,16),
-    negate({type='DEBUFF_STACKS',unit='target',spell=12579,operator='GREATERTHANOREQUALS',value=5}))},
-   block(P..'filler','era.mage.frostbolt',P),
-   block(P..'finish','era.mage.wand-finish',P),
+   {id=P..'winters-chill',type='spell',action=116,ranked=true,disabled=true,conditions=BuiltinConditions.all(talent(3,16),
+    BuiltinConditions.negate({type='DEBUFF_STACKS',unit='target',spell=12579,operator='GREATERTHANOREQUALS',value=5}))},
+   BuiltinConditions.block(P..'filler','era.mage.frostbolt',P),
+   BuiltinConditions.block(P..'finish','era.mage.wand-finish',P),
   },
  },
 }))

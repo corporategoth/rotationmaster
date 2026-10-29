@@ -9,27 +9,20 @@
 -- Penance, Solace or Holy Fire, the tier-6 talent on packs, Shadow Word: Pain solo, Smite. Choosing whom to heal,
 -- Barrier, Void Shift and Grace stacks on the tank stay with you; Spirit Shell is a reminder you switch on.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function health(unit,op,n)return{type='HEALTHPCT',unit=unit,operator=op,value=n}end
 local function low(n)return health('target','LESSTHAN',n)end
 local function hurt(n,below)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=40,healthoperator='LESSTHAN',health=below,operator='GREATERTHANOREQUALS',value=n}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
-local function lives(n)return any(health('target','GREATERTHANOREQUALS',.35),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=n})end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
+local function lives(n)return BuiltinConditions.any(health('target','GREATERTHANOREQUALS',.35),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=n})end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local friendly={type='FRIENDLY',unit='target'}
 local group={type='GROUP'}
-local unshielded=negate({type='DEBUFF',unit='target',spell=6788})
-local tierSix=any(enemies('GREATERTHANOREQUALS',3),hurt(3,.85))
+local unshielded=BuiltinConditions.negate({type='DEBUFF',unit='target',spell=6788})
+local tierSix=BuiltinConditions.any(enemies('GREATERTHANOREQUALS',3),hurt(3,.85))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.priest.discipline',revision=7,
  blocks={['mop.priest.upkeep']=1,['mop.priest.healer-boundaries']=2,['mop.priest.healer-cooldowns']=1},
- nameKey="Recommended",descriptionKey="Discipline healing from level 10 to 90, chosen in the Discipline specialization. Target a friend to heal them: Power Word: Shield when they are low, before the pull and about every 12 seconds for Rapture; Flash Heal on Surge of Light; Penance; Flash Heal when they are very low; Binding Heal when you are both hurt; Prayer of Mending; Prayer of Healing and your tier-6 talent when three allies are hurt; Greater Heal; Renew while moving; Heal to top up. Under Spirit Shell it suggests Prayer of Healing or Greater Heal. Target an enemy to heal through Atonement: Penance, Power Word: Solace or Holy Fire, your tier-6 talent on packs, Shadow Word: Pain when solo, Smite. Reminders: Inner Fire, Fortitude, Archangel at five Evangelism, Inner Focus, Pain Suppression on a dying target, Shadowfiend or Mindbender for mana, Power Infusion, Desperate Prayer. Left to you: whom to heal, Spirit Shell timing (a reminder you can switch on), Power Word: Barrier, Void Shift and Grace stacks on the tank.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
  tags={'discipline','healer','group','leveling','endgame','icy-veins','warcraft-tavern','hekili'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/discipline-priest-pve-rotation-cooldowns-abilities',title='Icy Veins: Discipline Priest rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
@@ -40,45 +33,45 @@ assert(addon:RegisterDefaultRotation({
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/PriestDiscipline.simc',title='Hekili (MoP fork): Discipline Priest priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
  body={priority=30,specs={256},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.priest.upkeep','priest-'),block('mop.priest.healer-cooldowns','priest-'),
-  spell('priest-disc-archangel',81700,all(friendly,{type='BUFF_STACKS',unit='player',spell=81661,ownbuff=true,operator='GREATERTHANOREQUALS',value=5})),
-  spell('priest-disc-inner-focus',89485,all(combat(),friendly)),
-  spell('priest-disc-pain-suppression',33206,all(combat(),friendly,low(.3))),
-  spell('priest-disc-desperate-prayer',19236,health('player','LESSTHAN',.3)),
-  {id='priest-disc-spirit-shell',type='spell',action=109964,ranked=false,disabled=true,conditions=all(combat(),group)},
+  BuiltinConditions.spell('priest-disc-archangel',81700,BuiltinConditions.all(friendly,{type='BUFF_STACKS',unit='player',spell=81661,ownbuff=true,operator='GREATERTHANOREQUALS',value=5})),
+  BuiltinConditions.spell('priest-disc-inner-focus',89485,BuiltinConditions.all(BuiltinConditions.combat(),friendly)),
+  BuiltinConditions.spell('priest-disc-pain-suppression',33206,BuiltinConditions.all(BuiltinConditions.combat(),friendly,low(.3))),
+  BuiltinConditions.spell('priest-disc-desperate-prayer',19236,health('player','LESSTHAN',.3)),
+  {id='priest-disc-spirit-shell',type='spell',action=109964,ranked=false,disabled=true,conditions=BuiltinConditions.all(BuiltinConditions.combat(),group)},
  },
  rotation={
  block('mop.priest.healer-boundaries','priest-disc-'),
- {id='priest-disc-heal',type='branch',conditions=all(friendly,negate({type='DEAD',unit='target'})),onTrue={
-  {id='priest-disc-shell',type='branch',conditions=own(109964),onFalse={},onTrue={
-   spell('priest-disc-shell-prayer',596,all(group,hurt(3,.95))),
-   spell('priest-disc-shell-greater',2060),
-   stop('priest-disc-shell-stop'),
+ {id='priest-disc-heal',type='branch',conditions=BuiltinConditions.all(friendly,BuiltinConditions.negate({type='DEAD',unit='target'})),onTrue={
+  {id='priest-disc-shell',type='branch',conditions=BuiltinConditions.ownBuff(109964),onFalse={},onTrue={
+   BuiltinConditions.spell('priest-disc-shell-prayer',596,BuiltinConditions.all(group,hurt(3,.95))),
+   BuiltinConditions.spell('priest-disc-shell-greater',2060),
+   BuiltinConditions.stop('priest-disc-shell-stop'),
   }},
-  spell('priest-disc-shield',17,all(any(unshielded,own(123266)),any(low(.5),negate(combat()),negate({type='SPELL_HISTORY_TIME',spell=17,operator='LESSTHAN',value=12})))),
-  spell('priest-disc-surge',2061,own(114255)),
-  spell('priest-disc-penance',47540,low(.7)),
-  spell('priest-disc-flash',2061,low(.35)),
-  spell('priest-disc-binding',32546,all(health('player','LESSTHAN',.7),low(.7),negate({type='ISSAME',unit='target',otherunit='player'}))),
-  spell('priest-disc-mending',33076,all(combat(),group)),
-  spell('priest-disc-prayer',596,all(group,hurt(3,.8))),
-  spell('priest-disc-halo',120517,hurt(3,.85)),
-  spell('priest-disc-cascade',121135,hurt(3,.85)),
-  spell('priest-disc-divine-star',110744,hurt(3,.85)),
-  spell('priest-disc-greater',2060,low(.6)),
-  spell('priest-disc-renew',139,all({type='MOVING'},low(.9),negate({type='BUFF',unit='target',spell=139,ownbuff=true}))),
-  spell('priest-disc-heal-spell',2050,low(.9)),
-  stop('priest-disc-heal-stop'),
+  BuiltinConditions.spell('priest-disc-shield',17,BuiltinConditions.all(BuiltinConditions.any(unshielded,BuiltinConditions.ownBuff(123266)),BuiltinConditions.any(low(.5),BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate({type='SPELL_HISTORY_TIME',spell=17,operator='LESSTHAN',value=12})))),
+  BuiltinConditions.spell('priest-disc-surge',2061,BuiltinConditions.ownBuff(114255)),
+  BuiltinConditions.spell('priest-disc-penance',47540,low(.7)),
+  BuiltinConditions.spell('priest-disc-flash',2061,low(.35)),
+  BuiltinConditions.spell('priest-disc-binding',32546,BuiltinConditions.all(health('player','LESSTHAN',.7),low(.7),BuiltinConditions.negate({type='ISSAME',unit='target',otherunit='player'}))),
+  BuiltinConditions.spell('priest-disc-mending',33076,BuiltinConditions.all(BuiltinConditions.combat(),group)),
+  BuiltinConditions.spell('priest-disc-prayer',596,BuiltinConditions.all(group,hurt(3,.8))),
+  BuiltinConditions.spell('priest-disc-halo',120517,hurt(3,.85)),
+  BuiltinConditions.spell('priest-disc-cascade',121135,hurt(3,.85)),
+  BuiltinConditions.spell('priest-disc-divine-star',110744,hurt(3,.85)),
+  BuiltinConditions.spell('priest-disc-greater',2060,low(.6)),
+  BuiltinConditions.spell('priest-disc-renew',139,BuiltinConditions.all({type='MOVING'},low(.9),BuiltinConditions.negate({type='BUFF',unit='target',spell=139,ownbuff=true}))),
+  BuiltinConditions.spell('priest-disc-heal-spell',2050,low(.9)),
+  BuiltinConditions.stop('priest-disc-heal-stop'),
  },onFalse={
-  stop('priest-disc-no-enemy',negate({type='ATTACKABLE',unit='target'})),
-  spell('priest-disc-atone-penance',47540),
-  spell('priest-disc-solace',129250),
-  spell('priest-disc-holy-fire',14914,negate({type='TALENT',layout='grid',value=9})),
-  spell('priest-disc-atone-halo',120517,tierSix),
-  spell('priest-disc-atone-cascade',121135,tierSix),
-  spell('priest-disc-atone-divine-star',110744,tierSix),
-  spell('priest-disc-pain',589,all(negate(group),negate({type='DEBUFF',unit='target',spell=589,owndebuff=true}),lives(12))),
-  spell('priest-disc-smite',585),
-  stop('priest-disc-damage-stop'),
+  BuiltinConditions.stop('priest-disc-no-enemy',BuiltinConditions.negate({type='ATTACKABLE',unit='target'})),
+  BuiltinConditions.spell('priest-disc-atone-penance',47540),
+  BuiltinConditions.spell('priest-disc-solace',129250),
+  BuiltinConditions.spell('priest-disc-holy-fire',14914,BuiltinConditions.negate({type='TALENT',layout='grid',value=9})),
+  BuiltinConditions.spell('priest-disc-atone-halo',120517,tierSix),
+  BuiltinConditions.spell('priest-disc-atone-cascade',121135,tierSix),
+  BuiltinConditions.spell('priest-disc-atone-divine-star',110744,tierSix),
+  BuiltinConditions.spell('priest-disc-pain',589,BuiltinConditions.all(BuiltinConditions.negate(group),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=589,owndebuff=true}),lives(12))),
+  BuiltinConditions.spell('priest-disc-smite',585),
+  BuiltinConditions.stop('priest-disc-damage-stop'),
  }},
  }},
 }))

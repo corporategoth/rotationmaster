@@ -5,17 +5,11 @@
 -- Palm, Blackout Kick at two Chi, Expel Harm when hurt, Jab. Jab is the opener (no ranged spell yet).
 -- RM policy from the 1–9 kit and the Windwalker priority; no guide writes a 1–9 list.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function hurt()return{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.8}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.monk.unspecialized',revision=5,
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1},
- nameKey="Before a specialization",descriptionKey="For levels 1 to 9, or any monk who has not chosen a specialization; a specialization premade takes over as soon as you pick one. Keeps Fierce Tiger and Tiger Power up, spends two Chi on Blackout Kick, uses Expel Harm when you are hurt and Jab otherwise.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'leveling','single-target'},
  sources={
@@ -24,16 +18,16 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=0,
   cooldowns={
-   spell('monk-tiger-stance',103985,negate({type='FORM',form=103985})),
-   block('monk-class','mop.monk.upkeep','monk-'),
+   BuiltinConditions.spell('monk-tiger-stance',103985,BuiltinConditions.negate({type='FORM',form=103985})),
+   BuiltinConditions.block('monk-class','mop.monk.upkeep','monk-'),
   },
   rotation={
-   block('monk-boundaries','mop.monk.boundaries','monk-'),
-   spell('monk-tiger-palm',100787,any(negate(own(125359)),{type='BUFF_REMAIN',unit='player',spell=125359,ownbuff=true,operator='LESSTHANOREQUALS',value=2})),
-   spell('monk-blackout-kick',100784,{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=2}),
-   spell('monk-expel-harm',115072,hurt()),
-   spell('monk-expel-harm-early',115129,all(hurt(),negate({type='SPELL_KNOWN',spell=115072}))),
-   spell('monk-jab',100780),
+   BuiltinConditions.block('monk-boundaries','mop.monk.boundaries','monk-'),
+   BuiltinConditions.spell('monk-tiger-palm',100787,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(125359)),{type='BUFF_REMAIN',unit='player',spell=125359,ownbuff=true,operator='LESSTHANOREQUALS',value=2})),
+   BuiltinConditions.spell('monk-blackout-kick',100784,{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=2}),
+   BuiltinConditions.spell('monk-expel-harm',115072,hurt()),
+   BuiltinConditions.spell('monk-expel-harm-early',115129,BuiltinConditions.all(hurt(),BuiltinConditions.negate({type='SPELL_KNOWN',spell=115072}))),
+   BuiltinConditions.spell('monk-jab',100780),
   },
  },
 }))

@@ -10,27 +10,19 @@
 -- Armor before 26). Shared parts: mop/blocks.lua. Left manual: taunting, Shield Wall/Last Stand timing beyond the
 -- low-health reminders, physical-vs-magic mitigation choice.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function rage(op,n)return{type='POWER',unit='player',operator=op,value=n}end
 local function health(op,n)return{type='HEALTHPCT',unit='player',operator=op,value=n}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
-local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local boss=any(classified('worldboss'),classified('elite'))
-local blocking=own(132404)
-local dump=all(combat(),{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2},any(own(122510),own(122016),rage('GREATERTHANOREQUALS',90)))
+local boss=BuiltinConditions.any(BuiltinConditions.classified('worldboss'),BuiltinConditions.classified('elite'))
+local blocking=BuiltinConditions.ownBuff(132404)
+local dump=BuiltinConditions.all(BuiltinConditions.combat(),{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2},BuiltinConditions.any(BuiltinConditions.ownBuff(122510),BuiltinConditions.ownBuff(122016),rage('GREATERTHANOREQUALS',90)))
 local armor={type='DEBUFF',unit='target',spell=113746}
-local function devastate(id,conditions)return{id=id,type='branch',conditions={type='SPELL_KNOWN',spell=20243},onTrue={spell(id..'-devastate',20243,conditions)},onFalse={spell(id..'-sunder',7386,conditions)}}end
+local function devastate(id,conditions)return{id=id,type='branch',conditions={type='SPELL_KNOWN',spell=20243},onTrue={BuiltinConditions.spell(id..'-devastate',20243,conditions)},onFalse={BuiltinConditions.spell(id..'-sunder',7386,conditions)}}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.protection',revision=8,
  blocks={['mop.warrior.boundaries']=4},
- nameKey="Recommended",descriptionKey="Tanking from level 10 to 90, picked in the Protection specialization. Charge or Heroic Throw to pull. Devastate to keep three Weakened Armor on elites and bosses, Dragon Roar, Bladestorm, Shockwave on three enemies and Thunder Clap on cooldown on three or more. Then Revenge for the last rage of a Shield Block, Shield Slam, Revenge on Hold the Line, Devastate for Deep Wounds, Victory Rush below 60% health, Revenge, Thunder Clap for Weakened Blows, Execute, Storm Bolt, a shout for rage and Devastate (Sunder Armor before 26). Reminders: Defensive Stance, a shout when none is up, Shield Block whenever it is down, Shield Barrier when hurt with rage to spare, Heroic Strike or Cleave on Ultimatum, Incite or near the cap, Demoralizing Shout, Berserker Rage, Enraged Regeneration, Last Stand and Shield Wall when low, your offensive cooldowns, Pummel. Taunt and Heroic Leap are listed but off. Left to you: whom to taunt, and Block versus Barrier against magic.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
  tags={'protection','tank','melee','leveling','endgame','icy-veins'},
  sources={
@@ -39,45 +31,45 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.warcrafttavern.com/mop/guides/pve-protection-warrior-tank-rotation-cooldowns/',title='Warcraft Tavern: Protection Warrior rotation (MoP)',reviewedAt='2026-10-23'}},
  body={priority=30,specs={73},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={
-  spell('warrior-prot-stance',71,negate({type='FORM',form=71})),
-  spell('warrior-prot-shout',6673,all(negate(buff(6673)),negate(buff(469)))),
-  spell('warrior-prot-shield-block',2565,all(combat(),negate(blocking))),
-  spell('warrior-prot-shield-barrier',112048,all(combat(),negate(own(112048)),any(all(health('LESSTHANOREQUALS',.5),rage('GREATERTHANOREQUALS',80)),all(health('LESSTHANOREQUALS',.8),blocking)))),
-  spell('warrior-prot-heroic-strike',78,all(enemies('LESSTHAN',2),dump)),
-  spell('warrior-prot-cleave',845,all(enemies('GREATERTHANOREQUALS',2),dump)),
-  spell('warrior-prot-demoralizing-shout',1160,all(combat(),boss,health('LESSTHAN',.8))),
-  spell('warrior-prot-berserker-rage',18499,all(combat(),negate(buff(12880)))),
-  spell('warrior-prot-enraged-regeneration',55694,all(buff(12880),health('LESSTHANOREQUALS',.5))),
-  spell('warrior-prot-last-stand',12975,all(combat(),health('LESSTHAN',.35))),
-  spell('warrior-prot-shield-wall',871,all(combat(),health('LESSTHAN',.3))),
-  spell('warrior-prot-bloodbath',12292,combat()),
-  spell('warrior-prot-avatar',107574,all(combat(),blocking,boss)),
-  spell('warrior-prot-recklessness',1719,all(combat(),blocking,boss)),
-  spell('warrior-prot-skull-banner',114207,all(combat(),{type='GROUP'},blocking,boss)),
-  spell('warrior-prot-pummel',6552,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
-  {id='warrior-prot-taunt',type='spell',action=355,ranked=false,disabled=true,conditions=all({type='GROUP'},combat(),{type='COMBAT',unit='target'},negate({type='ISSAME',unit='targettarget',otherunit='player'}))},
-  {id='warrior-prot-leap',type='spell',action=6544,ranked=false,disabled=true,conditions=combat()},
+  BuiltinConditions.spell('warrior-prot-stance',71,BuiltinConditions.negate({type='FORM',form=71})),
+  BuiltinConditions.spell('warrior-prot-shout',6673,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.buff(6673)),BuiltinConditions.negate(BuiltinConditions.buff(469)))),
+  BuiltinConditions.spell('warrior-prot-shield-block',2565,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(blocking))),
+  BuiltinConditions.spell('warrior-prot-shield-barrier',112048,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(BuiltinConditions.ownBuff(112048)),BuiltinConditions.any(BuiltinConditions.all(health('LESSTHANOREQUALS',.5),rage('GREATERTHANOREQUALS',80)),BuiltinConditions.all(health('LESSTHANOREQUALS',.8),blocking)))),
+  BuiltinConditions.spell('warrior-prot-heroic-strike',78,BuiltinConditions.all(enemies('LESSTHAN',2),dump)),
+  BuiltinConditions.spell('warrior-prot-cleave',845,BuiltinConditions.all(enemies('GREATERTHANOREQUALS',2),dump)),
+  BuiltinConditions.spell('warrior-prot-demoralizing-shout',1160,BuiltinConditions.all(BuiltinConditions.combat(),boss,health('LESSTHAN',.8))),
+  BuiltinConditions.spell('warrior-prot-berserker-rage',18499,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(BuiltinConditions.buff(12880)))),
+  BuiltinConditions.spell('warrior-prot-enraged-regeneration',55694,BuiltinConditions.all(BuiltinConditions.buff(12880),health('LESSTHANOREQUALS',.5))),
+  BuiltinConditions.spell('warrior-prot-last-stand',12975,BuiltinConditions.all(BuiltinConditions.combat(),health('LESSTHAN',.35))),
+  BuiltinConditions.spell('warrior-prot-shield-wall',871,BuiltinConditions.all(BuiltinConditions.combat(),health('LESSTHAN',.3))),
+  BuiltinConditions.spell('warrior-prot-bloodbath',12292,BuiltinConditions.combat()),
+  BuiltinConditions.spell('warrior-prot-avatar',107574,BuiltinConditions.all(BuiltinConditions.combat(),blocking,boss)),
+  BuiltinConditions.spell('warrior-prot-recklessness',1719,BuiltinConditions.all(BuiltinConditions.combat(),blocking,boss)),
+  BuiltinConditions.spell('warrior-prot-skull-banner',114207,BuiltinConditions.all(BuiltinConditions.combat(),{type='GROUP'},blocking,boss)),
+  BuiltinConditions.spell('warrior-prot-pummel',6552,BuiltinConditions.any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
+  {id='warrior-prot-taunt',type='spell',action=355,ranked=false,disabled=true,conditions=BuiltinConditions.all({type='GROUP'},BuiltinConditions.combat(),{type='COMBAT',unit='target'},BuiltinConditions.negate({type='ISSAME',unit='targettarget',otherunit='player'}))},
+  {id='warrior-prot-leap',type='spell',action=6544,ranked=false,disabled=true,conditions=BuiltinConditions.combat()},
  },
  rotation={
  block('mop.warrior.boundaries','warrior-'),
- spell('warrior-prot-charge',100,{type='BEYOND_MELEE',unit='target'}),
- spell('warrior-prot-throw',57755,{type='BEYOND_MELEE',unit='target'}),
- devastate('warrior-prot-weaken',all(boss,any(negate(armor),{type='DEBUFF_STACKS',unit='target',spell=113746,operator='LESSTHAN',value=3},
+ BuiltinConditions.spell('warrior-prot-charge',100,{type='BEYOND_MELEE',unit='target'}),
+ BuiltinConditions.spell('warrior-prot-throw',57755,{type='BEYOND_MELEE',unit='target'}),
+ devastate('warrior-prot-weaken',BuiltinConditions.all(boss,BuiltinConditions.any(BuiltinConditions.negate(armor),{type='DEBUFF_STACKS',unit='target',spell=113746,operator='LESSTHAN',value=3},
   {type='DEBUFF_REMAIN',unit='target',spell=113746,operator='LESSTHAN',value=2}))),
- spell('warrior-prot-dragon-roar',118000),
- spell('warrior-prot-bladestorm',46924),
- spell('warrior-prot-shockwave',46968,enemies('GREATERTHANOREQUALS',3)),
- {id='warrior-prot-aoe',type='branch',conditions=enemies('GREATERTHANOREQUALS',3),onFalse={},onTrue={spell('warrior-prot-aoe-thunder-clap',6343)}},
- spell('warrior-prot-revenge-block',6572,all(rage('GREATERTHANOREQUALS',40),rage('LESSTHAN',60),{type='SPELL_CHARGES',spell=2565,operator='GREATERTHANOREQUALS',value=1},negate(blocking))),
- spell('warrior-prot-shield-slam',23922),
- spell('warrior-prot-revenge-hold',6572,own(84619)),
- devastate('warrior-prot-deep-wounds',negate({type='DEBUFF',unit='target',spell=115767,owndebuff=true})),
- {id='warrior-prot-sustain',type='branch',conditions=health('LESSTHAN',.6),onFalse={},onTrue={spell('warrior-prot-impending-victory',103840),spell('warrior-prot-victory-rush',34428)}},
- spell('warrior-prot-revenge',6572),
- spell('warrior-prot-thunder-clap',6343,any(negate({type='DEBUFF',unit='target',spell=115798}),{type='DEBUFF_REMAIN',unit='target',spell=115798,operator='LESSTHAN',value=2})),
- spell('warrior-prot-execute',5308),
- spell('warrior-prot-storm-bolt',107570),
- {id='warrior-prot-shout-rage',type='branch',conditions=rage('LESSTHANOREQUALS',60),onFalse={},onTrue={spell('warrior-prot-commanding',469,own(469)),spell('warrior-prot-battle',6673)}},
+ BuiltinConditions.spell('warrior-prot-dragon-roar',118000),
+ BuiltinConditions.spell('warrior-prot-bladestorm',46924),
+ BuiltinConditions.spell('warrior-prot-shockwave',46968,enemies('GREATERTHANOREQUALS',3)),
+ {id='warrior-prot-aoe',type='branch',conditions=enemies('GREATERTHANOREQUALS',3),onFalse={},onTrue={BuiltinConditions.spell('warrior-prot-aoe-thunder-clap',6343)}},
+ BuiltinConditions.spell('warrior-prot-revenge-block',6572,BuiltinConditions.all(rage('GREATERTHANOREQUALS',40),rage('LESSTHAN',60),{type='SPELL_CHARGES',spell=2565,operator='GREATERTHANOREQUALS',value=1},BuiltinConditions.negate(blocking))),
+ BuiltinConditions.spell('warrior-prot-shield-slam',23922),
+ BuiltinConditions.spell('warrior-prot-revenge-hold',6572,BuiltinConditions.ownBuff(84619)),
+ devastate('warrior-prot-deep-wounds',BuiltinConditions.negate({type='DEBUFF',unit='target',spell=115767,owndebuff=true})),
+ {id='warrior-prot-sustain',type='branch',conditions=health('LESSTHAN',.6),onFalse={},onTrue={BuiltinConditions.spell('warrior-prot-impending-victory',103840),BuiltinConditions.spell('warrior-prot-victory-rush',34428)}},
+ BuiltinConditions.spell('warrior-prot-revenge',6572),
+ BuiltinConditions.spell('warrior-prot-thunder-clap',6343,BuiltinConditions.any(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=115798}),{type='DEBUFF_REMAIN',unit='target',spell=115798,operator='LESSTHAN',value=2})),
+ BuiltinConditions.spell('warrior-prot-execute',5308),
+ BuiltinConditions.spell('warrior-prot-storm-bolt',107570),
+ {id='warrior-prot-shout-rage',type='branch',conditions=rage('LESSTHANOREQUALS',60),onFalse={},onTrue={BuiltinConditions.spell('warrior-prot-commanding',469,BuiltinConditions.ownBuff(469)),BuiltinConditions.spell('warrior-prot-battle',6673)}},
  devastate('warrior-prot-filler'),
  }},
 }))

@@ -9,27 +9,22 @@
 -- Saber Slash); Envenom (Eviscerate before it is engraved) at five; builder by glove rune. Runes
 -- are read as engraved, passive ones too (Vanish for Master of Subtlety). Shared parts: era/blocks.lua.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
-local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
 local function owned(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function stacks(id,n)return{type='DEBUFF_STACKS',unit='target',spell=id,anyrank=true,owndebuff=true,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local sliced={type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}
-local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
-local lasting=any(big,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.35})
+local big=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
+local lasting=BuiltinConditions.any(big,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.35})
 -- Four of your Occult Poison I/II or Deadly Poison stacks on the target.
-local poisoned=any(stacks(458820,4),stacks(1214170,4),stacks(2818,4))
+local poisoned=BuiltinConditions.any(stacks(458820,4),stacks(1214170,4),stacks(2818,4))
 -- Passive runes: Carnage (bleeds pay), Cut to the Chase (finishers refresh Slice and Dice).
 local carnage,chase=rune(432276),rune(432271)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=6,
  blocks={['era.rogue.boundaries']=3,['era.rogue.sod-opener']=4,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3,['era.rogue.expose-armor']=2},
- nameKey="Melee DPS (SoD)",descriptionKey="Season of Discovery, levels 1–60 with runes as you engrave them; built from simulator Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a group, Ambush for a Backstab build with a dagger, Cheap Shot solo. On three or more enemies fighting you: Blunderbuss, Crimson Tempest, Fan of Knives first. Then Ambush on a Cutthroat proc (with a dagger), Saber Slash kept at three stacks, Poisoned Knife at four poison stacks, Slice and Dice from two points (renewed from four, unless Cut to the Chase is engraved), Expose Armor duty when nobody Sunders or keeps Sebacious Poison up, with Carnage engraved a bleed (Crimson Tempest, else Rupture; none with Saber Slash), Envenom at five (Eviscerate until you engrave it), and a builder by glove rune: Mutilate, Saber Slash, Backstab (with a dagger), else Sinister Strike. Reminders: a temporary enchant on each weapon, Kick, Thistle Tea, Blade Flurry, Adrenaline Rush, Cold Blood and Evasion, and with Master of Subtlety engraved Vanish to renew it and Preparation.",
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','icy-veins','zockify'},
  sources={
@@ -43,24 +38,24 @@ assert(addon:RegisterDefaultRotation({
  block('era.rogue.boundaries','rogue-'),
  {id='rogue-stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={block('era.rogue.sod-opener','rogue-stealth-')}},
  {id='rogue-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-  spell('rogue-aoe-blunderbuss',436564),
-  spell('rogue-aoe-crimson-tempest',412096,all(points('GREATERTHANOREQUALS',3),negate(owned(436611)))),
-  spell('rogue-aoe-fan-of-knives',409240),
+  BuiltinConditions.spell('rogue-aoe-blunderbuss',436564),
+  BuiltinConditions.spell('rogue-aoe-crimson-tempest',412096,BuiltinConditions.all(points('GREATERTHANOREQUALS',3),BuiltinConditions.negate(owned(436611)))),
+  BuiltinConditions.spell('rogue-aoe-fan-of-knives',409240),
  }},
- spell('rogue-cutthroat-ambush',8676,all({type='WEAPON_TYPE',slot='mainhand',subclass=15},{type='BUFF',unit='player',spell=462707})),
- spell('rogue-saber-upkeep',424785,all(points('LESSTHAN',4),any(negate(stacks(424785,3)),
+ BuiltinConditions.spell('rogue-cutthroat-ambush',8676,BuiltinConditions.all({type='WEAPON_TYPE',slot='mainhand',subclass=15},{type='BUFF',unit='player',spell=462707})),
+ BuiltinConditions.spell('rogue-saber-upkeep',424785,BuiltinConditions.all(points('LESSTHAN',4),BuiltinConditions.any(BuiltinConditions.negate(stacks(424785,3)),
   {type='DEBUFF_REMAIN',unit='target',spell=424785,owndebuff=true,operator='LESSTHAN',value=2}))),
- spell('rogue-poisoned-knife',425012,all(points('LESSTHAN',5),{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=80},poisoned)),
- spell('rogue-slice',5171,all(points('GREATERTHANOREQUALS',2),negate(sliced),lasting)),
+ BuiltinConditions.spell('rogue-poisoned-knife',425012,BuiltinConditions.all(points('LESSTHAN',5),{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=80},poisoned)),
+ BuiltinConditions.spell('rogue-slice',5171,BuiltinConditions.all(points('GREATERTHANOREQUALS',2),BuiltinConditions.negate(sliced),lasting)),
  block('era.rogue.expose-armor','rogue-'),
- spell('rogue-slice-refresh',5171,all(points('GREATERTHANOREQUALS',4),negate(chase),{type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=2})),
- spell('rogue-crimson-tempest',412096,all(carnage,points('GREATERTHANOREQUALS',4),negate(owned(436611)),lasting)),
- spell('rogue-rupture',1943,all(carnage,points('GREATERTHANOREQUALS',3),negate(rune(412096)),negate(rune(424785)),negate(owned(1943)),lasting)),
- spell('rogue-kill-envenom',399963,all(points('GREATERTHANOREQUALS',3),lifetime('LESSTHAN',4))),
- spell('rogue-kill-eviscerate',2098,all(points('GREATERTHANOREQUALS',3),negate(rune(399963)),lifetime('LESSTHAN',4))),
+ BuiltinConditions.spell('rogue-slice-refresh',5171,BuiltinConditions.all(points('GREATERTHANOREQUALS',4),BuiltinConditions.negate(chase),{type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=2})),
+ BuiltinConditions.spell('rogue-crimson-tempest',412096,BuiltinConditions.all(carnage,points('GREATERTHANOREQUALS',4),BuiltinConditions.negate(owned(436611)),lasting)),
+ BuiltinConditions.spell('rogue-rupture',1943,BuiltinConditions.all(carnage,points('GREATERTHANOREQUALS',3),BuiltinConditions.negate(rune(412096)),BuiltinConditions.negate(rune(424785)),BuiltinConditions.negate(owned(1943)),lasting)),
+ BuiltinConditions.spell('rogue-kill-envenom',399963,BuiltinConditions.all(points('GREATERTHANOREQUALS',3),BuiltinConditions.lifetime('LESSTHAN',4))),
+ BuiltinConditions.spell('rogue-kill-eviscerate',2098,BuiltinConditions.all(points('GREATERTHANOREQUALS',3),BuiltinConditions.negate(rune(399963)),BuiltinConditions.lifetime('LESSTHAN',4))),
  {id='rogue-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
-  spell('rogue-envenom',399963),
-  spell('rogue-eviscerate',2098,negate(rune(399963))),
+  BuiltinConditions.spell('rogue-envenom',399963),
+  BuiltinConditions.spell('rogue-eviscerate',2098,BuiltinConditions.negate(rune(399963))),
   {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  block('era.rogue.sod-builders','rogue-'),

@@ -9,15 +9,13 @@
 -- more enemies; Penance, Holy Fire and Smite before Shadowform. Thresholds are RM policy.
 -- Variant: rm.sod.priest.dps.wowhead (Mind Blast at three Mind Spike stacks).
 local _,addon=...
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local P='priest-sod-'
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.priest.dps',revision=6,
  blocks={['era.priest.dps-boundaries']=2,['era.priest.shadowform']=1,['era.priest.pull-shield']=1,['era.priest.wand-finish']=2,
   ['era.priest.wand-fallback']=2,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1,['sod.priest.upkeep']=2,['sod.priest.pull']=3,['sod.priest.aoe']=1,
   ['sod.priest.moving']=2,['sod.priest.dots']=2,['sod.priest.procs']=1,['sod.priest.filler']=1},
- nameKey="Damage (SoD)",descriptionKey="Damage on Season of Discovery realms, from level 1 to 60, using the runes you have engraved. Shadowform; Vampiric Touch or Mind Blast to pull (Penance, Holy Fire or Smite before Shadowform). Void Plague, Shadow Word: Pain and Vampiric Touch kept up (refreshed near the end only without Pain and Suffering engraved), Mind Blast on cooldown, Mind Flay on Melting Faces, Shadow Word: Death while you are above half health, then Mind Spike as the filler, or Mind Flay with the Phase 8 six-piece set. Void Zone and Mind Sear on four or more enemies. The wand on a dying solo target. Reminders: Inner Fire, Fortitude, Homunculi, Shadowfiend, Eye of the Void and Dispersion, Inner Focus, Psychic Scream, Fade, Desperate Prayer.",
  applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
  tags={'shadow','damage','leveling','raid','single-target','aoe','season-of-discovery','icy-veins'},
  sources={
@@ -28,21 +26,21 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=110,
-  cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'dps-upkeep','era.priest.dps-upkeep',P),block(P..'sod-upkeep','sod.priest.upkeep',P)},
+  cooldowns={BuiltinConditions.block(P..'upkeep','era.priest.upkeep',P),BuiltinConditions.block(P..'dps-upkeep','era.priest.dps-upkeep',P),BuiltinConditions.block(P..'sod-upkeep','sod.priest.upkeep',P)},
   rotation={
-   block(P..'boundaries','era.priest.dps-boundaries',P),
-   block(P..'form','era.priest.shadowform',P),
-   block(P..'pull','sod.priest.pull',P),
-   block(P..'aoe','sod.priest.aoe',P),
-   block(P..'moving','sod.priest.moving',P),
-   block(P..'finish','era.priest.wand-finish',P),
-   block(P..'dots','sod.priest.dots',P),
-   spell(P..'blast',8092),
-   block(P..'procs','sod.priest.procs',P),
+   BuiltinConditions.block(P..'boundaries','era.priest.dps-boundaries',P),
+   BuiltinConditions.block(P..'form','era.priest.shadowform',P),
+   BuiltinConditions.block(P..'pull','sod.priest.pull',P),
+   BuiltinConditions.block(P..'aoe','sod.priest.aoe',P),
+   BuiltinConditions.block(P..'moving','sod.priest.moving',P),
+   BuiltinConditions.block(P..'finish','era.priest.wand-finish',P),
+   BuiltinConditions.block(P..'dots','sod.priest.dots',P),
+   BuiltinConditions.spell(P..'blast',8092),
+   BuiltinConditions.block(P..'procs','sod.priest.procs',P),
    -- The Phase 8 six-piece (Raiments of Revelation) ramps Mind Flay per tick: it replaces Mind Spike.
-   spell(P..'set-flay',15407,{type='SET_PIECES',set=1938,operator='GREATERTHANOREQUALS',value=6}),
-   block(P..'filler','sod.priest.filler',P),
-   block(P..'wand','era.priest.wand-fallback',P),
+   BuiltinConditions.spell(P..'set-flay',15407,{type='SET_PIECES',set=1938,operator='GREATERTHANOREQUALS',value=6}),
+   BuiltinConditions.block(P..'filler','sod.priest.filler',P),
+   BuiltinConditions.block(P..'wand','era.priest.wand-fallback',P),
   },
  },
 }))

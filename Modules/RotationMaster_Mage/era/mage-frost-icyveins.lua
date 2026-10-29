@@ -6,18 +6,14 @@
 -- once nothing is in melee, Arcane Explosion close in; Frostbolt only on a single target. Mana
 -- Shield and Ice Barrier go up before the pull. Body pulling, Blink and kiting stay with the player.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function near(n)return{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-grind-'
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost.icyveins',revision=5,
  blocks={['era.mage.boundaries']=3,['era.mage.frostbolt']=1,['era.mage.moving']=2,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
- nameKey="Frost AoE grinding (Icy Veins)",descriptionKey="Blizzard leveling after Icy Veins' AoE grinding guide, chosen automatically when you play solo with Improved Blizzard. From two engaged enemies: Frost Nova the pack, Cone of Cold while Nova is cooling, Blizzard once nothing is next to you, Arcane Explosion when they are; Frostbolt on a single target, Fire Blast and the wand to finish. Mana Shield and Ice Barrier go up before each pull. Gathering the pack, Blink and kiting stay with you.",
  applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'frost','leveling','aoe','icy-veins'},
  sources={
@@ -29,25 +25,25 @@ assert(addon:RegisterDefaultRotation({
  body={
   priority=5,
   switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=20},{type='NOT',value={type='GROUP'}},{type='TALENT',layout='tree',tree=3,talent=10,operator='GREATERTHANOREQUALS',value=1}}},
-  cooldowns={block(P..'armor','era.mage.armor',P),
-   spell(P..'pull-mana-shield',1463,all(negate({type='COMBAT',unit='player'}),negate({type='BUFF',unit='player',spell=1463,anyrank=true}),
+  cooldowns={BuiltinConditions.block(P..'armor','era.mage.armor',P),
+   BuiltinConditions.spell(P..'pull-mana-shield',1463,BuiltinConditions.all(BuiltinConditions.negate({type='COMBAT',unit='player'}),BuiltinConditions.negate({type='BUFF',unit='player',spell=1463,anyrank=true}),
     {type='MANAPCT',unit='player',operator='GREATERTHAN',value=.6})),
-   block(P..'upkeep','era.mage.upkeep',P)},
+   BuiltinConditions.block(P..'upkeep','era.mage.upkeep',P)},
   rotation={
-   block(P..'boundaries','era.mage.boundaries',P),
+   BuiltinConditions.block(P..'boundaries','era.mage.boundaries',P),
    {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    block(P..'pull-filler','era.mage.frostbolt',P..'pull-'),stop(P..'pull-stop')}},
-   block(P..'moving','era.mage.moving',P),
+    BuiltinConditions.block(P..'pull-filler','era.mage.frostbolt',P..'pull-'),stop(P..'pull-stop')}},
+   BuiltinConditions.block(P..'moving','era.mage.moving',P),
    {id=P..'aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},onFalse={},onTrue={
-    spell(P..'aoe-nova',122,near(2)),
-    spell(P..'aoe-cone',120,all(near(2),{type='SPELL_COOLDOWN',spell=122,operator='GREATERTHAN',value=2})),
-    spell(P..'aoe-blizzard',10,negate(near(1))),
-    spell(P..'aoe-explosion',1449,near(2)),
-    spell(P..'aoe-blizzard-close',10)}},
-   spell(P..'nova',122,all(near(1),{type='THREAT',unit='target',threat=3})),
-   block(P..'execute','era.mage.execute',P),
-   block(P..'filler','era.mage.frostbolt',P),
-   block(P..'finish','era.mage.wand-finish',P),
+    BuiltinConditions.spell(P..'aoe-nova',122,near(2)),
+    BuiltinConditions.spell(P..'aoe-cone',120,BuiltinConditions.all(near(2),{type='SPELL_COOLDOWN',spell=122,operator='GREATERTHAN',value=2})),
+    BuiltinConditions.spell(P..'aoe-blizzard',10,BuiltinConditions.negate(near(1))),
+    BuiltinConditions.spell(P..'aoe-explosion',1449,near(2)),
+    BuiltinConditions.spell(P..'aoe-blizzard-close',10)}},
+   BuiltinConditions.spell(P..'nova',122,BuiltinConditions.all(near(1),{type='THREAT',unit='target',threat=3})),
+   BuiltinConditions.block(P..'execute','era.mage.execute',P),
+   BuiltinConditions.block(P..'filler','era.mage.frostbolt',P),
+   BuiltinConditions.block(P..'finish','era.mage.wand-finish',P),
   },
  },
 }))

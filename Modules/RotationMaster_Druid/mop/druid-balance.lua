@@ -7,31 +7,21 @@
 -- its direction, so the filler follows the two Eclipse buffs and, between them, whether Starfire was
 -- one of your last three casts. Incarnation at an Eclipse's start, Celestial Alignment as it ends.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function form(id)return{type='FORM',form=id}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function dot(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
 local function remain(id,op,v)return{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator=op,value=v}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function talent(n)return{type='TALENT',layout='grid',value=n}end
 local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local function off(id,action,conditions)local step=BuiltinConditions.spell(id,action,conditions);step.disabled=true;return step end
 local SOLAR,LUNAR,CA,INCARNATION,GRACE,DREAM=48517,48518,112071,102560,16886,145151
-local solar,lunar,aligned=own(SOLAR),own(LUNAR),own(CA)
-local eclipse=any(lunar,solar)
-local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
+local solar,lunar,aligned=BuiltinConditions.ownBuff(SOLAR),BuiltinConditions.ownBuff(LUNAR),BuiltinConditions.ownBuff(CA)
+local eclipse=BuiltinConditions.any(lunar,solar)
+local worth=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=25})
-local dream=all(talent(17),negate(own(DREAM)),negate(aligned))
+local dream=BuiltinConditions.all(talent(17),BuiltinConditions.negate(BuiltinConditions.ownBuff(DREAM)),BuiltinConditions.negate(aligned))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.druid.balance',revision=7,
  blocks={['mop.druid.boundaries']=4,['mop.druid.target']=2,['mop.druid.mark']=1},
- nameKey="Recommended",descriptionKey="Recommended for Balance from level 10, after Wowhead's Phase 5 list and simulator. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts Starfall in Lunar Eclipse, Starsurge on Shooting Stars and on cooldown, Hurricane in Solar or Astral Storm in Lunar at five enemies, Starfire in and after Lunar and Wrath in and after Solar. Rotation Master cannot read Eclipse energy, so between Eclipses it keeps casting Starfire if Starfire was one of your last three casts, otherwise Wrath. Reminders: Mark of the Wild, Moonkin Form, Incarnation as an Eclipse starts and Celestial Alignment as one ends (on elites or long fights), Nature's Vigil, Force of Nature, Nature's Swiftness for Dream of Cenarius, Innervate, Solar Beam, Barkskin and Renewal when low. Wild Mushroom placement stays manual; the Detonate reminder is off by default. It stops while you cast, travel, are in Cat or Bear Form, or have no enemy targeted.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'balance','leveling','single-target','aoe','wowhead'},
  sources={
@@ -42,49 +32,49 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={102},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('balance-mark','mop.druid.mark','balance-'),
-   spell('balance-moonkin',24858,negate(any(form(24858),form(768),form(5487),form(783),form(1066),form(33943),form(40120)))),
-   spell('balance-incarnation',INCARNATION,all(combat(),eclipse,any({type='SPELL_AVAIL',spell=CA},negate(known(CA))),worth)),
-   spell('balance-alignment',CA,all(combat(),negate(lunar),negate(solar),any(negate(talent(11)),own(INCARNATION),
+   BuiltinConditions.block('balance-mark','mop.druid.mark','balance-'),
+   BuiltinConditions.spell('balance-moonkin',24858,BuiltinConditions.negate(BuiltinConditions.any(BuiltinConditions.form(24858),BuiltinConditions.form(768),BuiltinConditions.form(5487),BuiltinConditions.form(783),BuiltinConditions.form(1066),BuiltinConditions.form(33943),BuiltinConditions.form(40120)))),
+   BuiltinConditions.spell('balance-incarnation',INCARNATION,BuiltinConditions.all(BuiltinConditions.combat(),eclipse,BuiltinConditions.any({type='SPELL_AVAIL',spell=CA},BuiltinConditions.negate(BuiltinConditions.known(CA))),worth)),
+   BuiltinConditions.spell('balance-alignment',CA,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(lunar),BuiltinConditions.negate(solar),BuiltinConditions.any(BuiltinConditions.negate(talent(11)),BuiltinConditions.ownBuff(INCARNATION),
     {type='SPELL_COOLDOWN',spell=INCARNATION,operator='GREATERTHAN',value=45}),worth)),
-   spell('balance-natures-vigil',124974,any(own(INCARNATION),aligned,all(negate(talent(11)),eclipse))),
-   spell('balance-force-of-nature',33831,all(combat(),any({type='BUFF_REMAIN',unit='player',spell=GRACE,ownbuff=true,operator='GREATERTHANOREQUALS',value=13},
+   BuiltinConditions.spell('balance-natures-vigil',124974,BuiltinConditions.any(BuiltinConditions.ownBuff(INCARNATION),aligned,BuiltinConditions.all(BuiltinConditions.negate(talent(11)),eclipse))),
+   BuiltinConditions.spell('balance-force-of-nature',33831,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any({type='BUFF_REMAIN',unit='player',spell=GRACE,ownbuff=true,operator='GREATERTHANOREQUALS',value=13},
     {type='SPELL_CHARGES',spell=33831,operator='EQUALS',value=3}))),
-   spell('balance-natures-swiftness',132158,dream),
-   spell('balance-innervate',29166,all(combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.7})),
-   spell('balance-solar-beam',78675,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
-   spell('balance-barkskin',22812,all(combat(),health('LESSTHAN',.5))),
-   spell('balance-renewal',108238,all(combat(),health('LESSTHAN',.4))),
-   off('balance-detonate',88751,any(solar,aligned)),
+   BuiltinConditions.spell('balance-natures-swiftness',132158,dream),
+   BuiltinConditions.spell('balance-innervate',29166,BuiltinConditions.all(BuiltinConditions.combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.7})),
+   BuiltinConditions.spell('balance-solar-beam',78675,BuiltinConditions.any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
+   BuiltinConditions.spell('balance-barkskin',22812,BuiltinConditions.all(BuiltinConditions.combat(),health('LESSTHAN',.5))),
+   BuiltinConditions.spell('balance-renewal',108238,BuiltinConditions.all(BuiltinConditions.combat(),health('LESSTHAN',.4))),
+   off('balance-detonate',88751,BuiltinConditions.any(solar,aligned)),
   },
   rotation={
-   block('balance-boundaries','mop.druid.boundaries','balance-'),
-   {id='balance-forms',type='stop',conditions=any(form(768),form(5487))},
-   block('balance-target','mop.druid.target','balance-'),
-   {id='balance-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    spell('balance-pull-dream',5185,all(talent(17),negate(own(DREAM)))),
-    spell('balance-pull-moonfire',8921,{type='MOVING'}),
-    spell('balance-pull-wrath',5176),
-    stop('balance-pull-stop')}},
-   spell('balance-astral-communion',127663,all(talent(10),own(145138),negate(lunar),negate(solar))),
-   spell('balance-dream',5185,dream),
-   spell('balance-moonfire',8921,any(negate(dot(8921)),remain(8921,'LESSTHAN',2),all(lunar,own(GRACE),remain(8921,'LESSTHAN',6)),all(aligned,remain(8921,'LESSTHAN',6)))),
-   spell('balance-sunfire',93402,all(negate(aligned),any(negate(dot(93402)),remain(93402,'LESSTHAN',2),all(solar,own(GRACE),remain(93402,'LESSTHAN',6))))),
-   spell('balance-starfall',48505,all(negate(own(48505)),any(lunar,aligned),
-    negate(all(talent(11),{type='SPELL_COOLDOWN',spell=INCARNATION,operator='LESSTHAN',value=35},negate(own(INCARNATION)))))),
-   spell('balance-shooting-stars',78674,own(93400)),
-   spell('balance-starsurge',78674),
+   BuiltinConditions.block('balance-boundaries','mop.druid.boundaries','balance-'),
+   {id='balance-forms',type='stop',conditions=BuiltinConditions.any(BuiltinConditions.form(768),BuiltinConditions.form(5487))},
+   BuiltinConditions.block('balance-target','mop.druid.target','balance-'),
+   {id='balance-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.spell('balance-pull-dream',5185,BuiltinConditions.all(talent(17),BuiltinConditions.negate(BuiltinConditions.ownBuff(DREAM)))),
+    BuiltinConditions.spell('balance-pull-moonfire',8921,{type='MOVING'}),
+    BuiltinConditions.spell('balance-pull-wrath',5176),
+    BuiltinConditions.stop('balance-pull-stop')}},
+   BuiltinConditions.spell('balance-astral-communion',127663,BuiltinConditions.all(talent(10),BuiltinConditions.ownBuff(145138),BuiltinConditions.negate(lunar),BuiltinConditions.negate(solar))),
+   BuiltinConditions.spell('balance-dream',5185,dream),
+   BuiltinConditions.spell('balance-moonfire',8921,BuiltinConditions.any(BuiltinConditions.negate(dot(8921)),remain(8921,'LESSTHAN',2),BuiltinConditions.all(lunar,BuiltinConditions.ownBuff(GRACE),remain(8921,'LESSTHAN',6)),BuiltinConditions.all(aligned,remain(8921,'LESSTHAN',6)))),
+   BuiltinConditions.spell('balance-sunfire',93402,BuiltinConditions.all(BuiltinConditions.negate(aligned),BuiltinConditions.any(BuiltinConditions.negate(dot(93402)),remain(93402,'LESSTHAN',2),BuiltinConditions.all(solar,BuiltinConditions.ownBuff(GRACE),remain(93402,'LESSTHAN',6))))),
+   BuiltinConditions.spell('balance-starfall',48505,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.ownBuff(48505)),BuiltinConditions.any(lunar,aligned),
+    BuiltinConditions.negate(BuiltinConditions.all(talent(11),{type='SPELL_COOLDOWN',spell=INCARNATION,operator='LESSTHAN',value=35},BuiltinConditions.negate(BuiltinConditions.ownBuff(INCARNATION)))))),
+   BuiltinConditions.spell('balance-shooting-stars',78674,BuiltinConditions.ownBuff(93400)),
+   BuiltinConditions.spell('balance-starsurge',78674),
    {id='balance-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=5},onFalse={},onTrue={
-    spell('balance-aoe-hurricane',16914,solar),
-    spell('balance-aoe-astral-storm',106996,lunar)}},
+    BuiltinConditions.spell('balance-aoe-hurricane',16914,solar),
+    BuiltinConditions.spell('balance-aoe-astral-storm',106996,lunar)}},
    {id='balance-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
-    spell('balance-moving-moonfire',8921,any(lunar,negate(solar))),
-    spell('balance-moving-sunfire',93402),
-    stop('balance-moving-stop')}},
-   spell('balance-lunar-starfire',2912,any(lunar,aligned)),
-   spell('balance-solar-wrath',5176,solar),
-   spell('balance-toward-solar',2912,{type='SPELL_HISTORY',spell=2912,operator='LESSTHANOREQUALS',value=3}),
-   spell('balance-wrath',5176),
+    BuiltinConditions.spell('balance-moving-moonfire',8921,BuiltinConditions.any(lunar,BuiltinConditions.negate(solar))),
+    BuiltinConditions.spell('balance-moving-sunfire',93402),
+    BuiltinConditions.stop('balance-moving-stop')}},
+   BuiltinConditions.spell('balance-lunar-starfire',2912,BuiltinConditions.any(lunar,aligned)),
+   BuiltinConditions.spell('balance-solar-wrath',5176,solar),
+   BuiltinConditions.spell('balance-toward-solar',2912,{type='SPELL_HISTORY',spell=2912,operator='LESSTHANOREQUALS',value=3}),
+   BuiltinConditions.spell('balance-wrath',5176),
   },
  },
 }))

@@ -6,25 +6,17 @@
 -- Rake and Thrash refresh at two and three seconds, Berserk at 90 energy when Tiger's Fury is at
 -- least 15 seconds away. Shares the Feral switch at a lower priority and ships disabled.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function bleed(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
 local function remain(id,op,v)return{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator=op,value=v}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function cp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function power(op,v)return{type='POWER',unit='player',operator=op,value=v}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local clearcasting,berserk=own(135700),own(106951)
-local worth=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
+local clearcasting,berserk=BuiltinConditions.ownBuff(135700),BuiltinConditions.ownBuff(106951)
+local worth=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.druid.feral.icyveins',revision=7,
  blocks={['mop.druid.melee-boundaries']=2,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=4,['mop.druid.feral-aoe']=2},
- nameKey="Bite only in execute (Icy Veins)",descriptionKey="Icy Veins' Feral order (Wowhead's Bite rule agrees), an alternative to the recommended Feral premade: enable it and disable that one, or raise its priority. Same opener, Savage Roar, Healing Touch and AoE, but combo points above 25% target health go only to Rip and Savage Roar: Ferocious Bite only refreshes Rip in execute (or spends five points before you learn Rip). Rake refreshes at two seconds, Thrash only on Clearcasting, and Berserk waits for 90 energy with Tiger's Fury at least 15 seconds away.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'feral','leveling','single-target','aoe','icy-veins','wowhead'},
  sources={
@@ -34,24 +26,24 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,disabled=true,specs={103},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('fivy-mark','mop.druid.mark','fivy-'),
-   block('fivy-upkeep','mop.druid.feral-upkeep','fivy-'),
-   spell('fivy-berserk',106952,all(combat(),{type='FORM',form=768},power('GREATERTHANOREQUALS',90),{type='SPELL_COOLDOWN',spell=5217,operator='GREATERTHANOREQUALS',value=15},worth)),
+   BuiltinConditions.block('fivy-mark','mop.druid.mark','fivy-'),
+   BuiltinConditions.block('fivy-upkeep','mop.druid.feral-upkeep','fivy-'),
+   BuiltinConditions.spell('fivy-berserk',106952,BuiltinConditions.all(BuiltinConditions.combat(),{type='FORM',form=768},power('GREATERTHANOREQUALS',90),{type='SPELL_COOLDOWN',spell=5217,operator='GREATERTHANOREQUALS',value=15},worth)),
   },
   rotation={
-   block('fivy-boundaries','mop.druid.melee-boundaries','fivy-'),
-   block('fivy-open','mop.druid.feral-open','fivy-'),
-   block('fivy-aoe','mop.druid.feral-aoe','fivy-'),
-   {id='fivy-execute',type='branch',conditions=all({type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.25},bleed(1079)),onTrue={
-    spell('fivy-execute-bite',22568,cp('GREATERTHANOREQUALS',5))},
+   BuiltinConditions.block('fivy-boundaries','mop.druid.melee-boundaries','fivy-'),
+   BuiltinConditions.block('fivy-open','mop.druid.feral-open','fivy-'),
+   BuiltinConditions.block('fivy-aoe','mop.druid.feral-aoe','fivy-'),
+   {id='fivy-execute',type='branch',conditions=BuiltinConditions.all({type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.25},bleed(1079)),onTrue={
+    BuiltinConditions.spell('fivy-execute-bite',22568,cp('GREATERTHANOREQUALS',5))},
    onFalse={
-    spell('fivy-rip',1079,all(cp('GREATERTHANOREQUALS',5),any(negate(bleed(1079)),remain(1079,'LESSTHANOREQUALS',2))))}},
-   spell('fivy-early-bite',22568,all(cp('GREATERTHANOREQUALS',5),negate(known(1079)))),
-   spell('fivy-rake',1822,any(negate(bleed(1822)),remain(1822,'LESSTHANOREQUALS',2))),
-   spell('fivy-thrash',106832,all(clearcasting,any(negate(bleed(106830)),remain(106830,'LESSTHANOREQUALS',3)))),
-   spell('fivy-ravage',102545,own(102543)),
-   spell('fivy-shred',5221,all(any(clearcasting,berserk),negate({type='ISSAME',unit='targettarget',otherunit='player'}))),
-   spell('fivy-mangle',33917,any(cp('LESSTHAN',5),power('GREATERTHANOREQUALS',90))),
+    BuiltinConditions.spell('fivy-rip',1079,BuiltinConditions.all(cp('GREATERTHANOREQUALS',5),BuiltinConditions.any(BuiltinConditions.negate(bleed(1079)),remain(1079,'LESSTHANOREQUALS',2))))}},
+   BuiltinConditions.spell('fivy-early-bite',22568,BuiltinConditions.all(cp('GREATERTHANOREQUALS',5),BuiltinConditions.negate(BuiltinConditions.known(1079)))),
+   BuiltinConditions.spell('fivy-rake',1822,BuiltinConditions.any(BuiltinConditions.negate(bleed(1822)),remain(1822,'LESSTHANOREQUALS',2))),
+   BuiltinConditions.spell('fivy-thrash',106832,BuiltinConditions.all(clearcasting,BuiltinConditions.any(BuiltinConditions.negate(bleed(106830)),remain(106830,'LESSTHANOREQUALS',3)))),
+   BuiltinConditions.spell('fivy-ravage',102545,BuiltinConditions.ownBuff(102543)),
+   BuiltinConditions.spell('fivy-shred',5221,BuiltinConditions.all(BuiltinConditions.any(clearcasting,berserk),BuiltinConditions.negate({type='ISSAME',unit='targettarget',otherunit='player'}))),
+   BuiltinConditions.spell('fivy-mangle',33917,BuiltinConditions.any(cp('LESSTHAN',5),power('GREATERTHANOREQUALS',90))),
   },
  },
 }))

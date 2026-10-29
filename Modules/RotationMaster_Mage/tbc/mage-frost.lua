@@ -6,16 +6,12 @@
 -- enemies you are engaged with (THREAT_COUNT), because TBC range checks cannot tell 8 from 20
 -- yards in combat. Blink, kiting, Ice Block and positioning stay with the player.
 local _,addon=...
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=33395},{type='DEBUFF',unit='target',spell=12494})
+local frozen=BuiltinConditions.any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=33395},{type='DEBUFF',unit='target',spell=12494})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.frost',revision=5,
  blocks={['tbc.mage.boundaries']=3,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=2,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
- nameKey="Frost",descriptionKey="Frost from level 1 to 70, and the Mage default before talents. Frostbolt (Fireball before level 4), Frost Nova when something hits you, Cone of Cold with Blizzard or Arcane Explosion when three or more enemies are engaged, Ice Lance on frozen targets and while moving, wand when out of mana. Reminders: armor, Arcane Intellect, mana gem, Evocation, Counterspell, Spellsteal, Ice Barrier, Icy Veins, Cold Snap and Water Elemental. Blink, Ice Block, kiting and target choice stay with you.",
  applicability={families={'tbc'},actionContext='player',class='MAGE'},
  tags={'frost','leveling','raid','single-target','aoe'},
  sources={
@@ -30,23 +26,23 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   switch={type='SPELL_KNOWN',spell=133},
-  cooldowns={block('mage-frost-armor','tbc.mage.armor','mage-frost-'),block('mage-frost-upkeep','tbc.mage.upkeep','mage-frost-')},
+  cooldowns={BuiltinConditions.block('mage-frost-armor','tbc.mage.armor','mage-frost-'),BuiltinConditions.block('mage-frost-upkeep','tbc.mage.upkeep','mage-frost-')},
   rotation={
-   block('mage-frost-boundaries','tbc.mage.boundaries','mage-frost-'),
+   BuiltinConditions.block('mage-frost-boundaries','tbc.mage.boundaries','mage-frost-'),
    {id='mage-frost-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    block('mage-frost-pull-filler','tbc.mage.frostbolt','mage-frost-pull-'),stop('mage-frost-pull-stop')}},
+    BuiltinConditions.block('mage-frost-pull-filler','tbc.mage.frostbolt','mage-frost-pull-'),stop('mage-frost-pull-stop')}},
    {id='mage-frost-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
-    spell('mage-frost-moving-ice-lance',30455),spell('mage-frost-moving-fire-blast',2136),stop('mage-frost-moving-stop')}},
+    BuiltinConditions.spell('mage-frost-moving-ice-lance',30455),BuiltinConditions.spell('mage-frost-moving-fire-blast',2136),stop('mage-frost-moving-stop')}},
    -- Something is hitting you: Frost Nova it off (bosses are root-immune).
-   spell('mage-frost-nova',122,{type='AND',value={{type='THREAT_COUNT',threat=3,operator='GREATERTHANOREQUALS',value=1},
-    negate({type='CLASSIFICATION',unit='target',value='worldboss'})}}),
+   BuiltinConditions.spell('mage-frost-nova',122,{type='AND',value={{type='THREAT_COUNT',threat=3,operator='GREATERTHANOREQUALS',value=1},
+    BuiltinConditions.negate({type='CLASSIFICATION',unit='target',value='worldboss'})}}),
    {id='mage-frost-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell('mage-frost-cone',120),
+    BuiltinConditions.spell('mage-frost-cone',120),
     {id='mage-frost-aoe-frozen',type='branch',conditions=frozen,
-     onTrue={spell('mage-frost-blizzard',10)},onFalse={spell('mage-frost-explosion',1449)}}}},
-   spell('mage-frost-ice-lance',30455,frozen),
-   block('mage-frost-filler','tbc.mage.frostbolt','mage-frost-'),
-   block('mage-frost-finish','tbc.mage.wand-finish','mage-frost-'),
+     onTrue={BuiltinConditions.spell('mage-frost-blizzard',10)},onFalse={BuiltinConditions.spell('mage-frost-explosion',1449)}}}},
+   BuiltinConditions.spell('mage-frost-ice-lance',30455,frozen),
+   BuiltinConditions.block('mage-frost-filler','tbc.mage.frostbolt','mage-frost-'),
+   BuiltinConditions.block('mage-frost-finish','tbc.mage.wand-finish','mage-frost-'),
   },
  },
 }))

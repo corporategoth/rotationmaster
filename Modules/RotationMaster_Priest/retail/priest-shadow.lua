@@ -7,17 +7,12 @@
 -- leaves out (SimulationCraft's assisted_combat/priest_shadow.simc): Power Infusion during
 -- Voidform, Shadowform and Fortitude between pulls, Silence.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow',revision=6,
  blocks={['retail.priest.boundaries']=3,['retail.priest.upkeep']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Shadow in Midnight. In combat the game now hides your DoTs, buffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which keeps your DoTs, Shadowform and Voidform going and lets Mind Flay finish), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Power Infusion in the 20 seconds after you cast Voidform, Shadowform and Power Word: Fortitude between pulls, Silence on an interruptible cast (it lights only where the game lets the cast be read). Health is hidden on Retail, so Desperate Prayer is your call.",
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
  tags={'shadow','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
@@ -28,8 +23,8 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,specs={258},
   cooldowns={
    block('retail.priest.upkeep','shadow-'),
-   spell('shadow-shadowform',232698,all(negate(combat()),negate(own(232698)),negate(own(194249)))),
-   spell('shadow-power-infusion',10060,all(fight,{type='SPELL_HISTORY_TIME',spell=228260,operator='LESSTHAN',value=20})),
+   BuiltinConditions.spell('shadow-shadowform',232698,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate(BuiltinConditions.ownBuff(232698)),BuiltinConditions.negate(BuiltinConditions.ownBuff(194249)))),
+   BuiltinConditions.spell('shadow-power-infusion',10060,BuiltinConditions.all(fight,{type='SPELL_HISTORY_TIME',spell=228260,operator='LESSTHAN',value=20})),
   },
   rotation={
    block('retail.priest.boundaries','shadow-'),

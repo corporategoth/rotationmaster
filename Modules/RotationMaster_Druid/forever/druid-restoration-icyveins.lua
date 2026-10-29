@@ -6,22 +6,16 @@
 -- already running, Swiftmend on a HoT target, Wild Growth; Innervate on cooldown. Health is secret
 -- on Forever, so the target you pick is the only signal of who needs healing.
 local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Balance, 2 Feral Combat, 3 Restoration; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
 local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
 local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,ownbuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.druid.restoration.icyveins',revision=6,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1,['forever.druid.healer-upkeep']=2,['forever.druid.spare-damage']=2,['forever.druid.dots']=2},
- nameKey="Restoration, HoTs first (Icy Veins)",descriptionKey="Icy Veins' HoT-first healing, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. On your friendly target: Rejuvenation, then Regrowth when missing, Healing Touch only with both HoTs running, Swiftmend on a HoT target, then Wild Growth (health is hidden on Forever, so the target you pick decides who is healed). Innervate on cooldown. Otherwise the same reminders and hostile-target list as the Restoration premade.",
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','group','icy-veins'},
  sources={
@@ -31,23 +25,23 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=25,disabled=true,
   -- From 11 Restoration points (Gift of the Earthmother's tier), so dungeon healers at 20-24 qualify.
-  switch=all({type='GROUP'},tree(3,11)),
+  switch=BuiltinConditions.all({type='GROUP'},tree(3,11)),
   cooldowns={
-   block('rejuv-upkeep','forever.druid.upkeep','rejuv-'),
-   block('rejuv-healer-upkeep','forever.druid.healer-upkeep','rejuv-'),
-   spell('rejuv-innervate',29166,{type='COMBAT',unit='player'}),
+   BuiltinConditions.block('rejuv-upkeep','forever.druid.upkeep','rejuv-'),
+   BuiltinConditions.block('rejuv-healer-upkeep','forever.druid.healer-upkeep','rejuv-'),
+   BuiltinConditions.spell('rejuv-innervate',29166,{type='COMBAT',unit='player'}),
   },
   rotation={
-   block('rejuv-boundaries','forever.druid.boundaries','rejuv-'),
+   BuiltinConditions.block('rejuv-boundaries','forever.druid.boundaries','rejuv-'),
    {id='rejuv-hostile',type='branch',conditions={type='ATTACKABLE',unit='target'},onFalse={},onTrue={
-    block('rejuv-damage','forever.druid.spare-damage','rejuv-hostile-')}},
-   stop('rejuv-target',negate(all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})))),
-   spell('rejuv-rejuvenation',774,negate(hot(774))),
-   spell('rejuv-regrowth',8936,negate(hot(8936))),
-   spell('rejuv-healing-touch',5185,all(hot(774),hot(8936))),
-   spell('rejuv-swiftmend',18562,any(hot(774),hot(8936))),
-   spell('rejuv-wild-growth',408120),
-   stop('rejuv-done'),
+    BuiltinConditions.block('rejuv-damage','forever.druid.spare-damage','rejuv-hostile-')}},
+   BuiltinConditions.stop('rejuv-target',BuiltinConditions.negate(BuiltinConditions.all({type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='DEAD',unit='target'})))),
+   BuiltinConditions.spell('rejuv-rejuvenation',774,BuiltinConditions.negate(hot(774))),
+   BuiltinConditions.spell('rejuv-regrowth',8936,BuiltinConditions.negate(hot(8936))),
+   BuiltinConditions.spell('rejuv-healing-touch',5185,BuiltinConditions.all(hot(774),hot(8936))),
+   BuiltinConditions.spell('rejuv-swiftmend',18562,BuiltinConditions.any(hot(774),hot(8936))),
+   BuiltinConditions.spell('rejuv-wild-growth',408120),
+   BuiltinConditions.stop('rejuv-done'),
   },
  },
 }))

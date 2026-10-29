@@ -8,40 +8,34 @@
 -- rune or the six-piece set that makes seals linger, which RM cannot read.
 -- Shared blocks: era/blocks.lua. Original priority data, no guide prose.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
-local function expiring(id)return any(negate(own(id)),{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='LESSTHANOREQUALS',value=1})end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
+local function expiring(id)return BuiltinConditions.any(BuiltinConditions.negate(own(id)),{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='LESSTHANOREQUALS',value=1})end
+local undead=BuiltinConditions.any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.stacking',revision=6,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3},
- nameKey="Retribution, seal stacking (SoD)",descriptionKey="Off by default; enable it with the Soul of the Sealbearer rune or the six-piece set that makes seals linger (Rotation Master cannot see either). Keeps both Seal of Command and Seal of Martyrdom up, Divine Storm at three Holy Power, Crusader Strike, Exorcism, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Consecration, and Judgement while both seals are up.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'endgame','raid','retribution','melee','single-target','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin DPS rotation, seal stacking (Phase 8)',reviewedAt='2026-10-23',revision='2025-06-06'},
   },
- body={priority=103,disabled=true,switch=all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=20},known(20375),rune(407778),{type='PRIMARY_TALENT_TREE',tree=3}),
-  cooldowns={block('sstack-upkeep','sod.paladin.ret-upkeep','sstack-'),block('sstack-safety','era.paladin.safety','sstack-')},
+ body={priority=103,disabled=true,switch=BuiltinConditions.all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=20},BuiltinConditions.known(20375),rune(407778),{type='PRIMARY_TALENT_TREE',tree=3}),
+  cooldowns={BuiltinConditions.block('sstack-upkeep','sod.paladin.ret-upkeep','sstack-'),BuiltinConditions.block('sstack-safety','era.paladin.safety','sstack-')},
   rotation={
-   block('sstack-opening','era.paladin.melee-opening','sstack-'),
-   spell('sstack-command',20375,expiring(20375)),
-   spell('sstack-martyrdom',407798,expiring(407798)),
+   BuiltinConditions.block('sstack-opening','era.paladin.melee-opening','sstack-'),
+   BuiltinConditions.spell('sstack-command',20375,expiring(20375)),
+   BuiltinConditions.spell('sstack-martyrdom',407798,expiring(407798)),
    {id='sstack-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    spell('sstack-pull-exorcism',415068),
+    BuiltinConditions.spell('sstack-pull-exorcism',415068),
     {id='sstack-pull-stop',type='stop',conditions={}},
    }},
-   spell('sstack-divine-storm',407778,any(negate({type='BUFF',unit='player',spell=1226461}),{type='BUFF_STACKS',unit='player',spell=1226461,operator='GREATERTHANOREQUALS',value=3})),
-   spell('sstack-crusader-strike',407676),
-   spell('sstack-exorcism',415068),
-   spell('sstack-holy-wrath',2812,any(rune(429144),undead)),
-   spell('sstack-consecration',26573),
-   spell('sstack-judgement',20271,all(own(407798),own(20375))),
+   BuiltinConditions.spell('sstack-divine-storm',407778,BuiltinConditions.any(BuiltinConditions.negate({type='BUFF',unit='player',spell=1226461}),{type='BUFF_STACKS',unit='player',spell=1226461,operator='GREATERTHANOREQUALS',value=3})),
+   BuiltinConditions.spell('sstack-crusader-strike',407676),
+   BuiltinConditions.spell('sstack-exorcism',415068),
+   BuiltinConditions.spell('sstack-holy-wrath',2812,BuiltinConditions.any(rune(429144),undead)),
+   BuiltinConditions.spell('sstack-consecration',26573),
+   BuiltinConditions.spell('sstack-judgement',20271,BuiltinConditions.all(own(407798),own(20375))),
   },
  },
 }))

@@ -8,30 +8,22 @@
 -- five Vital Mists, Jab). Choosing whom to heal stays with the player. Soothing Mist is recognised
 -- by the channel's own spell, so that channel does not end advice.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function mine(id)return{type='BUFF',unit='target',spell=id,ownbuff=true}end
 local function remain(id,op,v)return{type='BUFF_REMAIN',unit='player',spell=id,ownbuff=true,operator=op,value=v}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function health(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
 local function chi(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function hurt(count,below,distance)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=distance or 40,healthoperator='LESSTHAN',health=below,operator='GREATERTHANOREQUALS',value=count}end
 local function talent(i)return{type='TALENT',layout='grid',value=i}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local function off(id,action,conditions)local step=BuiltinConditions.spell(id,action,conditions);step.disabled=true;return step end
 local SOOTHING,SURGING,RENEWING,EXPEL=115175,116694,115151,115072
 local vital={type='BUFF_STACKS',unit='player',spell=118674,ownbuff=true,operator='GREATERTHANOREQUALS',value=5}
-local memory=own(139597)
-local capped=negate(chi('GREATERTHANOREQUALS',-1))
+local memory=BuiltinConditions.ownBuff(139597)
+local capped=BuiltinConditions.negate(chi('GREATERTHANOREQUALS',-1))
 local friendly={type='FRIENDLY',unit='target'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.monk.mistweaver',revision=7,
  blocks={['mop.monk.upkeep']=1},
- nameKey="Recommended",descriptionKey="Picked automatically in the Mistweaver specialization. With a friendly target it heals that target: Renewing Mist on cooldown, Uplift when three or more nearby allies are hurt, Expel Harm and your Chi talent for Chi, Rushing Jade Wind or Spinning Crane Kick for a hurt group, Surging Mist on five Vital Mists, Soothing Mist when the target is below 80%, then Enveloping Mist and Surging Mist inside that channel. With an enemy target it fistweaves: Tiger Palm and Blackout Kick on Muscle Memory to keep Tiger Power and Serpent's Zeal, Blackout Kick when Chi is full, Surging Mist on five Vital Mists, Renewing Mist and Expel Harm for Chi, Jab. Reminders: Wise Serpent, Legacy of the Emperor, the Jade Serpent Statue in a group, Mana Tea in quiet moments, Thunder Focus Tea, Chi Brew, Life Cocoon on a friend below 35%, Xuen, Detox, defensives, Spear Hand Strike. You choose whom to heal; Revival (reminder off) and Healing Sphere stay with you.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'mistweaver','healer','leveling','icy-veins','wowhead'},
  sources={
@@ -42,61 +34,61 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={270},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   spell('mist-serpent-stance',115070,negate({type='FORM',form=115070})),
-   block('mist-class','mop.monk.upkeep','mist-'),
-   spell('mist-statue',115313,all({type='GROUP'},negate({type='SPELL_HISTORY_TIME',spell=115313,operator='LESSTHAN',value=900}))),
-   spell('mist-mana-tea',115294,all({type='BUFF_STACKS',unit='player',spell=115867,ownbuff=true,operator='GREATERTHANOREQUALS',value=2},
-    {type='MANAPCT',unit='player',operator='LESSTHAN',value=.85},negate(hurt(2,.7)),negate({type='MOVING'}))),
-   spell('mist-thunder-focus-tea',116680,all(combat(),chi('GREATERTHANOREQUALS',3),hurt(3,.85))),
-   spell('mist-chi-brew',115399,all(combat(),chi('GREATERTHANOREQUALS',-2),any(hurt(3,.7),{type='SPELL_CHARGES',spell=115399,operator='EQUALS',value=2}))),
-   spell('mist-life-cocoon',116849,all(combat(),friendly,health('target','LESSTHAN',.35))),
-   off('mist-revival',115310,all(combat(),hurt(4,.5))),
-   spell('mist-xuen',123904,all(combat(),{type='GROUP'})),
-   spell('mist-detox',115450,all(friendly,any({type='DISPELLABLE',unit='target',debufftype='Magic'},{type='DISPELLABLE',unit='target',debufftype='Poison'},{type='DISPELLABLE',unit='target',debufftype='Disease'}))),
-   spell('mist-fortifying-brew',115203,all(combat(),health('player','LESSTHAN',.4))),
-   spell('mist-diffuse-magic',122783,all(combat(),health('player','LESSTHAN',.4))),
-   spell('mist-dampen-harm',122278,all(combat(),health('player','LESSTHAN',.4))),
+   BuiltinConditions.spell('mist-serpent-stance',115070,BuiltinConditions.negate({type='FORM',form=115070})),
+   BuiltinConditions.block('mist-class','mop.monk.upkeep','mist-'),
+   BuiltinConditions.spell('mist-statue',115313,BuiltinConditions.all({type='GROUP'},BuiltinConditions.negate({type='SPELL_HISTORY_TIME',spell=115313,operator='LESSTHAN',value=900}))),
+   BuiltinConditions.spell('mist-mana-tea',115294,BuiltinConditions.all({type='BUFF_STACKS',unit='player',spell=115867,ownbuff=true,operator='GREATERTHANOREQUALS',value=2},
+    {type='MANAPCT',unit='player',operator='LESSTHAN',value=.85},BuiltinConditions.negate(hurt(2,.7)),BuiltinConditions.negate({type='MOVING'}))),
+   BuiltinConditions.spell('mist-thunder-focus-tea',116680,BuiltinConditions.all(BuiltinConditions.combat(),chi('GREATERTHANOREQUALS',3),hurt(3,.85))),
+   BuiltinConditions.spell('mist-chi-brew',115399,BuiltinConditions.all(BuiltinConditions.combat(),chi('GREATERTHANOREQUALS',-2),BuiltinConditions.any(hurt(3,.7),{type='SPELL_CHARGES',spell=115399,operator='EQUALS',value=2}))),
+   BuiltinConditions.spell('mist-life-cocoon',116849,BuiltinConditions.all(BuiltinConditions.combat(),friendly,health('target','LESSTHAN',.35))),
+   off('mist-revival',115310,BuiltinConditions.all(BuiltinConditions.combat(),hurt(4,.5))),
+   BuiltinConditions.spell('mist-xuen',123904,BuiltinConditions.all(BuiltinConditions.combat(),{type='GROUP'})),
+   BuiltinConditions.spell('mist-detox',115450,BuiltinConditions.all(friendly,BuiltinConditions.any({type='DISPELLABLE',unit='target',debufftype='Magic'},{type='DISPELLABLE',unit='target',debufftype='Poison'},{type='DISPELLABLE',unit='target',debufftype='Disease'}))),
+   BuiltinConditions.spell('mist-fortifying-brew',115203,BuiltinConditions.all(BuiltinConditions.combat(),health('player','LESSTHAN',.4))),
+   BuiltinConditions.spell('mist-diffuse-magic',122783,BuiltinConditions.all(BuiltinConditions.combat(),health('player','LESSTHAN',.4))),
+   BuiltinConditions.spell('mist-dampen-harm',122278,BuiltinConditions.all(BuiltinConditions.combat(),health('player','LESSTHAN',.4))),
   },
   rotation={
    {id='mist-soothing',type='branch',conditions={type='CHANNELING_SPELL',unit='player',spell=SOOTHING},onFalse={},onTrue={
-    spell('mist-soothing-enveloping',124682,all(negate(mine(132120)),negate(mine(124682)),health('target','LESSTHAN',.8))),
-    spell('mist-soothing-surging',SURGING,any(health('target','LESSTHAN',.6),vital)),
-    stop('mist-soothing-stop')}},
-   stop('mist-cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
-   {id='mist-heal',type='branch',conditions=all(friendly,negate({type='DEAD',unit='target'})),onTrue={
-    spell('mist-renewing',RENEWING),
-    spell('mist-uplift',116670,all({type='GROUP'},chi('GREATERTHANOREQUALS',2),hurt(3,.85))),
-    spell('mist-expel-harm',EXPEL,chi('GREATERTHANOREQUALS',-1)),
-    spell('mist-chi-wave',115098),
-    spell('mist-zen-sphere',124081,negate(mine(124081))),
-    spell('mist-chi-burst',123986),
-    spell('mist-jade-wind',116847,hurt(3,.9,10)),
-    spell('mist-crane-kick',101546,all(negate(talent(16)),hurt(3,.85,8),{type='MANAPCT',unit='player',operator='GREATERTHANOREQUALS',value=.5})),
-    spell('mist-vital-surging',SURGING,all(vital,health('target','LESSTHAN',.9))),
-    spell('mist-soothing-mist',SOOTHING,health('target','LESSTHAN',.8)),
-    stop('mist-healthy')},
+    BuiltinConditions.spell('mist-soothing-enveloping',124682,BuiltinConditions.all(BuiltinConditions.negate(mine(132120)),BuiltinConditions.negate(mine(124682)),health('target','LESSTHAN',.8))),
+    BuiltinConditions.spell('mist-soothing-surging',SURGING,BuiltinConditions.any(health('target','LESSTHAN',.6),vital)),
+    BuiltinConditions.stop('mist-soothing-stop')}},
+   BuiltinConditions.stop('mist-cast',BuiltinConditions.any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
+   {id='mist-heal',type='branch',conditions=BuiltinConditions.all(friendly,BuiltinConditions.negate({type='DEAD',unit='target'})),onTrue={
+    BuiltinConditions.spell('mist-renewing',RENEWING),
+    BuiltinConditions.spell('mist-uplift',116670,BuiltinConditions.all({type='GROUP'},chi('GREATERTHANOREQUALS',2),hurt(3,.85))),
+    BuiltinConditions.spell('mist-expel-harm',EXPEL,chi('GREATERTHANOREQUALS',-1)),
+    BuiltinConditions.spell('mist-chi-wave',115098),
+    BuiltinConditions.spell('mist-zen-sphere',124081,BuiltinConditions.negate(mine(124081))),
+    BuiltinConditions.spell('mist-chi-burst',123986),
+    BuiltinConditions.spell('mist-jade-wind',116847,hurt(3,.9,10)),
+    BuiltinConditions.spell('mist-crane-kick',101546,BuiltinConditions.all(BuiltinConditions.negate(talent(16)),hurt(3,.85,8),{type='MANAPCT',unit='player',operator='GREATERTHANOREQUALS',value=.5})),
+    BuiltinConditions.spell('mist-vital-surging',SURGING,BuiltinConditions.all(vital,health('target','LESSTHAN',.9))),
+    BuiltinConditions.spell('mist-soothing-mist',SOOTHING,health('target','LESSTHAN',.8)),
+    BuiltinConditions.stop('mist-healthy')},
    onFalse={
-    stop('mist-target',negate({type='ATTACKABLE',unit='target'})),
-    {id='mist-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-     spell('mist-pull-renewing',RENEWING),
-     spell('mist-pull-lightning',117952,{type='BEYOND_MELEE',unit='target'}),
+    BuiltinConditions.stop('mist-target',BuiltinConditions.negate({type='ATTACKABLE',unit='target'})),
+    {id='mist-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+     BuiltinConditions.spell('mist-pull-renewing',RENEWING),
+     BuiltinConditions.spell('mist-pull-lightning',117952,{type='BEYOND_MELEE',unit='target'}),
      {id='mist-pull-stop',type='stop',conditions={}}}},
-    spell('mist-touch-of-death',115080),
-    spell('mist-power-palm',100787,all(memory,any(negate(own(125359)),remain(125359,'LESSTHANOREQUALS',2)))),
-    spell('mist-zeal-kick',100784,all(memory,any(negate(own(127722)),remain(127722,'LESSTHAN',2)))),
-    spell('mist-memory-kick',100784,all(memory,any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},capped))),
-    spell('mist-memory-palm',100787,memory),
-    spell('mist-capped-kick',100784,capped),
-    spell('mist-free-surging',SURGING,all(vital,chi('GREATERTHANOREQUALS',-1))),
-    spell('mist-chi-renewing',RENEWING,chi('GREATERTHANOREQUALS',-2)),
-    spell('mist-chi-expel',EXPEL,chi('GREATERTHANOREQUALS',-1)),
-    spell('mist-fist-chi-wave',115098),
-    spell('mist-fist-zen-sphere',124081,negate(own(124081))),
-    spell('mist-fist-chi-burst',123986),
-    spell('mist-fist-jade-wind',116847,all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},negate(memory),chi('GREATERTHANOREQUALS',-1))),
-    spell('mist-fist-crane-kick',101546,all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},negate(memory),chi('GREATERTHANOREQUALS',-1),negate(talent(16)))),
-    spell('mist-fist-lightning',117952,{type='BEYOND_MELEE',unit='target'}),
-    spell('mist-jab',100780)}},
+    BuiltinConditions.spell('mist-touch-of-death',115080),
+    BuiltinConditions.spell('mist-power-palm',100787,BuiltinConditions.all(memory,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(125359)),remain(125359,'LESSTHANOREQUALS',2)))),
+    BuiltinConditions.spell('mist-zeal-kick',100784,BuiltinConditions.all(memory,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(127722)),remain(127722,'LESSTHAN',2)))),
+    BuiltinConditions.spell('mist-memory-kick',100784,BuiltinConditions.all(memory,BuiltinConditions.any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},capped))),
+    BuiltinConditions.spell('mist-memory-palm',100787,memory),
+    BuiltinConditions.spell('mist-capped-kick',100784,capped),
+    BuiltinConditions.spell('mist-free-surging',SURGING,BuiltinConditions.all(vital,chi('GREATERTHANOREQUALS',-1))),
+    BuiltinConditions.spell('mist-chi-renewing',RENEWING,chi('GREATERTHANOREQUALS',-2)),
+    BuiltinConditions.spell('mist-chi-expel',EXPEL,chi('GREATERTHANOREQUALS',-1)),
+    BuiltinConditions.spell('mist-fist-chi-wave',115098),
+    BuiltinConditions.spell('mist-fist-zen-sphere',124081,BuiltinConditions.negate(BuiltinConditions.ownBuff(124081))),
+    BuiltinConditions.spell('mist-fist-chi-burst',123986),
+    BuiltinConditions.spell('mist-fist-jade-wind',116847,BuiltinConditions.all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},BuiltinConditions.negate(memory),chi('GREATERTHANOREQUALS',-1))),
+    BuiltinConditions.spell('mist-fist-crane-kick',101546,BuiltinConditions.all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},BuiltinConditions.negate(memory),chi('GREATERTHANOREQUALS',-1),BuiltinConditions.negate(talent(16)))),
+    BuiltinConditions.spell('mist-fist-lightning',117952,{type='BEYOND_MELEE',unit='target'}),
+    BuiltinConditions.spell('mist-jab',100780)}},
   },
  },
 }))

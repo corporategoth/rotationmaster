@@ -10,30 +10,23 @@
 -- Hamstring near the rage cap. Shared parts: era/blocks.lua. Left manual: stance dancing; the
 -- Hardcore emergency buttons (Intimidating Shout, Retaliation) are listed off.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function rage(op,n)return{type='POWER',unit='player',operator=op,value=n}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
 local function target(op,v)return{type='HEALTHPCT',unit='target',operator=op,value=v}end
 local function sunders(op,n)return{type='DEBUFF_STACKS',unit='target',spell=7386,anyrank=true,operator=op,value=n}end
 local function queued(id)return{type='SPELL_ACTIVE',spell=id,ranked=false}end
-local function cooling(id,n)return all(known(id),{type='SPELL_COOLDOWN',spell=id,operator='GREATERTHAN',value=n})end
-local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
+local function cooling(id,n)return BuiltinConditions.all(BuiltinConditions.known(id),{type='SPELL_COOLDOWN',spell=id,operator='GREATERTHAN',value=n})end
 local function optional(step)step.disabled=true;return step end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
-local strike=any(known(12294),known(23881))
-local unqueued=all(negate(queued(78)),negate(queued(845)))
-local immune=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='MECHANICAL'},{type='CREATURE',unit='target',value='ELEMENTAL'})
+local strike=BuiltinConditions.any(BuiltinConditions.known(12294),BuiltinConditions.known(23881))
+local unqueued=BuiltinConditions.all(BuiltinConditions.negate(queued(78)),BuiltinConditions.negate(queued(845)))
+local immune=BuiltinConditions.any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='MECHANICAL'},{type='CREATURE',unit='target',value='ELEMENTAL'})
 local near={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.warrior.dps',revision=5,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
- nameKey="Melee DPS",descriptionKey="Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on Hardcore and Self-Found realms; built from simulator, Icy Veins and Wowhead. Charge to pull, Intercept a distant target, Whirlwind (Thunder Clap before you learn it) on three or more enemies fighting you, then Execute first below 20%, Sunder Armor to five on bosses without Expose Armor, Bloodthirst, Mortal Strike, Slam right after a swing with Improved Slam (set for a two-hander; change it in a clone), Whirlwind while keeping rage for your main strike, Overpower, Rend until your main strike is learned, Sunder Armor on healthy targets and Hamstring near the rage cap. Reminders: Battle Shout, Heroic Strike from 40 rage (20 while leveling), Cleave on packs, Bloodrage, Sweeping Strikes, Death Wish (bosses: their last 30 seconds), Recklessness with Death Wish, Pummel or Shield Bash. Intimidating Shout and Retaliation are listed off for Hardcore emergencies; stance dancing stays with you.",
  applicability={families={'era'},actionContext='player',class='WARRIOR'},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins','wowhead'},
  sources={
@@ -44,34 +37,34 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.wowhead.com/classic/guide/classes/warrior/arms/leveling-tips',title='Wowhead: Classic Arms Warrior leveling tips',reviewedAt='2026-10-23',revision='2024-12-27'}},
  body={priority=10,
  cooldowns={block('era.warrior.upkeep','warrior-dps-'),
-  spell('warrior-dps-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2),any(rage('GREATERTHANOREQUALS',40),
-   all(target('LESSTHAN',.2),rage('GREATERTHANOREQUALS',30)),all(negate(strike),negate(known(1680)),rage('GREATERTHANOREQUALS',20))))),
-  spell('warrior-dps-cleave',845,all(combat(),unqueued,enemies('GREATERTHANOREQUALS',2),any(rage('GREATERTHANOREQUALS',40),target('LESSTHAN',.2)))),
-  spell('warrior-dps-bloodrage',2687,all(combat(),rage('LESSTHAN',80),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5})),
-  spell('warrior-dps-sweeping-strikes',12292,all(combat(),enemies('GREATERTHANOREQUALS',2))),
-  spell('warrior-dps-death-wish',12328,all(combat(),any(negate(boss),target('LESSTHAN',.2),lifetime('LESSTHANOREQUALS',30)))),
-  spell('warrior-dps-recklessness',1719,all(combat(),boss,any({type='BUFF',unit='player',spell=12328},lifetime('LESSTHANOREQUALS',15)))),
-  optional(spell('warrior-dps-intimidating-shout',5246,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.3},near))),
-  optional(spell('warrior-dps-retaliation',20230,all(combat(),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.4},
+  BuiltinConditions.spell('warrior-dps-heroic-strike',78,BuiltinConditions.all(BuiltinConditions.combat(),unqueued,enemies('LESSTHAN',2),BuiltinConditions.any(rage('GREATERTHANOREQUALS',40),
+   BuiltinConditions.all(target('LESSTHAN',.2),rage('GREATERTHANOREQUALS',30)),BuiltinConditions.all(BuiltinConditions.negate(strike),BuiltinConditions.negate(BuiltinConditions.known(1680)),rage('GREATERTHANOREQUALS',20))))),
+  BuiltinConditions.spell('warrior-dps-cleave',845,BuiltinConditions.all(BuiltinConditions.combat(),unqueued,enemies('GREATERTHANOREQUALS',2),BuiltinConditions.any(rage('GREATERTHANOREQUALS',40),target('LESSTHAN',.2)))),
+  BuiltinConditions.spell('warrior-dps-bloodrage',2687,BuiltinConditions.all(BuiltinConditions.combat(),rage('LESSTHAN',80),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5})),
+  BuiltinConditions.spell('warrior-dps-sweeping-strikes',12292,BuiltinConditions.all(BuiltinConditions.combat(),enemies('GREATERTHANOREQUALS',2))),
+  BuiltinConditions.spell('warrior-dps-death-wish',12328,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(BuiltinConditions.negate(boss),target('LESSTHAN',.2),BuiltinConditions.lifetime('LESSTHANOREQUALS',30)))),
+  BuiltinConditions.spell('warrior-dps-recklessness',1719,BuiltinConditions.all(BuiltinConditions.combat(),boss,BuiltinConditions.any({type='BUFF',unit='player',spell=12328},BuiltinConditions.lifetime('LESSTHANOREQUALS',15)))),
+  optional(BuiltinConditions.spell('warrior-dps-intimidating-shout',5246,BuiltinConditions.all(BuiltinConditions.combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.3},near))),
+  optional(BuiltinConditions.spell('warrior-dps-retaliation',20230,BuiltinConditions.all(BuiltinConditions.combat(),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.4},
    {type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3}))),
  },
  rotation={
  block('era.warrior.boundaries','warrior-dps-'),
- spell('warrior-dps-intercept',20252,{type='BEYOND_MELEE',unit='target'}),
+ BuiltinConditions.spell('warrior-dps-intercept',20252,{type='BEYOND_MELEE',unit='target'}),
  {id='warrior-dps-aoe',type='branch',conditions=enemies('GREATERTHANOREQUALS',3),onFalse={},onTrue={block('era.warrior.aoe-strikes','warrior-dps-')}},
- spell('warrior-dps-execute',5308,target('LESSTHAN',.2)),
- spell('warrior-dps-boss-sunder',7386,all(boss,any(negate({type='DEBUFF',unit='target',spell=7386,anyrank=true}),sunders('LESSTHAN',5)),
-  negate({type='DEBUFF',unit='target',spell=8647,anyrank=true}))),
- spell('warrior-dps-bloodthirst',23881),
- spell('warrior-dps-mortal-strike',12294),
- spell('warrior-dps-slam',1464,all({type='TALENT',layout='tree',tree=2,talent=12,operator='GREATERTHANOREQUALS',value=3},negate({type='MOVING'}),
+ BuiltinConditions.spell('warrior-dps-execute',5308,target('LESSTHAN',.2)),
+ BuiltinConditions.spell('warrior-dps-boss-sunder',7386,BuiltinConditions.all(boss,BuiltinConditions.any(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=7386,anyrank=true}),sunders('LESSTHAN',5)),
+  BuiltinConditions.negate({type='DEBUFF',unit='target',spell=8647,anyrank=true}))),
+ BuiltinConditions.spell('warrior-dps-bloodthirst',23881),
+ BuiltinConditions.spell('warrior-dps-mortal-strike',12294),
+ BuiltinConditions.spell('warrior-dps-slam',1464,BuiltinConditions.all({type='TALENT',layout='tree',tree=2,talent=12,operator='GREATERTHANOREQUALS',value=3},BuiltinConditions.negate({type='MOVING'}),
   {type='SWING_TIME_REMAIN',offhand=false,operator='GREATERTHANOREQUALS',value=2.5})),
- spell('warrior-dps-whirlwind',1680,any(negate(strike),cooling(12294,1.5),cooling(23881,1.5),rage('GREATERTHANOREQUALS',55))),
- spell('warrior-dps-overpower',7384),
- spell('warrior-dps-rend',772,all(negate(strike),negate({type='DEBUFF',unit='target',spell=772,anyrank=true,owndebuff=true}),target('GREATERTHAN',.3),negate(immune))),
- spell('warrior-dps-sunder',7386,all(target('GREATERTHANOREQUALS',.6),rage('GREATERTHANOREQUALS',25),
-  any(negate({type='DEBUFF',unit='target',spell=7386,anyrank=true}),sunders('LESSTHAN',5)))),
- spell('warrior-dps-hamstring',1715,all(rage('GREATERTHANOREQUALS',80),strike,any(cooling(12294,0),cooling(23881,0)),
-  any(negate(known(1680)),cooling(1680,0)))),
+ BuiltinConditions.spell('warrior-dps-whirlwind',1680,BuiltinConditions.any(BuiltinConditions.negate(strike),cooling(12294,1.5),cooling(23881,1.5),rage('GREATERTHANOREQUALS',55))),
+ BuiltinConditions.spell('warrior-dps-overpower',7384),
+ BuiltinConditions.spell('warrior-dps-rend',772,BuiltinConditions.all(BuiltinConditions.negate(strike),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=772,anyrank=true,owndebuff=true}),target('GREATERTHAN',.3),BuiltinConditions.negate(immune))),
+ BuiltinConditions.spell('warrior-dps-sunder',7386,BuiltinConditions.all(target('GREATERTHANOREQUALS',.6),rage('GREATERTHANOREQUALS',25),
+  BuiltinConditions.any(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=7386,anyrank=true}),sunders('LESSTHAN',5)))),
+ BuiltinConditions.spell('warrior-dps-hamstring',1715,BuiltinConditions.all(rage('GREATERTHANOREQUALS',80),strike,BuiltinConditions.any(cooling(12294,0),cooling(23881,0)),
+  BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.known(1680)),cooling(1680,0)))),
  }},
 }))

@@ -6,15 +6,10 @@
 -- Vengeful Retreat (with Inertia or Exergy), which its model marks as outside the assistant, plus
 -- Disrupt and Blur.
 local _,addon=...
-local function any(...)return{type='OR',value={...}}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.havoc',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Havoc. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what the game's assistant leaves to you: Metamorphosis and The Hunt in combat, Vengeful Retreat if you have Inertia or Exergy, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call. Movement, Darkness and trinkets stay with you.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'havoc','melee','assisted-combat'},
  sources={
@@ -24,13 +19,13 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={577},
   cooldowns={
-   block('havoc-utility','retail.demonhunter.utility','havoc-'),
-   spell('havoc-metamorphosis',191427,combat()),
-   spell('havoc-the-hunt',370965,combat()),
-   spell('havoc-vengeful-retreat',198793,any(known(427640),known(206476))),
+   BuiltinConditions.block('havoc-utility','retail.demonhunter.utility','havoc-'),
+   BuiltinConditions.spell('havoc-metamorphosis',191427,BuiltinConditions.combat()),
+   BuiltinConditions.spell('havoc-the-hunt',370965,BuiltinConditions.combat()),
+   BuiltinConditions.spell('havoc-vengeful-retreat',198793,BuiltinConditions.any(BuiltinConditions.known(427640),BuiltinConditions.known(206476))),
   },
   rotation={
-   block('havoc-boundaries','retail.demonhunter.boundaries','havoc-'),
+   BuiltinConditions.block('havoc-boundaries','retail.demonhunter.boundaries','havoc-'),
    {id='havoc-assisted',type='assisted',conditions={}},
   },
  },

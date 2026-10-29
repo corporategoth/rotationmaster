@@ -6,15 +6,11 @@
 -- chosen. Hunter's Mark and Arcane Shot to pull; Serpent Sting, Multi-Shot on three or more,
 -- Arcane Shot, Steady Shot, Auto Shot.
 local _,addon=...
-local function negate(c)return{type='NOT',value=c}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local idle=negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local idle=BuiltinConditions.negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.unspecialized',revision=5,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.serpent']=1},
- nameKey="Before a specialization",descriptionKey="For levels 1 to 9 and any Hunter who has not chosen a specialization; the Beast Mastery, Marksmanship and Survival premades take over as soon as you choose a specialization. Pulls with Hunter's Mark and Arcane Shot, then Serpent Sting on targets that will live, Multi-Shot on three or more enemies, Arcane Shot, Steady Shot and Auto Shot. Reminds you to call, revive and mend your pet and to keep Aspect of the Hawk up.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'leveling','single-target'},
  sources={
@@ -23,22 +19,22 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=1,
   cooldowns={
-   block('hunter-pet','mop.hunter.pet','hunter-'),
-   block('hunter-aspect','mop.hunter.aspect','hunter-'),
+   BuiltinConditions.block('hunter-pet','mop.hunter.pet','hunter-'),
+   BuiltinConditions.block('hunter-aspect','mop.hunter.aspect','hunter-'),
   },
   rotation={
-   block('hunter-boundaries','mop.hunter.boundaries','hunter-'),
+   BuiltinConditions.block('hunter-boundaries','mop.hunter.boundaries','hunter-'),
    {id='hunter-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    block('hunter-pull-mark','mop.hunter.mark','hunter-pull-'),
-    spell('hunter-pull-arcane',3044),
+    BuiltinConditions.block('hunter-pull-mark','mop.hunter.mark','hunter-pull-'),
+    BuiltinConditions.spell('hunter-pull-arcane',3044),
     {id='hunter-pull-auto-shot',type='spell',action=75,ranked=true,conditions=idle},
-    stop('hunter-pull-stop')}},
-   block('hunter-serpent','mop.hunter.serpent','hunter-'),
-   spell('hunter-multi-shot',2643,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3}),
-   spell('hunter-arcane',3044),
-   spell('hunter-steady',56641),
+    BuiltinConditions.stop('hunter-pull-stop')}},
+   BuiltinConditions.block('hunter-serpent','mop.hunter.serpent','hunter-'),
+   BuiltinConditions.spell('hunter-multi-shot',2643,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3}),
+   BuiltinConditions.spell('hunter-arcane',3044),
+   BuiltinConditions.spell('hunter-steady',56641),
    {id='hunter-auto-shot',type='spell',action=75,ranked=true,conditions=idle},
-   stop('hunter-wait'),
+   BuiltinConditions.stop('hunter-wait'),
   },
  },
 }))

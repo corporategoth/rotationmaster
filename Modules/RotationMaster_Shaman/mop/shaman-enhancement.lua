@@ -11,23 +11,16 @@
 -- Unleash Flame, Unleash Elements, a plain Flame Shock when Unleash is far off, Earth Shock, Fire Nova on two,
 -- Lightning Bolt from range. Shared parts: mop/blocks.lua.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function maelstrom(n)return{type='BUFF_STACKS',unit='player',spell=53817,ownbuff=true,operator='GREATERTHANOREQUALS',value=n}end
 local function swing(n)return{type='SWING_TIME_REMAIN',operator='GREATERTHANOREQUALS',value=n}end
 local function shock(op,n)return{type='DEBUFF_REMAIN',unit='target',spell=8050,owndebuff=true,operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local flame={type='DEBUFF',unit='target',spell=8050,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.enhancement',revision=8,
  blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1,
   ['mop.shaman.enhancement-upkeep']=2,['mop.shaman.enhancement-aoe']=1},
- nameKey="Recommended",descriptionKey="Recommended for Enhancement from level 10, chosen in the Enhancement specialization. Wowhead's order: Unleash Elements while running in, then Unleash Elements with Unleashed Fury, Elemental Blast and Lightning Bolt at five Maelstrom Weapon (or woven at three when your next swing is over a second away), Stormblast in Ascendance, Stormstrike (Primal Strike before 26), Lava Lash, Flame Shock under Unleash Flame, Unleash Elements, Earth Shock. Two or more enemies on you: Chain Lightning instead of Lightning Bolt, Lava Lash to spread Flame Shock, Fire Nova from four, Magma from six. Reminders: Lightning Shield, Windfury on the main hand and Flametongue on the off hand, Searing Totem, Fire Elemental, Feral Spirit, Ascendance after Stormstrike, Elemental Mastery, Ancestral Swiftness, Stormlash and Bloodlust in a group, Wind Shear, Shamanistic Rage and Astral Shift when low. Earth Elemental is listed but off.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'enhancement','dps','melee','leveling','endgame','wowhead','warcraft-tavern'},
  sources={{url='https://www.wowhead.com/mop-classic/guide/classes/shaman/enhancement/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Enhancement Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
@@ -37,29 +30,29 @@ assert(addon:RegisterDefaultRotation({
  body={priority=30,specs={263},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.shaman.lightning-shield','shaman-enh-'),block('mop.shaman.enhancement-upkeep','shaman-enh-'),block('mop.shaman.fire-totems','shaman-enh-'),
   block('mop.shaman.group','shaman-enh-'),
-  spell('shaman-enh-shamanistic-rage',30823,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.6})),
+  BuiltinConditions.spell('shaman-enh-shamanistic-rage',30823,BuiltinConditions.all(BuiltinConditions.combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.6})),
  },
  rotation={
  block('mop.shaman.manual-target','shaman-enh-'),
- {id='shaman-enh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-  spell('shaman-enh-pull-unleash',73680),
-  spell('shaman-enh-pull-bolt',403,all(negate(known(73680)),{type='BEYOND_MELEE',unit='target'})),
+ {id='shaman-enh-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+  BuiltinConditions.spell('shaman-enh-pull-unleash',73680),
+  BuiltinConditions.spell('shaman-enh-pull-bolt',403,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(73680)),{type='BEYOND_MELEE',unit='target'})),
   {id='shaman-enh-pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  block('mop.shaman.enhancement-aoe','shaman-enh-aoe-'),
- spell('shaman-enh-unleash-fury',73680,{type='TALENT',layout='grid',value=16}),
- spell('shaman-enh-elemental-blast',117014,any(maelstrom(5),all(maelstrom(1),swing(1.7)))),
- spell('shaman-enh-bolt',403,maelstrom(5)),
- spell('shaman-enh-bolt-weave',403,all(maelstrom(3),swing(1.1))),
- spell('shaman-enh-stormblast',115356,own(114051)),
- spell('shaman-enh-stormstrike',17364),
- spell('shaman-enh-primal-strike',73899,negate(known(17364))),
- spell('shaman-enh-lava-lash',60103),
- spell('shaman-enh-flame-shock-unleashed',8050,all(own(73683),any(negate(flame),shock('LESSTHAN',9)))),
- spell('shaman-enh-unleash',73680),
- spell('shaman-enh-flame-shock',8050,all(negate(flame),any(negate(known(73680)),{type='SPELL_COOLDOWN',spell=73680,operator='GREATERTHAN',value=5}))),
- spell('shaman-enh-earth-shock',8042),
- spell('shaman-enh-fire-nova',1535,all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},flame)),
- spell('shaman-enh-ranged-bolt',403,all(maelstrom(1),{type='BEYOND_MELEE',unit='target'})),
+ BuiltinConditions.spell('shaman-enh-unleash-fury',73680,{type='TALENT',layout='grid',value=16}),
+ BuiltinConditions.spell('shaman-enh-elemental-blast',117014,BuiltinConditions.any(maelstrom(5),BuiltinConditions.all(maelstrom(1),swing(1.7)))),
+ BuiltinConditions.spell('shaman-enh-bolt',403,maelstrom(5)),
+ BuiltinConditions.spell('shaman-enh-bolt-weave',403,BuiltinConditions.all(maelstrom(3),swing(1.1))),
+ BuiltinConditions.spell('shaman-enh-stormblast',115356,BuiltinConditions.ownBuff(114051)),
+ BuiltinConditions.spell('shaman-enh-stormstrike',17364),
+ BuiltinConditions.spell('shaman-enh-primal-strike',73899,BuiltinConditions.negate(BuiltinConditions.known(17364))),
+ BuiltinConditions.spell('shaman-enh-lava-lash',60103),
+ BuiltinConditions.spell('shaman-enh-flame-shock-unleashed',8050,BuiltinConditions.all(BuiltinConditions.ownBuff(73683),BuiltinConditions.any(BuiltinConditions.negate(flame),shock('LESSTHAN',9)))),
+ BuiltinConditions.spell('shaman-enh-unleash',73680),
+ BuiltinConditions.spell('shaman-enh-flame-shock',8050,BuiltinConditions.all(BuiltinConditions.negate(flame),BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.known(73680)),{type='SPELL_COOLDOWN',spell=73680,operator='GREATERTHAN',value=5}))),
+ BuiltinConditions.spell('shaman-enh-earth-shock',8042),
+ BuiltinConditions.spell('shaman-enh-fire-nova',1535,BuiltinConditions.all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},flame)),
+ BuiltinConditions.spell('shaman-enh-ranged-bolt',403,BuiltinConditions.all(maelstrom(1),{type='BEYOND_MELEE',unit='target'})),
  }},
 }))

@@ -10,14 +10,12 @@
 -- Molten Core or below 25%, Hellfire on packs, Shadow Bolt. Shared parts: mop/blocks.lua. The guide variant
 -- pools Molten Core for Metamorphosis instead.
 local _,addon=...
-local function any(...)return{type='OR',value={...}}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.demonology',revision=8,
  blocks={['mop.warlock.boundaries']=4,['mop.warlock.upkeep']=1,['mop.warlock.demonology-upkeep']=2,['mop.warlock.demonology-demon']=2,
   ['mop.warlock.demonology-pull']=3,['mop.warlock.demonology-caster']=2,['mop.warlock.demonology-filler']=1},
- nameKey="Recommended",descriptionKey="Recommended for Demonology from level 10 to 90 (chosen in the Demonology specialization). In caster form: Corruption, Hand of Gul'dan by charges, a second Hand of Gul'dan into Metamorphosis when a one-stack Shadowflame is about to drop, Metamorphosis with Dark Soul: Knowledge (or near full fury), Soul Fire at two Molten Core stacks or below 25%, Hellfire on four or more enemies, Shadow Bolt. In Metamorphosis: Doom, Touch of Chaos to keep Corruption up, Soul Fire on Molten Core, Immolation Aura or Void Ray on packs, Touch of Chaos, and a cue to leave it when Dark Soul is down and fury is at 300 or less. Reminders: Felguard (or Wrathguard), Dark Intent, Dark Soul, Imp Swarm, Grimoire: Felguard, Doomguard or Infernal, Life Tap, Health Funnel solo. Left to you: Felstorm (pet autocast) and Demonic Leap.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'demonology','dps','caster','ranged','pet','leveling','endgame','hekili'},
  sources={
@@ -32,9 +30,9 @@ assert(addon:RegisterDefaultRotation({
   onTrue={block('mop.warlock.demonology-demon','warlock-demo-')},
   onFalse={
   block('mop.warlock.demonology-caster','warlock-demo-'),
-  spell('warlock-demo-metamorphosis',103958,any({type='BUFF_REMAIN',unit='player',spell=113861,ownbuff=true,operator='GREATERTHAN',value=10},
+  BuiltinConditions.spell('warlock-demo-metamorphosis',103958,BuiltinConditions.any({type='BUFF_REMAIN',unit='player',spell=113861,ownbuff=true,operator='GREATERTHAN',value=10},
    {type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=950})),
-  spell('warlock-demo-soul-fire',6353,any({type='BUFF_STACKS',unit='player',spell=122355,ownbuff=true,operator='GREATERTHANOREQUALS',value=2},
+  BuiltinConditions.spell('warlock-demo-soul-fire',6353,BuiltinConditions.any({type='BUFF_STACKS',unit='player',spell=122355,ownbuff=true,operator='GREATERTHANOREQUALS',value=2},
    {type='BUFF_REMAIN',unit='player',spell=122355,ownbuff=true,operator='LESSTHAN',value=4},{type='HEALTHPCT',unit='target',operator='LESSTHANOREQUALS',value=.25})),
   block('mop.warlock.demonology-filler','warlock-demo-'),
  }},

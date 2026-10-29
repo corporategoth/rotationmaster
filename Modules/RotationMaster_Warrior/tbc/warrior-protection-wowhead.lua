@@ -7,18 +7,13 @@
 -- is reminded against targets that can crush. Shared parts live in Defaults/blocks/warrior.lua.
 -- Left manual: taunting, pre-pull rage, stance swaps, Spell Reflection, Intervene and other utility.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function debuff(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
-local demoralized=any(debuff(1160),debuff(99))
+local demoralized=BuiltinConditions.any(debuff(1160),debuff(99))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.protection.wowhead',revision=6,
  blocks={['tbc.warrior.boundaries']=4,['tbc.warrior.upkeep']=1,['tbc.warrior.prot-upkeep']=1,['tbc.warrior.prot-core']=1,['tbc.warrior.sunder']=1},
- nameKey="Tank (Wowhead)",descriptionKey="Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge, Thunder Clap and Demoralizing Shout kept up on elites and bosses, then Devastate or Sunder Armor. On packs: Thunder Clap and Demoralizing Shout first. Reminds you of Shield Block (with a shield equipped) against bosses and higher-level enemies, Heroic Strike or Cleave, Battle Shout, Bloodrage, Shield Bash and emergency Last Stand and Shield Wall. Taunting and other utility stay with you.",
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/warrior/protection/tank-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Protection Warrior tank rotation',reviewedAt='2026-10-23',revision='2026-02-23'},
@@ -26,18 +21,18 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='FORM',form=71}}},
  cooldowns={block('tbc.warrior.upkeep','warrior-prot-'),block('tbc.warrior.prot-upkeep','warrior-prot-'),
-  spell('warrior-prot-shield-block',2565,all({type='COMBAT',unit='player'},{type='WEAPON_TYPE',slot='offhand',kind='shield'},negate({type='BUFF',unit='player',spell=2565,anyrank=true}),
-   any(classified('worldboss'),{type='LEVEL',unit='target',relative=true,operator='GREATERTHANOREQUALS',value=3})))},
+  BuiltinConditions.spell('warrior-prot-shield-block',2565,BuiltinConditions.all({type='COMBAT',unit='player'},{type='WEAPON_TYPE',slot='offhand',kind='shield'},BuiltinConditions.negate({type='BUFF',unit='player',spell=2565,anyrank=true}),
+   BuiltinConditions.any(BuiltinConditions.classified('worldboss'),{type='LEVEL',unit='target',relative=true,operator='GREATERTHANOREQUALS',value=3})))},
  rotation={
  block('tbc.warrior.boundaries','warrior-prot-'),
  {id='warrior-prot-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},onFalse={},onTrue={
-  spell('warrior-prot-aoe-thunder-clap',6343),
-  spell('warrior-prot-aoe-demoralizing-shout',1160,negate(demoralized)),
+  BuiltinConditions.spell('warrior-prot-aoe-thunder-clap',6343),
+  BuiltinConditions.spell('warrior-prot-aoe-demoralizing-shout',1160,BuiltinConditions.negate(demoralized)),
  }},
  block('tbc.warrior.prot-core','warrior-prot-'),
- {id='warrior-prot-debuffs',type='branch',conditions=any(classified('worldboss'),classified('elite')),onFalse={},onTrue={
-  spell('warrior-prot-demoralizing-shout',1160,negate(demoralized)),
-  spell('warrior-prot-thunder-clap',6343,negate(debuff(6343))),
+ {id='warrior-prot-debuffs',type='branch',conditions=BuiltinConditions.any(BuiltinConditions.classified('worldboss'),BuiltinConditions.classified('elite')),onFalse={},onTrue={
+  BuiltinConditions.spell('warrior-prot-demoralizing-shout',1160,BuiltinConditions.negate(demoralized)),
+  BuiltinConditions.spell('warrior-prot-thunder-clap',6343,BuiltinConditions.negate(debuff(6343))),
  }},
  block('tbc.warrior.sunder','warrior-prot-'),
  }},

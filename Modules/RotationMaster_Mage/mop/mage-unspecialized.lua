@@ -6,17 +6,10 @@
 -- Frost Nova when a mob reaches you. RM policy assembled from the spells' training levels; no source
 -- writes a level 1–9 list.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.mage.unspecialized',revision=5,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1},
- nameKey="Before a specialization",descriptionKey="For levels 1 to 9, and any Mage who has not chosen a specialization yet. Frostfire Bolt, Fire Blast to finish a target or on the move, Ice Lance on the move once learned, Arcane Explosion when three or more enemies are in melee range. Reminders: Frost Nova when a mob reaches you, Counterspell, and Molten Armor and Arcane Brilliance if you reach them. Choosing a specialization at 10 switches to that specialization's premade.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'leveling','single-target','aoe'},
  sources={
@@ -25,18 +18,18 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=0,
   cooldowns={
-   block('mage-armor','mop.mage.armor-molten','mage-'),
-   block('mage-upkeep','mop.mage.upkeep','mage-'),
-   spell('mage-frost-nova',122,all(combat(),negate({type='BEYOND_MELEE',unit='target'}),{type='ISSAME',unit='targettarget',otherunit='player'})),
+   BuiltinConditions.block('mage-armor','mop.mage.armor-molten','mage-'),
+   BuiltinConditions.block('mage-upkeep','mop.mage.upkeep','mage-'),
+   BuiltinConditions.spell('mage-frost-nova',122,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate({type='BEYOND_MELEE',unit='target'}),{type='ISSAME',unit='targettarget',otherunit='player'})),
   },
   rotation={
-   block('mage-boundaries','mop.mage.boundaries','mage-'),
-   {id='mage-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('mage-pull-frostfire',44614),stop('mage-pull-stop')}},
+   BuiltinConditions.block('mage-boundaries','mop.mage.boundaries','mage-'),
+   {id='mage-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={BuiltinConditions.spell('mage-pull-frostfire',44614),BuiltinConditions.stop('mage-pull-stop')}},
    {id='mage-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell('mage-aoe-explosion',1449,{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3})}},
-   spell('mage-fire-blast',2136,any({type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.15},{type='MOVING'})),
-   spell('mage-ice-lance',30455,{type='MOVING'}),
-   spell('mage-frostfire',44614),
+    BuiltinConditions.spell('mage-aoe-explosion',1449,{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3})}},
+   BuiltinConditions.spell('mage-fire-blast',2136,BuiltinConditions.any({type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.15},{type='MOVING'})),
+   BuiltinConditions.spell('mage-ice-lance',30455,{type='MOVING'}),
+   BuiltinConditions.spell('mage-frostfire',44614),
   },
  },
 }))

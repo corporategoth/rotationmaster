@@ -7,22 +7,15 @@
 -- moving. AoE on three or more fighting you: Cone of Cold; Blizzard (Arcane Explosion with a mob on
 -- you) from five. Warcraft Tavern's Flamestrike/Explosion AoE is in the AoE branch, off by default.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function off(id,action,conditions)local step=BuiltinConditions.spell(id,action,conditions);step.disabled=true;return step end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local fingers=any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='player',spell=400670})
-local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=12494})
-local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
+local fingers=BuiltinConditions.any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='player',spell=400670})
+local frozen=BuiltinConditions.any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=12494})
+local barrage=BuiltinConditions.any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.mage.frost',revision=6,
  blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=3,['forever.mage.frostbolt']=1,['forever.mage.wand']=3,['forever.mage.upkeep']=2},
- nameKey="Frost",descriptionKey="Frost from level 1 to 60, and the Forever Mage default before talent spells (Fireball until Frostbolt at level 4). Pulls with Frostbolt; then Ice Lance on Fingers of Frost or a frozen target (also while Frostbolt is still casting, to cancel or batch), Cone of Cold at five Winter's Chill stacks, Arcane Missiles on Missile Barrage, Frostbolt, and a wand when solo and you cannot afford Frostbolt. Moving: Ice Lance, else Fire Blast. Three or more enemies fighting you: Cone of Cold; five or more: Blizzard, or Arcane Explosion with a mob on you. Warcraft Tavern's Flamestrike and Arcane Explosion AoE is included but off. Reminders: Arcane Intellect, armor (Ice or Frost solo, Mage Armor in a group, never replacing one you chose), Ice Barrier, Counterspell, Remove Lesser Curse, Frost Nova when a mob reaches you, Cold Snap. Health and mana are hidden from addons on Forever, so finishing low targets with Fire Blast, Evocation and Ice Block are your call; Blink, kiting, Polymorph and mana gems stay with you too.",
  applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'frost','leveling','single-target','aoe','icy-veins'},
  sources={
@@ -35,29 +28,29 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,
   cooldowns={
-   block('frost-upkeep','forever.mage.upkeep','frost-'),
-   spell('frost-cold-snap',12472,all(combat(),{type='SPELL_COOLDOWN',spell=122,operator='GREATERTHAN',value=2},{type='DISTANCE',unit='target',value=8})),
+   BuiltinConditions.block('frost-upkeep','forever.mage.upkeep','frost-'),
+   BuiltinConditions.spell('frost-cold-snap',12472,BuiltinConditions.all(BuiltinConditions.combat(),{type='SPELL_COOLDOWN',spell=122,operator='GREATERTHAN',value=2},{type='DISTANCE',unit='target',value=8})),
   },
   rotation={
-   block('frost-lance-batch','forever.mage.lance-batch','frost-'),
-   block('frost-boundaries','forever.mage.boundaries','frost-'),
-   {id='frost-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    block('frost-pull-filler','forever.mage.frostbolt','frost-pull-'),stop('frost-pull-stop')}},
-   spell('frost-fingers-lance',1312002,fingers),
-   spell('frost-frozen-lance',1312002,frozen),
-   spell('frost-chill-cone',120,all({type='DEBUFF_STACKS',unit='target',spell=12579,owndebuff=true,operator='GREATERTHANOREQUALS',value=5},{type='DISTANCE',unit='target',value=10})),
+   BuiltinConditions.block('frost-lance-batch','forever.mage.lance-batch','frost-'),
+   BuiltinConditions.block('frost-boundaries','forever.mage.boundaries','frost-'),
+   {id='frost-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.block('frost-pull-filler','forever.mage.frostbolt','frost-pull-'),BuiltinConditions.stop('frost-pull-stop')}},
+   BuiltinConditions.spell('frost-fingers-lance',1312002,fingers),
+   BuiltinConditions.spell('frost-frozen-lance',1312002,frozen),
+   BuiltinConditions.spell('frost-chill-cone',120,BuiltinConditions.all({type='DEBUFF_STACKS',unit='target',spell=12579,owndebuff=true,operator='GREATERTHANOREQUALS',value=5},{type='DISTANCE',unit='target',value=10})),
    {id='frost-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
-    spell('frost-moving-lance',1312002),spell('frost-moving-fire-blast',2136),stop('frost-moving-stop')}},
-   spell('frost-missiles',5143,barrage),
+    BuiltinConditions.spell('frost-moving-lance',1312002),BuiltinConditions.spell('frost-moving-fire-blast',2136),BuiltinConditions.stop('frost-moving-stop')}},
+   BuiltinConditions.spell('frost-missiles',5143,barrage),
    {id='frost-aoe',type='branch',conditions=engaged(3),onFalse={},onTrue={
-    off('frost-aoe-tavern-flamestrike',2120,negate({type='DEBUFF',unit='target',spell=2120,anyrank=true,owndebuff=true})),
+    off('frost-aoe-tavern-flamestrike',2120,BuiltinConditions.negate({type='DEBUFF',unit='target',spell=2120,anyrank=true,owndebuff=true})),
     off('frost-aoe-tavern-explosion',1449),
-    spell('frost-aoe-cone',120),
+    BuiltinConditions.spell('frost-aoe-cone',120),
     {id='frost-aoe-five',type='branch',conditions=engaged(5),onFalse={},onTrue={
      {id='frost-aoe-close',type='branch',conditions={type='BEYOND_MELEE',unit='target'},
-      onTrue={spell('frost-aoe-blizzard',10)},onFalse={spell('frost-aoe-explosion',1449)}}}}}},
-   block('frost-filler','forever.mage.frostbolt','frost-'),
-   block('frost-wand','forever.mage.wand','frost-'),
+      onTrue={BuiltinConditions.spell('frost-aoe-blizzard',10)},onFalse={BuiltinConditions.spell('frost-aoe-explosion',1449)}}}}}},
+   BuiltinConditions.block('frost-filler','forever.mage.frostbolt','frost-'),
+   BuiltinConditions.block('frost-wand','forever.mage.wand','frost-'),
   },
  },
 }))

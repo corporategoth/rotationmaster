@@ -8,16 +8,12 @@
 -- Infernal in combat, an Imp between pulls unless you sacrificed it, Command Demon, Dark Pact,
 -- Unending Resolve. Havoc on a second target stays manual.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.destruction',revision=6,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Destruction in Midnight. Shows Blizzard's Assisted Combat suggestion (Immolate or Wither, Conflagrate, Chaos Bolt, Rain of Fire, Soul Fire, Malevolence), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Infernal in combat, an Imp between pulls unless you sacrificed your demon, Command Demon, Dark Pact, Unending Resolve. Havoc on a second target stays with you.",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'destruction','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
@@ -28,8 +24,8 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,specs={267},
   cooldowns={
    block('retail.warlock.upkeep','destro-'),
-   spell('destro-summon-imp',688,all(negate(combat()),negate({type='PET'}),negate({type='BUFF',unit='player',spell=196099,ownbuff=true}))),
-   spell('destro-summon-infernal',1122,fight),
+   BuiltinConditions.spell('destro-summon-imp',688,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate({type='PET'}),BuiltinConditions.negate({type='BUFF',unit='player',spell=196099,ownbuff=true}))),
+   BuiltinConditions.spell('destro-summon-infernal',1122,fight),
   },
   rotation={
    block('retail.warlock.boundaries','destro-'),

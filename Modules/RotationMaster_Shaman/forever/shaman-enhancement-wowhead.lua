@@ -8,35 +8,30 @@
 -- interrupt), no Maelstrom step, and Searing Totem with Fire Nova on cooldown in groups and on
 -- packs. Shared parts: Defaults/blocks/forever-shaman.lua.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function enemies(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local stationary=negate({type='MOVING'})
+local stationary=BuiltinConditions.negate({type='MOVING'})
 local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement.wowhead',revision=6,
  blocks={['forever.shaman.manual-target']=2,['forever.shaman.upkeep']=2,['forever.shaman.imbue']=1},
- nameKey="Enhancement, mana-efficient (Wowhead)",descriptionKey="Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work, Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in the rotation (shocks pull and interrupt), and in groups or on packs Searing Totem with Fire Nova on cooldown. Same imbue, shield and interrupt reminders as the Icy Veins premade. Choose it instead of that premade if mana runs out. An alternative to the recommended Enhancement premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'dps','melee','leveling','aoe','wowhead','mobalytics'},
  sources={{url='https://www.wowhead.com/forever/guide/classes/shaman/enhancement/level-30-dps-overview',title='Wowhead: Forever level 30 Enhancement Shaman',reviewedAt='2026-10-23',revision='2026-10-17'},
  {url='https://mobalytics.gg/wow-forever/classes/shaman-leveling-guide',title='Mobalytics: Forever Shaman leveling 1–30 (dungeon list)',reviewedAt='2026-10-23',revision='2026-10-21'}},
  body={priority=5,disabled=true,
  cooldowns={block('forever.shaman.upkeep','shaman-wh-'),block('forever.shaman.imbue','shaman-wh-'),
-  spell('shaman-wh-searing-totem',3599,all(combat(),negate({type='TOTEM',spell=1}),any({type='GROUP'},enemies(3))))},
+  BuiltinConditions.spell('shaman-wh-searing-totem',3599,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate({type='TOTEM',spell=1}),BuiltinConditions.any({type='GROUP'},enemies(3))))},
  rotation={
  block('forever.shaman.manual-target','shaman-wh-'),
- {id='shaman-wh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-  spell('shaman-wh-pull-bolt',403,all(ranged,stationary)),
-  spell('shaman-wh-pull-shock',8042),
+ {id='shaman-wh-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+  BuiltinConditions.spell('shaman-wh-pull-bolt',403,BuiltinConditions.all(ranged,stationary)),
+  BuiltinConditions.spell('shaman-wh-pull-shock',8042),
   {id='shaman-wh-pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
- spell('shaman-wh-fire-nova',408341,all({type='TOTEM',spell=1},any({type='GROUP'},enemies(3)))),
- spell('shaman-wh-stormstrike',17364,negate({type='BUFF',unit='player',spell=1238931})),
- spell('shaman-wh-bolt',403,all(ranged,stationary)),
+ BuiltinConditions.spell('shaman-wh-fire-nova',408341,BuiltinConditions.all({type='TOTEM',spell=1},BuiltinConditions.any({type='GROUP'},enemies(3)))),
+ BuiltinConditions.spell('shaman-wh-stormstrike',17364,BuiltinConditions.negate({type='BUFF',unit='player',spell=1238931})),
+ BuiltinConditions.spell('shaman-wh-bolt',403,BuiltinConditions.all(ranged,stationary)),
  }},
 }))

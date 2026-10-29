@@ -8,17 +8,11 @@
 -- hurt anyone is; HoTs are secret in Midnight combat, so the steps that read them wait there. Choosing
 -- whom to heal is yours.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function hot(id)return{type='BUFF',unit='target',spell=id,ownbuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.restoration',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey="Blizzard Assisted with maintenance",descriptionKey="Recommended for Restoration. With an enemy targeted it highlights Blizzard's Assisted Combat suggestion, Blizzard's Restoration damage list in cat or caster form. Otherwise it suggests Icy Veins' maintenance casts on your friendly target (or yourself): Lifebloom, Efflorescence in combat, Swiftmend on a Rejuvenation, Wild Growth in a group in combat, Regrowth on Clearcasting or five Abundance stacks, Rejuvenation when missing. Health and mana are hidden on Retail, so these follow the target you choose, not how hurt anyone is; your heals over time are hidden in Midnight combat, so the steps that read them wait there. Whom to heal, and every healing cooldown, is yours. Reminders: Innervate, Barkskin and your racial cooldown whenever they are ready in combat, Mark of the Wild between pulls.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'restoration','healer','assisted-combat','icy-veins'},
  sources={
@@ -29,20 +23,20 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={105},
   cooldowns={
-   block('resto-utility','retail.druid.utility','resto-'),
-   spell('resto-innervate',29166,combat()),
+   BuiltinConditions.block('resto-utility','retail.druid.utility','resto-'),
+   BuiltinConditions.spell('resto-innervate',29166,BuiltinConditions.combat()),
   },
   rotation={
-   block('resto-boundaries','retail.druid.boundaries','resto-'),
+   BuiltinConditions.block('resto-boundaries','retail.druid.boundaries','resto-'),
    {id='resto-target',type='branch',conditions={type='ATTACKABLE',unit='target'},
     onTrue={{id='resto-assisted',type='assisted',conditions={}}},
     onFalse={
-     spell('resto-lifebloom',33763,negate(hot(33763))),
-     spell('resto-efflorescence',145205,all(combat(),negate({type='BUFF',unit='player',spell=145205,ownbuff=true}))),
-     spell('resto-swiftmend',18562,hot(774)),
-     spell('resto-wild-growth',48438,all(combat(),{type='GROUP'})),
-     spell('resto-regrowth',8936,any({type='BUFF',unit='player',spell=16870,ownbuff=true},{type='BUFF_STACKS',unit='player',spell=207640,ownbuff=true,operator='GREATERTHANOREQUALS',value=5})),
-     spell('resto-rejuvenation',774,negate(hot(774))),
+     BuiltinConditions.spell('resto-lifebloom',33763,BuiltinConditions.negate(hot(33763))),
+     BuiltinConditions.spell('resto-efflorescence',145205,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate({type='BUFF',unit='player',spell=145205,ownbuff=true}))),
+     BuiltinConditions.spell('resto-swiftmend',18562,hot(774)),
+     BuiltinConditions.spell('resto-wild-growth',48438,BuiltinConditions.all(BuiltinConditions.combat(),{type='GROUP'})),
+     BuiltinConditions.spell('resto-regrowth',8936,BuiltinConditions.any({type='BUFF',unit='player',spell=16870,ownbuff=true},{type='BUFF_STACKS',unit='player',spell=207640,ownbuff=true,operator='GREATERTHANOREQUALS',value=5})),
+     BuiltinConditions.spell('resto-rejuvenation',774,BuiltinConditions.negate(hot(774))),
     }},
   },
  },

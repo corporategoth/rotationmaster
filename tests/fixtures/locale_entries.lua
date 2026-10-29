@@ -51,6 +51,7 @@ local function run(path, addon, into)
         LibStub = function()
             return { NewLocale = function() return target end, GetLocale = function() return target end }
         end,
+        GetLocale = function() return path:match('([^/]+)%.lua$') end,
         NORMAL_FONT_COLOR_CODE = '|cffffd200',
     }, { __index = _G })
 
@@ -103,7 +104,12 @@ function M.dir_entries(dir, client)
 
     if client ~= 'enUS' then
         local addon = {}
-        run(dir .. '/' .. client .. '.lua', addon, {})
+
+        if dir:match('/Locales$') then
+            run(dir .. '/' .. client .. '.lua', addon, found)
+        else
+            run(dir .. '/' .. client .. '.lua', addon, {})
+        end
 
         if addon.translation then
             run(dir .. '/enUS.lua', addon, found)

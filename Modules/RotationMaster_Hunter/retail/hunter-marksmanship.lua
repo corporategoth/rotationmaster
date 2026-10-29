@@ -4,13 +4,10 @@
 -- Blizzard's Assisted Combat suggestion. Around it, highlights for what Assisted Combat leaves to
 -- you: Trueshot, Counter Shot, the defensives and racial cooldowns.
 local _,addon=...
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship',revision=6,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Marksmanship. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Trueshot and your racial cooldown in combat, Counter Shot on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call.",
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'marksmanship','ranged','assisted-combat'},
  sources={
@@ -20,11 +17,11 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={254},
   cooldowns={
-   block('mm-utility','retail.hunter.utility','mm-'),
-   spell('mm-trueshot',288613,combat()),
+   BuiltinConditions.block('mm-utility','retail.hunter.utility','mm-'),
+   BuiltinConditions.spell('mm-trueshot',288613,BuiltinConditions.combat()),
   },
   rotation={
-   block('mm-boundaries','retail.hunter.boundaries','mm-'),
+   BuiltinConditions.block('mm-boundaries','retail.hunter.boundaries','mm-'),
    {id='mm-assisted',type='assisted',conditions={}},
   },
  },

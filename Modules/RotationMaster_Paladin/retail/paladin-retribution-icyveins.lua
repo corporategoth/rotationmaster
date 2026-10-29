@@ -9,23 +9,17 @@
 -- Wrath, Blade of Justice, Judgment and the builders. Avenging Wrath and Execution Sentence (with
 -- Wake of Ashes ready) are reminders. Holy Power is never secret for the player in Midnight.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function holyPower(op,v)return{type='POINT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
-local spread=any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},own(326733))
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
+local spread=BuiltinConditions.any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},BuiltinConditions.ownBuff(326733))
 -- Holy Power is read first so a hidden Empyrean Power cannot mask a readable answer.
-local storm=any(all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},holyPower('GREATERTHANOREQUALS',3)),own(326733))
-local capped=all(holyPower('GREATERTHANOREQUALS',5),negate({type='SPELL_AVAIL',spell=255937}))
+local storm=BuiltinConditions.any(BuiltinConditions.all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},holyPower('GREATERTHANOREQUALS',3)),BuiltinConditions.ownBuff(326733))
+local capped=BuiltinConditions.all(holyPower('GREATERTHANOREQUALS',5),BuiltinConditions.negate({type='SPELL_AVAIL',spell=255937}))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.retribution.icyveins',revision=7,
  blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2},
- nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft order reads buffs, charges and enemy counts that Midnight hides in combat, so it cannot run reliably there. Hammer of Light; a free Divine Purpose spender; at 5 Holy Power while Wake of Ashes is cooling, the spender; Wake of Ashes; Divine Toll; Blade of Justice on Art of War; Hammer of Wrath before it caps; at 3 or more Holy Power, Divine Storm on two or more enemies (or with Empyrean Power), else Final Verdict; Hammer of Wrath; Blade of Justice; Judgment; Templar Strike or Crusader Strike. Holy Power stays visible in combat, so its spending points work there. Reminders: Avenging Wrath, Execution Sentence with Wake of Ashes ready, aura, Rebuke, defensives.",
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'retribution','melee','reference','single-target','aoe','icy-veins','simulationcraft','wowhead'},
  sources={
@@ -36,31 +30,31 @@ assert(addon:RegisterDefaultRotation({
  body={priority=5,disabled=true,specs={70},
   cooldowns={
    block('retail.paladin.upkeep','retiv-'),
-   spell('retiv-avenging-wrath',31884,fight),
-   spell('retiv-execution-sentence',343527,all(fight,{type='SPELL_COOLDOWN',spell=255937,operator='LESSTHAN',value=1.5})),
-   spell('retiv-divine-protection',403876,combat()),
+   BuiltinConditions.spell('retiv-avenging-wrath',31884,fight),
+   BuiltinConditions.spell('retiv-execution-sentence',343527,BuiltinConditions.all(fight,{type='SPELL_COOLDOWN',spell=255937,operator='LESSTHAN',value=1.5})),
+   BuiltinConditions.spell('retiv-divine-protection',403876,BuiltinConditions.combat()),
   },
   rotation={
    block('retail.paladin.boundaries','retiv-'),
-   spell('retiv-hammer-of-light',427453),
-   spell('retiv-free-storm',53385,all(own(223819),spread)),
-   spell('retiv-free-verdict',383328,own(223819)),
-   spell('retiv-capped-storm',53385,all(capped,spread)),
-   spell('retiv-capped-verdict',383328,capped),
-   spell('retiv-capped-templars-verdict',85256,capped),
-   spell('retiv-wake-of-ashes',255937),
-   spell('retiv-divine-toll',375576),
-   spell('retiv-art-of-war',184575,own(406086)),
-   spell('retiv-hammer-of-wrath-capped',24275,{type='SPELL_CHARGES',spell=24275,operator='GREATERTHANOREQUALS',value=2}),
-   spell('retiv-divine-storm',53385,storm),
-   spell('retiv-final-verdict',383328,holyPower('GREATERTHANOREQUALS',3)),
-   spell('retiv-templars-verdict',85256,holyPower('GREATERTHANOREQUALS',3)),
-   spell('retiv-hammer-of-wrath',24275),
-   spell('retiv-blade-of-justice',184575),
-   spell('retiv-judgment',20271),
-   spell('retiv-templar-strike',407480),
-   spell('retiv-templar-slash',406647),
-   spell('retiv-crusader-strike',35395),
+   BuiltinConditions.spell('retiv-hammer-of-light',427453),
+   BuiltinConditions.spell('retiv-free-storm',53385,BuiltinConditions.all(BuiltinConditions.ownBuff(223819),spread)),
+   BuiltinConditions.spell('retiv-free-verdict',383328,BuiltinConditions.ownBuff(223819)),
+   BuiltinConditions.spell('retiv-capped-storm',53385,BuiltinConditions.all(capped,spread)),
+   BuiltinConditions.spell('retiv-capped-verdict',383328,capped),
+   BuiltinConditions.spell('retiv-capped-templars-verdict',85256,capped),
+   BuiltinConditions.spell('retiv-wake-of-ashes',255937),
+   BuiltinConditions.spell('retiv-divine-toll',375576),
+   BuiltinConditions.spell('retiv-art-of-war',184575,BuiltinConditions.ownBuff(406086)),
+   BuiltinConditions.spell('retiv-hammer-of-wrath-capped',24275,{type='SPELL_CHARGES',spell=24275,operator='GREATERTHANOREQUALS',value=2}),
+   BuiltinConditions.spell('retiv-divine-storm',53385,storm),
+   BuiltinConditions.spell('retiv-final-verdict',383328,holyPower('GREATERTHANOREQUALS',3)),
+   BuiltinConditions.spell('retiv-templars-verdict',85256,holyPower('GREATERTHANOREQUALS',3)),
+   BuiltinConditions.spell('retiv-hammer-of-wrath',24275),
+   BuiltinConditions.spell('retiv-blade-of-justice',184575),
+   BuiltinConditions.spell('retiv-judgment',20271),
+   BuiltinConditions.spell('retiv-templar-strike',407480),
+   BuiltinConditions.spell('retiv-templar-slash',406647),
+   BuiltinConditions.spell('retiv-crusader-strike',35395),
   },
  },
 }))

@@ -9,16 +9,12 @@
 -- Smite. Reminders: Radiance, Evangelism, Ultimate Penitence, Pain Suppression, Fortitude.
 -- Raid ramps are timed sequences and stay manual.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local friend=all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}))
+local friend=BuiltinConditions.all({type='LEVEL',unit='target',operator='GREATERTHAN',value=0},{type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='DEAD',unit='target'}))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.priest.discipline',revision=6,
  blocks={['retail.priest.upkeep']=2,['retail.priest.disc-cooldowns']=1},
- nameKey="Atonement (Icy Veins)",descriptionKey="Discipline in Midnight, for reference: Blizzard's Assisted Combat does not cover healers, the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this runs the damage that heals through Atonement and leaves deciding who to heal to you. On a friendly target: Power Word: Shield (Void Shield), Penance, Flash Heal. On an enemy: Shadow Word: Pain when you have not cast it for 12 seconds, Mind Blast, Penance, Shield, Shadow Word: Death, Void Blast, Smite. Reminders in combat: Power Word: Radiance, Evangelism, Ultimate Penitence, Pain Suppression on a friendly target; Fortitude between pulls. Desperate Prayer is your call. Raid ramps before big damage are yours to time.",
  applicability={families={'retail'},actionContext='player',class='PRIEST'},
  tags={'discipline','healer','atonement','reference','icy-veins'},
  sources={
@@ -30,23 +26,23 @@ assert(addon:RegisterDefaultRotation({
    block('retail.priest.disc-cooldowns','disc-'),
   },
   rotation={
-   {id='disc-casting',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
+   {id='disc-casting',type='stop',suppress_attack=true,conditions=BuiltinConditions.any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
    {id='disc-friendly',type='branch',conditions=friend,onFalse={},onTrue={
-    spell('disc-void-shield',1253593),
-    spell('disc-shield',17),
-    spell('disc-penance-heal',47540),
-    spell('disc-flash-heal',2061),
+    BuiltinConditions.spell('disc-void-shield',1253593),
+    BuiltinConditions.spell('disc-shield',17),
+    BuiltinConditions.spell('disc-penance-heal',47540),
+    BuiltinConditions.spell('disc-flash-heal',2061),
     {id='disc-friendly-stop',type='stop',suppress_attack=true,conditions={}},
    }},
-   {id='disc-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
-   spell('disc-shadow-word-pain',589,any(negate({type='SPELL_HISTORY_TIME',spell=589,operator='LESSTHAN',value=12}),negate({type='DEBUFF',unit='target',spell=589,owndebuff=true}))),
-   spell('disc-mind-blast',8092),
-   spell('disc-penance',47540),
-   spell('disc-void-shield-self',1253593),
-   spell('disc-shield-self',17),
-   spell('disc-shadow-word-death',32379),
-   spell('disc-void-blast',450983),
-   spell('disc-smite',585),
+   {id='disc-no-target',type='stop',suppress_attack=true,conditions=BuiltinConditions.negate({type='ATTACKABLE',unit='target'})},
+   BuiltinConditions.spell('disc-shadow-word-pain',589,BuiltinConditions.any(BuiltinConditions.negate({type='SPELL_HISTORY_TIME',spell=589,operator='LESSTHAN',value=12}),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=589,owndebuff=true}))),
+   BuiltinConditions.spell('disc-mind-blast',8092),
+   BuiltinConditions.spell('disc-penance',47540),
+   BuiltinConditions.spell('disc-void-shield-self',1253593),
+   BuiltinConditions.spell('disc-shield-self',17),
+   BuiltinConditions.spell('disc-shadow-word-death',32379),
+   BuiltinConditions.spell('disc-void-blast',450983),
+   BuiltinConditions.spell('disc-smite',585),
   },
  },
 }))

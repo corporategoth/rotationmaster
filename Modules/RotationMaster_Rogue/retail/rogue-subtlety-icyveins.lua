@@ -9,21 +9,15 @@
 -- Shadow Dance ready, Shadow Dance at two or fewer (or six or more) combo points with Secret
 -- Technique ready or Shadow Blades up, Vanish out of stealth at two or fewer combo points.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function points(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function enemies(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
-local dance=own(185422)
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
+local dance=BuiltinConditions.ownBuff(185422)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.subtlety.icyveins',revision=6,
  blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
- nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft order holds Shadow Dance for Secret Technique and reads Shadow Dance, Darkest Night and energy, which Midnight hides in combat. Stealthed before the pull: Shadowstrike. One combo point short of full or more: Eviscerate with Darkest Night, Secret Technique in Shadow Dance, Coup de Grace, Black Powder on three or more enemies, Eviscerate. Otherwise Shadowstrike, Shuriken Storm on two or more, Gloomblade or Backstab. Reminders: Goremaw's Bite in Shadow Dance, Shadow Blades with Shadow Dance ready, Shadow Dance at two or fewer (or six or more) combo points when Secret Technique is ready or Shadow Blades is up, Vanish out of stealth at two or fewer combo points.",
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'subtlety','melee','reference','single-target','aoe','icy-veins','simulationcraft','wowhead'},
  sources={
@@ -34,28 +28,28 @@ assert(addon:RegisterDefaultRotation({
  body={priority=5,disabled=true,specs={261},
   cooldowns={
    block('retail.rogue.upkeep','subiv-'),
-   spell('subiv-goremaws-bite',426591,all(fight,dance)),
-   spell('subiv-shadow-blades',121471,all(fight,{type='SPELL_AVAIL',spell=185313})),
-   spell('subiv-shadow-dance',185313,all(fight,negate(dance),any(points('LESSTHANOREQUALS',2),points('GREATERTHANOREQUALS',6)),any({type='SPELL_AVAIL',spell=280719},own(121471)))),
-   spell('subiv-vanish',1856,all(fight,negate({type='STEALTHED'}),points('LESSTHANOREQUALS',2))),
+   BuiltinConditions.spell('subiv-goremaws-bite',426591,BuiltinConditions.all(fight,dance)),
+   BuiltinConditions.spell('subiv-shadow-blades',121471,BuiltinConditions.all(fight,{type='SPELL_AVAIL',spell=185313})),
+   BuiltinConditions.spell('subiv-shadow-dance',185313,BuiltinConditions.all(fight,BuiltinConditions.negate(dance),BuiltinConditions.any(points('LESSTHANOREQUALS',2),points('GREATERTHANOREQUALS',6)),BuiltinConditions.any({type='SPELL_AVAIL',spell=280719},BuiltinConditions.ownBuff(121471)))),
+   BuiltinConditions.spell('subiv-vanish',1856,BuiltinConditions.all(fight,BuiltinConditions.negate({type='STEALTHED'}),points('LESSTHANOREQUALS',2))),
   },
   rotation={
    block('retail.rogue.boundaries','subiv-'),
-   {id='subiv-opener',type='branch',conditions=all(negate(combat()),{type='STEALTHED'}),onFalse={},onTrue={
-    spell('subiv-opener-shadowstrike',185438),
+   {id='subiv-opener',type='branch',conditions=BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),{type='STEALTHED'}),onFalse={},onTrue={
+    BuiltinConditions.spell('subiv-opener-shadowstrike',185438),
     {id='subiv-opener-stop',type='stop',suppress_attack=true,conditions={}},
    }},
    {id='subiv-finish',type='branch',conditions=points('LESSTHANOREQUALS',-1),onFalse={
-    spell('subiv-shadowstrike',185438),
-    spell('subiv-shuriken-storm',197835,enemies(2)),
-    spell('subiv-gloomblade',200758),
-    spell('subiv-backstab',53),
+    BuiltinConditions.spell('subiv-shadowstrike',185438),
+    BuiltinConditions.spell('subiv-shuriken-storm',197835,enemies(2)),
+    BuiltinConditions.spell('subiv-gloomblade',200758),
+    BuiltinConditions.spell('subiv-backstab',53),
    },onTrue={
-    spell('subiv-darkest-night',196819,own(457280)),
-    spell('subiv-secret-technique',280719,dance),
-    spell('subiv-coup-de-grace',441776),
-    spell('subiv-black-powder',319175,enemies(3)),
-    spell('subiv-eviscerate',196819),
+    BuiltinConditions.spell('subiv-darkest-night',196819,BuiltinConditions.ownBuff(457280)),
+    BuiltinConditions.spell('subiv-secret-technique',280719,dance),
+    BuiltinConditions.spell('subiv-coup-de-grace',441776),
+    BuiltinConditions.spell('subiv-black-powder',319175,enemies(3)),
+    BuiltinConditions.spell('subiv-eviscerate',196819),
    }},
   },
  },

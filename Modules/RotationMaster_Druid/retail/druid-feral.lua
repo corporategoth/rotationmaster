@@ -4,17 +4,11 @@
 -- Assisted Combat suggestion. Around it, highlights for what Assisted Combat leaves to you: Berserk
 -- (or Incarnation), Skull Bash, Survival Instincts, Cat Form between pulls, Mark of the Wild, Barkskin and racial cooldowns.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local interrupt=BuiltinConditions.any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.feral',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Feral. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Berserk (or Incarnation) in combat, Skull Bash on an interruptible cast, Survival Instincts, Barkskin and your racial cooldown whenever they are ready in combat, and Cat Form and Mark of the Wild between pulls. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use the defensives is your call.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'feral','melee','assisted-combat'},
  sources={
@@ -24,15 +18,15 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={103},
   cooldowns={
-   block('feral-utility','retail.druid.utility','feral-'),
-   spell('feral-skull-bash',106839,interrupt),
-   spell('feral-berserk',106951,combat()),
-   spell('feral-incarnation',102543,combat()),
-   spell('feral-survival-instincts',61336,combat()),
-   spell('feral-cat-form',768,all(negate(combat()),negate({type='BUFF',unit='player',spell=768}),negate({type='BUFF',unit='player',spell=102543}))),
+   BuiltinConditions.block('feral-utility','retail.druid.utility','feral-'),
+   BuiltinConditions.spell('feral-skull-bash',106839,interrupt),
+   BuiltinConditions.spell('feral-berserk',106951,BuiltinConditions.combat()),
+   BuiltinConditions.spell('feral-incarnation',102543,BuiltinConditions.combat()),
+   BuiltinConditions.spell('feral-survival-instincts',61336,BuiltinConditions.combat()),
+   BuiltinConditions.spell('feral-cat-form',768,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate({type='BUFF',unit='player',spell=768}),BuiltinConditions.negate({type='BUFF',unit='player',spell=102543}))),
   },
   rotation={
-   block('feral-boundaries','retail.druid.boundaries','feral-'),
+   BuiltinConditions.block('feral-boundaries','retail.druid.boundaries','feral-'),
    {id='feral-assisted',type='assisted',conditions={}},
   },
  },

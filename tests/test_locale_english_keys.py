@@ -3,6 +3,8 @@
 """English locale entries must use the source text itself as their only lookup key."""
 import sys
 import subprocess
+import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -10,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import locale_format as F
 import catalog_check
 import locales
+import builtin_locales
 
 
 class EnglishKeyTests(unittest.TestCase):
@@ -69,9 +72,22 @@ assert(main['Class name'] == 'Klassenname')
 """ % F.lua_string(catalog)
         subprocess.run(['lua5.1', '-'], input=lua, text=True, check=True)
 
-    def test_builtin_names_and_descriptions_are_catalog_references(self):
-        source = '''return { nameKey = "A name", descriptionKey = 'A description' }'''
-        self.assertEqual(list(catalog_check.manifest_references(source)), [('A name', 1), ('A description', 1)])
+    def test_builtin_locales_require_both_keys_in_every_language(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / 'Locales').mkdir()
+            (root / 'Locales/bundles.json').write_text(json.dumps({'bundles': [{'kind': 'builtin', 'module': 'RotationMaster_Shaman'}]}))
+            module = root / 'Modules/RotationMaster_Shaman'
+            (module / 'tbc').mkdir(parents=True)
+            (module / 'Locales').mkdir()
+            (module / 'tbc/a.lua').write_text("id='rm.tbc.shaman.test',revision=1\n")
+            lines = 'L["rm.tbc.shaman.test.Name"] = "Name"\nL["rm.tbc.shaman.test.Description"] = "Description"\n'
+            for locale in ['enUS'] + F.LOCALES:
+                (module / 'Locales' / f'{locale}.lua').write_text(lines)
+            (module / 'locales.xml').write_text('\n'.join(f'<Script file="Locales\\{locale}.lua" />' for locale in ['enUS'] + F.LOCALES))
+            self.assertEqual(builtin_locales.check(root), [])
+            (module / 'Locales/deDE.lua').write_text('L["rm.tbc.shaman.test.Name"] = "Name"\n')
+            self.assertTrue(any('missing rm.tbc.shaman.test.Description' in issue for issue in builtin_locales.check(root)))
 
 
 if __name__ == '__main__':

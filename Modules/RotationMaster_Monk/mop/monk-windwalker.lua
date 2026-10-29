@@ -8,27 +8,19 @@
 -- Energy-to-cap tests are POWER thresholds. The SimulationCraft 5.4.8 list is
 -- rm.mop.monk.windwalker.simc.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function remain(id,op,v)return{type='BUFF_REMAIN',unit='player',spell=id,ownbuff=true,operator=op,value=v}end
 local function stacks(op,v)return{type='BUFF_STACKS',unit='player',spell=1247279,ownbuff=true,operator=op,value=v}end
 local function rsk(op,v)return{type='DEBUFF_REMAIN',unit='target',spell=130320,owndebuff=true,operator=op,value=v}end
 local function enemies(op,v)return{type='THREAT_COUNT',threat=1,operator=op,value=v}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function energy(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function chi(op,v)return{type='POINT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local TEB,RSK=1247275,107428
-local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
-local tigerPower=any(negate(own(125359)),remain(125359,'LESSTHANOREQUALS',1))
+local lust=BuiltinConditions.any(BuiltinConditions.buff(2825),BuiltinConditions.buff(32182),BuiltinConditions.buff(80353),BuiltinConditions.buff(90355))
+local tigerPower=BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(125359)),remain(125359,'LESSTHANOREQUALS',1))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker',revision=7,
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=3,['mop.monk.windwalker-tail']=1},
- nameKey="Recommended",descriptionKey="Picked automatically in the Windwalker specialization. Touch of Death when usable, Tiger Palm to keep Tiger Power, Rising Sun Kick on cooldown, Chi Wave, Combo Breaker procs, Fists of Fury when you are standing still and its channel will not cap your energy, Jab when two Chi are missing (Expel Harm instead when hurt), Blackout Kick without starving the next Rising Sun Kick. On two or more enemies Rising Sun Kick keeps its debuff up and Spinning Crane Kick or Rushing Jade Wind joins from three. Reminders: Fierce Tiger, Legacy of the Emperor and of the White Tiger, Tigereye Brew at 19 stacks (15 with Chi to spend, 10 under Bloodlust or near the end of a fight), Energizing Brew at low energy, Chi Brew, Xuen, Storm, Earth, and Fire on two enemies (you cast it on the second one), Touch of Karma, defensives and Spear Hand Strike. Energy-to-cap checks are energy thresholds, so tune them to your haste.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'windwalker','leveling','single-target','aoe','wowhead'},
  sources={
@@ -38,32 +30,32 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={269},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('ww-upkeep','mop.monk.windwalker-upkeep','ww-'),
-   block('ww-class','mop.monk.upkeep','ww-'),
-   spell('ww-tigereye-brew',TEB,all(combat(),negate(own(TEB)),any(stacks('GREATERTHANOREQUALS',19),all(stacks('GREATERTHANOREQUALS',15),chi('GREATERTHANOREQUALS',2)),
-    all(stacks('GREATERTHANOREQUALS',10),lust),all(stacks('GREATERTHANOREQUALS',1),{type='TT_HEALTH',unit='target',health=0,operator='LESSTHAN',value=30})))),
-   spell('ww-chi-brew',115399,all(combat(),chi('GREATERTHANOREQUALS',-2),any(own(TEB),{type='SPELL_CHARGES',spell=115399,operator='EQUALS',value=2}))),
+   BuiltinConditions.block('ww-upkeep','mop.monk.windwalker-upkeep','ww-'),
+   BuiltinConditions.block('ww-class','mop.monk.upkeep','ww-'),
+   BuiltinConditions.spell('ww-tigereye-brew',TEB,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(BuiltinConditions.ownBuff(TEB)),BuiltinConditions.any(stacks('GREATERTHANOREQUALS',19),BuiltinConditions.all(stacks('GREATERTHANOREQUALS',15),chi('GREATERTHANOREQUALS',2)),
+    BuiltinConditions.all(stacks('GREATERTHANOREQUALS',10),lust),BuiltinConditions.all(stacks('GREATERTHANOREQUALS',1),{type='TT_HEALTH',unit='target',health=0,operator='LESSTHAN',value=30})))),
+   BuiltinConditions.spell('ww-chi-brew',115399,BuiltinConditions.all(BuiltinConditions.combat(),chi('GREATERTHANOREQUALS',-2),BuiltinConditions.any(BuiltinConditions.ownBuff(TEB),{type='SPELL_CHARGES',spell=115399,operator='EQUALS',value=2}))),
   },
   rotation={
-   block('ww-boundaries','mop.monk.boundaries','ww-'),
-   block('ww-open','mop.monk.windwalker-open','ww-'),
+   BuiltinConditions.block('ww-boundaries','mop.monk.boundaries','ww-'),
+   BuiltinConditions.block('ww-open','mop.monk.windwalker-open','ww-'),
    {id='ww-aoe',type='branch',conditions=enemies('GREATERTHANOREQUALS',2),onFalse={},onTrue={
-    spell('ww-aoe-jade-wind',116847),
-    spell('ww-aoe-rising-sun',RSK,any(enemies('LESSTHAN',3),negate({type='DEBUFF',unit='target',spell=130320,owndebuff=true}),rsk('LESSTHANOREQUALS',1.5))),
-    spell('ww-aoe-tiger-palm',100787,tigerPower),
-    spell('ww-aoe-crane-kick-refreshed',101546,all(enemies('GREATERTHANOREQUALS',4),rsk('GREATERTHANOREQUALS',2.25))),
-    spell('ww-aoe-rising-sun-kick',RSK),
-    spell('ww-aoe-crane-kick',101546,enemies('GREATERTHANOREQUALS',3))}},
-   spell('ww-tiger-palm',100787,tigerPower),
-   spell('ww-rising-sun-kick',RSK),
-   spell('ww-chi-wave',115098,energy('LESSTHANOREQUALS',85)),
-   spell('ww-combo-kick',100784,own(116768)),
-   spell('ww-fists-of-fury',113656,all(negate(own(115288)),energy('LESSTHANOREQUALS',50),remain(125359,'GREATERTHANOREQUALS',4),negate({type='MOVING'}),
-    any(negate({type='SPELL_KNOWN',spell=RSK}),{type='SPELL_COOLDOWN',spell=RSK,operator='GREATERTHANOREQUALS',value=3}))),
-   spell('ww-zen-sphere',124081,all(negate(own(124081)),energy('LESSTHANOREQUALS',75))),
-   spell('ww-combo-palm',100787,own(118864)),
-   spell('ww-chi-burst',123986,energy('LESSTHANOREQUALS',75)),
-   block('ww-tail','mop.monk.windwalker-tail','ww-'),
+    BuiltinConditions.spell('ww-aoe-jade-wind',116847),
+    BuiltinConditions.spell('ww-aoe-rising-sun',RSK,BuiltinConditions.any(enemies('LESSTHAN',3),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=130320,owndebuff=true}),rsk('LESSTHANOREQUALS',1.5))),
+    BuiltinConditions.spell('ww-aoe-tiger-palm',100787,tigerPower),
+    BuiltinConditions.spell('ww-aoe-crane-kick-refreshed',101546,BuiltinConditions.all(enemies('GREATERTHANOREQUALS',4),rsk('GREATERTHANOREQUALS',2.25))),
+    BuiltinConditions.spell('ww-aoe-rising-sun-kick',RSK),
+    BuiltinConditions.spell('ww-aoe-crane-kick',101546,enemies('GREATERTHANOREQUALS',3))}},
+   BuiltinConditions.spell('ww-tiger-palm',100787,tigerPower),
+   BuiltinConditions.spell('ww-rising-sun-kick',RSK),
+   BuiltinConditions.spell('ww-chi-wave',115098,energy('LESSTHANOREQUALS',85)),
+   BuiltinConditions.spell('ww-combo-kick',100784,BuiltinConditions.ownBuff(116768)),
+   BuiltinConditions.spell('ww-fists-of-fury',113656,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.ownBuff(115288)),energy('LESSTHANOREQUALS',50),remain(125359,'GREATERTHANOREQUALS',4),BuiltinConditions.negate({type='MOVING'}),
+    BuiltinConditions.any(BuiltinConditions.negate({type='SPELL_KNOWN',spell=RSK}),{type='SPELL_COOLDOWN',spell=RSK,operator='GREATERTHANOREQUALS',value=3}))),
+   BuiltinConditions.spell('ww-zen-sphere',124081,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.ownBuff(124081)),energy('LESSTHANOREQUALS',75))),
+   BuiltinConditions.spell('ww-combo-palm',100787,BuiltinConditions.ownBuff(118864)),
+   BuiltinConditions.spell('ww-chi-burst',123986,energy('LESSTHANOREQUALS',75)),
+   BuiltinConditions.block('ww-tail','mop.monk.windwalker-tail','ww-'),
   },
  },
 }))

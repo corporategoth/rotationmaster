@@ -700,7 +700,7 @@ class ShippedFiles(unittest.TestCase):
             self.assertNotIn(slot, seen)
             seen[slot] = e
             self.assertEqual(e.hash, F.text_hash(e.text))
-        self.assertGreaterEqual(len(seen), 3500)
+        self.assertGreaterEqual(len(seen), 3000)
 
     def test_every_locale_is_complete_and_current(self):
         for locale in L.LOCALES:

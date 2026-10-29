@@ -9,7 +9,6 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection',revision=6,
  blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat suggestion, which already includes Shield of the Righteous, Avenging Wrath and Sentinel, and stops while you cast or have no enemy targeted. Reminders for what it leaves out: an aura between pulls, Rebuke on an interruptible cast, and Ardent Defender and Guardian of Ancient Kings whenever they are ready in combat. Health is hidden on Retail, so when to use them, and Lay on Hands, is your call. Taunting and positioning stay with you.",
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','assisted-combat','single-target','aoe','simulationcraft'},
  sources={

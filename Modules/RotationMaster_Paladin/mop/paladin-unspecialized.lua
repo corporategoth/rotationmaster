@@ -5,17 +5,11 @@
 -- specialization premade wins as soon as one is chosen. Judgment to pull, Word of Glory and
 -- Hammer of Justice when in danger, Crusader Strike, Judgment; the start of Icy Veins' leveling list.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.unspecialized',revision=5,
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2},
- nameKey="Before a specialization",descriptionKey="For levels 1 to 9, and any paladin who has not chosen a specialization yet; a specialization's premade takes over as soon as you pick one. Pulls from range with Judgment, then Crusader Strike and Judgment, with Hammer of Justice when you are solo and below half health and Word of Glory below 40%. Reminders: Seal of Command (Seal of Truth from 24) when you are not in it, Blessing of Kings, Rebuke, and Flash of Light out of combat when you are hurt.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'leveling','single-target','icy-veins'},
  sources={
@@ -23,18 +17,18 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=0,
   cooldowns={
-   block('starter-seal','mop.paladin.seal-truth','starter-'),
-   block('starter-upkeep','mop.paladin.upkeep','starter-'),
-   spell('starter-flash-of-light',19750,all(negate(combat()),health('LESSTHAN',.7))),
+   BuiltinConditions.block('starter-seal','mop.paladin.seal-truth','starter-'),
+   BuiltinConditions.block('starter-upkeep','mop.paladin.upkeep','starter-'),
+   BuiltinConditions.spell('starter-flash-of-light',19750,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),health('LESSTHAN',.7))),
   },
   rotation={
-   block('starter-boundaries','mop.paladin.damage-boundaries','starter-'),
-   {id='starter-pull',type='branch',conditions=all(negate(combat()),{type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
-    spell('starter-pull-judgment',20271),stop('starter-pull-stop')}},
-   spell('starter-word-of-glory',85673,health('LESSTHAN',.4)),
-   spell('starter-hammer-justice',853,all(negate({type='GROUP'}),health('LESSTHAN',.5))),
-   spell('starter-crusader-strike',35395),
-   spell('starter-judgment',20271),
+   BuiltinConditions.block('starter-boundaries','mop.paladin.damage-boundaries','starter-'),
+   {id='starter-pull',type='branch',conditions=BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),{type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
+    BuiltinConditions.spell('starter-pull-judgment',20271),BuiltinConditions.stop('starter-pull-stop')}},
+   BuiltinConditions.spell('starter-word-of-glory',85673,health('LESSTHAN',.4)),
+   BuiltinConditions.spell('starter-hammer-justice',853,BuiltinConditions.all(BuiltinConditions.negate({type='GROUP'}),health('LESSTHAN',.5))),
+   BuiltinConditions.spell('starter-crusader-strike',35395),
+   BuiltinConditions.spell('starter-judgment',20271),
   },
  },
 }))

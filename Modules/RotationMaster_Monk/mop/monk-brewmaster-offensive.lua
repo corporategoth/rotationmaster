@@ -5,48 +5,41 @@
 -- Brew or Guard (Purifying Brew only on the tier-15 Purifier proc), Rushing Jade Wind before Keg
 -- Smash, Chi spent on Blackout Kick for damage. Only for an overgeared tank or a damage race.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function remain(id,op,v)return{type='BUFF_REMAIN',unit='player',spell=id,ownbuff=true,operator=op,value=v}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function energy(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function chi(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function keg(op,v)return{type='SPELL_COOLDOWN',spell=121253,operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local SHUFFLE=115307
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.monk.brewmaster.offensive',revision=7,
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=2,['mop.monk.brewmaster-pull']=3},
- nameKey="Damage first (simulator)",descriptionKey="An alternative to the Brewmaster premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's damage-first list for a tank who outgears the content: Rushing Jade Wind before Keg Smash, Chi spent on Blackout Kick for damage, and no routine Purifying Brew or Guard (Purifying Brew only lights on the tier-15 Purifier proc). Elusive Brew, Chi Brew, Xuen and Fortifying Brew are still reminders.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'brewmaster','tank','single-target'},
  sources={},
  body={priority=20,disabled=true,specs={268},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('brewo-upkeep','mop.monk.brewmaster-upkeep','brewo-'),
-   block('brewo-class','mop.monk.upkeep','brewo-'),
-   spell('brewo-purifier',119582,all(combat(),own(138237))),
-   spell('brewo-chi-brew',115399,all(combat(),any(chi('EQUALS',0),all(chi('LESSTHANOREQUALS',2),keg('GREATERTHANOREQUALS',2),keg('LESSTHANOREQUALS',7),energy('LESSTHAN',80))))),
+   BuiltinConditions.block('brewo-upkeep','mop.monk.brewmaster-upkeep','brewo-'),
+   BuiltinConditions.block('brewo-class','mop.monk.upkeep','brewo-'),
+   BuiltinConditions.spell('brewo-purifier',119582,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.ownBuff(138237))),
+   BuiltinConditions.spell('brewo-chi-brew',115399,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(chi('EQUALS',0),BuiltinConditions.all(chi('LESSTHANOREQUALS',2),keg('GREATERTHANOREQUALS',2),keg('LESSTHANOREQUALS',7),energy('LESSTHAN',80))))),
   },
   rotation={
-   block('brewo-boundaries','mop.monk.boundaries','brewo-'),
-   block('brewo-pull','mop.monk.brewmaster-pull','brewo-'),
-   spell('brewo-touch-of-death',115080),
-   spell('brewo-cap-kick',100784,all(keg('LESSTHANOREQUALS',1.5),chi('LESSTHANOREQUALS',-1))),
-   spell('brewo-jade-wind',116847),
-   spell('brewo-keg-smash',121253),
-   spell('brewo-shuffle-kick',100784,any(negate(own(SHUFFLE)),remain(SHUFFLE,'LESSTHANOREQUALS',1.5),all(keg('LESSTHANOREQUALS',2),chi('LESSTHANOREQUALS',-1)))),
-   spell('brewo-tiger-palm',100787,any(negate(own(125359)),remain(125359,'LESSTHANOREQUALS',1.5))),
-   spell('brewo-chi-wave',115098),
-   spell('brewo-chi-burst',123986),
-   spell('brewo-zen-sphere',124081,negate(own(124081))),
-   spell('brewo-spend-kick',100784,chi('LESSTHANOREQUALS',-1)),
-   spell('brewo-jab',100780,all(energy('GREATERTHANOREQUALS',80),chi('GREATERTHANOREQUALS',-1))),
-   spell('brewo-palm-filler',100787),
-   spell('brewo-jab-filler',100780,chi('GREATERTHANOREQUALS',-1)),
+   BuiltinConditions.block('brewo-boundaries','mop.monk.boundaries','brewo-'),
+   BuiltinConditions.block('brewo-pull','mop.monk.brewmaster-pull','brewo-'),
+   BuiltinConditions.spell('brewo-touch-of-death',115080),
+   BuiltinConditions.spell('brewo-cap-kick',100784,BuiltinConditions.all(keg('LESSTHANOREQUALS',1.5),chi('LESSTHANOREQUALS',-1))),
+   BuiltinConditions.spell('brewo-jade-wind',116847),
+   BuiltinConditions.spell('brewo-keg-smash',121253),
+   BuiltinConditions.spell('brewo-shuffle-kick',100784,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(SHUFFLE)),remain(SHUFFLE,'LESSTHANOREQUALS',1.5),BuiltinConditions.all(keg('LESSTHANOREQUALS',2),chi('LESSTHANOREQUALS',-1)))),
+   BuiltinConditions.spell('brewo-tiger-palm',100787,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(125359)),remain(125359,'LESSTHANOREQUALS',1.5))),
+   BuiltinConditions.spell('brewo-chi-wave',115098),
+   BuiltinConditions.spell('brewo-chi-burst',123986),
+   BuiltinConditions.spell('brewo-zen-sphere',124081,BuiltinConditions.negate(BuiltinConditions.ownBuff(124081))),
+   BuiltinConditions.spell('brewo-spend-kick',100784,chi('LESSTHANOREQUALS',-1)),
+   BuiltinConditions.spell('brewo-jab',100780,BuiltinConditions.all(energy('GREATERTHANOREQUALS',80),chi('GREATERTHANOREQUALS',-1))),
+   BuiltinConditions.spell('brewo-palm-filler',100787),
+   BuiltinConditions.spell('brewo-jab-filler',100780,chi('GREATERTHANOREQUALS',-1)),
   },
  },
 }))

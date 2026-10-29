@@ -7,20 +7,14 @@
 -- moving or on light damage, then Heal rank 3 as the efficient top-up (Icy Veins, Wowhead).
 -- Pointed at an enemy it does light damage. Thresholds are RM policy.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function pct(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-heal-'
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.priest.healer',revision=5,
  blocks={['era.priest.boundaries']=3,['era.priest.enemy-target']=2,['era.priest.dispels']=1,['era.priest.big-heal']=1,['era.priest.renew']=1,
   ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1},
- nameKey="Healer",descriptionKey="Chosen in a group when Holy or Discipline is your main talent tree. Heals the friendly unit you target: Power Word: Shield below 30%, Flash Heal below 40%, dispels, Prayer of Healing when three of your party are hurt, Greater Heal (Heal or Lesser Heal before you learn it) below half health, Renew while moving or on light damage, then Heal rank 3 as the efficient top-up. Out of combat it offers Fortitude on your target. Targeting an enemy gives Shadow Word: Pain and Smite. Reminders: Inner Fire, Fortitude, Divine Spirit, Inner Focus, Desperate Prayer; Power Infusion is off by default. Choosing whom to heal and downranking stay with you.",
  applicability={families={'era'},actionContext='player',class='PRIEST'},
  tags={'holy','discipline','healer','dungeon','raid','icy-veins','wowhead'},
  sources={
@@ -31,29 +25,29 @@ assert(addon:RegisterDefaultRotation({
  body={
   priority=20,
   switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='GROUP'},{type='OR',value={{type='PRIMARY_TALENT_TREE',tree=2},{type='PRIMARY_TALENT_TREE',tree=1}}}}},
-  cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'spirit','era.priest.divine-spirit',P)},
+  cooldowns={BuiltinConditions.block(P..'upkeep','era.priest.upkeep',P),BuiltinConditions.block(P..'spirit','era.priest.divine-spirit',P)},
   rotation={
-   block(P..'boundaries','era.priest.boundaries',P),
-   {id=P..'friend',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),
+   BuiltinConditions.block(P..'boundaries','era.priest.boundaries',P),
+   {id=P..'friend',type='branch',conditions=BuiltinConditions.all({type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='DEAD',unit='target'})),
     onFalse={
-     block(P..'enemy-target','era.priest.enemy-target',P..'enemy-'),
-     spell(P..'enemy-pain',589,all(negate(own(589)),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=12})),
-     spell(P..'enemy-smite',585),
-     stop(P..'enemy-stop')},
+     BuiltinConditions.block(P..'enemy-target','era.priest.enemy-target',P..'enemy-'),
+     BuiltinConditions.spell(P..'enemy-pain',589,BuiltinConditions.all(BuiltinConditions.negate(own(589)),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=12})),
+     BuiltinConditions.spell(P..'enemy-smite',585),
+     BuiltinConditions.stop(P..'enemy-stop')},
     onTrue={
      {id=P..'prepull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-      block(P..'prepull-fortitude','era.priest.friend-fortitude',P..'prepull-'),stop(P..'prepull-stop')}},
-     spell(P..'shield',17,all(pct('target','LESSTHAN',.3),negate({type='DEBUFF',unit='target',spell=6788}))),
-     spell(P..'flash',2061,pct('target','LESSTHAN',.4)),
-     block(P..'dispels','era.priest.dispels',P),
-     spell(P..'prayer-of-healing',596,{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',healthoperator='LESSTHAN',health=.8,operator='GREATERTHANOREQUALS',value=3,distance=30,samegroup=true}),
-     block(P..'big','era.priest.big-heal',P),
-     block(P..'renew','era.priest.renew',P),
+      BuiltinConditions.block(P..'prepull-fortitude','era.priest.friend-fortitude',P..'prepull-'),BuiltinConditions.stop(P..'prepull-stop')}},
+     BuiltinConditions.spell(P..'shield',17,BuiltinConditions.all(pct('target','LESSTHAN',.3),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=6788}))),
+     BuiltinConditions.spell(P..'flash',2061,pct('target','LESSTHAN',.4)),
+     BuiltinConditions.block(P..'dispels','era.priest.dispels',P),
+     BuiltinConditions.spell(P..'prayer-of-healing',596,{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',healthoperator='LESSTHAN',health=.8,operator='GREATERTHANOREQUALS',value=3,distance=30,samegroup=true}),
+     BuiltinConditions.block(P..'big','era.priest.big-heal',P),
+     BuiltinConditions.block(P..'renew','era.priest.renew',P),
      -- Heal rank 3 is the efficient top-up; before level 28 any learned Heal, else Lesser Heal.
      {id=P..'top-up-r3',type='spell',action=6063,ranked=true,conditions=pct('target','LESSTHAN',.85)},
-     spell(P..'top-up',2054,all(negate(known(6063)),pct('target','LESSTHAN',.85))),
-     spell(P..'top-up-lesser',2050,all(negate(known(2054)),pct('target','LESSTHAN',.85))),
-     stop(P..'friend-done')}},
+     BuiltinConditions.spell(P..'top-up',2054,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(6063)),pct('target','LESSTHAN',.85))),
+     BuiltinConditions.spell(P..'top-up-lesser',2050,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(2054)),pct('target','LESSTHAN',.85))),
+     BuiltinConditions.stop(P..'friend-done')}},
   },
  },
 }))

@@ -9,23 +9,17 @@
 -- Veins' mana rules, out-of-combat healing, Lay on Hands and Twist of Light seal swapping are left
 -- to the player.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function remain(id)return{type='BUFF_REMAIN',unit='player',spell=id,anyrank=true,ownbuff=true,operator='GREATERTHANOREQUALS',value=3}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
+local function off(id,action,conditions)local step=BuiltinConditions.spell(id,action,conditions);step.disabled=true;return step end
 local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local evil=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
-local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
+local evil=BuiltinConditions.any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
+local elite=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 local crusaded={type='DEBUFF',unit='target',spell=21183,anyrank=true}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.retribution',revision=6,
  blocks={['forever.paladin.boundaries']=3,['forever.paladin.aura-blessing']=1,['forever.paladin.main-seal']=1},
- nameKey="Retribution",descriptionKey="Retribution and every melee Paladin from level 1 to 60, and the Forever Paladin default. Keeps a damage seal up, refreshed only when it runs low: Seal of the Crusader judged once on an elite target, then Seal of Command with a slow (3.0 s) weapon, else Seal of Righteousness. Then Holy Strike on cooldown, Holy Shock and Light's Vigil for a Shockadin, Exorcism on Undead and Demons, Consecration on three or more enemies, Hammer of Wrath when it can be cast, and melee. Judgement is off the global cooldown, so it is a reminder whenever a seal is up. Other reminders: your aura and Blessing (Retribution Aura and Kings once learned; yours are kept). Optional step, off by default: Hammer of Justice before a Seal of Command Judgement. Mana, health and the swing timer are hidden from addons on Forever, so mana saving, healing yourself, Lay on Hands and Twist of Light seal swapping are your call. Built from level-30 beta guides.",
  applicability={families={'forever'},actionContext='player',class='PALADIN'},
  tags={'retribution','melee','leveling','single-target','aoe','wowhead','icy-veins'},
  sources={
@@ -37,26 +31,26 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,
   cooldowns={
-   block('ret-aura-blessing','forever.paladin.aura-blessing','ret-'),
-   spell('ret-judgement',20271,all(combat(),{type='ATTACKABLE',unit='target'},any(own(20154),own(20375),own(21082),own(20164)))),
-   off('ret-hammer-of-justice',853,all(combat(),own(20375),{type='SPELL_COOLDOWN',spell=20271,operator='LESSTHAN',value=1},
-    negate({type='CLASSIFICATION',unit='target',value='worldboss'}))),
+   BuiltinConditions.block('ret-aura-blessing','forever.paladin.aura-blessing','ret-'),
+   BuiltinConditions.spell('ret-judgement',20271,BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'},BuiltinConditions.any(own(20154),own(20375),own(21082),own(20164)))),
+   off('ret-hammer-of-justice',853,BuiltinConditions.all(BuiltinConditions.combat(),own(20375),{type='SPELL_COOLDOWN',spell=20271,operator='LESSTHAN',value=1},
+    BuiltinConditions.negate({type='CLASSIFICATION',unit='target',value='worldboss'}))),
   },
   rotation={
-   block('ret-boundaries','forever.paladin.boundaries','ret-'),
-   stop('ret-target',negate({type='ATTACKABLE',unit='target'}),true),
-   {id='ret-seal',type='branch',conditions=any(remain(20154),remain(20375),remain(21082)),onTrue={},onFalse={
-    spell('ret-crusader',21082,all(negate(crusaded),elite,{type='SPELL_COOLDOWN',spell=20271,operator='LESSTHAN',value=2})),
-    block('ret-main-seal','forever.paladin.main-seal','ret-')}},
-   {id='ret-swap',type='branch',conditions=all(own(21082),crusaded),onFalse={},onTrue={
-    block('ret-swap-seal','forever.paladin.main-seal','ret-swap-')}},
-   spell('ret-holy-strike',679),
-   spell('ret-holy-shock',1311606),
-   spell('ret-lights-vigil',1310911,{type='SPELL_COOLDOWN',spell=1311606,operator='GREATERTHAN',value=3}),
-   spell('ret-exorcism',879,evil),
+   BuiltinConditions.block('ret-boundaries','forever.paladin.boundaries','ret-'),
+   stop('ret-target',BuiltinConditions.negate({type='ATTACKABLE',unit='target'}),true),
+   {id='ret-seal',type='branch',conditions=BuiltinConditions.any(remain(20154),remain(20375),remain(21082)),onTrue={},onFalse={
+    BuiltinConditions.spell('ret-crusader',21082,BuiltinConditions.all(BuiltinConditions.negate(crusaded),elite,{type='SPELL_COOLDOWN',spell=20271,operator='LESSTHAN',value=2})),
+    BuiltinConditions.block('ret-main-seal','forever.paladin.main-seal','ret-')}},
+   {id='ret-swap',type='branch',conditions=BuiltinConditions.all(own(21082),crusaded),onFalse={},onTrue={
+    BuiltinConditions.block('ret-swap-seal','forever.paladin.main-seal','ret-swap-')}},
+   BuiltinConditions.spell('ret-holy-strike',679),
+   BuiltinConditions.spell('ret-holy-shock',1311606),
+   BuiltinConditions.spell('ret-lights-vigil',1310911,{type='SPELL_COOLDOWN',spell=1311606,operator='GREATERTHAN',value=3}),
+   BuiltinConditions.spell('ret-exorcism',879,evil),
    {id='ret-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell('ret-aoe-consecration',26573),spell('ret-aoe-holy-wrath',2812,evil)}},
-   spell('ret-hammer-of-wrath',24275),
+    BuiltinConditions.spell('ret-aoe-consecration',26573),BuiltinConditions.spell('ret-aoe-holy-wrath',2812,evil)}},
+   BuiltinConditions.spell('ret-hammer-of-wrath',24275),
   },
  },
 }))

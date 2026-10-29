@@ -8,23 +8,16 @@
 -- Eclipse or on packs, else Wrath. Astral Power is secret on Retail, so Starsurge spends at its cost
 -- instead of before the cap. Disabled: DoTs, Eclipse and procs are secret in Midnight combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local function refresh(id)return any(negate({type='DEBUFF',unit='target',spell=id,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator='LESSTHAN',value=5.4})end
-local eclipse=any(buff(48517),buff(48518))
-local aligned=any(buff(194223),buff(102560))
-local moonkin=any(buff(24858),buff(102560))
+local function refresh(id)return BuiltinConditions.any(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=id,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator='LESSTHAN',value=5.4})end
+local eclipse=BuiltinConditions.any(buff(48517),buff(48518))
+local aligned=BuiltinConditions.any(buff(194223),buff(102560))
+local moonkin=BuiltinConditions.any(buff(24858),buff(102560))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=7,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey="Reference (Icy Veins, SimulationCraft and Wowhead)",descriptionKey="Reference only, off by default: the guides' Balance priority. Your DoTs, Eclipse and procs are hidden from addons in Midnight combat, so it cannot run there; read it, or clone it to experiment. Astral Power is hidden on Retail, so Starsurge spends at its cost instead of before the cap. Pulls with Moonkin Form and Wrath. Sunfire and Moonfire when missing or about to fall off; Eclipse when neither is active (Lunar on three or more enemies, Solar otherwise); Starfall on Starweaver's Warp, Touch the Cosmos or packs; Starsurge on Starweaver's Weft or Touch the Cosmos; New, Half and Full Moon; Wild Mushroom in an Eclipse; Starsurge whenever you can afford it; Starfire in a Lunar Eclipse or on packs, else Wrath. Reminders: Celestial Alignment or Incarnation, Fury of Elune and Force of Nature before an Eclipse, Convoke in Celestial Alignment, Solar Beam, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'balance','ranged','reference','icy-veins','simulationcraft','wowhead'},
  sources={
@@ -34,31 +27,31 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={102},
   cooldowns={
-   block('baguide-utility','retail.druid.utility','baguide-'),
-   spell('baguide-solar-beam',78675,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
-   spell('baguide-celestial-alignment',194223,combat()),
-   spell('baguide-incarnation',102560,combat()),
-   spell('baguide-fury-of-elune',202770,all(combat(),negate(eclipse))),
-   spell('baguide-force-of-nature',205636,all(combat(),negate(eclipse))),
-   spell('baguide-convoke',391528,aligned),
+   BuiltinConditions.block('baguide-utility','retail.druid.utility','baguide-'),
+   BuiltinConditions.spell('baguide-solar-beam',78675,BuiltinConditions.any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
+   BuiltinConditions.spell('baguide-celestial-alignment',194223,BuiltinConditions.combat()),
+   BuiltinConditions.spell('baguide-incarnation',102560,BuiltinConditions.combat()),
+   BuiltinConditions.spell('baguide-fury-of-elune',202770,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(eclipse))),
+   BuiltinConditions.spell('baguide-force-of-nature',205636,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(eclipse))),
+   BuiltinConditions.spell('baguide-convoke',391528,aligned),
   },
   rotation={
-   block('baguide-boundaries','retail.druid.boundaries','baguide-'),
-   {id='baguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    spell('baguide-pull-moonkin',24858,negate(moonkin)),spell('baguide-pull-wrath',5176),stop('baguide-pull-stop')}},
-   spell('baguide-sunfire',93402,refresh(164815)),
-   spell('baguide-moonfire',8921,refresh(164812)),
+   BuiltinConditions.block('baguide-boundaries','retail.druid.boundaries','baguide-'),
+   {id='baguide-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.spell('baguide-pull-moonkin',24858,BuiltinConditions.negate(moonkin)),BuiltinConditions.spell('baguide-pull-wrath',5176),BuiltinConditions.stop('baguide-pull-stop')}},
+   BuiltinConditions.spell('baguide-sunfire',93402,refresh(164815)),
+   BuiltinConditions.spell('baguide-moonfire',8921,refresh(164812)),
    {id='baguide-eclipse',type='branch',conditions=eclipse,onTrue={},onFalse={
-    spell('baguide-lunar-eclipse',1233272,engaged(3)),spell('baguide-solar-eclipse',1233346)}},
-   spell('baguide-starfall',191034,any(buff(393942),buff(450360),engaged(3))),
-   spell('baguide-starsurge',78674,any(buff(393944),buff(450360))),
-   spell('baguide-new-moon',274281),
-   spell('baguide-half-moon',274282),
-   spell('baguide-full-moon',274283),
-   spell('baguide-wild-mushroom',88747,eclipse),
-   spell('baguide-starsurge-spend',78674),
-   spell('baguide-starfire',194153,any(buff(48518),engaged(3))),
-   spell('baguide-wrath',5176),
+    BuiltinConditions.spell('baguide-lunar-eclipse',1233272,engaged(3)),BuiltinConditions.spell('baguide-solar-eclipse',1233346)}},
+   BuiltinConditions.spell('baguide-starfall',191034,BuiltinConditions.any(buff(393942),buff(450360),engaged(3))),
+   BuiltinConditions.spell('baguide-starsurge',78674,BuiltinConditions.any(buff(393944),buff(450360))),
+   BuiltinConditions.spell('baguide-new-moon',274281),
+   BuiltinConditions.spell('baguide-half-moon',274282),
+   BuiltinConditions.spell('baguide-full-moon',274283),
+   BuiltinConditions.spell('baguide-wild-mushroom',88747,eclipse),
+   BuiltinConditions.spell('baguide-starsurge-spend',78674),
+   BuiltinConditions.spell('baguide-starfire',194153,BuiltinConditions.any(buff(48518),engaged(3))),
+   BuiltinConditions.spell('baguide-wrath',5176),
   },
  },
 }))

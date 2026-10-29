@@ -30,91 +30,91 @@
       "module": "RotationMaster_DeathKnight",
       "title": "DeathKnight Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-demonhunter",
       "module": "RotationMaster_DemonHunter",
       "title": "DemonHunter Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-druid",
       "module": "RotationMaster_Druid",
       "title": "Druid Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-evoker",
       "module": "RotationMaster_Evoker",
       "title": "Evoker Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-hunter",
       "module": "RotationMaster_Hunter",
       "title": "Hunter Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-mage",
       "module": "RotationMaster_Mage",
       "title": "Mage Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-monk",
       "module": "RotationMaster_Monk",
       "title": "Monk Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-paladin",
       "module": "RotationMaster_Paladin",
       "title": "Paladin Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-priest",
       "module": "RotationMaster_Priest",
       "title": "Priest Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-rogue",
       "module": "RotationMaster_Rogue",
       "title": "Rogue Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-shaman",
       "module": "RotationMaster_Shaman",
       "title": "Shaman Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-warlock",
       "module": "RotationMaster_Warlock",
       "title": "Warlock Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     },
     {
       "id": "class-warrior",
       "module": "RotationMaster_Warrior",
       "title": "Warrior Built In rotations",
       "notes": "Names and descriptions of this class’s Built In rotations.",
-      "kind": "class"
+      "kind": "builtin"
     }
   ]
 }

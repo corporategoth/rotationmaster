@@ -7,15 +7,12 @@
 -- the guides): Avatar, Heroic Strike (a core button Assisted Combat never suggests) and
 -- Champion's Spear in combat, Battle Shout between pulls, Pummel, Die by the Sword.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.arms',revision=6,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Arms in Midnight. In combat the game now hides rage, Rend, Colossus Smash, procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Heroic Strike (a core button the suggestion never uses), Avatar and Champion's Spear in combat, Battle Shout between pulls, Pummel on an interruptible cast (it lights only where the game lets the cast be read), Die by the Sword whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'arms','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
@@ -27,10 +24,10 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,specs={71},
   cooldowns={
    block('retail.warrior.upkeep','arms-'),
-   spell('arms-avatar',107574,fight),
-   spell('arms-heroic-strike',1269383,fight),
-   spell('arms-champions-spear',376079,fight),
-   spell('arms-die-by-the-sword',118038,combat()),
+   BuiltinConditions.spell('arms-avatar',107574,fight),
+   BuiltinConditions.spell('arms-heroic-strike',1269383,fight),
+   BuiltinConditions.spell('arms-champions-spear',376079,fight),
+   BuiltinConditions.spell('arms-die-by-the-sword',118038,BuiltinConditions.combat()),
   },
   rotation={
    block('retail.warrior.boundaries','arms-'),

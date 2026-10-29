@@ -6,17 +6,11 @@
 -- Frenzied Regeneration, Survival Instincts, Skull Bash, Bear Form between pulls, Mark of the Wild,
 -- Barkskin and racial cooldowns.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local interrupt=BuiltinConditions.any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Guardian. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; Assisted Combat plays for damage only. Alongside it, reminders for what it leaves to you: Berserk (or Incarnation) and Convoke the Spirits in combat, Ironfur, Frenzied Regeneration, Survival Instincts, Barkskin and your racial cooldown whenever they are ready in combat, Skull Bash on an interruptible cast, and Bear Form and Mark of the Wild between pulls. Enemy casts are hidden in combat, so Skull Bash lights only where the game shows them; health and rage are hidden on Retail, so when to use the defensives is your call and Ironfur cannot wait for a rage threshold.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'guardian','tank','assisted-combat'},
  sources={
@@ -26,18 +20,18 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={104},
   cooldowns={
-   block('guardian-utility','retail.druid.utility','guardian-'),
-   spell('guardian-skull-bash',106839,interrupt),
-   spell('guardian-berserk',50334,combat()),
-   spell('guardian-incarnation',102558,combat()),
-   spell('guardian-convoke',391528,combat()),
-   spell('guardian-ironfur',192081,combat()),
-   spell('guardian-frenzied-regeneration',22842,combat()),
-   spell('guardian-survival-instincts',61336,combat()),
-   spell('guardian-bear-form',5487,all(negate(combat()),negate({type='BUFF',unit='player',spell=5487}),negate({type='BUFF',unit='player',spell=102558}))),
+   BuiltinConditions.block('guardian-utility','retail.druid.utility','guardian-'),
+   BuiltinConditions.spell('guardian-skull-bash',106839,interrupt),
+   BuiltinConditions.spell('guardian-berserk',50334,BuiltinConditions.combat()),
+   BuiltinConditions.spell('guardian-incarnation',102558,BuiltinConditions.combat()),
+   BuiltinConditions.spell('guardian-convoke',391528,BuiltinConditions.combat()),
+   BuiltinConditions.spell('guardian-ironfur',192081,BuiltinConditions.combat()),
+   BuiltinConditions.spell('guardian-frenzied-regeneration',22842,BuiltinConditions.combat()),
+   BuiltinConditions.spell('guardian-survival-instincts',61336,BuiltinConditions.combat()),
+   BuiltinConditions.spell('guardian-bear-form',5487,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate({type='BUFF',unit='player',spell=5487}),BuiltinConditions.negate({type='BUFF',unit='player',spell=102558}))),
   },
   rotation={
-   block('guardian-boundaries','retail.druid.boundaries','guardian-'),
+   BuiltinConditions.block('guardian-boundaries','retail.druid.boundaries','guardian-'),
    {id='guardian-assisted',type='assisted',conditions={}},
   },
  },

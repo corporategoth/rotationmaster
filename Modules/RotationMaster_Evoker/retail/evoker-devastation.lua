@@ -5,13 +5,10 @@
 -- Around it, highlights for what simc's model of it leaves to you: Dragonrage, Deep Breath and Tip
 -- the Scales in combat, plus Quell, Obsidian Scales, Blessing of the Bronze and Source of Magic.
 local _,addon=...
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation',revision=6,
  blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Devastation. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast, channel Disintegrate or hold an empowered spell. Choosing the empower rank is up to you. Alongside it, reminders in combat for Dragonrage, Deep Breath and Tip the Scales, Quell on an interruptible cast and Obsidian Scales whenever it is ready, and out of combat Blessing of the Bronze when it is missing and Source of Magic on a friendly target in your group. Enemy casts are hidden in combat, so Quell lights only where the game shows them; health is hidden on Retail, so when to use Obsidian Scales is your call.",
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'devastation','ranged','assisted-combat'},
  sources={
@@ -21,13 +18,13 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={1467},
   cooldowns={
-   block('dev-utility','retail.evoker.utility','dev-'),
-   spell('dev-dragonrage',375087,combat()),
-   spell('dev-deep-breath',357210,combat()),
-   spell('dev-tip-the-scales',370553,combat()),
+   BuiltinConditions.block('dev-utility','retail.evoker.utility','dev-'),
+   BuiltinConditions.spell('dev-dragonrage',375087,BuiltinConditions.combat()),
+   BuiltinConditions.spell('dev-deep-breath',357210,BuiltinConditions.combat()),
+   BuiltinConditions.spell('dev-tip-the-scales',370553,BuiltinConditions.combat()),
   },
   rotation={
-   block('dev-boundaries','retail.evoker.boundaries','dev-'),
+   BuiltinConditions.block('dev-boundaries','retail.evoker.boundaries','dev-'),
    {id='dev-assisted',type='assisted',conditions={}},
   },
  },

@@ -7,41 +7,36 @@
 -- then Bloodthirst, Blood Surge Slam, Whirlwind, Raging Blow and Hamstring; no Rend and no
 -- Overpower. Same boundaries and reminders as the recommended SoD premade (era/blocks.lua).
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function rage(op,n)return{type='POWER',unit='player',operator=op,value=n}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
 local function queued(id)return{type='SPELL_ACTIVE',spell=id,ranked=false}end
-local function forecast(id)return any(negate(buff(id)),{type='BUFF_REMAIN',unit='player',spell=id,operator='LESSTHAN',value=3})end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
+local function forecast(id)return BuiltinConditions.any(BuiltinConditions.negate(buff(id)),{type='BUFF_REMAIN',unit='player',spell=id,operator='LESSTHAN',value=3})end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local unqueued=all(negate(queued(78)),negate(queued(845)))
+local unqueued=BuiltinConditions.all(BuiltinConditions.negate(queued(78)),BuiltinConditions.negate(queued(845)))
 local berserker={type='FORM',form=2458}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps.wowhead',revision=6,
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
- nameKey="Battle Forecaster stance dance (SoD, Wowhead)",descriptionKey="Wowhead's Phase 7/8 rotation for Soul of the Battle Forecaster or the Tier 1 six-piece (which Rotation Master cannot see), an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Stance swaps to keep the forecast buffs up, Heroic Strike almost always, then Bloodthirst, Blood Surge Slam, Whirlwind, Raging Blow and Hamstring; no Rend and no Overpower. Check the swap timing in game before relying on it.",
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
  tags={'dps','melee','endgame','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Warrior DPS rotation (Battle Forecaster, Phase 7/8)',reviewedAt='2026-10-23',revision='2025-04-12'}},
  body={priority=45,disabled=true,
  cooldowns={block('era.warrior.upkeep','sod-fc-'),
-  spell('sod-fc-berserker-stance',2458,all(combat(),negate(berserker),negate({type='FORM',form=71}),forecast(457816))),
-  spell('sod-fc-battle-stance',2457,all(combat(),berserker,forecast(457817))),
-  spell('sod-fc-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2),rage('GREATERTHANOREQUALS',20))),
-  spell('sod-fc-cleave',845,all(combat(),unqueued,enemies('GREATERTHANOREQUALS',2),rage('GREATERTHANOREQUALS',30))),
-  spell('sod-fc-bloodrage',2687,all(combat(),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.4})),
-  spell('sod-fc-death-wish',12328,combat()),
+  BuiltinConditions.spell('sod-fc-berserker-stance',2458,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(berserker),BuiltinConditions.negate({type='FORM',form=71}),forecast(457816))),
+  BuiltinConditions.spell('sod-fc-battle-stance',2457,BuiltinConditions.all(BuiltinConditions.combat(),berserker,forecast(457817))),
+  BuiltinConditions.spell('sod-fc-heroic-strike',78,BuiltinConditions.all(BuiltinConditions.combat(),unqueued,enemies('LESSTHAN',2),rage('GREATERTHANOREQUALS',20))),
+  BuiltinConditions.spell('sod-fc-cleave',845,BuiltinConditions.all(BuiltinConditions.combat(),unqueued,enemies('GREATERTHANOREQUALS',2),rage('GREATERTHANOREQUALS',30))),
+  BuiltinConditions.spell('sod-fc-bloodrage',2687,BuiltinConditions.all(BuiltinConditions.combat(),{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.4})),
+  BuiltinConditions.spell('sod-fc-death-wish',12328,BuiltinConditions.combat()),
  },
  rotation={
  block('era.warrior.boundaries','sod-fc-'),
- spell('sod-fc-bloodthirst',23881),
- spell('sod-fc-blood-surge-slam',1464,buff(413399)),
- spell('sod-fc-whirlwind',1680),
- spell('sod-fc-raging-blow',402911),
- spell('sod-fc-hamstring',1715,rage('GREATERTHANOREQUALS',60)),
+ BuiltinConditions.spell('sod-fc-bloodthirst',23881),
+ BuiltinConditions.spell('sod-fc-blood-surge-slam',1464,buff(413399)),
+ BuiltinConditions.spell('sod-fc-whirlwind',1680),
+ BuiltinConditions.spell('sod-fc-raging-blow',402911),
+ BuiltinConditions.spell('sod-fc-hamstring',1715,rage('GREATERTHANOREQUALS',60)),
  }},
 }))

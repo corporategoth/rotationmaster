@@ -9,18 +9,14 @@
 -- Shared parts: Defaults/blocks/hunter.lua. Left manual: melee weaving, pet commands and
 -- Misdirection, traps, Volley, Feign Death, ammunition and positioning.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function mana(op,n)return{type='MANAPCT',unit='player',operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))
+local stingless=BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.simulator',revision=5,
  blocks={['tbc.hunter.opening']=4,['tbc.hunter.leveling']=2,['tbc.hunter.upkeep']=1},
- nameKey="Ranged DPS (simulator)",descriptionKey="Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot, keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you have plenty. From level 62: Multi-Shot when ready, Steady Shot straight after each Auto Shot, Arcane Shot to fill the gap, Serpent Sting when solo. With three or more enemies fighting you, Multi-Shot whenever it is ready. Reminds you of aspects (Viper when mana runs low, Hawk again at half mana), pet care, Kill Command, major cooldowns on elites and bosses and Silencing Shot. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you.",
  applicability={families={'tbc'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','leveling','endgame','icy-veins'},
  sources={
@@ -29,22 +25,22 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/tbc-classic/hunter-leveling-guide',title='Icy Veins: Hunter leveling',reviewedAt='2026-10-23',revision='2026-01-12'}},
  body={priority=10,
  cooldowns={block('tbc.hunter.upkeep','hunter-'),
-  spell('hunter-viper',34074,all({type='COMBAT',unit='player'},mana('LESSTHAN',.2),negate(buff(34074)))),
-  spell('hunter-hawk',13165,all(negate(buff(13165)),any(negate(buff(34074)),mana('GREATERTHANOREQUALS',.5)),
-   any({type='COMBAT',unit='player'},all(negate(buff(5118)),negate(buff(13159)),negate(buff(20043)),negate(buff(13161))))))},
+  BuiltinConditions.spell('hunter-viper',34074,BuiltinConditions.all({type='COMBAT',unit='player'},mana('LESSTHAN',.2),BuiltinConditions.negate(buff(34074)))),
+  BuiltinConditions.spell('hunter-hawk',13165,BuiltinConditions.all(BuiltinConditions.negate(buff(13165)),BuiltinConditions.any(BuiltinConditions.negate(buff(34074)),mana('GREATERTHANOREQUALS',.5)),
+   BuiltinConditions.any({type='COMBAT',unit='player'},BuiltinConditions.all(BuiltinConditions.negate(buff(5118)),BuiltinConditions.negate(buff(13159)),BuiltinConditions.negate(buff(20043)),BuiltinConditions.negate(buff(13161))))))},
  rotation={
  block('tbc.hunter.opening','hunter-'),
  {id='hunter-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
-  spell('hunter-moving-multi-shot',2643),
-  spell('hunter-moving-arcane-shot',3044),
-  spell('hunter-moving-serpent-sting',1978,stingless),
+  BuiltinConditions.spell('hunter-moving-multi-shot',2643),
+  BuiltinConditions.spell('hunter-moving-arcane-shot',3044),
+  BuiltinConditions.spell('hunter-moving-serpent-sting',1978,stingless),
   {id='hunter-moving-stop',type='stop',suppress_attack=true,conditions={}},
  }},
  {id='hunter-steady',type='branch',conditions={type='SPELL_KNOWN',spell=34120},onTrue={
-  spell('hunter-multi-shot',2643),
-  spell('hunter-steady-shot',34120,{type='SPELL_HISTORY_TIME',spell=75,ranked=true,operator='LESSTHANOREQUALS',value=.5}),
-  spell('hunter-arcane-shot',3044,any(mana('GREATERTHAN',.5),negate({type='SPELL_KNOWN',spell=34074}))),
-  spell('hunter-serpent-sting',1978,all(negate({type='GROUP'}),stingless,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.3})),
+  BuiltinConditions.spell('hunter-multi-shot',2643),
+  BuiltinConditions.spell('hunter-steady-shot',34120,{type='SPELL_HISTORY_TIME',spell=75,ranked=true,operator='LESSTHANOREQUALS',value=.5}),
+  BuiltinConditions.spell('hunter-arcane-shot',3044,BuiltinConditions.any(mana('GREATERTHAN',.5),BuiltinConditions.negate({type='SPELL_KNOWN',spell=34074}))),
+  BuiltinConditions.spell('hunter-serpent-sting',1978,BuiltinConditions.all(BuiltinConditions.negate({type='GROUP'}),stingless,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.3})),
   {id='hunter-wait-auto',type='stop',suppress_attack=true,conditions={}},
  },onFalse={block('tbc.hunter.leveling','hunter-leveling-')}},
  }},

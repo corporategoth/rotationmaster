@@ -10,21 +10,16 @@
 -- Shadow Bolt. Shared parts: era/blocks.lua. Left manual: curse assignments (Recklessness,
 -- Tongues), Fear, Banish, Soulstones and creating Healthstones.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local raid={type='INSTANCE',value='raid'}
-local lasting=any({type='GROUP'},{type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
+local lasting=BuiltinConditions.any({type='GROUP'},{type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.4})
 local blocks={['era.warlock.boundaries']=3,['era.warlock.procs']=1,['era.warlock.group-finish']=1,['era.warlock.dying']=2,['era.warlock.curse']=2,
  ['era.warlock.moving']=2,['era.warlock.aoe']=1,['era.warlock.sustain']=3,['era.warlock.filler']=2,['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.warlock.dps',revision=5,blocks=blocks,
- nameKey="Every tree",descriptionKey="Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built from Wowhead, Icy Veins, Warcraft Tavern and simulator. Stops while you cast or channel and never tags a mob someone else is fighting while you are solo. Nightfall's Shadow Trance first; Shadowburn and Searing Pain to finish a group target; a solo target about to die gets Drain Soul (for a shard, or with Improved Drain Soul), Shadowburn or Conflagrate, then the wand, never new DoTs. While moving only instants. On three or more enemies: Hellfire when they are on you and you have half your health, otherwise Rain of Fire. One curse: in raids Curse of Shadow or the Elements when nobody has it, Doom on long elite fights, otherwise Agony. Immolate when it pays (Destruction, raids, or with 40% mana), Corruption, Siphon Life (in raids only on Shadow Vulnerability). Solo: Dark Pact, Life Tap when healthy, Drain Life when hurt, the wand. Shadow Bolt otherwise. Reminders: Demon Armor or Demon Skin, your pet (Voidwalker solo, Imp in a group, Succubus for Demonic Sacrifice), Fel Domination, Demonic Sacrifice, Amplify Curse, Voidwalker Sacrifice and a Healthstone when low, Health Funnel. Curse assignments, Curse of Recklessness on a fleeing mob, Fear, Banish, Soulstones and creating Healthstones stay with you.",
  applicability={families={'era'},actionContext='player',class='WARLOCK'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','wowhead','icy-veins','warcraft-tavern'},
  sources={{url='https://www.wowhead.com/classic/guide/classes/warlock/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Warlock DPS abilities and rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
@@ -44,10 +39,10 @@ assert(addon:RegisterDefaultRotation({
  block('era.warlock.moving','lock-'),
  block('era.warlock.aoe','lock-'),
  block('era.warlock.curse','lock-'),
- spell('lock-immolate',348,all(any(negate(own(348)),{type='DEBUFF_REMAIN',unit='target',spell=348,anyrank=true,owndebuff=true,operator='LESSTHAN',value=1.5}),
-  any(known(17962),raid,{type='MANAPCT',unit='player',operator='GREATERTHAN',value=.4}),lasting)),
- spell('lock-corruption',172,negate(own(172))),
- spell('lock-siphon-life',18265,all(negate(own(18265)),any(negate(raid),{type='DEBUFF',unit='target',spell=17800,anyrank=true}))),
+ BuiltinConditions.spell('lock-immolate',348,BuiltinConditions.all(BuiltinConditions.any(BuiltinConditions.negate(own(348)),{type='DEBUFF_REMAIN',unit='target',spell=348,anyrank=true,owndebuff=true,operator='LESSTHAN',value=1.5}),
+  BuiltinConditions.any(BuiltinConditions.known(17962),raid,{type='MANAPCT',unit='player',operator='GREATERTHAN',value=.4}),lasting)),
+ BuiltinConditions.spell('lock-corruption',172,BuiltinConditions.negate(own(172))),
+ BuiltinConditions.spell('lock-siphon-life',18265,BuiltinConditions.all(BuiltinConditions.negate(own(18265)),BuiltinConditions.any(BuiltinConditions.negate(raid),{type='DEBUFF',unit='target',spell=17800,anyrank=true}))),
  block('era.warlock.sustain','lock-'),
  block('era.warlock.filler','lock-'),
  }},

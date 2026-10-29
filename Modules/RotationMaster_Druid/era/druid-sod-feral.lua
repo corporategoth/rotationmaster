@@ -6,20 +6,13 @@
 -- Shred, Rip at five combo points while Savage Roar lasts, Rake, Shred from behind, powershift.
 -- Tiger's Fury and Berserk are reminders. In Bear Form it plays the SoD tank section.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function form(id)return{type='FORM',form=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.druid.feral',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=2,
   ['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.bear']=2,['era.druid.feral-humanoid']=2},
- nameKey="Feral cat (SoD)",descriptionKey="Season of Discovery cat, chosen when Savage Roar is engraved (or Feral is your main tree without another legs rune). Faerie Fire (Feral) when none is up, Savage Roar, Swipe (Cat) on four or more enemies, the Mangle debuff, Clearcasting on Shred, Rip at five combo points while Savage Roar has 8 seconds left, Rake, Shred from behind or Mangle from the front, powershift with Furor 5/5, Faerie Fire refresh last. In Bear Form it gives the tank advice. Reminders: Tiger's Fury at 60 energy or less, Berserk with Tiger's Fury, Maul, Innervate. Positioning stays with you.",
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
  tags={'season-of-discovery','leveling','endgame','feral','melee','single-target','aoe','wowhead','icy-veins'},
  sources={
@@ -27,19 +20,19 @@ assert(addon:RegisterDefaultRotation({
 
   {url='https://www.icy-veins.com/wow-classic/feral-druid-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  },
- body={priority=130,switch=any(rune(407988),all(negate(rune(409824)),negate(rune(417157)),{type='PRIMARY_TALENT_TREE',tree=2})),
+ body={priority=130,switch=BuiltinConditions.any(rune(407988),BuiltinConditions.all(BuiltinConditions.negate(rune(409824)),BuiltinConditions.negate(rune(417157)),{type='PRIMARY_TALENT_TREE',tree=2})),
   cooldowns={
-   ref('sod-feral-upkeep','era.druid.upkeep','sod-feral-'),
-   spell('sod-feral-tigers-fury',417045,all(combat(),form(768),{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=60}),true),
-   spell('sod-feral-berserk',417141,all(combat(),own(417045))),
-   ref('sod-feral-maul','sod.druid.maul','sod-feral-'),
-   spell('sod-feral-innervate',29166,all(combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.3})),
+   BuiltinConditions.block('sod-feral-upkeep','era.druid.upkeep','sod-feral-'),
+   spell('sod-feral-tigers-fury',417045,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.form(768),{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=60}),true),
+   spell('sod-feral-berserk',417141,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.ownBuff(417045))),
+   BuiltinConditions.block('sod-feral-maul','sod.druid.maul','sod-feral-'),
+   spell('sod-feral-innervate',29166,BuiltinConditions.all(BuiltinConditions.combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.3})),
   },
   rotation={
-   ref('sod-feral-boundaries','era.druid.boundaries','sod-feral-'),
-   {id='sod-feral-cat',type='branch',conditions=form(768),onFalse={},onTrue={ref('sod-feral-cat-section','sod.druid.cat','sod-feral-cat-')}},
-   {id='sod-feral-bear',type='branch',conditions=any(form(5487),form(9634)),onFalse={},onTrue={ref('sod-feral-bear-section','sod.druid.bear','sod-feral-bear-')}},
-   ref('sod-feral-humanoid','era.druid.feral-humanoid','sod-feral-'),
+   BuiltinConditions.block('sod-feral-boundaries','era.druid.boundaries','sod-feral-'),
+   {id='sod-feral-cat',type='branch',conditions=BuiltinConditions.form(768),onFalse={},onTrue={BuiltinConditions.block('sod-feral-cat-section','sod.druid.cat','sod-feral-cat-')}},
+   {id='sod-feral-bear',type='branch',conditions=BuiltinConditions.any(BuiltinConditions.form(5487),BuiltinConditions.form(9634)),onFalse={},onTrue={BuiltinConditions.block('sod-feral-bear-section','sod.druid.bear','sod-feral-bear-')}},
+   BuiltinConditions.block('sod-feral-humanoid','era.druid.feral-humanoid','sod-feral-'),
   },
  },
 }))

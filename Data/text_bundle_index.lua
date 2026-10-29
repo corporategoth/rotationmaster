@@ -22,78 +22,120 @@ addon.textBundleIndex = {
             "",
       symbolicCount = 0, symbolic =
             "" },
-    { id = "class-deathknight", module = "RotationMaster_DeathKnight", count = 22, keys =
-            "099e70760edde2b118baf9371e0a5a112206041d29dd699946d3aa3f53baae2f888bc165902f946e9d17b6e8a6ffb29dafc42cd4b1f14beebe6f5a14c167a2d3" ..
-            "dc3fd7f0e36d7c7ae44b0538e76762d7e9f9569cf7ea7be3",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-demonhunter", module = "RotationMaster_DemonHunter", count = 10, keys =
-            "3465d8d33f10bbc66c025caf6fdca1a87ce9ff88a2f6c67ac170ddf4c9d6cc88d7ec3bdbf9fdabed",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-druid", module = "RotationMaster_Druid", count = 60, keys =
-            "0437408b04ccfc8708e96da90ce3a07d0f416ad6120820a2121be8501f04b4791feb22372457ac1b24e0db792aa082cf33a6dae936edcf83548efe135b6325f5" ..
-            "5e90e20961d69e9063a2065c64a59f056c22ddb26d271725709180b2734664817af2d72f806b3e0c81ed422b83b979ab873e57ea8790e51f889c65518b8dc99b" ..
-            "91d40b6193fe99b396a017b09793923197f0a4cfa150edd1a4c84b9ca6c38184a8d61a71b15fd4a6b92976d0b9705308c193d3e5c1ae2da5cac94637ccd71312" ..
-            "d02a5a9dd4d7c5d5dec60dd6df603c16e46b13ebeb6bd51deb8373d5ed6ffe55f0825e16f1a78474f5c89a5afb61288b",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-evoker", module = "RotationMaster_Evoker", count = 6, keys =
-            "0686f2ac24c0c98f2be3c7445115e70bcb2fdfa7f2613bcf",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-hunter", module = "RotationMaster_Hunter", count = 34, keys =
-            "1b0b163b1bea26b92095eff42912d8402ba2574430ab690e3187023e38532c3d390b299c44d2c24b457fb3594fd05ebc548331775a7795a65e0808e45f61f590" ..
-            "69914b8f6ecf1b8872c51c6977d3c6648cae86d7945ca0e99619e2139d5a234aaaee473bb80622b0bb0fec3ebc30bbefca44723dcc15e499dfc4d5e8f223dc28" ..
-            "f78e8d40fdd2001a",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-mage", module = "RotationMaster_Mage", count = 41, keys =
-            "00cafcc50873901e0d2e507b121fbf7a125d5f0b184b2f3e1c1f7a151d73ca5e1df563a723f0c87f24479b6f2804ecb62959658f2a7a38772dd590a331287158" ..
-            "31594267389599f4507203075e660c9f71213cd071698d3f750a78c3763a41d97c8dfb7083ec04088cb74a84a26cc5aca2d431cfa447deb9a459878dab1de17f" ..
-            "ab81b7a0aca767cdad48ac26bf667169cabcd7aecb012476ce0d4f11d889e006e9cbc6e0",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-monk", module = "RotationMaster_Monk", count = 15, keys =
-            "08ae55541dd6af7825d6b70c3dba106f6a04f7367550ba98760e4c798684378f96d85083acc6063fc8aa0969e0f56523e25c4a9cfdbc97bbff68ee92",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-paladin", module = "RotationMaster_Paladin", count = 62, keys =
-            "0b1b05dd0fc7c06e1c1336911d85bef721a627d2253a93962929638129743b6f2f01b7f2330302bb363e3bbe3a8c375c3b17dfdd3ec0b2e83f9adbc1413b0555" ..
-            "458cbf8049c036324a563894548861c05cd52a995ce28bdc6063b4b46afe5f327275304a734917087a6c25b77a820a53809bb21d830f2fd39bdda2949ee03ec1" ..
-            "a0f0a0a1a13a3c22a59d0c8fa671d87fb19a2c9bb36dca39b4988da7b51846e1b8988061b975a3d6bb047a34bb656833bdce60ebc2965bfdcd22c12bcd8bb0eb" ..
-            "d088a070d1f0ee8bd31df197d3ad78c3db038962e1f950caf1d57c8ff242319cf4288188f7dec088f83be0cffa7b65c2fc1072d3fe163787",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-priest", module = "RotationMaster_Priest", count = 44, keys =
-            "014e8bff0252bf0d04fade8f05de80ca1101207b116b8dcf1507e91419cc6c091add9e011bc9085d2fbe0ad832085ba734af9809415b74e544bd309557b2845a" ..
-            "57cb5d485c1f934d6059712264563b316e24a31c727a46b07993778f8a6f7438964f9807a1ec5681a2f5a554a59d76c6b0b15227b5965788c6276ba4ccbb839d" ..
-            "cfe80ac8da002534e02e8101e548652de6cdecefe89b78b1ea3772baeb117a62eb35be03eeb365b2f34cb49efb3a7ac9",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-rogue", module = "RotationMaster_Rogue", count = 38, keys =
-            "0287aa5a07892ce70b4e7f950ce428600fe836f31bfb021f1e4ea7242243464e2816e9822e867d223b2678813fd750dc5086835651df5ef45641079067383d60" ..
-            "6a88e36f6b579fbe72a76db98089fa4884c08868872c945f897b7b959b0595c09c840f19a3d0a2b5a8b7da0da925c361ac4fe39cadc1c486b37cf056c5fe185b" ..
-            "d1ec09a1df9f9dcee3310c21e9f857edec010b2aef746046",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-shaman", module = "RotationMaster_Shaman", count = 51, keys =
-            "011bd8e80431e9590509ebfa098f17ed0acd49c80d574eff1029916d1143b19616cc0c441a81bdeb1d8da7781f9c127522fe344b4223893a495364c24ad1cc1d" ..
-            "4b150ac14b2c3bd54bd26c7955956f175b89bc475bc7d0f05c8721d963a4ebac850eb7448dbb4b8b97be46489a65b77e9d2802709fc21b3aa834513aa9e33643" ..
-            "accd04b1ad3e3eb0b2afe1dab750a6babbe6d752c27d2a3ecce8d5fed218e5ecdbad99eade126bb7e1ba7874e1fabc4fe68532ede789a8a3e82bca72ea42926d" ..
-            "ee09f175fa2453e9fb0a6063",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-warlock", module = "RotationMaster_Warlock", count = 41, keys =
-            "0184c5d806b33136220dfa6e2c85d6093ab6eb293d39279242cedbe3431d5c0c4bcaf8134d5487f55a45d7b15d52eb9a68ed61686a51de316e008f426e3ab513" ..
-            "6f73b3a2739ab2e87e24e84982a4d333864ad6c7878e21228a2785a39165a30f925bb71092f93414a073744ca431b2faabea9fe5b0478d3db1910b58b8a74afe" ..
-            "bdab0d40be1eacecc3fac13fc6fea358cba57915d1e49a98e7edacc1ee317429fc5de52f",
-      symbolicCount = 0, symbolic =
-            "" },
-    { id = "class-warrior", module = "RotationMaster_Warrior", count = 44, keys =
-            "0345be4d06607c6607295d450e731b1616fa32161892d9501a6b336830e8311740663c904ea54e1d53c308835620421d5629107e581af38f5f26428d5f57a79e" ..
-            "5f9b4adb67c8960569598c0072cbc38674972eff766f43a48033916181a316f38ca277228f888cd99a9df7459ba3b8219f369426a2251daca49bc488aa8939eb" ..
-            "ba310685bdffc74fbe30602ec88a71bcca545470d020f3cfd3ad600ed97acf1ce6c14fb1faf1307bfc296961feeaaa2f",
-      symbolicCount = 0, symbolic =
-            "" },
+    { id = "class-deathknight", module = "RotationMaster_DeathKnight", count = 32, keys =
+            "00cb8aed08ab3c33208d9c7b2b98a6512cff690436919c4037a3f0ba4f227d3154a551d3577762315f1f473263650d6866a63e7a679342f66f25e9497b14729f" ..
+            "7ffc66c7955862ec99c9c7beb06aa37eb4bb4815b8b05d79bec5fdf6ccfcdadbe9bb8094ece2ad76eeea452df3300b63f488908cf82b0d09fa2e194efa3e8234",
+      symbolicCount = 32, symbolic =
+            "00cb8aed08ab3c33208d9c7b2b98a6512cff690436919c4037a3f0ba4f227d3154a551d3577762315f1f473263650d6866a63e7a679342f66f25e9497b14729f" ..
+            "7ffc66c7955862ec99c9c7beb06aa37eb4bb4815b8b05d79bec5fdf6ccfcdadbe9bb8094ece2ad76eeea452df3300b63f488908cf82b0d09fa2e194efa3e8234" },
+    { id = "class-demonhunter", module = "RotationMaster_DemonHunter", count = 18, keys =
+            "177225fa2feb1a1739e96efe407633d242cc38296175e4fb678785c37190e9c47478aa6c998f4f7599d74eeda0117ac8c07cc7f7c43f351fe220bcd0e68cacba" ..
+            "f344eaf0f3d2edad",
+      symbolicCount = 18, symbolic =
+            "177225fa2feb1a1739e96efe407633d242cc38296175e4fb678785c37190e9c47478aa6c998f4f7599d74eeda0117ac8c07cc7f7c43f351fe220bcd0e68cacba" ..
+            "f344eaf0f3d2edad" },
+    { id = "class-druid", module = "RotationMaster_Druid", count = 80, keys =
+            "033daa3404c123d60b3bcb6e0edaa9280fddfdb910cdb6691ba6e6d31c0eac141c67edc82449a7e12818522528ffb6072b81e5792cc886fd2d2b0bc430a412d6" ..
+            "3212365333431d063a2163533b4e26163e278b94422fa3c342a95a014ae7c9e6523ccebe54848cf154d7b159550ddb3456883a9d5710870a5aefac11603e6769" ..
+            "61a33e3f696736d46f6aaee07323d836736366aa81f7d25e8201e6098366d2ed8428bd0584c1f4c7851299a785378e688708abf387d058828a13914e8b69cd7f" ..
+            "8c9cefcd8e1e13918e7493248f128edf9abaa96ea10173c6a48e015ea59fa7dca9099b67a9e069a2ada9a8baafb847dab2dfef72b56be98bbc1da1b1d06798c1" ..
+            "d2fa9f40d6e1b824d6fb1016e19d3d43e19fe051e49e1580eabd8820ec4b67d5f12bfb22f5d16d94f7b1dfc4f9782363fccc1393fcef4fc3fd7e7b85ff95c333",
+      symbolicCount = 80, symbolic =
+            "033daa3404c123d60b3bcb6e0edaa9280fddfdb910cdb6691ba6e6d31c0eac141c67edc82449a7e12818522528ffb6072b81e5792cc886fd2d2b0bc430a412d6" ..
+            "3212365333431d063a2163533b4e26163e278b94422fa3c342a95a014ae7c9e6523ccebe54848cf154d7b159550ddb3456883a9d5710870a5aefac11603e6769" ..
+            "61a33e3f696736d46f6aaee07323d836736366aa81f7d25e8201e6098366d2ed8428bd0584c1f4c7851299a785378e688708abf387d058828a13914e8b69cd7f" ..
+            "8c9cefcd8e1e13918e7493248f128edf9abaa96ea10173c6a48e015ea59fa7dca9099b67a9e069a2ada9a8baafb847dab2dfef72b56be98bbc1da1b1d06798c1" ..
+            "d2fa9f40d6e1b824d6fb1016e19d3d43e19fe051e49e1580eabd8820ec4b67d5f12bfb22f5d16d94f7b1dfc4f9782363fccc1393fcef4fc3fd7e7b85ff95c333" },
+    { id = "class-evoker", module = "RotationMaster_Evoker", count = 12, keys =
+            "0263601f0f77efe8233eee5a35e4a5a1409a5cf968b922f184d8a2048a47d42692629583a66da9ceaa3abcd6c237dded",
+      symbolicCount = 12, symbolic =
+            "0263601f0f77efe8233eee5a35e4a5a1409a5cf968b922f184d8a2048a47d42692629583a66da9ceaa3abcd6c237dded" },
+    { id = "class-hunter", module = "RotationMaster_Hunter", count = 46, keys =
+            "00f4229306ead636079c0ddc0afc65021089341b1203485d23517e672d8199d42f87bee5382be5ea3e98a2a13ea449334160b0a044f142f44bdbc8905454ffd4" ..
+            "54fac1f15ac6f87f5b9d580e5ee921b361024cab63a9c8a0708b424d725853ed7755c7b37dfb5b869756e86c987686629aa66854a6242447aa9d54ebb7487477" ..
+            "b8ca2b88b8f747babe29c55acb533d9ccfe8933dd1a2fd19d409dba9d834bb7edb747a24dec803d6e37dbbf1f73b7643faa69f0afc391445",
+      symbolicCount = 46, symbolic =
+            "00f4229306ead636079c0ddc0afc65021089341b1203485d23517e672d8199d42f87bee5382be5ea3e98a2a13ea449334160b0a044f142f44bdbc8905454ffd4" ..
+            "54fac1f15ac6f87f5b9d580e5ee921b361024cab63a9c8a0708b424d725853ed7755c7b37dfb5b869756e86c987686629aa66854a6242447aa9d54ebb7487477" ..
+            "b8ca2b88b8f747babe29c55acb533d9ccfe8933dd1a2fd19d409dba9d834bb7edb747a24dec803d6e37dbbf1f73b7643faa69f0afc391445" },
+    { id = "class-mage", module = "RotationMaster_Mage", count = 60, keys =
+            "0c8b17610ddc527e12c68a61131f176615b47d6d15fa64a917e434f8194c26a7289f314533e0fc58344ae8c43558f23937d53cd13f135ebf40f917b64fa5149c" ..
+            "50ffa4ef53cece3a572a3d48576a5e135a91ea666b2779c470683d6270cfc232727f059c7aafbc547c9eb3477ee94411843e71af8758ac8e8a8bc4b08b32f5c3" ..
+            "9396a4cb997c3d2599e669c09cb5b2409f0ddc57a0638022a2d58b8aa86d261db17b7b71b86fa275bb3bd456bc2ef06ac5a28cebc607c6f6c7e55b0ecc0b0766" ..
+            "cdc5ff27ce0fee97cfa953a3d9c99143d9c9f850ddd0144de382853de4cd335aed6219a0ee92ee44f2689a61fc5b93b9",
+      symbolicCount = 60, symbolic =
+            "0c8b17610ddc527e12c68a61131f176615b47d6d15fa64a917e434f8194c26a7289f314533e0fc58344ae8c43558f23937d53cd13f135ebf40f917b64fa5149c" ..
+            "50ffa4ef53cece3a572a3d48576a5e135a91ea666b2779c470683d6270cfc232727f059c7aafbc547c9eb3477ee94411843e71af8758ac8e8a8bc4b08b32f5c3" ..
+            "9396a4cb997c3d2599e669c09cb5b2409f0ddc57a0638022a2d58b8aa86d261db17b7b71b86fa275bb3bd456bc2ef06ac5a28cebc607c6f6c7e55b0ecc0b0766" ..
+            "cdc5ff27ce0fee97cfa953a3d9c99143d9c9f850ddd0144de382853de4cd335aed6219a0ee92ee44f2689a61fc5b93b9" },
+    { id = "class-monk", module = "RotationMaster_Monk", count = 24, keys =
+            "07cbc3160a878624127f9911173346992763cf1d2ae6ad2e481b028a4b85b5ec58496c325b1e8737660aa98871f83a7f870465998f4ce97b9219b3a59368ac2e" ..
+            "9480c315afc2923ebeefd3b0cae2ea43e86bb9a2f3712b77f840ece9fbf17770",
+      symbolicCount = 24, symbolic =
+            "07cbc3160a878624127f9911173346992763cf1d2ae6ad2e481b028a4b85b5ec58496c325b1e8737660aa98871f83a7f870465998f4ce97b9219b3a59368ac2e" ..
+            "9480c315afc2923ebeefd3b0cae2ea43e86bb9a2f3712b77f840ece9fbf17770" },
+    { id = "class-paladin", module = "RotationMaster_Paladin", count = 78, keys =
+            "0066d8a70362a41d056b7c8f0624320c0e57482613a0298e150f3f261de53088235dc0bb23d7184523f7420125f7bd672660c6d527646ccf2af232652d2a167d" ..
+            "307dcfac33bfa12633e673ce3572696d36029b6c376dccab39997b993a51e1023ac2d4a73b2bd6743c042b22458ca27d46f5e6fc4baa066f4e01303054d0895b" ..
+            "5c6834686285b158650689346c34c9d26d86666b70403d387149472c74d210787adf703b7f48e7cc820591a088104b8588632b09899857bb8bec9a208d0f4c3c" ..
+            "8e7c8378916bd96f9486f3ca94bd4e6097e978a1984c992b9af2c260a0abe4a7a1b64042a5095a60ad10d2f9aeb872dab3ab6b01bf50e11bc0a7875fc1c1d22a" ..
+            "c3a41ab7c6f22658c75908bcce6ee7cad1dc2bc9d3f07f13d5daa2c7f0504ca7f1056453f13bf81ef31c90fef83f2b9ff901678ffb46c440",
+      symbolicCount = 78, symbolic =
+            "0066d8a70362a41d056b7c8f0624320c0e57482613a0298e150f3f261de53088235dc0bb23d7184523f7420125f7bd672660c6d527646ccf2af232652d2a167d" ..
+            "307dcfac33bfa12633e673ce3572696d36029b6c376dccab39997b993a51e1023ac2d4a73b2bd6743c042b22458ca27d46f5e6fc4baa066f4e01303054d0895b" ..
+            "5c6834686285b158650689346c34c9d26d86666b70403d387149472c74d210787adf703b7f48e7cc820591a088104b8588632b09899857bb8bec9a208d0f4c3c" ..
+            "8e7c8378916bd96f9486f3ca94bd4e6097e978a1984c992b9af2c260a0abe4a7a1b64042a5095a60ad10d2f9aeb872dab3ab6b01bf50e11bc0a7875fc1c1d22a" ..
+            "c3a41ab7c6f22658c75908bcce6ee7cad1dc2bc9d3f07f13d5daa2c7f0504ca7f1056453f13bf81ef31c90fef83f2b9ff901678ffb46c440" },
+    { id = "class-priest", module = "RotationMaster_Priest", count = 54, keys =
+            "069d4dc80884c18a09cbba6c0f663d2911f9b0d31457414315d300f717448c2f17d21b3d195a90181d4011d8225c31a2230401942418b84525f36dae2905e782" ..
+            "2e3f95ef33c561c536b6cbd5398896623ff753794a7f6e6d58107e3e6c958cae71458322736472b07456fc80749926667d1f4a1b7d9479847f1bf385865bf505" ..
+            "8b2ca6898dc6f527925b09fe9350021f949c1a6aa6ebcddaa7fca21ba9ced467a9ef5b61ad18c94cb52ed101bf8cd1f0c45f6ae3c7f29926c9075ed0ccdc21e0" ..
+            "e07cee57e3845479f3bd6637f79440bdfa3f3e44fc6a64d2",
+      symbolicCount = 54, symbolic =
+            "069d4dc80884c18a09cbba6c0f663d2911f9b0d31457414315d300f717448c2f17d21b3d195a90181d4011d8225c31a2230401942418b84525f36dae2905e782" ..
+            "2e3f95ef33c561c536b6cbd5398896623ff753794a7f6e6d58107e3e6c958cae71458322736472b07456fc80749926667d1f4a1b7d9479847f1bf385865bf505" ..
+            "8b2ca6898dc6f527925b09fe9350021f949c1a6aa6ebcddaa7fca21ba9ced467a9ef5b61ad18c94cb52ed101bf8cd1f0c45f6ae3c7f29926c9075ed0ccdc21e0" ..
+            "e07cee57e3845479f3bd6637f79440bdfa3f3e44fc6a64d2" },
+    { id = "class-rogue", module = "RotationMaster_Rogue", count = 54, keys =
+            "077522d90bf17e290d1ae2b40fb7661415398466190472e11ca04dd92002992520d2400227dcbd6128e5bc2b2d818646315adf57324f37e8341bbe1e5456ee67" ..
+            "571f50b5583320f45927893c5a0b57f95c5c8c986315247f63ad181f6672ffcb69a3b8ec70c84ce172b196bc74185f9082e287ee8358228088255f4e891188e0" ..
+            "91662a4c9235b6909dd7f182ab63792eb18e4e3bb2ca8573b69584e6c8cf9c07ce46807ddacdf39bdb901768e29782a9e5011781e586e8fee79d5346ec043c53" ..
+            "ed739945ee08a96feedda857f0fabad3f87f49cafa5e4a92",
+      symbolicCount = 54, symbolic =
+            "077522d90bf17e290d1ae2b40fb7661415398466190472e11ca04dd92002992520d2400227dcbd6128e5bc2b2d818646315adf57324f37e8341bbe1e5456ee67" ..
+            "571f50b5583320f45927893c5a0b57f95c5c8c986315247f63ad181f6672ffcb69a3b8ec70c84ce172b196bc74185f9082e287ee8358228088255f4e891188e0" ..
+            "91662a4c9235b6909dd7f182ab63792eb18e4e3bb2ca8573b69584e6c8cf9c07ce46807ddacdf39bdb901768e29782a9e5011781e586e8fee79d5346ec043c53" ..
+            "ed739945ee08a96feedda857f0fabad3f87f49cafa5e4a92" },
+    { id = "class-shaman", module = "RotationMaster_Shaman", count = 68, keys =
+            "00f0c562014c7322094bb44a09eb693f0b14b9130b14ff490eeda94514fbd24616670385170267f528e0bcef435771ff461433ff50f351035304e5fd57bf34ad" ..
+            "57d89aee586e8b525fb7befa5fc4eecb62cf9db46321ba99643acef3656f8918671d80e36761fbb873802aa47524388376d778ca7a5b75b67b6337187d525fd3" ..
+            "81aa8e4183e4d252855a8774861f4a648f1ffecf904f033f9e63fe4f9efe00f59fa0be39a6bf50a8a80fb82eab946bdeb0a5f684b5e54b82b7b29acabc25c154" ..
+            "bf6e5cfabfae7dc5c153f612c2cb0008c524c7bcc611de03d861f9e8dba9aaa8dbe6af40e4e2d2f9eb2b9535ebd473ceed7489a7eeffb271f021d0ddf665bfe4" ..
+            "f7e543e6f8fad6adf9444b81fadc6edd",
+      symbolicCount = 68, symbolic =
+            "00f0c562014c7322094bb44a09eb693f0b14b9130b14ff490eeda94514fbd24616670385170267f528e0bcef435771ff461433ff50f351035304e5fd57bf34ad" ..
+            "57d89aee586e8b525fb7befa5fc4eecb62cf9db46321ba99643acef3656f8918671d80e36761fbb873802aa47524388376d778ca7a5b75b67b6337187d525fd3" ..
+            "81aa8e4183e4d252855a8774861f4a648f1ffecf904f033f9e63fe4f9efe00f59fa0be39a6bf50a8a80fb82eab946bdeb0a5f684b5e54b82b7b29acabc25c154" ..
+            "bf6e5cfabfae7dc5c153f612c2cb0008c524c7bcc611de03d861f9e8dba9aaa8dbe6af40e4e2d2f9eb2b9535ebd473ceed7489a7eeffb271f021d0ddf665bfe4" ..
+            "f7e543e6f8fad6adf9444b81fadc6edd" },
+    { id = "class-warlock", module = "RotationMaster_Warlock", count = 54, keys =
+            "06633cc806e36f3e078c95d608f95d980aae6cf20f3d45451057b2f715f68e751f9d87e82060d20a2947bc2a32c4f86f41fdeec04d614903597f5fb55aa023ff" ..
+            "5e09f71060a2fdf767acd4f2686db9186a4ddded6b5d8f9d72788cef74cf331f79c8fdba7a702e517ac9511c7cfbf7b585d15ebb9622432d96c20c95975995f7" ..
+            "9e61775d9f56c002a0923e2da14a72b2a84e316bb8afe447badb8f10bc218fdabc3a14d2bcb2a7cdc0dd6fe9c2ff1945c314211acb14657acc4ffa1dceb8a962" ..
+            "d70e224ae690b91aec823f64ed613a10f320ab2dff2789cc",
+      symbolicCount = 54, symbolic =
+            "06633cc806e36f3e078c95d608f95d980aae6cf20f3d45451057b2f715f68e751f9d87e82060d20a2947bc2a32c4f86f41fdeec04d614903597f5fb55aa023ff" ..
+            "5e09f71060a2fdf767acd4f2686db9186a4ddded6b5d8f9d72788cef74cf331f79c8fdba7a702e517ac9511c7cfbf7b585d15ebb9622432d96c20c95975995f7" ..
+            "9e61775d9f56c002a0923e2da14a72b2a84e316bb8afe447badb8f10bc218fdabc3a14d2bcb2a7cdc0dd6fe9c2ff1945c314211acb14657acc4ffa1dceb8a962" ..
+            "d70e224ae690b91aec823f64ed613a10f320ab2dff2789cc" },
+    { id = "class-warrior", module = "RotationMaster_Warrior", count = 60, keys =
+            "0135b4090a418f1e1d8707191e2ec2e41eee974b1f410f0d20f7d3cb269d38932bf35bae2f1950862fb8abe8387f063e38cd1be139f77cbf494655ef49b814ed" ..
+            "4b0f2ae051095017514e7d905229dc2753f735c05667bcba57887d475f9c55416c475f777665b1d477085f488308240a8a808ecd8c62d75a92f7496894016e23" ..
+            "94caa56b9e871e89a0a635dfa6eced21a7daa55ca886952aab712cc0b0747fffb26a87fcb4fc0c27b559d5e6b74cd09abe8db0a3c06a3eedc1237079c440f21c" ..
+            "c83a98f0ca52a3f8d0afa64ed491b27fd602ae3ddcb7252be0ec087de1b5d208e24de106ee439e44f2aac59cff1988da",
+      symbolicCount = 60, symbolic =
+            "0135b4090a418f1e1d8707191e2ec2e41eee974b1f410f0d20f7d3cb269d38932bf35bae2f1950862fb8abe8387f063e38cd1be139f77cbf494655ef49b814ed" ..
+            "4b0f2ae051095017514e7d905229dc2753f735c05667bcba57887d475f9c55416c475f777665b1d477085f488308240a8a808ecd8c62d75a92f7496894016e23" ..
+            "94caa56b9e871e89a0a635dfa6eced21a7daa55ca886952aab712cc0b0747fffb26a87fcb4fc0c27b559d5e6b74cd09abe8db0a3c06a3eedc1237079c440f21c" ..
+            "c83a98f0ca52a3f8d0afa64ed491b27fd602ae3ddcb7252be0ec087de1b5d208e24de106ee439e44f2aac59cff1988da" },
 }

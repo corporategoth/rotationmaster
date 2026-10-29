@@ -8,19 +8,13 @@
 -- Implosion on three or more engaged enemies, Ruination, Hand of Gul'dan at 3+ shards, Infernal
 -- Bolt below 3, Demonbolt on Demonic Core below 4, Shadow Bolt. Reminder: a Felguard between pulls.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function shards(op,v)return{type='POINT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local core=own(264173)
+local core=BuiltinConditions.ownBuff(264173)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology.icyveins',revision=7,
  blocks={['retail.warlock.boundaries']=3,['retail.warlock.upkeep']=2},
- nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft (Diabolist) order reads Demonic Core, imp counts and cooldown timers, which Midnight hides in combat. Power Siphon, Demonbolt and Shadow Bolt before the pull; then Power Siphon at one Demonic Core or none, Grimoire: Imp Lord, Grimoire: Fel Ravager, Summon Doomguard, Call Dreadstalkers, Summon Demonic Tyrant at 5 shards, Implosion on three or more engaged enemies, Ruination, Hand of Gul'dan at 3 shards or more, Infernal Bolt below 3, Demonbolt on Demonic Core below 4, Shadow Bolt.",
  applicability={families={'retail'},actionContext='player',class='WARLOCK'},
  tags={'demonology','ranged','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={
@@ -30,28 +24,28 @@ assert(addon:RegisterDefaultRotation({
  body={priority=5,disabled=true,specs={266},
   cooldowns={
    block('retail.warlock.upkeep','demoiv-'),
-   spell('demoiv-summon-felguard',30146,all(negate(combat()),negate({type='PET'}))),
+   BuiltinConditions.spell('demoiv-summon-felguard',30146,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate({type='PET'}))),
   },
   rotation={
    block('retail.warlock.boundaries','demoiv-'),
-   {id='demoiv-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    spell('demoiv-pull-power-siphon',264130),
-    spell('demoiv-pull-demonbolt',264178,core),
-    spell('demoiv-pull-shadow-bolt',686),
+   {id='demoiv-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.spell('demoiv-pull-power-siphon',264130),
+    BuiltinConditions.spell('demoiv-pull-demonbolt',264178,core),
+    BuiltinConditions.spell('demoiv-pull-shadow-bolt',686),
     {id='demoiv-pull-stop',type='stop',suppress_attack=true,conditions={}},
    }},
-   spell('demoiv-power-siphon',264130,any(negate(core),{type='BUFF_STACKS',unit='player',spell=264173,ownbuff=true,operator='LESSTHANOREQUALS',value=1})),
-   spell('demoiv-imp-lord',1276452),
-   spell('demoiv-fel-ravager',1276467),
-   spell('demoiv-doomguard',1276672),
-   spell('demoiv-dreadstalkers',104316),
-   spell('demoiv-tyrant',265187,shards('GREATERTHANOREQUALS',5)),
-   spell('demoiv-implosion',196277,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3}),
-   spell('demoiv-ruination',434635),
-   spell('demoiv-hand-of-guldan',105174,shards('GREATERTHANOREQUALS',3)),
-   spell('demoiv-infernal-bolt',434506,shards('LESSTHAN',3)),
-   spell('demoiv-demonbolt',264178,all(core,shards('LESSTHAN',4))),
-   spell('demoiv-shadow-bolt',686),
+   BuiltinConditions.spell('demoiv-power-siphon',264130,BuiltinConditions.any(BuiltinConditions.negate(core),{type='BUFF_STACKS',unit='player',spell=264173,ownbuff=true,operator='LESSTHANOREQUALS',value=1})),
+   BuiltinConditions.spell('demoiv-imp-lord',1276452),
+   BuiltinConditions.spell('demoiv-fel-ravager',1276467),
+   BuiltinConditions.spell('demoiv-doomguard',1276672),
+   BuiltinConditions.spell('demoiv-dreadstalkers',104316),
+   BuiltinConditions.spell('demoiv-tyrant',265187,shards('GREATERTHANOREQUALS',5)),
+   BuiltinConditions.spell('demoiv-implosion',196277,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3}),
+   BuiltinConditions.spell('demoiv-ruination',434635),
+   BuiltinConditions.spell('demoiv-hand-of-guldan',105174,shards('GREATERTHANOREQUALS',3)),
+   BuiltinConditions.spell('demoiv-infernal-bolt',434506,shards('LESSTHAN',3)),
+   BuiltinConditions.spell('demoiv-demonbolt',264178,BuiltinConditions.all(core,shards('LESSTHAN',4))),
+   BuiltinConditions.spell('demoiv-shadow-bolt',686),
   },
  },
 }))

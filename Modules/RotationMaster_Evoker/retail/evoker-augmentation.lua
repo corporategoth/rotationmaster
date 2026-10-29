@@ -7,20 +7,12 @@
 -- its upkeep runs there; steps on other buffs are skipped while those are hidden. Breath of Eons,
 -- Deep Breath (both aimed), Tip the Scales and Time Skip are highlights beside it.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function ready(id)return{type='SPELL_AVAIL',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local ebon={type='BUFF',unit='player',spell=395296,ownbuff=true}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation',revision=7,
  blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
- nameKey="Icy Veins",descriptionKey="Recommended for Augmentation: Icy Veins' Ebon Might priority. Ebon Might is one of the few buffs the game still shows addons in Midnight combat, so its upkeep works there. Out of combat: Blistering Scales on a friendly group target without it, Living Flame on an enemy. Then Ebon Might when missing or under 4 seconds, and on cooldown unless Breath of Eons is ready; Prescience; Fire Breath; Upheaval; Eruption in Ebon Might or with two Essence Bursts; Azure Strike; Living Flame. Hidden buffs only skip their own step in combat. Reminders: Breath of Eons and Deep Breath (you aim them), Tip the Scales with Fire Breath ready, Time Skip with Fire Breath and Upheaval both cooling, plus the utility reminders. Prescience and Blistering Scales go on your target: choosing the ally, and the empower rank, is up to you.",
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'augmentation','ranged','support','icy-veins','simulationcraft'},
  sources={
@@ -30,26 +22,26 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={1473},
   cooldowns={
-   block('aug-utility','retail.evoker.utility','aug-'),
-   spell('aug-breath-of-eons',403631,combat()),
-   spell('aug-deep-breath',357210,combat()),
-   spell('aug-tip-the-scales',370553,all(combat(),ready(357208))),
-   spell('aug-time-skip',404977,all(combat(),negate(ready(357208)),negate(ready(396286)))),
+   BuiltinConditions.block('aug-utility','retail.evoker.utility','aug-'),
+   BuiltinConditions.spell('aug-breath-of-eons',403631,BuiltinConditions.combat()),
+   BuiltinConditions.spell('aug-deep-breath',357210,BuiltinConditions.combat()),
+   BuiltinConditions.spell('aug-tip-the-scales',370553,BuiltinConditions.all(BuiltinConditions.combat(),ready(357208))),
+   BuiltinConditions.spell('aug-time-skip',404977,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(ready(357208)),BuiltinConditions.negate(ready(396286)))),
   },
   rotation={
-   block('aug-boundaries','retail.evoker.boundaries','aug-'),
-   {id='aug-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    spell('aug-pull-blistering-scales',360827,all({type='GROUP'},{type='FRIENDLY',unit='target'},negate({type='BUFF',unit='target',spell=360827,ownbuff=true}))),
-    spell('aug-pull-living-flame',361469,{type='ATTACKABLE',unit='target'}),
-    stop('aug-pull-stop')}},
-   spell('aug-ebon-might-expiring',395152,any(negate(ebon),{type='BUFF_REMAIN',unit='player',spell=395296,ownbuff=true,operator='LESSTHAN',value=4})),
-   spell('aug-ebon-might',395152,any(negate(known(403631)),negate(ready(403631)))),
-   spell('aug-prescience',409311),
-   spell('aug-fire-breath',357208),
-   spell('aug-upheaval',396286),
-   spell('aug-eruption',395160,any(ebon,{type='BUFF_STACKS',unit='player',spell=392268,ownbuff=true,operator='GREATERTHANOREQUALS',value=2})),
-   spell('aug-azure-strike',362969),
-   spell('aug-living-flame',361469),
+   BuiltinConditions.block('aug-boundaries','retail.evoker.boundaries','aug-'),
+   {id='aug-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.spell('aug-pull-blistering-scales',360827,BuiltinConditions.all({type='GROUP'},{type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='BUFF',unit='target',spell=360827,ownbuff=true}))),
+    BuiltinConditions.spell('aug-pull-living-flame',361469,{type='ATTACKABLE',unit='target'}),
+    BuiltinConditions.stop('aug-pull-stop')}},
+   BuiltinConditions.spell('aug-ebon-might-expiring',395152,BuiltinConditions.any(BuiltinConditions.negate(ebon),{type='BUFF_REMAIN',unit='player',spell=395296,ownbuff=true,operator='LESSTHAN',value=4})),
+   BuiltinConditions.spell('aug-ebon-might',395152,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.known(403631)),BuiltinConditions.negate(ready(403631)))),
+   BuiltinConditions.spell('aug-prescience',409311),
+   BuiltinConditions.spell('aug-fire-breath',357208),
+   BuiltinConditions.spell('aug-upheaval',396286),
+   BuiltinConditions.spell('aug-eruption',395160,BuiltinConditions.any(ebon,{type='BUFF_STACKS',unit='player',spell=392268,ownbuff=true,operator='GREATERTHANOREQUALS',value=2})),
+   BuiltinConditions.spell('aug-azure-strike',362969),
+   BuiltinConditions.spell('aug-living-flame',361469),
   },
  },
 }))

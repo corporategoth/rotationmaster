@@ -9,17 +9,12 @@
 -- Defaults/blocks/rogue.lua. Left manual: Expose Armor (a raid assignment), Kidney Shot, Feint,
 -- Vanish, Sprint, Thistle Tea and positioning.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function points(n)return{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=n}end
-local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.simulator',revision=6,
  blocks={['tbc.rogue.opening']=4,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
- nameKey="Melee DPS (simulator)",descriptionKey="Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte, Slice and Dice from two combo points (renewed in its last two seconds), Eviscerate on a target about to die, and at five points Rupture when it will last (not while Blade Flurry cleaves), otherwise Eviscerate. Builds with Mutilate or Backstab (dagger) when the target is not attacking you, otherwise Hemorrhage or Sinister Strike. Reminds you of missing poisons, Kick, Blade Flurry and Adrenaline Rush, Cold Blood and Evasion. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you.",
  applicability={families={'tbc'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','icy-veins'},
  sources={
@@ -30,13 +25,13 @@ assert(addon:RegisterDefaultRotation({
  cooldowns={block('tbc.rogue.upkeep','rogue-')},
  rotation={
  block('tbc.rogue.opening','rogue-'),
- spell('rogue-slice',5171,all(points(2),any(negate({type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}),
+ BuiltinConditions.spell('rogue-slice',5171,BuiltinConditions.all(points(2),BuiltinConditions.any(BuiltinConditions.negate({type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}),
   {type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=2}))),
- spell('rogue-kill-shot',2098,all(points(2),lifetime('LESSTHAN',4))),
+ BuiltinConditions.spell('rogue-kill-shot',2098,BuiltinConditions.all(points(2),BuiltinConditions.lifetime('LESSTHAN',4))),
  {id='rogue-finisher',type='branch',conditions=points(5),onFalse={},onTrue={
-  spell('rogue-rupture',1943,all(negate({type='DEBUFF',unit='target',spell=1943,anyrank=true,owndebuff=true}),
-   negate({type='BUFF',unit='player',spell=13877,anyrank=true,ownbuff=true}),lifetime('GREATERTHAN',16))),
-  spell('rogue-eviscerate',2098),
+  BuiltinConditions.spell('rogue-rupture',1943,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1943,anyrank=true,owndebuff=true}),
+   BuiltinConditions.negate({type='BUFF',unit='player',spell=13877,anyrank=true,ownbuff=true}),BuiltinConditions.lifetime('GREATERTHAN',16))),
+  BuiltinConditions.spell('rogue-eviscerate',2098),
   {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
  }},
  block('tbc.rogue.builders','rogue-'),

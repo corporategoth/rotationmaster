@@ -5,11 +5,10 @@
 -- Transformation itself). Around it, highlights for Mind Freeze, Icebound Fortitude and racial
 -- cooldowns.
 local _,addon=...
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Unholy. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it raises your ghoul and uses Army of the Dead and Dark Transformation itself); it waits while you cast or channel. Alongside it: Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','melee','pet','assisted-combat'},
  sources={
@@ -18,9 +17,9 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/kaminaris/MaxDps-DeathKnight',title='MaxDps Death Knight (Midnight)',reviewedAt='2026-10-23',revision='95faf1ba',notes='Assisted Combat spell plus interrupt, defensive and cooldown glows.'},
  },
  body={priority=20,specs={252},
-  cooldowns={block('unholy-utility','retail.deathknight.utility','unholy-')},
+  cooldowns={BuiltinConditions.block('unholy-utility','retail.deathknight.utility','unholy-')},
   rotation={
-   block('unholy-boundaries','retail.deathknight.boundaries','unholy-'),
+   BuiltinConditions.block('unholy-boundaries','retail.deathknight.boundaries','unholy-'),
    {id='unholy-assisted',type='assisted',conditions={}},
   },
  },

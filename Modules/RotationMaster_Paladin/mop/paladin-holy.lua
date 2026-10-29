@@ -8,22 +8,14 @@
 -- then Holy Light. An enemy target gets Holy Shock, Judgment, Crusader Strike and the rest. Beacon of
 -- Light and Sacred Shield go on your focus (set the tank as focus); whom to heal is your choice.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function target(op,v)return{type='HEALTHPCT',unit='target',operator=op,value=v}end
 local function hurt(v,n)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=30,healthoperator='LESSTHAN',health=v,operator='GREATERTHANOREQUALS',value=n or 3}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local focus={type='FRIENDLY',unit='focus'}
 local function onFocus(...)local list={};for i,id in ipairs({...})do list[i]={type='BUFF',unit='focus',spell=id,ownbuff=true}end;return{type='OR',value=list}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=6,
  blocks={['mop.paladin.boundaries']=3,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2},
- nameKey="Recommended",descriptionKey="For Holy, from level 10 in the Holy specialization. With a friend targeted it heals: at 3 Holy Power (or Divine Purpose) Light of Dawn when three people near you are hurt, else Eternal Flame on a target without it, else Word of Glory; Holy Shock on cooldown; Infusion of Light into Holy Radiance or Divine Light, three Selfless Healer stacks into Holy Radiance or Flash of Light; Flash of Light below 35%; Holy Radiance for a hurt group; Divine Light, then Holy Light to top off. With an enemy targeted it deals damage: Holy Shock, Judgment, Crusader Strike, Holy Prism, Execution Sentence, Hammer of Wrath, Denounce. Reminders: Seal of Insight when another seal (except Righteousness) or none is active, blessings, Rebuke, Beacon of Light and Sacred Shield on your focus (set the tank as focus), Divine Plea below 60% mana, Light's Hammer and your healing cooldowns when three people are below 70%, Lay on Hands on a dying target. Choosing whom to heal, dispels and mouseover healing stay with you.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'holy','healer','leveling','icy-veins','warcraft-tavern'},
  sources={
@@ -34,47 +26,47 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={65},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('holy-seal','mop.paladin.seal-insight','holy-'),
-   block('holy-upkeep','mop.paladin.upkeep','holy-'),
-   spell('holy-beacon',53563,all(focus,negate(onFocus(53563)))),
-   spell('holy-sacred-shield',20925,all(focus,negate(onFocus(65148,148039)))),
-   spell('holy-divine-plea',54428,all(combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.6})),
-   spell('holy-lights-hammer',114158,hurt(.85)),
-   spell('holy-avenging-wrath',31884,all({type='GROUP'},hurt(.7))),
-   spell('holy-divine-favor',31842,all({type='GROUP'},hurt(.7))),
-   spell('holy-guardian',86669,all({type='GROUP'},hurt(.7))),
-   spell('holy-holy-avenger',105809,all({type='GROUP'},hurt(.7))),
-   spell('holy-lay-on-hands',633,all({type='FRIENDLY',unit='target'},target('LESSTHAN',.15),negate({type='DEBUFF',unit='target',spell=25771}))),
+   BuiltinConditions.block('holy-seal','mop.paladin.seal-insight','holy-'),
+   BuiltinConditions.block('holy-upkeep','mop.paladin.upkeep','holy-'),
+   BuiltinConditions.spell('holy-beacon',53563,BuiltinConditions.all(focus,BuiltinConditions.negate(onFocus(53563)))),
+   BuiltinConditions.spell('holy-sacred-shield',20925,BuiltinConditions.all(focus,BuiltinConditions.negate(onFocus(65148,148039)))),
+   BuiltinConditions.spell('holy-divine-plea',54428,BuiltinConditions.all(BuiltinConditions.combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.6})),
+   BuiltinConditions.spell('holy-lights-hammer',114158,hurt(.85)),
+   BuiltinConditions.spell('holy-avenging-wrath',31884,BuiltinConditions.all({type='GROUP'},hurt(.7))),
+   BuiltinConditions.spell('holy-divine-favor',31842,BuiltinConditions.all({type='GROUP'},hurt(.7))),
+   BuiltinConditions.spell('holy-guardian',86669,BuiltinConditions.all({type='GROUP'},hurt(.7))),
+   BuiltinConditions.spell('holy-holy-avenger',105809,BuiltinConditions.all({type='GROUP'},hurt(.7))),
+   BuiltinConditions.spell('holy-lay-on-hands',633,BuiltinConditions.all({type='FRIENDLY',unit='target'},target('LESSTHAN',.15),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=25771}))),
   },
   rotation={
-   block('holy-boundaries','mop.paladin.boundaries','holy-'),
+   BuiltinConditions.block('holy-boundaries','mop.paladin.boundaries','holy-'),
    {id='holy-heal',type='branch',conditions={type='FRIENDLY',unit='target'},onTrue={
-    {id='holy-spend',type='branch',conditions=any({type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=3},buff(90174)),onFalse={},onTrue={
-     spell('holy-light-of-dawn',85222,hurt(.9)),
-     spell('holy-eternal-flame',114163,negate({type='BUFF',unit='target',spell=114163,ownbuff=true})),
-     spell('holy-word-of-glory',85673,target('LESSTHAN',.9))}},
-    spell('holy-shock',20473),
-    {id='holy-infusion',type='branch',conditions=buff(54149),onFalse={},onTrue={
-     spell('holy-infusion-radiance',82327,hurt(.85)),
-     spell('holy-infusion-divine-light',82326,target('LESSTHAN',.7))}},
+    {id='holy-spend',type='branch',conditions=BuiltinConditions.any({type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=3},BuiltinConditions.buff(90174)),onFalse={},onTrue={
+     BuiltinConditions.spell('holy-light-of-dawn',85222,hurt(.9)),
+     BuiltinConditions.spell('holy-eternal-flame',114163,BuiltinConditions.negate({type='BUFF',unit='target',spell=114163,ownbuff=true})),
+     BuiltinConditions.spell('holy-word-of-glory',85673,target('LESSTHAN',.9))}},
+    BuiltinConditions.spell('holy-shock',20473),
+    {id='holy-infusion',type='branch',conditions=BuiltinConditions.buff(54149),onFalse={},onTrue={
+     BuiltinConditions.spell('holy-infusion-radiance',82327,hurt(.85)),
+     BuiltinConditions.spell('holy-infusion-divine-light',82326,target('LESSTHAN',.7))}},
     {id='holy-selfless',type='branch',conditions={type='BUFF_STACKS',unit='player',spell=114250,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-     spell('holy-selfless-radiance',82327,hurt(.85)),
-     spell('holy-selfless-flash',19750,target('LESSTHAN',.8))}},
-    spell('holy-flash-emergency',19750,target('LESSTHAN',.35)),
-    spell('holy-radiance',82327,hurt(.85)),
-    spell('holy-divine-light',82326,target('LESSTHAN',.7)),
-    spell('holy-holy-light',635,target('LESSTHAN',.9)),
-    spell('holy-flash-before-holy-light',19750,all(target('LESSTHAN',.9),negate({type='SPELL_KNOWN',spell=635}))),
-    stop('holy-heal-stop')},
+     BuiltinConditions.spell('holy-selfless-radiance',82327,hurt(.85)),
+     BuiltinConditions.spell('holy-selfless-flash',19750,target('LESSTHAN',.8))}},
+    BuiltinConditions.spell('holy-flash-emergency',19750,target('LESSTHAN',.35)),
+    BuiltinConditions.spell('holy-radiance',82327,hurt(.85)),
+    BuiltinConditions.spell('holy-divine-light',82326,target('LESSTHAN',.7)),
+    BuiltinConditions.spell('holy-holy-light',635,target('LESSTHAN',.9)),
+    BuiltinConditions.spell('holy-flash-before-holy-light',19750,BuiltinConditions.all(target('LESSTHAN',.9),BuiltinConditions.negate({type='SPELL_KNOWN',spell=635}))),
+    BuiltinConditions.stop('holy-heal-stop')},
    onFalse={
-    stop('holy-target',negate({type='ATTACKABLE',unit='target'})),
-    spell('holy-damage-shock',20473),
-    spell('holy-damage-judgment',20271),
-    spell('holy-damage-crusader-strike',35395),
-    spell('holy-damage-holy-prism',114165),
-    spell('holy-damage-execution-sentence',114157),
-    spell('holy-damage-hammer-wrath',24275),
-    spell('holy-damage-denounce',2812)}},
+    BuiltinConditions.stop('holy-target',BuiltinConditions.negate({type='ATTACKABLE',unit='target'})),
+    BuiltinConditions.spell('holy-damage-shock',20473),
+    BuiltinConditions.spell('holy-damage-judgment',20271),
+    BuiltinConditions.spell('holy-damage-crusader-strike',35395),
+    BuiltinConditions.spell('holy-damage-holy-prism',114165),
+    BuiltinConditions.spell('holy-damage-execution-sentence',114157),
+    BuiltinConditions.spell('holy-damage-hammer-wrath',24275),
+    BuiltinConditions.spell('holy-damage-denounce',2812)}},
   },
  },
 }))

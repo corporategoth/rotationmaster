@@ -7,22 +7,13 @@
 -- Sanctified Wrath in wings). Avenging Wrath and Guardian are kept for elites. Its Seal of
 -- Righteousness on any cleave stays your call: the shared seal upkeep keeps a Righteousness you chose.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local INQ,WINGS=84963,31884
-local inquisition=any(buff(INQ),negate(known(INQ)))
-local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
+local inquisition=BuiltinConditions.any(BuiltinConditions.buff(INQ),BuiltinConditions.negate(BuiltinConditions.known(INQ)))
+local elite=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.retribution.warcrafttavern',revision=6,
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
- nameKey="Exorcism first (Warcraft Tavern)",descriptionKey="An alternative to the recommended Retribution premade, off by default: enable it and disable that one, or raise its priority. Exorcism on every cooldown and Art of War reset comes first; Inquisition is cast at any Holy Power when it is missing and refreshed at 3 in its last 20 seconds; then Crusader Strike, Judgment, Templar's Verdict and Hammer of Wrath (first in wings with Sanctified Wrath). Two or more enemies use Crusader Strike, Light's Hammer, Judgment, Divine Storm and Hammer of Wrath. Avenging Wrath and Guardian of Ancient Kings are suggested only on elites. The guide's Seal of Righteousness on any cleave is left to you.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'retribution','leveling','single-target','aoe','warcraft-tavern'},
  sources={
@@ -30,35 +21,35 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,disabled=true,specs={70},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('rettav-seal','mop.paladin.seal-truth','rettav-'),
-   block('rettav-upkeep','mop.paladin.upkeep','rettav-'),
-   spell('rettav-avenging-wrath',WINGS,all(combat(),elite)),
-   spell('rettav-guardian',86698,all(combat(),elite)),
-   spell('rettav-holy-avenger',105809,buff(WINGS)),
-   block('rettav-defensives','mop.paladin.defensives','rettav-'),
+   BuiltinConditions.block('rettav-seal','mop.paladin.seal-truth','rettav-'),
+   BuiltinConditions.block('rettav-upkeep','mop.paladin.upkeep','rettav-'),
+   BuiltinConditions.spell('rettav-avenging-wrath',WINGS,BuiltinConditions.all(BuiltinConditions.combat(),elite)),
+   BuiltinConditions.spell('rettav-guardian',86698,BuiltinConditions.all(BuiltinConditions.combat(),elite)),
+   BuiltinConditions.spell('rettav-holy-avenger',105809,BuiltinConditions.buff(WINGS)),
+   BuiltinConditions.block('rettav-defensives','mop.paladin.defensives','rettav-'),
   },
   rotation={
-   block('rettav-boundaries','mop.paladin.damage-boundaries','rettav-'),
-   {id='rettav-pull',type='branch',conditions=all(negate(combat()),{type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
-    spell('rettav-pull-exorcism',879),spell('rettav-pull-judgment',20271),stop('rettav-pull-stop')}},
-   block('rettav-survival','mop.paladin.ret-survival','rettav-'),
-   spell('rettav-sanctified-hammer',24275,all({type='TALENT',layout='grid',value=14},buff(WINGS))),
-   spell('rettav-exorcism',879),
-   spell('rettav-inquisition',INQ,negate(buff(INQ))),
-   spell('rettav-inquisition-refresh',INQ,all({type='BUFF_REMAIN',unit='player',spell=INQ,operator='LESSTHAN',value=20},{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=3})),
-   spell('rettav-execution-sentence',114157,inquisition),
+   BuiltinConditions.block('rettav-boundaries','mop.paladin.damage-boundaries','rettav-'),
+   {id='rettav-pull',type='branch',conditions=BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),{type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
+    BuiltinConditions.spell('rettav-pull-exorcism',879),BuiltinConditions.spell('rettav-pull-judgment',20271),BuiltinConditions.stop('rettav-pull-stop')}},
+   BuiltinConditions.block('rettav-survival','mop.paladin.ret-survival','rettav-'),
+   BuiltinConditions.spell('rettav-sanctified-hammer',24275,BuiltinConditions.all({type='TALENT',layout='grid',value=14},BuiltinConditions.buff(WINGS))),
+   BuiltinConditions.spell('rettav-exorcism',879),
+   BuiltinConditions.spell('rettav-inquisition',INQ,BuiltinConditions.negate(BuiltinConditions.buff(INQ))),
+   BuiltinConditions.spell('rettav-inquisition-refresh',INQ,BuiltinConditions.all({type='BUFF_REMAIN',unit='player',spell=INQ,operator='LESSTHAN',value=20},{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=3})),
+   BuiltinConditions.spell('rettav-execution-sentence',114157,inquisition),
    {id='rettav-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},onFalse={},onTrue={
-    spell('rettav-aoe-crusader-strike',35395),
-    spell('rettav-aoe-lights-hammer',114158),
-    spell('rettav-aoe-judgment',20271),
-    spell('rettav-aoe-divine-storm',53385),
-    spell('rettav-aoe-verdict',85256,negate(known(53385))),
-    spell('rettav-aoe-hammer-wrath',24275),
-    stop('rettav-aoe-stop')}},
-   spell('rettav-crusader-strike',35395),
-   spell('rettav-judgment',20271),
-   spell('rettav-verdict',85256),
-   spell('rettav-hammer-wrath',24275),
+    BuiltinConditions.spell('rettav-aoe-crusader-strike',35395),
+    BuiltinConditions.spell('rettav-aoe-lights-hammer',114158),
+    BuiltinConditions.spell('rettav-aoe-judgment',20271),
+    BuiltinConditions.spell('rettav-aoe-divine-storm',53385),
+    BuiltinConditions.spell('rettav-aoe-verdict',85256,BuiltinConditions.negate(BuiltinConditions.known(53385))),
+    BuiltinConditions.spell('rettav-aoe-hammer-wrath',24275),
+    BuiltinConditions.stop('rettav-aoe-stop')}},
+   BuiltinConditions.spell('rettav-crusader-strike',35395),
+   BuiltinConditions.spell('rettav-judgment',20271),
+   BuiltinConditions.spell('rettav-verdict',85256),
+   BuiltinConditions.spell('rettav-hammer-wrath',24275),
   },
  },
 }))

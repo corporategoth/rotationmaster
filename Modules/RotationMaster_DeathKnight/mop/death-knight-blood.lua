@@ -7,23 +7,16 @@
 -- Blood runes; Crimson Scourge; Death Strike as the main filler. Bone Shield, presence and
 -- defensive cooldowns by health are reminders. The health-reactive variant is .blood.simulator.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function disease(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
 local function remain(id,op,v)return{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator=op,value=v}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function rp(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function rune(kind,op,n)return{type='RUNE',rune=kind,operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local FEVER,PLAGUE=55095,55078
-local both=all(disease(FEVER),disease(PLAGUE))
+local both=BuiltinConditions.all(disease(FEVER),disease(PLAGUE))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.blood',revision=6,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=2,['mop.deathknight.spread']=1},
- nameKey="Recommended",descriptionKey="Recommended for Blood tanks, chosen in the Blood specialization. Pulls from range with Outbreak, Icy Touch or Death Grip. Death Strike below half health, whenever Blood Shield is missing (from 80), and before all four Frost and Unholy runes sit full; Rune Strike near 90 runic power (Death Coil at 80 before you learn it); Outbreak, else Icy Touch and Plague Strike, for diseases, and Blood Boil to refresh them from 68; Soul Reaper under 35%; Heart Strike (Blood Strike before 60) on two Blood runes; Crimson Scourge on Death and Decay while diseases last, else Blood Boil; Blood Tap at eleven charges; then Death Strike, Heart Strike, Rune Strike and Horn of Winter. Three enemies on you: Death and Decay, a disease spread (Blood Boil with Roiling Blood, else Pestilence) and Blood Boil. Reminders: Blood Presence when you have none, Bone Shield, Horn of Winter, Mind Freeze, Rune Tap, Vampiric Blood, Icebound Fortitude, Empower Rune Weapon and Death Pact by your health, Dancing Rune Weapon on elites, Army of the Dead before a group boss. It cannot see incoming damage, so Anti-Magic Shell (off) and big defensives are yours.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'blood','tank','leveling','single-target','aoe','icy-veins'},
  sources={
@@ -34,36 +27,36 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={250},
   cooldowns={
-   block('blood-upkeep','mop.deathknight.blood-upkeep','blood-'),
-   block('blood-class','mop.deathknight.upkeep','blood-'),
+   BuiltinConditions.block('blood-upkeep','mop.deathknight.blood-upkeep','blood-'),
+   BuiltinConditions.block('blood-class','mop.deathknight.upkeep','blood-'),
   },
   rotation={
-   block('blood-boundaries','mop.deathknight.boundaries','blood-'),
-   block('blood-pull','mop.deathknight.blood-pull','blood-'),
-   spell('blood-death-strike-low',49998,{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5}),
-   spell('blood-death-strike-shield',49998,all({type='SELF_LEVEL',operator='GREATERTHANOREQUALS',value=80},negate({type='BUFF',unit='player',spell=77535,ownbuff=true}))),
-   spell('blood-outbreak',77575,any(negate(disease(FEVER)),negate(disease(PLAGUE)))),
-   spell('blood-icy-touch',45477,negate(disease(FEVER))),
-   spell('blood-plague-strike',45462,negate(disease(PLAGUE))),
-   spell('blood-boil-refresh',48721,all({type='SELF_LEVEL',operator='GREATERTHANOREQUALS',value=68},both,any(remain(FEVER,'LESSTHAN',5),remain(PLAGUE,'LESSTHAN',5)))),
-   spell('blood-death-strike-runes',49998,all(rune(2,'EQUALS',2),rune(3,'EQUALS',2))),
-   spell('blood-rune-strike-cap',56815,rp('GREATERTHANOREQUALS',90)),
-   spell('blood-death-coil-cap',47541,all(negate(known(56815)),rp('GREATERTHANOREQUALS',80))),
+   BuiltinConditions.block('blood-boundaries','mop.deathknight.boundaries','blood-'),
+   BuiltinConditions.block('blood-pull','mop.deathknight.blood-pull','blood-'),
+   BuiltinConditions.spell('blood-death-strike-low',49998,{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5}),
+   BuiltinConditions.spell('blood-death-strike-shield',49998,BuiltinConditions.all({type='SELF_LEVEL',operator='GREATERTHANOREQUALS',value=80},BuiltinConditions.negate({type='BUFF',unit='player',spell=77535,ownbuff=true}))),
+   BuiltinConditions.spell('blood-outbreak',77575,BuiltinConditions.any(BuiltinConditions.negate(disease(FEVER)),BuiltinConditions.negate(disease(PLAGUE)))),
+   BuiltinConditions.spell('blood-icy-touch',45477,BuiltinConditions.negate(disease(FEVER))),
+   BuiltinConditions.spell('blood-plague-strike',45462,BuiltinConditions.negate(disease(PLAGUE))),
+   BuiltinConditions.spell('blood-boil-refresh',48721,BuiltinConditions.all({type='SELF_LEVEL',operator='GREATERTHANOREQUALS',value=68},both,BuiltinConditions.any(remain(FEVER,'LESSTHAN',5),remain(PLAGUE,'LESSTHAN',5)))),
+   BuiltinConditions.spell('blood-death-strike-runes',49998,BuiltinConditions.all(rune(2,'EQUALS',2),rune(3,'EQUALS',2))),
+   BuiltinConditions.spell('blood-rune-strike-cap',56815,rp('GREATERTHANOREQUALS',90)),
+   BuiltinConditions.spell('blood-death-coil-cap',47541,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(56815)),rp('GREATERTHANOREQUALS',80))),
    {id='blood-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell('blood-aoe-death-and-decay',43265),
-    block('blood-aoe-spread','mop.deathknight.spread','blood-aoe-'),
-    spell('blood-aoe-blood-boil',48721,any(buff(81141),rune(1,'GREATERTHANOREQUALS',1),rune(4,'GREATERTHANOREQUALS',1)))}},
-   spell('blood-soul-reaper',114866,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.35}),
-   spell('blood-heart-strike-capped',55050,rune(1,'EQUALS',2)),
-   spell('blood-blood-strike-capped',45902,all(negate(known(55050)),rune(1,'EQUALS',2))),
-   spell('blood-scourge-decay',43265,all(buff(81141),remain(FEVER,'GREATERTHAN',15),remain(PLAGUE,'GREATERTHAN',15))),
-   spell('blood-scourge-boil',48721,buff(81141)),
-   spell('blood-blood-tap',45529,{type='BUFF_STACKS',unit='player',spell=114851,operator='GREATERTHANOREQUALS',value=11}),
-   spell('blood-death-strike',49998),
-   spell('blood-heart-strike',55050),
-   spell('blood-blood-strike',45902,negate(known(55050))),
-   spell('blood-rune-strike',56815),
-   spell('blood-horn-filler',57330),
+    BuiltinConditions.spell('blood-aoe-death-and-decay',43265),
+    BuiltinConditions.block('blood-aoe-spread','mop.deathknight.spread','blood-aoe-'),
+    BuiltinConditions.spell('blood-aoe-blood-boil',48721,BuiltinConditions.any(BuiltinConditions.buff(81141),rune(1,'GREATERTHANOREQUALS',1),rune(4,'GREATERTHANOREQUALS',1)))}},
+   BuiltinConditions.spell('blood-soul-reaper',114866,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.35}),
+   BuiltinConditions.spell('blood-heart-strike-capped',55050,rune(1,'EQUALS',2)),
+   BuiltinConditions.spell('blood-blood-strike-capped',45902,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(55050)),rune(1,'EQUALS',2))),
+   BuiltinConditions.spell('blood-scourge-decay',43265,BuiltinConditions.all(BuiltinConditions.buff(81141),remain(FEVER,'GREATERTHAN',15),remain(PLAGUE,'GREATERTHAN',15))),
+   BuiltinConditions.spell('blood-scourge-boil',48721,BuiltinConditions.buff(81141)),
+   BuiltinConditions.spell('blood-blood-tap',45529,{type='BUFF_STACKS',unit='player',spell=114851,operator='GREATERTHANOREQUALS',value=11}),
+   BuiltinConditions.spell('blood-death-strike',49998),
+   BuiltinConditions.spell('blood-heart-strike',55050),
+   BuiltinConditions.spell('blood-blood-strike',45902,BuiltinConditions.negate(BuiltinConditions.known(55050))),
+   BuiltinConditions.spell('blood-rune-strike',56815),
+   BuiltinConditions.spell('blood-horn-filler',57330),
   },
  },
 }))

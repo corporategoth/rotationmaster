@@ -84,7 +84,7 @@ def bundle_english(root):
     if not manifest.exists():
         return []
     rows = json.loads(manifest.read_text(encoding='utf-8')).get('bundles', [])
-    paths = [Path(root) / 'Modules' / row['module'] / ('Locales' if row.get('kind') == 'class' else '') / 'enUS.lua' for row in rows]
+    paths = [Path(root) / 'Modules' / row['module'] / ('Locales' if row.get('kind') == 'class' else '') / 'enUS.lua' for row in rows if row.get('kind') != 'builtin']
     return [path for path in paths if path.exists()]
 
 
@@ -130,23 +130,9 @@ def check(root):
         for key, line in keys:
             if key not in known:
                 issues.append(f'{path.relative_to(root)}:{line}: missing enUS key {key!r}')
-    manifest = root / 'Locales/bundles.json'
-    if manifest.exists():
-        for row in json.loads(manifest.read_text(encoding='utf-8')).get('bundles', []):
-            if row.get('kind') != 'class':
-                continue
-            module = root / 'Modules' / row['module']
-            english_file = module / 'Locales/enUS.lua'
-            if not english_file.exists():
-                continue
-            used = set()
-            for source in module.rglob('*.lua'):
-                if 'Locales' not in source.relative_to(module).parts:
-                    used.update(key for key, _ in manifest_references(source.read_text(encoding='utf-8')))
-            entries, _ = locale_format.parse_english(english_file.read_text(encoding='utf-8'))
-            for entry in entries:
-                if entry.key not in used:
-                    issues.append(f'{english_file.relative_to(root)}:{entry.line}: unused class rotation text {entry.key!r}')
+    if (root / 'Locales/bundles.json').exists():
+        import builtin_locales
+        issues.extend(builtin_locales.check(root))
     return issues
 
 

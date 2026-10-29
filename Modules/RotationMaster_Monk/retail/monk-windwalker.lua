@@ -5,13 +5,10 @@
 -- highlights for what Assisted Combat leaves to you: Zenith, Celestial Conduit, Invoke Xuen and Touch
 -- of Karma in combat, plus Spear Hand Strike, Fortifying Brew and racial cooldowns.
 local _,addon=...
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.monk.windwalker',revision=6,
  blocks={['retail.monk.boundaries']=3,['retail.monk.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Windwalker. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it already keeps Combo Strikes); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Zenith, Celestial Conduit, Invoke Xuen and Touch of Karma in combat, Spear Hand Strike on an interruptible cast, and Fortifying Brew and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use Fortifying Brew is your call.",
  applicability={families={'retail'},actionContext='player',class='MONK'},
  tags={'windwalker','melee','assisted-combat'},
  sources={
@@ -21,14 +18,14 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={269},
   cooldowns={
-   block('ww-utility','retail.monk.utility','ww-'),
-   spell('ww-invoke-xuen',123904,combat()),
-   spell('ww-touch-of-karma',122470,combat()),
-   spell('ww-zenith',1249625,combat()),
-   spell('ww-celestial-conduit',443028,combat()),
+   BuiltinConditions.block('ww-utility','retail.monk.utility','ww-'),
+   BuiltinConditions.spell('ww-invoke-xuen',123904,BuiltinConditions.combat()),
+   BuiltinConditions.spell('ww-touch-of-karma',122470,BuiltinConditions.combat()),
+   BuiltinConditions.spell('ww-zenith',1249625,BuiltinConditions.combat()),
+   BuiltinConditions.spell('ww-celestial-conduit',443028,BuiltinConditions.combat()),
   },
   rotation={
-   block('ww-boundaries','retail.monk.boundaries','ww-'),
+   BuiltinConditions.block('ww-boundaries','retail.monk.boundaries','ww-'),
    {id='ww-assisted',type='assisted',conditions={}},
   },
  },

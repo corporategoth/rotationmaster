@@ -8,19 +8,11 @@
 -- Avenging Wrath on cooldown. Generators: Crusader Strike, Judgment, then Avenger's Shield, with
 -- Hammer of Wrath low. Boss-timed defensives stay manual.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function hp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection.simulator',revision=7,
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=4,['mop.paladin.prot-aoe']=2},
- nameKey="Pool Holy Power (simulator)",descriptionKey="An alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's tank lists: Shield of the Righteous waits for full Holy Power unless you fall below 40% health or Divine Purpose makes it free; Eternal Flame just before it fades with more than two Bastion of Glory stacks; Sacred Shield kept up; Holy Avenger and Avenging Wrath on cooldown. Generators run Crusader Strike, Judgment, then Avenger's Shield, Holy Wrath, the level-90 talent and Hammer of Wrath, with the same three-enemy AoE order. Boss-timed defensives are yours.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'protection','tank','single-target','aoe'},
  sources={
@@ -29,29 +21,29 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,disabled=true,specs={66},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('protsim-upkeep','mop.paladin.prot-upkeep','protsim-'),
-   block('protsim-class','mop.paladin.upkeep','protsim-'),
-   spell('protsim-eternal-flame',114163,all(any(negate(own(114163)),{type='BUFF_REMAIN',unit='player',spell=114163,ownbuff=true,operator='LESSTHAN',value=2}),
-    {type='BUFF_STACKS',unit='player',spell=114637,operator='GREATERTHAN',value=2},any(hp('GREATERTHANOREQUALS',3),buff(144569)))),
-   spell('protsim-shield-righteous',53600,all(combat(),any(hp('LESSTHAN',-1),buff(90174),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4}))),
-   spell('protsim-sacred-shield',20925,any(negate(own(65148)),{type='BUFF_REMAIN',unit='player',spell=65148,ownbuff=true,operator='LESSTHAN',value=5})),
-   spell('protsim-holy-avenger',105809,combat()),
-   spell('protsim-avenging-wrath',31884,combat()),
+   BuiltinConditions.block('protsim-upkeep','mop.paladin.prot-upkeep','protsim-'),
+   BuiltinConditions.block('protsim-class','mop.paladin.upkeep','protsim-'),
+   BuiltinConditions.spell('protsim-eternal-flame',114163,BuiltinConditions.all(BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(114163)),{type='BUFF_REMAIN',unit='player',spell=114163,ownbuff=true,operator='LESSTHAN',value=2}),
+    {type='BUFF_STACKS',unit='player',spell=114637,operator='GREATERTHAN',value=2},BuiltinConditions.any(hp('GREATERTHANOREQUALS',3),BuiltinConditions.buff(144569)))),
+   BuiltinConditions.spell('protsim-shield-righteous',53600,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(hp('LESSTHAN',-1),BuiltinConditions.buff(90174),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4}))),
+   BuiltinConditions.spell('protsim-sacred-shield',20925,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(65148)),{type='BUFF_REMAIN',unit='player',spell=65148,ownbuff=true,operator='LESSTHAN',value=5})),
+   BuiltinConditions.spell('protsim-holy-avenger',105809,BuiltinConditions.combat()),
+   BuiltinConditions.spell('protsim-avenging-wrath',31884,BuiltinConditions.combat()),
   },
   rotation={
-   block('protsim-boundaries','mop.paladin.damage-boundaries','protsim-'),
-   block('protsim-open','mop.paladin.prot-open','protsim-'),
-   block('protsim-aoe','mop.paladin.prot-aoe','protsim-'),
-   spell('protsim-crusader-strike',35395),
-   spell('protsim-judgment',20271),
-   spell('protsim-avengers-shield',31935),
-   spell('protsim-holy-wrath',119072),
-   spell('protsim-execution-sentence',114157),
-   spell('protsim-lights-hammer',114158),
-   spell('protsim-hammer-wrath',24275),
-   spell('protsim-consecration',26573),
-   spell('protsim-holy-prism',114165),
-   spell('protsim-sacred-shield-filler',20925),
+   BuiltinConditions.block('protsim-boundaries','mop.paladin.damage-boundaries','protsim-'),
+   BuiltinConditions.block('protsim-open','mop.paladin.prot-open','protsim-'),
+   BuiltinConditions.block('protsim-aoe','mop.paladin.prot-aoe','protsim-'),
+   BuiltinConditions.spell('protsim-crusader-strike',35395),
+   BuiltinConditions.spell('protsim-judgment',20271),
+   BuiltinConditions.spell('protsim-avengers-shield',31935),
+   BuiltinConditions.spell('protsim-holy-wrath',119072),
+   BuiltinConditions.spell('protsim-execution-sentence',114157),
+   BuiltinConditions.spell('protsim-lights-hammer',114158),
+   BuiltinConditions.spell('protsim-hammer-wrath',24275),
+   BuiltinConditions.spell('protsim-consecration',26573),
+   BuiltinConditions.spell('protsim-holy-prism',114165),
+   BuiltinConditions.spell('protsim-sacred-shield-filler',20925),
   },
  },
 }))

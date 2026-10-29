@@ -9,21 +9,15 @@
 -- Lightning ready, Nature's Swiftness below 30%, solo healing. Shared parts: era/blocks.lua.
 -- Left manual: dispels, purges, downranking and the Elemental Mastery shock batch.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
-local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function optional(step)step.disabled=true;return step end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
-local melee=negate({type='BEYOND_MELEE',unit='target'})
+local big=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
+local melee=BuiltinConditions.negate({type='BEYOND_MELEE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental',revision=4,
  blocks={['era.shaman.manual-target']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.caster-totems']=1},
- nameKey="Elemental",descriptionKey="Elemental from level 10 (most points in Elemental); built from Icy Veins and Wowhead. Earth Shock interrupts and finishes a target about to die. While moving: Flame Shock, else Frost Shock. Solo with the target in melee: Earth Shock above 30% health, then melee. On three or more enemies: Fire Nova and Magma totems when you are in melee, and Chain Lightning. Chain Lightning under Elemental Mastery or Clearcasting, otherwise Lightning Bolt. Reminders: Lightning Shield, Rockbiter outside raids, Searing or Magma, Mana Spring or Healing Stream, Elemental Mastery with Chain Lightning ready, Nature's Swiftness and Healing Wave below 30%, healing after a pull. Dispels, purges and downranking stay with you.",
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','ranged','caster','leveling','endgame','aoe','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/elemental-shaman-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Elemental Shaman DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
@@ -33,35 +27,35 @@ assert(addon:RegisterDefaultRotation({
  body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=1}}},
  cooldowns={
   block('era.shaman.shield','ele-'),
-  spell('ele-rockbiter-weapon',8017,all(negate({type='WEAPON'}),negate({type='INSTANCE',value='raid'}))),
+  BuiltinConditions.spell('ele-rockbiter-weapon',8017,BuiltinConditions.all(BuiltinConditions.negate({type='WEAPON'}),BuiltinConditions.negate({type='INSTANCE',value='raid'}))),
   block('era.shaman.caster-totems','ele-'),
-  spell('ele-elemental-mastery',16166,all(combat(),{type='SPELL_AVAIL',spell=421})),
-  spell('ele-natures-swiftness',16188,all(combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.3})),
-  spell('ele-swift-healing-wave',331,buff(16188)),
+  BuiltinConditions.spell('ele-elemental-mastery',16166,BuiltinConditions.all(BuiltinConditions.combat(),{type='SPELL_AVAIL',spell=421})),
+  BuiltinConditions.spell('ele-natures-swiftness',16188,BuiltinConditions.all(BuiltinConditions.combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.3})),
+  BuiltinConditions.spell('ele-swift-healing-wave',331,buff(16188)),
   block('era.shaman.self-heal','ele-'),
-  optional(spell('ele-blood-fury',20572,all(combat(),buff(16166)))),
-  optional(spell('ele-berserking',26297,all(combat(),buff(16166)))),
+  optional(BuiltinConditions.spell('ele-blood-fury',20572,BuiltinConditions.all(BuiltinConditions.combat(),buff(16166)))),
+  optional(BuiltinConditions.spell('ele-berserking',26297,BuiltinConditions.all(BuiltinConditions.combat(),buff(16166)))),
  },
  rotation={
  block('era.shaman.manual-target','ele-'),
  block('era.shaman.interrupt','ele-'),
- spell('ele-execute-shock',8042,lifetime('LESSTHAN',2.5)),
+ BuiltinConditions.spell('ele-execute-shock',8042,BuiltinConditions.lifetime('LESSTHAN',2.5)),
  {id='ele-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
-  spell('ele-moving-flame-shock',8050,all(negate({type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}),any(big,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.5}))),
-  spell('ele-moving-frost-shock',8056),
+  BuiltinConditions.spell('ele-moving-flame-shock',8050,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}),BuiltinConditions.any(big,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.5}))),
+  BuiltinConditions.spell('ele-moving-frost-shock',8056),
   {id='ele-moving-stop',type='stop',suppress_attack=false,conditions={}},
  }},
- {id='ele-solo-melee',type='branch',conditions=all(negate({type='GROUP'}),melee),onFalse={},onTrue={
-  spell('ele-melee-shock',8042,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.3}),
+ {id='ele-solo-melee',type='branch',conditions=BuiltinConditions.all(BuiltinConditions.negate({type='GROUP'}),melee),onFalse={},onTrue={
+  BuiltinConditions.spell('ele-melee-shock',8042,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.3}),
   {id='ele-melee-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  {id='ele-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-  spell('ele-aoe-fire-nova',1535,melee),
-  spell('ele-aoe-chain-lightning',421),
-  spell('ele-aoe-magma',8190,melee),
+  BuiltinConditions.spell('ele-aoe-fire-nova',1535,melee),
+  BuiltinConditions.spell('ele-aoe-chain-lightning',421),
+  BuiltinConditions.spell('ele-aoe-magma',8190,melee),
  }},
- spell('ele-mastery-chain',421,buff(16166)),
- spell('ele-clearcasting-chain',421,buff(16246)),
- spell('ele-bolt',403),
+ BuiltinConditions.spell('ele-mastery-chain',421,buff(16166)),
+ BuiltinConditions.spell('ele-clearcasting-chain',421,buff(16246)),
+ BuiltinConditions.spell('ele-bolt',403),
  }},
 }))

@@ -6,22 +6,15 @@
 -- is down, Scourge Strike first when both Unholy or both Death runes are up, Festering Strike first
 -- when both Blood and both Frost runes are up. Snapshot and trinket timing are left out.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function rp(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function rune(kind,n)return{type='RUNE',rune=kind,operator='EQUALS',value=n}end
 local function remain(id)return{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator='LESSTHAN',value=3}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local infusion={type='BUFF_STACKS',unit='pet',spell=91342,operator='GREATERTHANOREQUALS',value=5}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.unholy.simulator',revision=5,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.unholy-upkeep']=2,['mop.deathknight.unholy-open']=2,
   ['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
- nameKey="Unholy, rune-cap pooling (simulator)",descriptionKey="An alternative to the recommended Unholy premade, as the simulator, wowtbc.gg, Method and MaxDps play it; off by default: enable it and disable that one, or raise its priority. While Dark Transformation is down Death Coil goes to rebuilding Shadow Infusion, Scourge Strike comes first when both Unholy or both Death runes are ready, and Festering Strike first when both Blood and both Frost runes are; otherwise the same opening, diseases, AoE and reminders as the recommended one.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','single-target','aoe'},
  sources={
@@ -30,28 +23,28 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.method.gg/mop-classic/unholy-death-knight-class-guide-mop-classic',title='Method: MoP Classic Unholy Death Knight',reviewedAt='2026-10-23',revision='2025-07-22'},
   {url='https://github.com/kaminaris/MaxDps-DeathKnight/blob/95faf1baa6e91b0d5e32480227e35f54409dcfc2/Specialization/Mop/Unholy.lua',title='MaxDps-DeathKnight MoP Unholy',reviewedAt='2026-10-23',revision='95faf1baa6',notes='Same rune-pair rule; IDs not used.'},
  },
- body={priority=5,disabled=true,switch=known(47541),
+ body={priority=5,disabled=true,switch=BuiltinConditions.known(47541),
   cooldowns={
-   block('ucap-upkeep','mop.deathknight.unholy-upkeep','ucap-'),
-   block('ucap-class','mop.deathknight.upkeep','ucap-'),
+   BuiltinConditions.block('ucap-upkeep','mop.deathknight.unholy-upkeep','ucap-'),
+   BuiltinConditions.block('ucap-class','mop.deathknight.upkeep','ucap-'),
   },
   rotation={
-   block('ucap-boundaries','mop.deathknight.boundaries','ucap-'),
-   block('ucap-open','mop.deathknight.unholy-open','ucap-'),
-   spell('ucap-plague-leech',123693,all(any(remain(55095),remain(55078)),{type='SPELL_AVAIL',spell=77575})),
-   spell('ucap-blood-tap',45529,{type='BUFF_STACKS',unit='player',spell=114851,operator='GREATERTHANOREQUALS',value=10}),
-   spell('ucap-soul-reaper',130736,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.35}),
-   spell('ucap-dark-transformation',63560,infusion),
-   spell('ucap-death-coil-infusion',47541,all(known(63560),negate({type='BUFF',unit='pet',spell=63560}),negate(infusion))),
-   spell('ucap-death-coil-cap',47541,rp('GREATERTHANOREQUALS',90)),
-   spell('ucap-scourge-capped',55090,any(rune(3,2),rune(4,2))),
-   spell('ucap-festering-capped',85948,all(rune(1,2),rune(2,2))),
-   spell('ucap-sudden-doom',47541,buff(81340)),
-   spell('ucap-scourge-strike',55090),
-   spell('ucap-festering-strike',85948),
-   spell('ucap-blood-strike',45902,negate(known(85948))),
-   spell('ucap-death-coil',47541,rp('GREATERTHANOREQUALS',40)),
-   spell('ucap-horn-filler',57330),
+   BuiltinConditions.block('ucap-boundaries','mop.deathknight.boundaries','ucap-'),
+   BuiltinConditions.block('ucap-open','mop.deathknight.unholy-open','ucap-'),
+   BuiltinConditions.spell('ucap-plague-leech',123693,BuiltinConditions.all(BuiltinConditions.any(remain(55095),remain(55078)),{type='SPELL_AVAIL',spell=77575})),
+   BuiltinConditions.spell('ucap-blood-tap',45529,{type='BUFF_STACKS',unit='player',spell=114851,operator='GREATERTHANOREQUALS',value=10}),
+   BuiltinConditions.spell('ucap-soul-reaper',130736,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.35}),
+   BuiltinConditions.spell('ucap-dark-transformation',63560,infusion),
+   BuiltinConditions.spell('ucap-death-coil-infusion',47541,BuiltinConditions.all(BuiltinConditions.known(63560),BuiltinConditions.negate({type='BUFF',unit='pet',spell=63560}),BuiltinConditions.negate(infusion))),
+   BuiltinConditions.spell('ucap-death-coil-cap',47541,rp('GREATERTHANOREQUALS',90)),
+   BuiltinConditions.spell('ucap-scourge-capped',55090,BuiltinConditions.any(rune(3,2),rune(4,2))),
+   BuiltinConditions.spell('ucap-festering-capped',85948,BuiltinConditions.all(rune(1,2),rune(2,2))),
+   BuiltinConditions.spell('ucap-sudden-doom',47541,BuiltinConditions.buff(81340)),
+   BuiltinConditions.spell('ucap-scourge-strike',55090),
+   BuiltinConditions.spell('ucap-festering-strike',85948),
+   BuiltinConditions.spell('ucap-blood-strike',45902,BuiltinConditions.negate(BuiltinConditions.known(85948))),
+   BuiltinConditions.spell('ucap-death-coil',47541,rp('GREATERTHANOREQUALS',40)),
+   BuiltinConditions.spell('ucap-horn-filler',57330),
   },
  },
 }))

@@ -7,20 +7,13 @@
 -- and runic power are secret on Retail, so the execute window and the San'layn runic power spend are
 -- left out. Disabled: procs and plagues are secret in Midnight combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function debuff(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local ghouls=buff(1254252)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.guide',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey="Reference (Icy Veins and Wowhead)",descriptionKey="Reference only, off by default: the guides' Unholy priority. Procs and plagues are hidden in Midnight combat, so it cannot run there; runic power and the target's health are hidden on Retail, so the execute window and the San'layn runic power spend are left out. Raise Dead without a ghoul; Festering Scythe to keep its plague haste up; Soul Reaper on Reaping; Putrefy during Dark Transformation; Death Coil (Epidemic on four or more enemies) on Sudden Doom or Forbidden Knowledge; Festering Strike with no Lesser Ghoul charges, Scourge Strike with them; Death Coil. Reminders: Army of the Dead, Dark Transformation, Outbreak when your plagues are missing, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','melee','pet','reference','icy-veins','wowhead'},
  sources={
@@ -29,23 +22,23 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={252},
   cooldowns={
-   block('uguide-utility','retail.deathknight.utility','uguide-'),
-   spell('uguide-army-of-the-dead',42650,combat()),
-   spell('uguide-dark-transformation',1233448,combat()),
-   spell('uguide-outbreak',77575,all(combat(),negate(debuff(191587)),negate(debuff(1240996)))),
+   BuiltinConditions.block('uguide-utility','retail.deathknight.utility','uguide-'),
+   BuiltinConditions.spell('uguide-army-of-the-dead',42650,BuiltinConditions.combat()),
+   BuiltinConditions.spell('uguide-dark-transformation',1233448,BuiltinConditions.combat()),
+   BuiltinConditions.spell('uguide-outbreak',77575,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(debuff(191587)),BuiltinConditions.negate(debuff(1240996)))),
   },
   rotation={
-   block('uguide-boundaries','retail.deathknight.boundaries','uguide-'),
-   spell('uguide-raise-dead',46584,negate({type='PET'})),
-   spell('uguide-festering-scythe',85948,all(buff(458123),any(negate(debuff(1241077)),{type='DEBUFF_REMAIN',unit='target',spell=1241077,owndebuff=true,operator='LESSTHAN',value=5}))),
-   spell('uguide-soul-reaper',343294,buff(1242654)),
-   spell('uguide-putrefy',1247378,{type='BUFF',unit='pet',spell=1233448}),
-   {id='uguide-spend',type='branch',conditions=any(buff(81340),buff(1242223)),onFalse={},onTrue={
-    spell('uguide-spend-epidemic',207317,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4}),
-    spell('uguide-spend-death-coil',47541)}},
-   spell('uguide-festering-strike',85948,negate(ghouls)),
-   spell('uguide-scourge-strike',55090,ghouls),
-   spell('uguide-death-coil',47541),
+   BuiltinConditions.block('uguide-boundaries','retail.deathknight.boundaries','uguide-'),
+   BuiltinConditions.spell('uguide-raise-dead',46584,BuiltinConditions.negate({type='PET'})),
+   BuiltinConditions.spell('uguide-festering-scythe',85948,BuiltinConditions.all(buff(458123),BuiltinConditions.any(BuiltinConditions.negate(debuff(1241077)),{type='DEBUFF_REMAIN',unit='target',spell=1241077,owndebuff=true,operator='LESSTHAN',value=5}))),
+   BuiltinConditions.spell('uguide-soul-reaper',343294,buff(1242654)),
+   BuiltinConditions.spell('uguide-putrefy',1247378,{type='BUFF',unit='pet',spell=1233448}),
+   {id='uguide-spend',type='branch',conditions=BuiltinConditions.any(buff(81340),buff(1242223)),onFalse={},onTrue={
+    BuiltinConditions.spell('uguide-spend-epidemic',207317,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4}),
+    BuiltinConditions.spell('uguide-spend-death-coil',47541)}},
+   BuiltinConditions.spell('uguide-festering-strike',85948,BuiltinConditions.negate(ghouls)),
+   BuiltinConditions.spell('uguide-scourge-strike',55090,ghouls),
+   BuiltinConditions.spell('uguide-death-coil',47541),
   },
  },
 }))

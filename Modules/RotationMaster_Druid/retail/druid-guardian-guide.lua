@@ -6,17 +6,11 @@
 -- health are secret on Retail, so the 80-rage Maul and Raze dump is left to you. Disabled: debuffs and
 -- procs are secret in Midnight combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.druid.guardian.guide',revision=6,
  blocks={['retail.druid.boundaries']=3,['retail.druid.utility']=2},
- nameKey="Reference (Icy Veins and Wowhead)",descriptionKey="Reference only, off by default: the guides' Guardian priority. Debuffs and procs are hidden in Midnight combat, so it cannot run there; rage and health are hidden on Retail, so the 80-rage Raze and Maul dump is left to you. Thrash and Mangle on cooldown, Red Moon on a single target, Moonfire when missing or on Galactic Guardian, Swipe. Reminders whenever they are ready in combat: Ironfur, Frenzied Regeneration, Survival Instincts; Bear Form between pulls; Berserk or Incarnation, Lunar Beam, Convoke, Heart of the Wild, Skull Bash, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='DRUID'},
  tags={'guardian','tank','reference','icy-veins','wowhead'},
  sources={
@@ -25,26 +19,26 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={104},
   cooldowns={
-   block('gguide-utility','retail.druid.utility','gguide-'),
-   spell('gguide-bear-form',5487,all(negate(combat()),negate(buff(5487)),negate(buff(102558)))),
-   spell('gguide-skull-bash',106839,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
-   spell('gguide-ironfur',192081,combat()),
-   spell('gguide-frenzied-regeneration',22842,combat()),
-   spell('gguide-survival-instincts',61336,combat()),
-   spell('gguide-berserk',50334,combat()),
-   spell('gguide-incarnation',102558,combat()),
-   spell('gguide-lunar-beam',204066,combat()),
-   spell('gguide-convoke',391528,combat()),
-   spell('gguide-heart-of-the-wild',1261867,combat()),
+   BuiltinConditions.block('gguide-utility','retail.druid.utility','gguide-'),
+   BuiltinConditions.spell('gguide-bear-form',5487,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate(buff(5487)),BuiltinConditions.negate(buff(102558)))),
+   BuiltinConditions.spell('gguide-skull-bash',106839,BuiltinConditions.any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
+   BuiltinConditions.spell('gguide-ironfur',192081,BuiltinConditions.combat()),
+   BuiltinConditions.spell('gguide-frenzied-regeneration',22842,BuiltinConditions.combat()),
+   BuiltinConditions.spell('gguide-survival-instincts',61336,BuiltinConditions.combat()),
+   BuiltinConditions.spell('gguide-berserk',50334,BuiltinConditions.combat()),
+   BuiltinConditions.spell('gguide-incarnation',102558,BuiltinConditions.combat()),
+   BuiltinConditions.spell('gguide-lunar-beam',204066,BuiltinConditions.combat()),
+   BuiltinConditions.spell('gguide-convoke',391528,BuiltinConditions.combat()),
+   BuiltinConditions.spell('gguide-heart-of-the-wild',1261867,BuiltinConditions.combat()),
   },
   rotation={
-   block('gguide-boundaries','retail.druid.boundaries','gguide-'),
-   spell('gguide-thrash',77758),
-   spell('gguide-mangle',33917),
-   spell('gguide-red-moon',1252871,negate({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2})),
-   spell('gguide-moonfire',8921,negate({type='DEBUFF',unit='target',spell=164812,owndebuff=true})),
-   spell('gguide-galactic-moonfire',8921,buff(213708)),
-   spell('gguide-swipe',213771),
+   BuiltinConditions.block('gguide-boundaries','retail.druid.boundaries','gguide-'),
+   BuiltinConditions.spell('gguide-thrash',77758),
+   BuiltinConditions.spell('gguide-mangle',33917),
+   BuiltinConditions.spell('gguide-red-moon',1252871,BuiltinConditions.negate({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2})),
+   BuiltinConditions.spell('gguide-moonfire',8921,BuiltinConditions.negate({type='DEBUFF',unit='target',spell=164812,owndebuff=true})),
+   BuiltinConditions.spell('gguide-galactic-moonfire',8921,buff(213708)),
+   BuiltinConditions.spell('gguide-swipe',213771),
   },
  },
 }))

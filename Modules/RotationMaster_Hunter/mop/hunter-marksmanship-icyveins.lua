@@ -6,24 +6,17 @@
 -- as rm.mop.hunter.marksmanship, lower priority and disabled: no switch can tell the two apart, so
 -- the player chooses.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function focus(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local moving={type='MOVING'}
-local fire=buff(82926)
-local focusLow=all({type='SELF_LEVEL',operator='GREATERTHANOREQUALS',value=63},any(negate(buff(53220)),{type='BUFF_REMAIN',unit='player',spell=53220,operator='LESSTHAN',value=4}))
-local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
+local fire=BuiltinConditions.buff(82926)
+local focusLow=BuiltinConditions.all({type='SELF_LEVEL',operator='GREATERTHANOREQUALS',value=63},BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.buff(53220)),{type='BUFF_REMAIN',unit='player',spell=53220,operator='LESSTHAN',value=4}))
+local lust=BuiltinConditions.any(BuiltinConditions.buff(2825),BuiltinConditions.buff(32182),BuiltinConditions.buff(80353),BuiltinConditions.buff(90355))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship.icyveins',revision=7,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1},
- nameKey="Arcane Shot dump (Icy Veins)",descriptionKey="An alternative to the Marksmanship premade, as Icy Veins, Method, wowtbc.gg and Hekili play it: Aimed Shot is hard-cast only above 80% target health or under Rapid Fire or Bloodlust, and spare focus goes to Arcane Shot at 60 instead. Steady Focus is refreshed under 4 seconds; on four or more enemies Multi-Shot comes first. Off by default: enable it and disable the Marksmanship premade, or raise its priority.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'marksmanship','leveling','single-target','aoe','icy-veins','hekili'},
  sources={
@@ -34,38 +27,38 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=5,disabled=true,specs={254},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('mmiv-pet','mop.hunter.pet','mmiv-'),
-   block('mmiv-aspect','mop.hunter.aspect','mmiv-'),
-   block('mmiv-utility','mop.hunter.utility','mmiv-'),
-   block('mmiv-burst','mop.hunter.burst','mmiv-'),
+   BuiltinConditions.block('mmiv-pet','mop.hunter.pet','mmiv-'),
+   BuiltinConditions.block('mmiv-aspect','mop.hunter.aspect','mmiv-'),
+   BuiltinConditions.block('mmiv-utility','mop.hunter.utility','mmiv-'),
+   BuiltinConditions.block('mmiv-burst','mop.hunter.burst','mmiv-'),
   },
   rotation={
-   block('mmiv-boundaries','mop.hunter.boundaries','mmiv-'),
+   BuiltinConditions.block('mmiv-boundaries','mop.hunter.boundaries','mmiv-'),
    {id='mmiv-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    block('mmiv-pull-mark','mop.hunter.mark','mmiv-pull-'),
-    spell('mmiv-pull-aimed',19434,negate(moving)),
-    stop('mmiv-pull-stop')}},
-   spell('mmiv-steady-pair',56641,all({type='SPELL_HISTORY',spell=56641,operator='EQUALS',value=1},focusLow)),
+    BuiltinConditions.block('mmiv-pull-mark','mop.hunter.mark','mmiv-pull-'),
+    BuiltinConditions.spell('mmiv-pull-aimed',19434,BuiltinConditions.negate(moving)),
+    BuiltinConditions.stop('mmiv-pull-stop')}},
+   BuiltinConditions.spell('mmiv-steady-pair',56641,BuiltinConditions.all({type='SPELL_HISTORY',spell=56641,operator='EQUALS',value=1},focusLow)),
    {id='mmiv-aoe',type='branch',conditions=enemies('GREATERTHANOREQUALS',4),onFalse={},onTrue={
-    spell('mmiv-aoe-multi-shot',2643),
-    spell('mmiv-aoe-fire',19434,fire),
-    spell('mmiv-aoe-kill-shot',53351),
-    block('mmiv-aoe-talents','mop.hunter.talents','mmiv-aoe-'),
-    block('mmiv-aoe-shots','mop.hunter.talent-shots','mmiv-aoe-'),
-    spell('mmiv-aoe-explosive-trap',13813),
-    spell('mmiv-aoe-steady',56641),
-    stop('mmiv-aoe-wait')}},
-   block('mmiv-serpent','mop.hunter.serpent','mmiv-'),
-   spell('mmiv-chimera',53209),
-   spell('mmiv-fire',19434,fire),
-   spell('mmiv-kill-shot',53351),
-   block('mmiv-talents','mop.hunter.talents','mmiv-'),
-   block('mmiv-shots','mop.hunter.talent-shots','mmiv-'),
-   spell('mmiv-steady-start',56641,focusLow),
-   spell('mmiv-aimed',19434,all(negate(moving),any({type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.8},buff(3045),lust))),
-   spell('mmiv-arcane',3044,any(focus('GREATERTHANOREQUALS',60),buff(34720))),
-   spell('mmiv-steady',56641),
-   stop('mmiv-wait'),
+    BuiltinConditions.spell('mmiv-aoe-multi-shot',2643),
+    BuiltinConditions.spell('mmiv-aoe-fire',19434,fire),
+    BuiltinConditions.spell('mmiv-aoe-kill-shot',53351),
+    BuiltinConditions.block('mmiv-aoe-talents','mop.hunter.talents','mmiv-aoe-'),
+    BuiltinConditions.block('mmiv-aoe-shots','mop.hunter.talent-shots','mmiv-aoe-'),
+    BuiltinConditions.spell('mmiv-aoe-explosive-trap',13813),
+    BuiltinConditions.spell('mmiv-aoe-steady',56641),
+    BuiltinConditions.stop('mmiv-aoe-wait')}},
+   BuiltinConditions.block('mmiv-serpent','mop.hunter.serpent','mmiv-'),
+   BuiltinConditions.spell('mmiv-chimera',53209),
+   BuiltinConditions.spell('mmiv-fire',19434,fire),
+   BuiltinConditions.spell('mmiv-kill-shot',53351),
+   BuiltinConditions.block('mmiv-talents','mop.hunter.talents','mmiv-'),
+   BuiltinConditions.block('mmiv-shots','mop.hunter.talent-shots','mmiv-'),
+   BuiltinConditions.spell('mmiv-steady-start',56641,focusLow),
+   BuiltinConditions.spell('mmiv-aimed',19434,BuiltinConditions.all(BuiltinConditions.negate(moving),BuiltinConditions.any({type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.8},BuiltinConditions.buff(3045),lust))),
+   BuiltinConditions.spell('mmiv-arcane',3044,BuiltinConditions.any(focus('GREATERTHANOREQUALS',60),BuiltinConditions.buff(34720))),
+   BuiltinConditions.spell('mmiv-steady',56641),
+   BuiltinConditions.stop('mmiv-wait'),
   },
  },
 }))

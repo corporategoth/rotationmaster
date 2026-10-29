@@ -7,20 +7,13 @@
 -- the Pyroblast DoT are up, because RM cannot read Ignite's size. Icy Veins' always-hold rule is
 -- rm.mop.mage.fire.icyveins.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local function off(id,action,conditions)local step=BuiltinConditions.spell(id,action,conditions);step.disabled=true;return step end
 local PYRO,HEAT,ALTER=48108,48107,110909
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire',revision=7,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=3,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=2},
- nameKey="Recommended",descriptionKey="Recommended for Fire, from level 10 to 90 (selected in the Fire specialization). Opens with a hard Pyroblast, then Inferno Blast (Fire Blast before 24) turns Heating Up into a Pyroblast! proc, which is cast at once unless Combustion is about to come off cooldown; then it waits for the next Heating Up while you cast Fireball. Combustion lights right after a Pyroblast while Ignite and the Pyroblast burn are on the target; the addon cannot see how big Ignite is, so judge a weak one yourself. Keeps your talented bomb up, spreads with Inferno Blast when two or more enemies fight you, Cone of Cold and Arcane Explosion for five close by, Scorch on the move. Reminders: Molten Armor, Presence of Mind, Alter Time with both procs, Mana Gem, Arcane Brilliance, Counterspell, Mirror Image, Ice Barrier, Ice Floes, Invocation or Rune of Power. Dragon's Breath, Time Warp and Spellsteal are off.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','wowhead'},
  sources={
@@ -31,22 +24,22 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={63},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('fire-armor','mop.mage.armor-molten','fire-'),
-   block('fire-upkeep','mop.mage.upkeep','fire-'),
-   {id='fire-mana-gem',type='item',action={36799,81901},conditions=all(combat(),mana('LESSTHAN',.84),negate(buff(ALTER)))},
-   spell('fire-presence-of-mind',12043,all(combat(),negate(buff(ALTER)),negate(buff(PYRO)))),
-   spell('fire-alter-time',108978,all(combat(),buff(PYRO),buff(HEAT),negate(buff(ALTER)))),
-   off('fire-dragons-breath',31661,all(negate({type='GROUP'}),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2})),
+   BuiltinConditions.block('fire-armor','mop.mage.armor-molten','fire-'),
+   BuiltinConditions.block('fire-upkeep','mop.mage.upkeep','fire-'),
+   {id='fire-mana-gem',type='item',action={36799,81901},conditions=BuiltinConditions.all(BuiltinConditions.combat(),mana('LESSTHAN',.84),BuiltinConditions.negate(BuiltinConditions.buff(ALTER)))},
+   BuiltinConditions.spell('fire-presence-of-mind',12043,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(BuiltinConditions.buff(ALTER)),BuiltinConditions.negate(BuiltinConditions.buff(PYRO)))),
+   BuiltinConditions.spell('fire-alter-time',108978,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.buff(PYRO),BuiltinConditions.buff(HEAT),BuiltinConditions.negate(BuiltinConditions.buff(ALTER)))),
+   off('fire-dragons-breath',31661,BuiltinConditions.all(BuiltinConditions.negate({type='GROUP'}),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2})),
   },
   rotation={
-   block('fire-boundaries','mop.mage.boundaries','fire-'),
-   block('fire-open','mop.mage.fire-open','fire-'),
-   block('fire-bombs','mop.mage.bombs','fire-'),
-   spell('fire-pyroblast-proc',11366,all(buff(PYRO),any(negate({type='SPELL_KNOWN',spell=11129}),{type='SPELL_COOLDOWN',spell=11129,operator='GREATERTHANOREQUALS',value=5},
-    negate({type='DEBUFF',unit='target',spell=11366,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=11366,owndebuff=true,operator='LESSTHAN',value=2},{type='BUFF_REMAIN',unit='player',spell=PYRO,operator='LESSTHAN',value=3}))),
-   block('fire-spend','mop.mage.fire-spend','fire-'),
-   spell('fire-pyroblast-pooled',11366,all(buff(PYRO),buff(HEAT))),
-   block('fire-filler','mop.mage.fire-filler','fire-'),
+   BuiltinConditions.block('fire-boundaries','mop.mage.boundaries','fire-'),
+   BuiltinConditions.block('fire-open','mop.mage.fire-open','fire-'),
+   BuiltinConditions.block('fire-bombs','mop.mage.bombs','fire-'),
+   BuiltinConditions.spell('fire-pyroblast-proc',11366,BuiltinConditions.all(BuiltinConditions.buff(PYRO),BuiltinConditions.any(BuiltinConditions.negate({type='SPELL_KNOWN',spell=11129}),{type='SPELL_COOLDOWN',spell=11129,operator='GREATERTHANOREQUALS',value=5},
+    BuiltinConditions.negate({type='DEBUFF',unit='target',spell=11366,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=11366,owndebuff=true,operator='LESSTHAN',value=2},{type='BUFF_REMAIN',unit='player',spell=PYRO,operator='LESSTHAN',value=3}))),
+   BuiltinConditions.block('fire-spend','mop.mage.fire-spend','fire-'),
+   BuiltinConditions.spell('fire-pyroblast-pooled',11366,BuiltinConditions.all(BuiltinConditions.buff(PYRO),BuiltinConditions.buff(HEAT))),
+   BuiltinConditions.block('fire-filler','mop.mage.fire-filler','fire-'),
   },
  },
 }))

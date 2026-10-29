@@ -6,24 +6,18 @@
 -- Counterattack, with Explosive Trap on packs. Out of melee it shoots (own Serpent Sting, Arcane,
 -- Aimed, Auto Shot). Aspect of the Beast and Hunter's Mark (Expose Prey needs it) are reminders.
 local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Beast Mastery, 2 Marksmanship, 3 Survival; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
 local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
+local elite=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=7,
  blocks={['forever.hunter.boundaries']=4,['forever.hunter.survival-pull']=3,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
   ['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
- nameKey="Survival melee (Wowhead)",descriptionKey="Dual-wield melee Survival once Survival is your main talent tree with 21 points, Strider Kick's tier (until then the ranged premade levels you, as the guides advise). Pull with Hunter's Mark and Serpent Sting, then Mongoose Bite, Strider Kick, Raptor Strike and Counterattack, with Explosive Trap on three or more enemies. Out of melee it shoots: Serpent Sting, Arcane Shot, Aimed Shot, Auto Shot. Reminders: Aspect of the Beast, Hunter's Mark (Expose Prey needs it), Rapid Fire and Blood Fury on elites or in dungeons, Deterrence while you hold the target's attention, pet care (health is hidden on Forever, so Mend Pet is yours). An optional Immolation Trap step is off by default.",
  applicability={families={'forever'},actionContext='player',class='HUNTER'},
  tags={'survival','melee','leveling','wowhead'},
  sources={
@@ -35,22 +29,22 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,switch=tree(3,21),
   cooldowns={
-   spell('sv-aspect-beast',13161,all(combat(),negate({type='BUFF',unit='player',spell=13161,anyrank=true,ownbuff=true}))),
-   spell('sv-mark',1130,all(combat(),{type='ATTACKABLE',unit='target'},negate({type='DEBUFF',unit='target',spell=1130,anyrank=true}))),
-   block('sv-burst','forever.hunter.burst','sv-'),
-   spell('sv-deterrence',19263,all(combat(),{type='THREAT',unit='target',threat=3})),
-   block('sv-pet-care','forever.hunter.pet-care','sv-'),
+   BuiltinConditions.spell('sv-aspect-beast',13161,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate({type='BUFF',unit='player',spell=13161,anyrank=true,ownbuff=true}))),
+   BuiltinConditions.spell('sv-mark',1130,BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'},BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1130,anyrank=true}))),
+   BuiltinConditions.block('sv-burst','forever.hunter.burst','sv-'),
+   BuiltinConditions.spell('sv-deterrence',19263,BuiltinConditions.all(BuiltinConditions.combat(),{type='THREAT',unit='target',threat=3})),
+   BuiltinConditions.block('sv-pet-care','forever.hunter.pet-care','sv-'),
   },
   rotation={
-   block('sv-boundaries','forever.hunter.boundaries','sv-'),
-   block('sv-pull','forever.hunter.survival-pull','sv-'),
+   BuiltinConditions.block('sv-boundaries','forever.hunter.boundaries','sv-'),
+   BuiltinConditions.block('sv-pull','forever.hunter.survival-pull','sv-'),
    {id='sv-range',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onFalse={},onTrue={
-    block('sv-range-shots','forever.hunter.range-shots','sv-range-'),stop('sv-range-stop')}},
-   block('sv-aoe','forever.hunter.melee-aoe','sv-'),
-   spell('sv-mongoose-bite',1495),
-   spell('sv-strider-kick',1317257),
-   spell('sv-raptor-strike',2973,negate({type='SPELL_ACTIVE',spell=2973})),
-   spell('sv-counterattack',19306),
+    BuiltinConditions.block('sv-range-shots','forever.hunter.range-shots','sv-range-'),stop('sv-range-stop')}},
+   BuiltinConditions.block('sv-aoe','forever.hunter.melee-aoe','sv-'),
+   BuiltinConditions.spell('sv-mongoose-bite',1495),
+   BuiltinConditions.spell('sv-strider-kick',1317257),
+   BuiltinConditions.spell('sv-raptor-strike',2973,BuiltinConditions.negate({type='SPELL_ACTIVE',spell=2973})),
+   BuiltinConditions.spell('sv-counterattack',19306),
    {id='sv-immolation-trap',type='spell',action=13795,ranked=false,disabled=true,conditions=elite},
    stop('sv-done',nil,true),
   },

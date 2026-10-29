@@ -7,16 +7,12 @@
 -- leaves out (SimulationCraft's assisted_combat/rogue_outlaw.simc): poisons and Stealth between
 -- pulls, Kick, and Vanish whenever you are out of stealth in combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.outlaw',revision=6,
  blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Outlaw in Midnight. Shows Blizzard's Assisted Combat suggestion (it handles the stealth opener, Roll the Bones, Blade Flurry, Adrenaline Rush, Between the Eyes and the finishers), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: poisons and Stealth between pulls, Vanish when you are out of stealth in combat, Kick. Health is hidden on Retail, so Crimson Vial is your call. Keep It Rolling stays with you: the game hides how many Roll the Bones buffs you have.",
  applicability={families={'retail'},actionContext='player',class='ROGUE'},
  tags={'outlaw','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
@@ -27,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,specs={260},
   cooldowns={
    block('retail.rogue.upkeep','outlaw-'),
-   spell('outlaw-vanish',1856,all(fight,negate({type='STEALTHED'}))),
+   BuiltinConditions.spell('outlaw-vanish',1856,BuiltinConditions.all(fight,BuiltinConditions.negate({type='STEALTHED'}))),
   },
   rotation={
    block('retail.rogue.boundaries','outlaw-'),

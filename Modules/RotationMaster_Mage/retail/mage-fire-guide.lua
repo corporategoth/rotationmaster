@@ -7,13 +7,8 @@
 -- Heating Up, Frostfire Bolt or Fireball. Disabled: Hot Streak, Heating Up, Pyroclasm and Fire Blast
 -- charges are secret in Midnight combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local heating,combustion=buff(48107),buff(190319)
 -- A Fire hard cast in progress (Fireball, Frostfire Bolt, Pyroblast, Flamestrike), read by spell, so a
 -- mount, Hearthstone or Polymorph cast is not one.
@@ -21,18 +16,17 @@ local hardcast={type='OR',value={{type='CASTING_SPELL',unit='player',spell=133},
  {type='CASTING_SPELL',unit='player',spell=11366},{type='CASTING_SPELL',unit='player',spell=2120}}}
 -- One priority, written for a spender: Pyroblast on one to three enemies, Flamestrike on four or more.
 local function priority(p,spender)return{
- spell(p..'hyperthermia',spender,buff(383874)),
- spell(p..'meteor',153561),
- spell(p..'hot-streak',spender,buff(48108)),
- spell(p..'combustion-fire-blast',108853,all(heating,combustion)),
- spell(p..'pyroclasm',spender,buff(269651)),
- spell(p..'heat-shimmer',2948,buff(458964)),
- spell(p..'moving-scorch',2948,{type='MOVING'}),
- spell(p..'fire-blast',108853,heating)}end
+ BuiltinConditions.spell(p..'hyperthermia',spender,buff(383874)),
+ BuiltinConditions.spell(p..'meteor',153561),
+ BuiltinConditions.spell(p..'hot-streak',spender,buff(48108)),
+ BuiltinConditions.spell(p..'combustion-fire-blast',108853,BuiltinConditions.all(heating,combustion)),
+ BuiltinConditions.spell(p..'pyroclasm',spender,buff(269651)),
+ BuiltinConditions.spell(p..'heat-shimmer',2948,buff(458964)),
+ BuiltinConditions.spell(p..'moving-scorch',2948,{type='MOVING'}),
+ BuiltinConditions.spell(p..'fire-blast',108853,heating)}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=8,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
- nameKey="Reference (Icy Veins, Wowhead and SimulationCraft)",descriptionKey="Reference only, off by default: the guides' Fire priority. Hot Streak, Heating Up, Pyroclasm and Fire Blast charges are hidden in Midnight combat, so it cannot run there. Fire Blast while a cast is finishing to turn Heating Up into Hot Streak; pulls with Pyroblast. Pyroblast (Flamestrike on four or more enemies) on Hyperthermia, Meteor, Pyroblast on Hot Streak, Fire Blast on Heating Up inside Combustion, Pyroblast on Pyroclasm, Scorch on Heat Shimmer or while moving, Fire Blast on Heating Up, then Frostfire Bolt or Fireball. Reminders: Combustion as a hard cast finishes, Blazing Barrier and the utility reminders. Waiting for Firestarter and timing Meteor into Combustion stay with you.",
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'fire','caster','reference','icy-veins','wowhead','simulationcraft'},
  sources={
@@ -42,18 +36,18 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={63},
   cooldowns={
-   block('fguide-utility','retail.mage.utility','fguide-'),
-   spell('fguide-barrier',235313,combat()),
-   spell('fguide-combustion',190319,all(combat(),hardcast,{type='CASTING_REMAIN',unit='player',operator='LESSTHAN',value=1})),
+   BuiltinConditions.block('fguide-utility','retail.mage.utility','fguide-'),
+   BuiltinConditions.spell('fguide-barrier',235313,BuiltinConditions.combat()),
+   BuiltinConditions.spell('fguide-combustion',190319,BuiltinConditions.all(BuiltinConditions.combat(),hardcast,{type='CASTING_REMAIN',unit='player',operator='LESSTHAN',value=1})),
   },
   rotation={
-   spell('fguide-casting-fire-blast',108853,all(hardcast,heating)),
-   block('fguide-boundaries','retail.mage.boundaries','fguide-'),
-   {id='fguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('fguide-pull-pyroblast',11366),stop('fguide-pull-stop')}},
+   BuiltinConditions.spell('fguide-casting-fire-blast',108853,BuiltinConditions.all(hardcast,heating)),
+   BuiltinConditions.block('fguide-boundaries','retail.mage.boundaries','fguide-'),
+   {id='fguide-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={BuiltinConditions.spell('fguide-pull-pyroblast',11366),BuiltinConditions.stop('fguide-pull-stop')}},
    {id='fguide-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},
     onTrue=priority('fguide-aoe-',2120),onFalse=priority('fguide-st-',11366)},
-   spell('fguide-frostfire-bolt',431044),
-   spell('fguide-fireball',133),
+   BuiltinConditions.spell('fguide-frostfire-bolt',431044),
+   BuiltinConditions.spell('fguide-fireball',133),
   },
  },
 }))

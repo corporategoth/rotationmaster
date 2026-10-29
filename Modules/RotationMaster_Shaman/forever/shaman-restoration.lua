@@ -11,22 +11,17 @@
 -- when to use Nature's Swiftness and Lesser Healing Wave.
 -- Left manual: downranking, Healing Stream vs Mana Spring, air totem choice, Purge and Ghost Wolf.
 local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Elemental, 2 Enhancement, 3 Restoration; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
 local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=20},
  {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.restoration',revision=6,
  blocks={['forever.shaman.manual']=3,['forever.shaman.upkeep']=2,['forever.shaman.group-totems']=1,
   ['forever.shaman.caster-aoe']=1,['forever.shaman.stormstrike-hybrid']=1},
- nameKey="Restoration",descriptionKey="Healing once Restoration is your main talent tree with 16 points (Mana Tide Totem's tier), after Icy Veins. With a friendly target: an instant Healing Wave once you use Nature's Swiftness, Cure Poison and Cure Disease, Riptide on a target without it, Chain Heal in a group, Healing Wave. You pick who to heal by targeting them; health and mana are hidden from addons on Forever, so when to use Nature's Swiftness and Lesser Healing Wave is your call. With a hostile target and nothing to heal: Fire Nova and Chain Lightning on packs, Stormstrike and Earth Shock if you know Stormstrike, Flame Shock on elites and bosses, Lightning Bolt, then melee. Reminders: Water Shield, the Earth Shock interrupt, Mana Tide and group buff totems. Left to you: downranking, other totems, Purge and Ghost Wolf.",
  applicability={families={'forever'},actionContext='player',class='SHAMAN'},
  tags={'healer','caster','leveling','endgame','icy-veins'},
  sources={{url='https://www.icy-veins.com/wow-forever/restoration-shaman-leveling',title='Icy Veins: Forever Restoration Shaman leveling',reviewedAt='2026-10-23',revision='2026-10-18'},
@@ -36,24 +31,24 @@ assert(addon:RegisterDefaultRotation({
  {url='https://worldofwarcraft.com/en-us/news/24302097',title='Blizzard: Forever class deep dives, Mage and Shaman',reviewedAt='2026-10-23',revision='2026-10-07'}},
  body={priority=30,switch=tree(3,16),
  cooldowns={block('forever.shaman.upkeep','shaman-resto-'),block('forever.shaman.group-totems','shaman-resto-'),
-  spell('shaman-resto-mana-tide',16190,all(combat(),{type='GROUP'}))},
+  BuiltinConditions.spell('shaman-resto-mana-tide',16190,BuiltinConditions.all(BuiltinConditions.combat(),{type='GROUP'}))},
  rotation={
  block('forever.shaman.manual','shaman-resto-'),
  {id='shaman-resto-heal',type='branch',conditions={type='FRIENDLY',unit='target'},onTrue={
-  spell('shaman-resto-swift-wave',331,{type='BUFF',unit='player',spell=16188}),
-  spell('shaman-resto-cure-poison',526,{type='DISPELLABLE',unit='target',debufftype='Poison'}),
-  spell('shaman-resto-cure-disease',2870,{type='DISPELLABLE',unit='target',debufftype='Disease'}),
-  spell('shaman-resto-riptide',408521,negate({type='BUFF',unit='target',spell=408521,anyrank=true,ownbuff=true})),
-  spell('shaman-resto-chain-heal',1064,{type='GROUP'}),
-  spell('shaman-resto-wave',331),
+  BuiltinConditions.spell('shaman-resto-swift-wave',331,{type='BUFF',unit='player',spell=16188}),
+  BuiltinConditions.spell('shaman-resto-cure-poison',526,{type='DISPELLABLE',unit='target',debufftype='Poison'}),
+  BuiltinConditions.spell('shaman-resto-cure-disease',2870,{type='DISPELLABLE',unit='target',debufftype='Disease'}),
+  BuiltinConditions.spell('shaman-resto-riptide',408521,BuiltinConditions.negate({type='BUFF',unit='target',spell=408521,anyrank=true,ownbuff=true})),
+  BuiltinConditions.spell('shaman-resto-chain-heal',1064,{type='GROUP'}),
+  BuiltinConditions.spell('shaman-resto-wave',331),
   {id='shaman-resto-heal-stop',type='stop',suppress_attack=true,conditions={}},
  },onFalse={
-  {id='shaman-resto-no-target',type='stop',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
+  {id='shaman-resto-no-target',type='stop',suppress_attack=true,conditions=BuiltinConditions.negate({type='ATTACKABLE',unit='target'})},
   block('forever.shaman.caster-aoe','shaman-resto-'),
   block('forever.shaman.stormstrike-hybrid','shaman-resto-'),
-  spell('shaman-resto-flame-shock',8050,all(negate({type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}),
-   any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'}))),
-  spell('shaman-resto-bolt',403,negate({type='MOVING'})),
+  BuiltinConditions.spell('shaman-resto-flame-shock',8050,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}),
+   BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'}))),
+  BuiltinConditions.spell('shaman-resto-bolt',403,BuiltinConditions.negate({type='MOVING'})),
  }},
  }},
 }))

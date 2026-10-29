@@ -6,15 +6,11 @@
 -- which Rotation Master cannot pin). Same boundaries, interrupt and reminders as the recommended
 -- premade (era/blocks.lua). Mana-hungry by design.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental.simulator',revision=5,
  blocks={['era.shaman.manual-target']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.caster-totems']=1},
- nameKey="Elemental, Chain Lightning on cooldown (simulator)",descriptionKey="The simulator Elemental list, an alternative to the recommended Elemental premade, off by default: enable it and disable that one, or raise its priority. Chain Lightning on cooldown even on one target, Earth Shock while Elemental Mastery is up, otherwise Lightning Bolt. Faster but much hungrier for mana than the recommended premade; same interrupt, totems and reminders.",
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
  tags={'dps','ranged','caster','endgame'},
  sources={},
@@ -22,14 +18,14 @@ assert(addon:RegisterDefaultRotation({
  cooldowns={
   block('era.shaman.shield','ele-ws-'),
   block('era.shaman.caster-totems','ele-ws-'),
-  spell('ele-ws-elemental-mastery',16166,combat()),
+  BuiltinConditions.spell('ele-ws-elemental-mastery',16166,BuiltinConditions.combat()),
   block('era.shaman.self-heal','ele-ws-'),
  },
  rotation={
  block('era.shaman.manual-target','ele-ws-'),
  block('era.shaman.interrupt','ele-ws-'),
- spell('ele-ws-chain-lightning',421),
- spell('ele-ws-mastery-shock',8042,{type='BUFF',unit='player',spell=16166}),
- spell('ele-ws-bolt',403),
+ BuiltinConditions.spell('ele-ws-chain-lightning',421),
+ BuiltinConditions.spell('ele-ws-mastery-shock',8042,{type='BUFF',unit='player',spell=16166}),
+ BuiltinConditions.spell('ele-ws-bolt',403),
  }},
 }))

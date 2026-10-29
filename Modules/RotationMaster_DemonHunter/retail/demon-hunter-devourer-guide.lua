@@ -8,46 +8,43 @@
 -- cooldown and charges; Fury is secret on Retail, so Void Ray waits only for its cost. Disabled: buffs
 -- are secret in Midnight combat.
 local _,addon=...
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local soulburst=buff(1297433)
 local metaReady={type='BUFF_STACKS',unit='player',spell=1225789,ownbuff=true,operator='GREATERTHANOREQUALS',value=50}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.devourer.guide',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: Icy Veins' Annihilator priority. Most of your buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so Void Ray waits only for its cost. Outside Void Metamorphosis: Consume on Soulburst, Reap, Soul Immolation when it is not burning, Voidblade and The Hunt once Void Metamorphosis is ready, Void Metamorphosis, Hungering Slash, Void Ray, Consume. Inside it: Devour on Soulburst, Void Ray, the Void-Scarred strikes if you have them, Collapsing Star, Cull, Devour, Soul Immolation. Rotation Master cannot count Soul Fragments, so Reap and Cull go on cooldown. Reminders: Disrupt and Blur.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'devourer','ranged','reference','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow/devourer-demon-hunter-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Devourer Demon Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12',notes='Annihilator list; Void-Scarred actives follow Void Ray inside Void Metamorphosis.'},
  },
  body={priority=10,disabled=true,specs={1480},
-  cooldowns={block('dguide-utility','retail.demonhunter.utility','dguide-')},
+  cooldowns={BuiltinConditions.block('dguide-utility','retail.demonhunter.utility','dguide-')},
   rotation={
-   block('dguide-boundaries','retail.demonhunter.boundaries','dguide-'),
+   BuiltinConditions.block('dguide-boundaries','retail.demonhunter.boundaries','dguide-'),
    {id='dguide-meta',type='branch',conditions=buff(1217607),
     onTrue={
-     spell('dguide-meta-soulburst',1217610,soulburst),
-     spell('dguide-meta-void-ray',473728),
-     spell('dguide-meta-reapers-toll',1245470),
-     spell('dguide-meta-pierce-the-veil',1245483),
-     spell('dguide-meta-predators-wake',1259431),
-     spell('dguide-meta-collapsing-star',1221150),
-     spell('dguide-meta-cull',1245453),
-     spell('dguide-meta-devour',1217610),
-     spell('dguide-meta-soul-immolation',1241937)},
+     BuiltinConditions.spell('dguide-meta-soulburst',1217610,soulburst),
+     BuiltinConditions.spell('dguide-meta-void-ray',473728),
+     BuiltinConditions.spell('dguide-meta-reapers-toll',1245470),
+     BuiltinConditions.spell('dguide-meta-pierce-the-veil',1245483),
+     BuiltinConditions.spell('dguide-meta-predators-wake',1259431),
+     BuiltinConditions.spell('dguide-meta-collapsing-star',1221150),
+     BuiltinConditions.spell('dguide-meta-cull',1245453),
+     BuiltinConditions.spell('dguide-meta-devour',1217610),
+     BuiltinConditions.spell('dguide-meta-soul-immolation',1241937)},
     onFalse={
-     spell('dguide-soulburst',473662,soulburst),
-     spell('dguide-reap',1226019),
-     spell('dguide-soul-immolation',1241937,negate(buff(1241937))),
-     spell('dguide-voidblade',1245412,metaReady),
-     spell('dguide-the-hunt',1246167,metaReady),
-     spell('dguide-void-metamorphosis',1217605),
-     spell('dguide-hungering-slash',1239123),
-     spell('dguide-void-ray',473728),
-     spell('dguide-consume',473662)}},
+     BuiltinConditions.spell('dguide-soulburst',473662,soulburst),
+     BuiltinConditions.spell('dguide-reap',1226019),
+     BuiltinConditions.spell('dguide-soul-immolation',1241937,BuiltinConditions.negate(buff(1241937))),
+     BuiltinConditions.spell('dguide-voidblade',1245412,metaReady),
+     BuiltinConditions.spell('dguide-the-hunt',1246167,metaReady),
+     BuiltinConditions.spell('dguide-void-metamorphosis',1217605),
+     BuiltinConditions.spell('dguide-hungering-slash',1239123),
+     BuiltinConditions.spell('dguide-void-ray',473728),
+     BuiltinConditions.spell('dguide-consume',473662)}},
   },
  },
 }))

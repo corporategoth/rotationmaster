@@ -5,13 +5,10 @@
 -- Around it, highlights for what Assisted Combat leaves to you: Demon Spikes, Fiery Brand, Fel
 -- Devastation and Metamorphosis, plus Disrupt and Blur.
 local _,addon=...
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.demonhunter.vengeance',revision=6,
  blocks={['retail.demonhunter.boundaries']=3,['retail.demonhunter.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Vengeance. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what the assistant leaves to you: Demon Spikes, Fiery Brand, Fel Devastation and Metamorphosis whenever they are ready in combat, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call. Infernal Strike, Darkness, taunts and trinkets stay with you.",
  applicability={families={'retail'},actionContext='player',class='DEMONHUNTER'},
  tags={'vengeance','tank','assisted-combat'},
  sources={
@@ -21,14 +18,14 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={581},
   cooldowns={
-   block('vengeance-utility','retail.demonhunter.utility','vengeance-'),
-   spell('vengeance-demon-spikes',203720,combat()),
-   spell('vengeance-fiery-brand',204021,combat()),
-   spell('vengeance-fel-devastation',212084,combat()),
-   spell('vengeance-metamorphosis',187827,combat()),
+   BuiltinConditions.block('vengeance-utility','retail.demonhunter.utility','vengeance-'),
+   BuiltinConditions.spell('vengeance-demon-spikes',203720,BuiltinConditions.combat()),
+   BuiltinConditions.spell('vengeance-fiery-brand',204021,BuiltinConditions.combat()),
+   BuiltinConditions.spell('vengeance-fel-devastation',212084,BuiltinConditions.combat()),
+   BuiltinConditions.spell('vengeance-metamorphosis',187827,BuiltinConditions.combat()),
   },
   rotation={
-   block('vengeance-boundaries','retail.demonhunter.boundaries','vengeance-'),
+   BuiltinConditions.block('vengeance-boundaries','retail.demonhunter.boundaries','vengeance-'),
    {id='vengeance-assisted',type='assisted',conditions={}},
   },
  },

@@ -7,24 +7,19 @@
 -- three or more engaged enemies. Combustion at five stacks on elites or long fights.
 -- The Warcraft Tavern variant (rm.era.mage.fire.warcrafttavern) spends Combustion at the pull.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function near(n)return{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=n}end
 local function class(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local function lives(op,seconds)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=seconds}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-fire-'
 local scorch={type='TALENT',layout='tree',tree=2,talent=10,operator='GREATERTHANOREQUALS',value=1}
 local stacked={type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=5}
-local elite=any(class('elite'),class('rareelite'),class('worldboss'))
+local elite=BuiltinConditions.any(class('elite'),class('rareelite'),class('worldboss'))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire',revision=5,
  blocks={['era.mage.boundaries']=3,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
   ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
- nameKey="Fire",descriptionKey="Fire from level 10 to 60, chosen when you have Fire points and none in Frost, or Fire is your main tree. Pyroblast (else Fireball) opens; Pyroblast after Presence of Mind; Scorch keeps five Fire Vulnerability stacks with Improved Scorch on targets that will live; Fire Blast and Scorch finish; Fireball fills. Three or more engaged enemies: Blast Wave, Flamestrike, Arcane Explosion, Cone of Cold, Blizzard. Reminders: Combustion at five Scorch stacks on elites and long fights, armor, Arcane Intellect, mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, Remove Lesser Curse, Ice Block, Presence of Mind. Off by default: weaving Fire Blast whenever it is ready.",
  applicability={families={'era'},actionContext='player',class='MAGE'},
  tags={'fire','leveling','raid','single-target','aoe'},
  sources={
@@ -38,32 +33,32 @@ assert(addon:RegisterDefaultRotation({
  body={
   priority=10,
   -- Readable arm first: any Fire point and no Frost point; then Fire as the main tree.
-  switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},any(all({type='TALENT_TREE_POINTS',tree=3,operator='EQUALS',value=0},{type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHANOREQUALS',value=1}),
+  switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},BuiltinConditions.any(BuiltinConditions.all({type='TALENT_TREE_POINTS',tree=3,operator='EQUALS',value=0},{type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHANOREQUALS',value=1}),
    {type='PRIMARY_TALENT_TREE',tree=2})}},
-  cooldowns={block(P..'armor','era.mage.armor',P),
-   spell(P..'combustion',11129,all({type='COMBAT',unit='player'},any(stacked,negate(scorch)),any(elite,lives('GREATERTHAN',10)))),
-   block(P..'upkeep','era.mage.upkeep',P)},
+  cooldowns={BuiltinConditions.block(P..'armor','era.mage.armor',P),
+   BuiltinConditions.spell(P..'combustion',11129,BuiltinConditions.all({type='COMBAT',unit='player'},BuiltinConditions.any(stacked,BuiltinConditions.negate(scorch)),BuiltinConditions.any(elite,lives('GREATERTHAN',10)))),
+   BuiltinConditions.block(P..'upkeep','era.mage.upkeep',P)},
   rotation={
-   block(P..'boundaries','era.mage.boundaries',P),
+   BuiltinConditions.block(P..'boundaries','era.mage.boundaries',P),
    {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    spell(P..'pull-pyroblast',11366),spell(P..'pull-fireball',133),stop(P..'pull-stop')}},
-   spell(P..'presence-pyroblast',11366,{type='BUFF',unit='player',spell=12043}),
-   block(P..'moving','era.mage.moving',P),
-   block(P..'nova','era.mage.nova',P),
+    BuiltinConditions.spell(P..'pull-pyroblast',11366),BuiltinConditions.spell(P..'pull-fireball',133),stop(P..'pull-stop')}},
+   BuiltinConditions.spell(P..'presence-pyroblast',11366,{type='BUFF',unit='player',spell=12043}),
+   BuiltinConditions.block(P..'moving','era.mage.moving',P),
+   BuiltinConditions.block(P..'nova','era.mage.nova',P),
    {id=P..'aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell(P..'aoe-blast-wave',11113,near(2)),
-    spell(P..'aoe-flamestrike',2120,negate({type='DEBUFF',unit='target',spell=2120,anyrank=true,owndebuff=true})),
-    spell(P..'aoe-explosion',1449,near(3)),
-    spell(P..'aoe-cone',120,near(2)),
-    spell(P..'aoe-blizzard',10)}},
-   spell(P..'scorch',2948,all(scorch,any(negate(stacked),{type='DEBUFF_REMAIN',unit='target',spell=22959,operator='LESSTHAN',value=5}),
-    any(elite,lives('GREATERTHAN',15)))),
-   block(P..'execute','era.mage.execute',P),
-   spell(P..'execute-scorch',2948,lives('LESSTHAN',3)),
+    BuiltinConditions.spell(P..'aoe-blast-wave',11113,near(2)),
+    BuiltinConditions.spell(P..'aoe-flamestrike',2120,BuiltinConditions.negate({type='DEBUFF',unit='target',spell=2120,anyrank=true,owndebuff=true})),
+    BuiltinConditions.spell(P..'aoe-explosion',1449,near(3)),
+    BuiltinConditions.spell(P..'aoe-cone',120,near(2)),
+    BuiltinConditions.spell(P..'aoe-blizzard',10)}},
+   BuiltinConditions.spell(P..'scorch',2948,BuiltinConditions.all(scorch,BuiltinConditions.any(BuiltinConditions.negate(stacked),{type='DEBUFF_REMAIN',unit='target',spell=22959,operator='LESSTHAN',value=5}),
+    BuiltinConditions.any(elite,lives('GREATERTHAN',15)))),
+   BuiltinConditions.block(P..'execute','era.mage.execute',P),
+   BuiltinConditions.spell(P..'execute-scorch',2948,lives('LESSTHAN',3)),
    -- Optional: weave Fire Blast whenever ready with spare mana (MaxDps); the guides keep it for moving.
    {id=P..'fire-blast-weave',type='spell',action=2136,ranked=false,disabled=true,conditions={type='MANAPCT',unit='player',operator='GREATERTHAN',value=.6}},
-   spell(P..'fireball',133),
-   block(P..'finish','era.mage.wand-finish',P),
+   BuiltinConditions.spell(P..'fireball',133),
+   BuiltinConditions.block(P..'finish','era.mage.wand-finish',P),
   },
  },
 }))

@@ -11,7 +11,6 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.initial',revision=5,
  blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended before you choose a specialization (while the game reports the Shaman's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Shaman premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over.",
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'leveling','assisted-combat'},
  sources={

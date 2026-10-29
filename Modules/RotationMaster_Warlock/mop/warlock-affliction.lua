@@ -9,19 +9,15 @@
 -- Grasp; Life Tap. Shared parts: mop/blocks.lua. The Warcraft Tavern variant pools Haunt for four shards or
 -- Dark Soul instead.
 local _,addon=...
-local function any(...)return{type='OR',value={...}}end
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function dot(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
 local function remain(id,op,n)return{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator=op,value=n}end
 local function shards(op,n)return{type='POINT',unit='player',operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.affliction',revision=8,
  blocks={['mop.warlock.boundaries']=4,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1,['mop.warlock.affliction-upkeep']=1,
   ['mop.warlock.affliction-dots']=3,['mop.warlock.affliction-filler']=1},
- nameKey="Recommended",descriptionKey="Recommended for Affliction from level 10 to 90 (chosen in the Affliction specialization). Pre-casts Haunt or Unstable Affliction, opens a fresh elite with Soulburn and Soul Swap, keeps Agony, Corruption and Unstable Affliction up (refreshing them early while Dark Soul: Misery is up), casts Haunt whenever it runs low and you have two shards (or in Dark Soul), channels Drain Soul for a shard when Haunt is ending and you have none, Drain Soul below 20%, otherwise Malefic Grasp (Shadow Bolt before 42). Seed of Corruption on three or more enemies (with Soulburn on six). Moving: instants and Fel Flame. Reminders: your pet, Dark Intent, Curse of the Elements in a group, Dark Soul, Doomguard or Infernal, Grimoire of Service or Sacrifice, Life Tap, defensives. Left to you: spreading DoTs to other targets and Soul Swap moves between them.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
  tags={'affliction','dps','caster','ranged','leveling','endgame','hekili'},
  sources={
@@ -33,9 +29,9 @@ assert(addon:RegisterDefaultRotation({
  rotation={
  block('mop.warlock.boundaries','warlock-'),
  block('mop.warlock.affliction-dots','warlock-aff-'),
- spell('warlock-aff-shard-drain',1120,all({type='SPELL_KNOWN',spell=48181},shards('LESSTHAN',1),any(negate(dot(48181)),remain(48181,'LESSTHAN',1)))),
- spell('warlock-aff-haunt',48181,all(any(negate(dot(48181)),remain(48181,'LESSTHAN',3.5)),
-  any(shards('GREATERTHANOREQUALS',2),{type='BUFF',unit='player',spell=113860,ownbuff=true}))),
+ BuiltinConditions.spell('warlock-aff-shard-drain',1120,BuiltinConditions.all({type='SPELL_KNOWN',spell=48181},shards('LESSTHAN',1),BuiltinConditions.any(BuiltinConditions.negate(dot(48181)),remain(48181,'LESSTHAN',1)))),
+ BuiltinConditions.spell('warlock-aff-haunt',48181,BuiltinConditions.all(BuiltinConditions.any(BuiltinConditions.negate(dot(48181)),remain(48181,'LESSTHAN',3.5)),
+  BuiltinConditions.any(shards('GREATERTHANOREQUALS',2),{type='BUFF',unit='player',spell=113860,ownbuff=true}))),
  block('mop.warlock.affliction-filler','warlock-aff-'),
  }},
 }))

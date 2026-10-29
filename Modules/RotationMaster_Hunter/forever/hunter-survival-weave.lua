@@ -7,23 +7,18 @@
 -- Strider Kick and step out. Out of melee: shoot until Raptor Strike is nearly ready, then go back
 -- in. RM follows the range you choose; it cannot tell you to move.
 local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Beast Mastery, 2 Marksmanship, 3 Survival; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
 local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function raptor(op,v)return{type='SPELL_COOLDOWN',spell=2973,operator=op,value=v}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival.weave',revision=7,
  blocks={['forever.hunter.boundaries']=4,['forever.hunter.survival-pull']=3,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
   ['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
- nameKey="Survival two-hand weave (Wowhead)",descriptionKey="Wowhead's in-and-out weave for a two-handed Survival Hunter, an alternative to the recommended Survival melee premade, off by default: enable it and disable that one, or raise its priority. In melee: Mongoose Bite and Raptor Strike; when Raptor Strike is more than 2.5 seconds away, Strider Kick and step out. Out of melee: Serpent Sting, Arcane Shot, Aimed Shot and Auto Shot until Raptor Strike is nearly ready, then back in. You do the moving; RM follows your range.",
  applicability={families={'forever'},actionContext='player',class='HUNTER'},
  tags={'survival','melee','two-hander','weave','wowhead'},
  sources={
@@ -32,24 +27,24 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=15,disabled=true,switch=tree(3,21),
   cooldowns={
-   spell('weave-aspect-beast',13161,all(combat(),negate({type='BUFF',unit='player',spell=13161,anyrank=true,ownbuff=true}))),
-   spell('weave-mark',1130,all(combat(),{type='ATTACKABLE',unit='target'},negate({type='DEBUFF',unit='target',spell=1130,anyrank=true}))),
-   block('weave-burst','forever.hunter.burst','weave-'),
-   block('weave-pet-care','forever.hunter.pet-care','weave-'),
+   BuiltinConditions.spell('weave-aspect-beast',13161,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate({type='BUFF',unit='player',spell=13161,anyrank=true,ownbuff=true}))),
+   BuiltinConditions.spell('weave-mark',1130,BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'},BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1130,anyrank=true}))),
+   BuiltinConditions.block('weave-burst','forever.hunter.burst','weave-'),
+   BuiltinConditions.block('weave-pet-care','forever.hunter.pet-care','weave-'),
   },
   rotation={
-   block('weave-boundaries','forever.hunter.boundaries','weave-'),
-   block('weave-pull','forever.hunter.survival-pull','weave-'),
+   BuiltinConditions.block('weave-boundaries','forever.hunter.boundaries','weave-'),
+   BuiltinConditions.block('weave-pull','forever.hunter.survival-pull','weave-'),
    {id='weave-range',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onFalse={},onTrue={
     stop('weave-return',raptor('LESSTHAN',1),true),
-    block('weave-range-shots','forever.hunter.range-shots','weave-range-'),stop('weave-range-stop')}},
-   block('weave-aoe','forever.hunter.melee-aoe','weave-'),
-   spell('weave-mongoose-bite',1495),
-   spell('weave-raptor-strike',2973,negate({type='SPELL_ACTIVE',spell=2973})),
+    BuiltinConditions.block('weave-range-shots','forever.hunter.range-shots','weave-range-'),stop('weave-range-stop')}},
+   BuiltinConditions.block('weave-aoe','forever.hunter.melee-aoe','weave-'),
+   BuiltinConditions.spell('weave-mongoose-bite',1495),
+   BuiltinConditions.spell('weave-raptor-strike',2973,BuiltinConditions.negate({type='SPELL_ACTIVE',spell=2973})),
    -- Mongoose Bite was not usable above; with Raptor Strike far off, kick and step out.
    {id='weave-exit',type='branch',conditions=raptor('GREATERTHAN',2.5),onFalse={},onTrue={
-    spell('weave-strider-kick',1317257),stop('weave-exit-stop',nil,true)}},
-   spell('weave-counterattack',19306),
+    BuiltinConditions.spell('weave-strider-kick',1317257),stop('weave-exit-stop',nil,true)}},
+   BuiltinConditions.spell('weave-counterattack',19306),
    stop('weave-done',nil,true),
   },
  },

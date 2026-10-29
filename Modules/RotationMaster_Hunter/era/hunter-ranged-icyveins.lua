@@ -6,18 +6,13 @@
 -- ready (no Auto Shot window) and never Serpent Sting, and by spending Rapid Fire, Bestial Wrath and
 -- racials on every pull.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.icyveins',revision=5,
  blocks={['era.hunter.boundaries']=3,['era.hunter.dead-zone']=3,['era.hunter.opening']=3,['era.hunter.solo']=2,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1},
- nameKey="Ranged, clipped (Icy Veins)",descriptionKey="Off by default; enable it for a ranged weapon faster than 3.0 seconds. Like Hunter: Ranged, but in a group Aimed Shot and Multi-Shot go out as soon as they are ready, even if that delays an Auto Shot, Serpent Sting is never used, and Rapid Fire, Bestial Wrath and racials are used on every pull.",
  applicability={families={'era'},actionContext='player',class='HUNTER'},
  tags={'dps','ranged','leveling','endgame','icy-veins'},
  sources={
@@ -27,18 +22,18 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=5,disabled=true,
  cooldowns={block('era.hunter.hawk','hunter-'),block('era.hunter.upkeep','hunter-'),
-  spell('hunter-rapid-fire',3045,all(combat(),negate(buff(3045)))),
-  spell('hunter-bestial-wrath',19574,all(combat(),{type='PET'})),
-  spell('hunter-berserking',20554,all(combat(),buff(3045))),
-  spell('hunter-blood-fury',20572,all(combat(),buff(3045)))},
+  BuiltinConditions.spell('hunter-rapid-fire',3045,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(buff(3045)))),
+  BuiltinConditions.spell('hunter-bestial-wrath',19574,BuiltinConditions.all(BuiltinConditions.combat(),{type='PET'})),
+  BuiltinConditions.spell('hunter-berserking',20554,BuiltinConditions.all(BuiltinConditions.combat(),buff(3045))),
+  BuiltinConditions.spell('hunter-blood-fury',20572,BuiltinConditions.all(BuiltinConditions.combat(),buff(3045)))},
  rotation={
   block('era.hunter.boundaries','hunter-'),
   block('era.hunter.dead-zone','hunter-'),
   block('era.hunter.opening','hunter-'),
   {id='hunter-solo',type='branch',conditions={type='GROUP'},onFalse={block('era.hunter.solo','hunter-solo-')},onTrue={
-   spell('hunter-aimed-shot',19434),
-   spell('hunter-multi-shot',2643),
-   spell('hunter-arcane-shot',3044,any(negate({type='SPELL_KNOWN',spell=19434}),{type='TT_HEALTH',unit='target',health=0,operator='LESSTHAN',value=3})),
+   BuiltinConditions.spell('hunter-aimed-shot',19434),
+   BuiltinConditions.spell('hunter-multi-shot',2643),
+   BuiltinConditions.spell('hunter-arcane-shot',3044,BuiltinConditions.any(BuiltinConditions.negate({type='SPELL_KNOWN',spell=19434}),{type='TT_HEALTH',unit='target',health=0,operator='LESSTHAN',value=3})),
    {id='hunter-wait-auto',type='stop',suppress_attack=true,conditions={}},
   }},
  }},

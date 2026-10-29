@@ -6,16 +6,11 @@
 -- Shot (Multi-Shot on packs), and no Arcane Shot once Summon Hawk is known; its second Hawk on a
 -- healthy target is left out, as target health is secret on Forever.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged.mobalytics',revision=6,
  blocks={['forever.hunter.boundaries']=4,['forever.hunter.deadzone']=3,['forever.hunter.pull']=3,['forever.hunter.moving']=2,
   ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
- nameKey="Ranged, mana-saving (Mobalytics)",descriptionKey="Mobalytics' mana-saving leveling style, an alternative to the recommended Wowhead ranged premade, off by default: enable it and disable that one, or raise its priority. Keeps your Serpent Sting up, one Summon Hawk out, Aimed Shot (Multi-Shot on two or more enemies), and never Arcane Shot once Summon Hawk is known; its second Hawk on a healthy target is left out, as Forever hides target health. Same pull, melee, movement and reminders as the Wowhead premade.",
  applicability={families={'forever'},actionContext='player',class='HUNTER'},
  tags={'beast-mastery','marksmanship','ranged','leveling','mana-saving','mobalytics'},
  sources={
@@ -26,28 +21,28 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=5,disabled=true,
   cooldowns={
-   block('saver-aspects','forever.hunter.aspects-ranged','saver-'),
-   spell('saver-trueshot-aura',1299346,negate({type='BUFF',unit='player',spell=1299346,anyrank=true})),
-   block('saver-pet-care','forever.hunter.pet-care','saver-'),
-   block('saver-burst','forever.hunter.burst','saver-'),
-   spell('saver-intimidation',19577,all({type='COMBAT',unit='player'},{type='THREAT',unit='target',threat=3})),
+   BuiltinConditions.block('saver-aspects','forever.hunter.aspects-ranged','saver-'),
+   BuiltinConditions.spell('saver-trueshot-aura',1299346,BuiltinConditions.negate({type='BUFF',unit='player',spell=1299346,anyrank=true})),
+   BuiltinConditions.block('saver-pet-care','forever.hunter.pet-care','saver-'),
+   BuiltinConditions.block('saver-burst','forever.hunter.burst','saver-'),
+   BuiltinConditions.spell('saver-intimidation',19577,BuiltinConditions.all({type='COMBAT',unit='player'},{type='THREAT',unit='target',threat=3})),
   },
   rotation={
-   block('saver-boundaries','forever.hunter.boundaries','saver-'),
-   block('saver-deadzone','forever.hunter.deadzone','saver-'),
-   block('saver-pull','forever.hunter.pull','saver-'),
-   block('saver-moving','forever.hunter.moving','saver-'),
-   spell('saver-auto-shot',75,negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})),
-   spell('saver-serpent-sting',1978,all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
-    negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))),
+   BuiltinConditions.block('saver-boundaries','forever.hunter.boundaries','saver-'),
+   BuiltinConditions.block('saver-deadzone','forever.hunter.deadzone','saver-'),
+   BuiltinConditions.block('saver-pull','forever.hunter.pull','saver-'),
+   BuiltinConditions.block('saver-moving','forever.hunter.moving','saver-'),
+   BuiltinConditions.spell('saver-auto-shot',75,BuiltinConditions.negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})),
+   BuiltinConditions.spell('saver-serpent-sting',1978,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
+    BuiltinConditions.negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))),
    {id='saver-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},onFalse={},onTrue={
-    spell('saver-multi-shot',2643)}},
+    BuiltinConditions.spell('saver-multi-shot',2643)}},
    -- First Hawk: none summoned in the last 18 s (its lifetime).
-   spell('saver-first-hawk',1293241,negate({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN',value=18})),
-   spell('saver-aimed-shot',19434),
-   spell('saver-arcane-shot',3044,negate({type='SPELL_KNOWN',spell=1293241})),
-   spell('saver-sniper-shot',1310687,{type='BUFF',unit='player',spell=415407}),
-   stop('saver-done'),
+   BuiltinConditions.spell('saver-first-hawk',1293241,BuiltinConditions.negate({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN',value=18})),
+   BuiltinConditions.spell('saver-aimed-shot',19434),
+   BuiltinConditions.spell('saver-arcane-shot',3044,BuiltinConditions.negate({type='SPELL_KNOWN',spell=1293241})),
+   BuiltinConditions.spell('saver-sniper-shot',1310687,{type='BUFF',unit='player',spell=415407}),
+   BuiltinConditions.stop('saver-done'),
   },
  },
 }))

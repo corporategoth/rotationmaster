@@ -9,36 +9,28 @@
 -- Anticipation, Marked for Death, Dispatch below 35% or on Blindside (dagger in the main hand), Mutilate up to three points (four with
 -- Anticipation or Shadow Blades). Eviscerate stands in for Envenom before 20. Shared parts: mop/blocks.lua.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
 local function energy(op,n)return{type='POWER',unit='player',operator=op,value=n}end
 local function mine(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
 local function remain(id,op,n)return{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator=op,value=n}end
 local function buffRemain(id,op,n)return{type='BUFF_REMAIN',unit='player',spell=id,ownbuff=true,operator=op,value=n}end
-local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
 local function talent(n)return{type='TALENT',layout='grid',value=n}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
 local function target(op,n)return{type='HEALTHPCT',unit='target',operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local sliced=own(5171)
+local sliced=BuiltinConditions.ownBuff(5171)
 local boss={type='CLASSIFICATION',unit='target',value='worldboss'}
 -- Envenom replaces Eviscerate at 20; both steps carry the same condition so the spender exists at every level.
-local function spend(id,conditions)return spell(id..'-envenom',32645,conditions),spell(id..'-eviscerate',2098,conditions)end
-local fourPoint=all(points('GREATERTHANOREQUALS',4),negate(talent(18)),negate(own(121471)),negate(own(121153)),
- any(negate(known(111240)),target('GREATERTHANOREQUALS',.35)),any(buffRemain(32645,'LESSTHANOREQUALS',1),negate(own(32645)),energy('GREATERTHANOREQUALS',50)))
-local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
+local function spend(id,conditions)return BuiltinConditions.spell(id..'-envenom',32645,conditions),BuiltinConditions.spell(id..'-eviscerate',2098,conditions)end
+local fourPoint=BuiltinConditions.all(points('GREATERTHANOREQUALS',4),BuiltinConditions.negate(talent(18)),BuiltinConditions.negate(BuiltinConditions.ownBuff(121471)),BuiltinConditions.negate(BuiltinConditions.ownBuff(121153)),
+ BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.known(111240)),target('GREATERTHANOREQUALS',.35)),BuiltinConditions.any(buffRemain(32645,'LESSTHANOREQUALS',1),BuiltinConditions.negate(BuiltinConditions.ownBuff(32645)),energy('GREATERTHANOREQUALS',50)))
+local dying=BuiltinConditions.all(points('GREATERTHANOREQUALS',2),BuiltinConditions.lifetime('LESSTHAN',4))
 local four1,four2=spend('rogue-assassination-four',fourPoint)
 local dying1,dying2=spend('rogue-assassination-dying',dying)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=8,
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.assassination-opener']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
- nameKey="Recommended",descriptionKey="Recommended for Assassination, from level 10 to 90 (simulator and Wowhead for Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo, otherwise Mutilate (Dispatch on Blindside, with a dagger). Keeps Slice and Dice up (Envenom refreshes it from level 60) and Rupture on the target, spends five points on Envenom while Rupture lasts and four points to keep the Envenom buff rolling when you do not have Anticipation, then Marked for Death, Dispatch below 35% or on Blindside (it needs a dagger in the main hand), and Mutilate. Against four or more enemies fighting you: Slice and Dice, Crimson Tempest at seven, Rupture, Envenom and Fan of Knives; tabbing Rupture onto other targets is up to you. Solo it adds Recuperate and a Kidney Shot when you are low. Reminders: poisons, Kick, Vendetta on long fights, Shadow Blades with Vendetta, Vanish and Preparation inside Vendetta, Shadowstep from range, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint, Sprint and positioning.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'assassination','dps','melee','leveling','endgame','wowhead','icy-veins'},
  sources={
@@ -47,37 +39,37 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-leveling',title='Icy Veins: Assassination Rogue leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},
  body={priority=30,specs={259},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.rogue.upkeep','rogue-'),
-  spell('rogue-assassination-vendetta',79140,all(combat(),any(sliced,mine(1943)),any(boss,lifetime('GREATERTHAN',20)))),
-  spell('rogue-assassination-shadow-blades',121471,all(combat(),mine(79140))),
-  spell('rogue-assassination-vanish',1856,all(combat(),negate({type='STEALTHED'}),mine(79140),points('LESSTHAN',5),energy('LESSTHAN',60),negate(own(121153)))),
-  spell('rogue-assassination-preparation',14185,all(combat(),mine(79140),{type='SPELL_COOLDOWN',spell=1856,operator='GREATERTHAN',value=60})),
+  BuiltinConditions.spell('rogue-assassination-vendetta',79140,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(sliced,mine(1943)),BuiltinConditions.any(boss,BuiltinConditions.lifetime('GREATERTHAN',20)))),
+  BuiltinConditions.spell('rogue-assassination-shadow-blades',121471,BuiltinConditions.all(BuiltinConditions.combat(),mine(79140))),
+  BuiltinConditions.spell('rogue-assassination-vanish',1856,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate({type='STEALTHED'}),mine(79140),points('LESSTHAN',5),energy('LESSTHAN',60),BuiltinConditions.negate(BuiltinConditions.ownBuff(121153)))),
+  BuiltinConditions.spell('rogue-assassination-preparation',14185,BuiltinConditions.all(BuiltinConditions.combat(),mine(79140),{type='SPELL_COOLDOWN',spell=1856,operator='GREATERTHAN',value=60})),
  },
  rotation={
  block('mop.rogue.boundaries','rogue-'),
  block('mop.rogue.assassination-opener','rogue-'),
  block('mop.rogue.out-of-combat','rogue-'),
- {id='rogue-assassination-aoe',type='branch',conditions=all(enemies('GREATERTHANOREQUALS',4),known(51723)),onFalse={},onTrue={
-  spell('rogue-assassination-aoe-slice',5171,all(points('GREATERTHANOREQUALS',1),negate(sliced))),
-  spell('rogue-assassination-crimson-tempest',121411,all(points('GREATERTHANOREQUALS',5),enemies('GREATERTHANOREQUALS',7),negate(mine(122233)))),
-  spell('rogue-assassination-aoe-rupture',1943,all(points('GREATERTHANOREQUALS',2),negate(mine(1943)))),
-  {id='rogue-assassination-aoe-spend',type='branch',conditions=any(points('GREATERTHANOREQUALS',5),all(points('GREATERTHANOREQUALS',2),buffRemain(5171,'LESSTHAN',3))),onFalse={},onTrue={
-   spell('rogue-assassination-aoe-envenom',32645),spell('rogue-assassination-aoe-eviscerate',2098)}},
-  spell('rogue-assassination-fan',51723),
+ {id='rogue-assassination-aoe',type='branch',conditions=BuiltinConditions.all(enemies('GREATERTHANOREQUALS',4),BuiltinConditions.known(51723)),onFalse={},onTrue={
+  BuiltinConditions.spell('rogue-assassination-aoe-slice',5171,BuiltinConditions.all(points('GREATERTHANOREQUALS',1),BuiltinConditions.negate(sliced))),
+  BuiltinConditions.spell('rogue-assassination-crimson-tempest',121411,BuiltinConditions.all(points('GREATERTHANOREQUALS',5),enemies('GREATERTHANOREQUALS',7),BuiltinConditions.negate(mine(122233)))),
+  BuiltinConditions.spell('rogue-assassination-aoe-rupture',1943,BuiltinConditions.all(points('GREATERTHANOREQUALS',2),BuiltinConditions.negate(mine(1943)))),
+  {id='rogue-assassination-aoe-spend',type='branch',conditions=BuiltinConditions.any(points('GREATERTHANOREQUALS',5),BuiltinConditions.all(points('GREATERTHANOREQUALS',2),buffRemain(5171,'LESSTHAN',3))),onFalse={},onTrue={
+   BuiltinConditions.spell('rogue-assassination-aoe-envenom',32645),BuiltinConditions.spell('rogue-assassination-aoe-eviscerate',2098)}},
+  BuiltinConditions.spell('rogue-assassination-fan',51723),
   {id='rogue-assassination-aoe-stop',type='stop',suppress_attack=false,conditions={}},
  }},
- spell('rogue-assassination-slice',5171,any(all(points('GREATERTHANOREQUALS',1),negate(sliced)),
-  all({type='LEVEL',unit='player',operator='LESSTHAN',value=60},points('GREATERTHANOREQUALS',2),buffRemain(5171,'LESSTHAN',2)))),
+ BuiltinConditions.spell('rogue-assassination-slice',5171,BuiltinConditions.any(BuiltinConditions.all(points('GREATERTHANOREQUALS',1),BuiltinConditions.negate(sliced)),
+  BuiltinConditions.all({type='LEVEL',unit='player',operator='LESSTHAN',value=60},points('GREATERTHANOREQUALS',2),buffRemain(5171,'LESSTHAN',2)))),
  block('mop.rogue.solo','rogue-'),
- spell('rogue-assassination-rupture',1943,all(any(all(points('GREATERTHANOREQUALS',1),negate(mine(1943)),negate(mine(703))),
-  all(mine(1943),remain(1943,'LESSTHAN',2),any(points('GREATERTHANOREQUALS',5),all(points('GREATERTHANOREQUALS',4),negate(talent(18)))))),
-  any(boss,lifetime('GREATERTHAN',8)))),
- {id='rogue-assassination-finisher',type='branch',conditions=all(points('GREATERTHANOREQUALS',5),any(negate(known(1943)),remain(1943,'GREATERTHANOREQUALS',4))),onFalse={},onTrue={
-  spell('rogue-assassination-envenom',32645),spell('rogue-assassination-eviscerate',2098)}},
+ BuiltinConditions.spell('rogue-assassination-rupture',1943,BuiltinConditions.all(BuiltinConditions.any(BuiltinConditions.all(points('GREATERTHANOREQUALS',1),BuiltinConditions.negate(mine(1943)),BuiltinConditions.negate(mine(703))),
+  BuiltinConditions.all(mine(1943),remain(1943,'LESSTHAN',2),BuiltinConditions.any(points('GREATERTHANOREQUALS',5),BuiltinConditions.all(points('GREATERTHANOREQUALS',4),BuiltinConditions.negate(talent(18)))))),
+  BuiltinConditions.any(boss,BuiltinConditions.lifetime('GREATERTHAN',8)))),
+ {id='rogue-assassination-finisher',type='branch',conditions=BuiltinConditions.all(points('GREATERTHANOREQUALS',5),BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.known(1943)),remain(1943,'GREATERTHANOREQUALS',4))),onFalse={},onTrue={
+  BuiltinConditions.spell('rogue-assassination-envenom',32645),BuiltinConditions.spell('rogue-assassination-eviscerate',2098)}},
  four1,four2,
  dying1,dying2,
- spell('rogue-assassination-marked-for-death',137619,all(points('LESSTHANOREQUALS',0),sliced,mine(1943))),
- spell('rogue-assassination-dispatch',111240,all({type='WEAPON_TYPE',slot='mainhand',subclass=15},any(target('LESSTHAN',.35),own(121153)),any(points('LESSTHANOREQUALS',4),talent(18)))),
- spell('rogue-assassination-mutilate',1329,any(points('LESSTHANOREQUALS',3),all(points('LESSTHANOREQUALS',4),any(talent(18),own(121471))))),
- spell('rogue-assassination-shuriken-toss',114014,{type='BEYOND_MELEE',unit='target'}),
+ BuiltinConditions.spell('rogue-assassination-marked-for-death',137619,BuiltinConditions.all(points('LESSTHANOREQUALS',0),sliced,mine(1943))),
+ BuiltinConditions.spell('rogue-assassination-dispatch',111240,BuiltinConditions.all({type='WEAPON_TYPE',slot='mainhand',subclass=15},BuiltinConditions.any(target('LESSTHAN',.35),BuiltinConditions.ownBuff(121153)),BuiltinConditions.any(points('LESSTHANOREQUALS',4),talent(18)))),
+ BuiltinConditions.spell('rogue-assassination-mutilate',1329,BuiltinConditions.any(points('LESSTHANOREQUALS',3),BuiltinConditions.all(points('LESSTHANOREQUALS',4),BuiltinConditions.any(talent(18),BuiltinConditions.ownBuff(121471))))),
+ BuiltinConditions.spell('rogue-assassination-shuriken-toss',114014,{type='BEYOND_MELEE',unit='target'}),
  }},
 }))

@@ -5,20 +5,15 @@
 -- consumer's pin and revision bumped, and both recorded in
 -- tests/fixtures/builtin_composition_ledger.lua.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 -- Your casts, channels (Disintegrate) and empowers (Fire Breath, Eternity Surge, Upheaval, Dream
 -- Breath: the game reports an empower as a channel) end advice.
 assert(addon:RegisterDefaultBlock({id='retail.evoker.boundaries',revision=3,families={'retail'},class='EVOKER',steps={
- stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
+ BuiltinConditions.stop('cast',BuiltinConditions.any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
 }}))
 -- The healer: the same, or no attackable target, ends advice (one Stop).
 assert(addon:RegisterDefaultBlock({id='retail.evoker.heal-boundaries',revision=2,families={'retail'},class='EVOKER',steps={
- stop('cast',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))),
+ BuiltinConditions.stop('cast',BuiltinConditions.any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},BuiltinConditions.negate({type='ATTACKABLE',unit='target'}))),
 }}))
 -- What Blizzard's Assisted Combat never suggests, for every spec: Quell on an interruptible cast,
 -- Obsidian Scales whenever it is ready in combat, and out of combat Blessing of the Bronze when it is
@@ -26,8 +21,8 @@ assert(addon:RegisterDefaultBlock({id='retail.evoker.heal-boundaries',revision=2
 -- combat, so Quell lights only where they can be read; health is secret on Retail, so the defensive
 -- is a cooldown reminder. Dracthyr have no racial cooldown to add.
 assert(addon:RegisterDefaultBlock({id='retail.evoker.utility',revision=2,families={'retail'},class='EVOKER',steps={
- spell('quell',351338,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
- spell('obsidian-scales',363916,combat()),
- spell('blessing-of-the-bronze',364342,all(negate(combat()),negate({type='BUFF',unit='player',spell=381748}))),
- spell('source-of-magic',369459,all(negate(combat()),{type='GROUP'},{type='FRIENDLY',unit='target'},negate({type='BUFF',unit='target',spell=369459,ownbuff=true}))),
+ BuiltinConditions.spell('quell',351338,BuiltinConditions.any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
+ BuiltinConditions.spell('obsidian-scales',363916,BuiltinConditions.combat()),
+ BuiltinConditions.spell('blessing-of-the-bronze',364342,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),BuiltinConditions.negate({type='BUFF',unit='player',spell=381748}))),
+ BuiltinConditions.spell('source-of-magic',369459,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),{type='GROUP'},{type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='BUFF',unit='target',spell=369459,ownbuff=true}))),
 }}))

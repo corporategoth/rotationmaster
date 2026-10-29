@@ -7,21 +7,14 @@
 -- Rejuvenation, then Healing Touch and Nourish on what is left. Heals act on your friendly target (or
 -- yourself with none); choosing whom to heal is yours. An attackable target gets Moonfire and Wrath.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function hot(id)return{type='BUFF',unit='target',spell=id,ownbuff=true}end
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function group(pct,n)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=30,healthoperator='LESSTHAN',health=pct,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local still=negate({type='MOVING'})
+local still=BuiltinConditions.negate({type='MOVING'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.druid.restoration',revision=6,
  blocks={['mop.druid.boundaries']=4,['mop.druid.mark']=1,['mop.druid.healer-upkeep']=1,['mop.druid.healer-open']=3},
- nameKey="Recommended",descriptionKey="Recommended for Restoration from level 10, after Wowhead's Phase 5 group healing. Heals your current friendly target, or you with no target; choosing whom to heal is up to you. Swiftmend on a target with your HoT when it is low, when Harmony has dropped, or into Wild Growth with Soul of the Forest; Wild Growth when three people nearby are hurt; instant Healing Touch on Nature's Swiftness; Regrowth on Clearcasting or a dying target; Rejuvenation; then Healing Touch and Nourish while standing still. An attackable target gets Moonfire and Wrath. Reminders: Lifebloom stacks and Ironbark on your focus (set the tank as focus), Wild Mushroom: Bloom on group damage, Force of Nature, Incarnation, Nature's Vigil, Nature's Swiftness, Innervate, Nature's Cure, Cenarion Ward, Barkskin, Mark of the Wild. Wild Mushroom placement, Tranquility and Genesis reminders are off by default.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'restoration','healer','leveling','wowhead','icy-veins'},
  sources={
@@ -32,22 +25,22 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={105},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('resto-mark','mop.druid.mark','resto-'),
-   block('resto-upkeep','mop.druid.healer-upkeep','resto-'),
+   BuiltinConditions.block('resto-mark','mop.druid.mark','resto-'),
+   BuiltinConditions.block('resto-upkeep','mop.druid.healer-upkeep','resto-'),
   },
   rotation={
-   block('resto-boundaries','mop.druid.boundaries','resto-'),
-   block('resto-open','mop.druid.healer-open','resto-'),
-   spell('resto-swiftmend',18562,all(any(hot(774),hot(8936)),any(hurt(.6),negate(own(100977)),
-    all({type='TALENT',layout='grid',value=10},group(.9,3),{type='SPELL_AVAIL',spell=48438})))),
-   spell('resto-wild-growth',48438,group(.9,3)),
-   spell('resto-swift-touch',5185,own(132158)),
-   spell('resto-regrowth',8936,any(all(hurt(.9),any(own(16870),{type='FORM',form=33891})),hurt(.35))),
-   spell('resto-tree-lifebloom',33763,all({type='FORM',form=33891},negate(hot(33763)))),
-   spell('resto-rejuvenation',774,all(negate(hot(774)),hurt(.95))),
-   spell('resto-healing-touch',5185,all(hurt(.5),still)),
-   spell('resto-nourish',50464,all(hurt(.85),still)),
-   stop('resto-heal-stop'),
+   BuiltinConditions.block('resto-boundaries','mop.druid.boundaries','resto-'),
+   BuiltinConditions.block('resto-open','mop.druid.healer-open','resto-'),
+   BuiltinConditions.spell('resto-swiftmend',18562,BuiltinConditions.all(BuiltinConditions.any(hot(774),hot(8936)),BuiltinConditions.any(hurt(.6),BuiltinConditions.negate(BuiltinConditions.ownBuff(100977)),
+    BuiltinConditions.all({type='TALENT',layout='grid',value=10},group(.9,3),{type='SPELL_AVAIL',spell=48438})))),
+   BuiltinConditions.spell('resto-wild-growth',48438,group(.9,3)),
+   BuiltinConditions.spell('resto-swift-touch',5185,BuiltinConditions.ownBuff(132158)),
+   BuiltinConditions.spell('resto-regrowth',8936,BuiltinConditions.any(BuiltinConditions.all(hurt(.9),BuiltinConditions.any(BuiltinConditions.ownBuff(16870),{type='FORM',form=33891})),hurt(.35))),
+   BuiltinConditions.spell('resto-tree-lifebloom',33763,BuiltinConditions.all({type='FORM',form=33891},BuiltinConditions.negate(hot(33763)))),
+   BuiltinConditions.spell('resto-rejuvenation',774,BuiltinConditions.all(BuiltinConditions.negate(hot(774)),hurt(.95))),
+   BuiltinConditions.spell('resto-healing-touch',5185,BuiltinConditions.all(hurt(.5),still)),
+   BuiltinConditions.spell('resto-nourish',50464,BuiltinConditions.all(hurt(.85),still)),
+   BuiltinConditions.stop('resto-heal-stop'),
   },
  },
 }))

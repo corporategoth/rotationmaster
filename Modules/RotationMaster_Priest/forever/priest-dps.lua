@@ -8,21 +8,15 @@
 -- and mana are secret on Forever, so the execute window, the solo emergency heals and the mana
 -- rules for Mind Blast, Plague, Holy Nova and solo Mind Flay are left out.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function known(...)local list={};for i,id in ipairs({...})do list[i]={type='SPELL_KNOWN',spell=id}end;return{type='OR',value=list}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local shadowform={type='BUFF',unit='player',spell=15473}
-local solo=negate({type='GROUP'})
-local unshielded=negate({type='DEBUFF',unit='player',spell=6788})
+local solo=BuiltinConditions.negate({type='GROUP'})
+local unshielded=BuiltinConditions.negate({type='DEBUFF',unit='player',spell=6788})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps',revision=6,
  blocks={['forever.priest.dps-boundaries']=2,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=2,['forever.priest.wand']=2},
- nameKey="Shadow and solo damage",descriptionKey="Shadow, and every Priest's solo play, from level 1 to 60; the Forever Priest default. Pulls with Power Word: Shield (solo) and Mind Blast (Holy Fire for Holy and Discipline, Smite before Mind Blast). Then Shadowform once learned, your own Shadow Word: Pain and Devouring Plague, Mind Blast, Holy Fire into Penance for Discipline, Mind Flay in Shadowform; solo before Shadowform, Holy Nova on three enemies with Holy Purpose, then the wand (Smite without one). Moving: Pain, Plague. Reminders: Inner Fire, Fortitude, Divine Spirit, racial buffs, Vampiric Embrace, Inner Focus, Silence, Elune's Light; Psychic Scream is off by default. Health and mana are hidden from addons on Forever, so executing with Shadow Word: Death, healing yourself and Dark Sacrifice are your call. Built from level-30 beta guides; Shadowform play follows Mobalytics.",
  applicability={families={'forever'},actionContext='player',class='PRIEST'},
  tags={'shadow','leveling','single-target','icy-veins','wowhead'},
  sources={
@@ -37,38 +31,38 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,
   cooldowns={
-   block('dps-upkeep','forever.priest.upkeep','dps-'),
-   block('dps-reminders','forever.priest.dps-upkeep','dps-'),
+   BuiltinConditions.block('dps-upkeep','forever.priest.upkeep','dps-'),
+   BuiltinConditions.block('dps-reminders','forever.priest.dps-upkeep','dps-'),
   },
   rotation={
-   block('dps-boundaries','forever.priest.dps-boundaries','dps-'),
-   spell('dps-shadowform',15473,negate(shadowform)),
+   BuiltinConditions.block('dps-boundaries','forever.priest.dps-boundaries','dps-'),
+   BuiltinConditions.spell('dps-shadowform',15473,BuiltinConditions.negate(shadowform)),
    {id='dps-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    spell('dps-pull-shield',17,all(solo,unshielded)),
-    spell('dps-pull-holy-fire',14914,negate(known(15473))),
-    spell('dps-pull-mind-blast',8092),
-    spell('dps-pull-smite',585),
-    stop('dps-pull-stop')}},
+    BuiltinConditions.spell('dps-pull-shield',17,BuiltinConditions.all(solo,unshielded)),
+    BuiltinConditions.spell('dps-pull-holy-fire',14914,BuiltinConditions.negate(known(15473))),
+    BuiltinConditions.spell('dps-pull-mind-blast',8092),
+    BuiltinConditions.spell('dps-pull-smite',585),
+    BuiltinConditions.stop('dps-pull-stop')}},
    {id='dps-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
-    spell('dps-moving-pain',589,negate(own(589))),
-    spell('dps-moving-plague',2944,negate(own(2944))),
-    stop('dps-moving-stop')}},
-   spell('dps-holy-fire',14914,all(known(402174,1240720,1240721,1316995),negate(own(14914)))),
-   spell('dps-penance',402174,any(own(14914),negate(known(14914)))),
-   spell('dps-mind-blast',8092),
-   spell('dps-pain',589,negate(own(589))),
-   spell('dps-plague',2944,negate(own(2944))),
-   {id='dps-shadow',type='branch',conditions=shadowform,onFalse={},onTrue={spell('dps-shadow-flay',15407),stop('dps-shadow-stop')}},
+    BuiltinConditions.spell('dps-moving-pain',589,BuiltinConditions.negate(own(589))),
+    BuiltinConditions.spell('dps-moving-plague',2944,BuiltinConditions.negate(own(2944))),
+    BuiltinConditions.stop('dps-moving-stop')}},
+   BuiltinConditions.spell('dps-holy-fire',14914,BuiltinConditions.all(known(402174,1240720,1240721,1316995),BuiltinConditions.negate(own(14914)))),
+   BuiltinConditions.spell('dps-penance',402174,BuiltinConditions.any(own(14914),BuiltinConditions.negate(known(14914)))),
+   BuiltinConditions.spell('dps-mind-blast',8092),
+   BuiltinConditions.spell('dps-pain',589,BuiltinConditions.negate(own(589))),
+   BuiltinConditions.spell('dps-plague',2944,BuiltinConditions.negate(own(2944))),
+   {id='dps-shadow',type='branch',conditions=shadowform,onFalse={},onTrue={BuiltinConditions.spell('dps-shadow-flay',15407),BuiltinConditions.stop('dps-shadow-stop')}},
    {id='dps-solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
-    spell('dps-holy-nova',15237,all({type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3},
+    BuiltinConditions.spell('dps-holy-nova',15237,BuiltinConditions.all({type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3},
      {type='BUFF',unit='player',spell=1284536})),
-    block('dps-solo-wand','forever.priest.wand','dps-solo-'),
-    spell('dps-solo-smite',585),
-    stop('dps-solo-stop')}},
-   spell('dps-flay',15407),
-   spell('dps-smite',585),
-   block('dps-wand','forever.priest.wand','dps-'),
-   stop('dps-done'),
+    BuiltinConditions.block('dps-solo-wand','forever.priest.wand','dps-solo-'),
+    BuiltinConditions.spell('dps-solo-smite',585),
+    BuiltinConditions.stop('dps-solo-stop')}},
+   BuiltinConditions.spell('dps-flay',15407),
+   BuiltinConditions.spell('dps-smite',585),
+   BuiltinConditions.block('dps-wand','forever.priest.wand','dps-'),
+   BuiltinConditions.stop('dps-done'),
   },
  },
 }))

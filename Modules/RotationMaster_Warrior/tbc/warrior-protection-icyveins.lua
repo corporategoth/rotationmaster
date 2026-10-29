@@ -7,33 +7,28 @@
 -- Rend at the start of a fight until Shield Slam is learned.
 -- Left manual: taunting, pre-pull rage, stance swaps and other utility.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function debuff(id,own)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=own or nil}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.protection.icyveins',revision=7,
  blocks={['tbc.warrior.boundaries']=4,['tbc.warrior.upkeep']=1,['tbc.warrior.prot-upkeep']=1,['tbc.warrior.prot-core']=1,['tbc.warrior.sunder']=1},
- nameKey="Tank (Icy Veins)",descriptionKey="Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins. Shield Slam, Revenge, then Devastate or Sunder Armor, with Rend at the start of a fight until Shield Slam is learned. On packs: Thunder Clap, and Demoralizing Shout against elites. Shield Block is reminded whenever your target is attacking you and you carry a shield. Taunting and other utility stay with you. An alternative to the recommended Wowhead tank premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
  tags={'tank','melee','leveling','endgame','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/protection-warrior-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Protection Warrior tank rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-01-12'},
  {url='https://www.icy-veins.com/tbc-classic/protection-warrior-leveling-guide',title='Icy Veins: Protection Warrior leveling',reviewedAt='2026-10-23',revision='2026-01-12'}},
  body={priority=25,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='FORM',form=71}}},
  cooldowns={block('tbc.warrior.upkeep','warrior-prot-'),block('tbc.warrior.prot-upkeep','warrior-prot-'),
-  spell('warrior-prot-shield-block',2565,all({type='COMBAT',unit='player'},{type='WEAPON_TYPE',slot='offhand',kind='shield'},negate({type='BUFF',unit='player',spell=2565,anyrank=true}),
+  BuiltinConditions.spell('warrior-prot-shield-block',2565,BuiltinConditions.all({type='COMBAT',unit='player'},{type='WEAPON_TYPE',slot='offhand',kind='shield'},BuiltinConditions.negate({type='BUFF',unit='player',spell=2565,anyrank=true}),
    {type='ISSAME',unit='targettarget',otherunit='player'}))},
  rotation={
  block('tbc.warrior.boundaries','warrior-prot-'),
  {id='warrior-prot-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},onFalse={},onTrue={
-  spell('warrior-prot-aoe-thunder-clap',6343),
-  spell('warrior-prot-aoe-demoralizing-shout',1160,all(any(classified('worldboss'),classified('elite')),negate(any(debuff(1160),debuff(99))))),
+  BuiltinConditions.spell('warrior-prot-aoe-thunder-clap',6343),
+  BuiltinConditions.spell('warrior-prot-aoe-demoralizing-shout',1160,BuiltinConditions.all(BuiltinConditions.any(BuiltinConditions.classified('worldboss'),BuiltinConditions.classified('elite')),BuiltinConditions.negate(BuiltinConditions.any(debuff(1160),debuff(99))))),
  }},
  block('tbc.warrior.prot-core','warrior-prot-'),
  block('tbc.warrior.sunder','warrior-prot-'),
- spell('warrior-prot-rend',772,all(negate({type='SPELL_KNOWN',spell=23922}),negate(debuff(772,true)))),
+ BuiltinConditions.spell('warrior-prot-rend',772,BuiltinConditions.all(BuiltinConditions.negate({type='SPELL_KNOWN',spell=23922}),BuiltinConditions.negate(debuff(772,true)))),
  }},
 }))

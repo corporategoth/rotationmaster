@@ -21,6 +21,10 @@ programmer except running the tools below.
 
 ## How the files work
 
+Built In rotation names and descriptions are different: each class module has a `Locales/` directory, and every language
+assigns text directly to `<rotation ID>.Name` and `<rotation ID>.Description` without numeric IDs. Run
+`python3 tools/builtin_locales.py` to check that every rotation has both entries in all languages and no obsolete entries.
+
 Every string has a **stable ID** within its own catalog, recorded in `tools/locale_registry.json`. IDs may overlap between catalogs; a removed ID is not reused within its catalog. Code reads `L["English text"]`; the catalog’s `enUS.lua` binds the exact English text to its number, `T["English text"] = 1234`, with a hash above it. At load time the matching translation is written to `L[English text]`; the numbers are not needed for lookups. A translation file maps the ID to the translation, with the English it was made from in the comment above:
 
 ```lua
@@ -145,7 +149,7 @@ that still lacks one.
 `python3 tools/locales.py reword "old English" "new English"` rewrites every `L["old English"]` in the addon (the whole
 literal only, in the quote style it uses, escapes handled), changes the enUS text and hash, **keeps the ID** and leaves every
 translation in place, stale by hash. Plain strings equal to the old English are listed, not changed (`--all-literals`
-changes them); `tests/` is listed, not changed (`--tests` rewrites its `L[...]` sites). `--dry-run` shows the plan. Built In rotation names and descriptions are English literals in the rotation source; use `--all-literals` to update them. Adding is `locales.py add "New text"` (or `sync` after adding the source literal); `remove` retires the catalog ID. Moving text between catalogs assigns a new destination ID and preserves its translations. `sync --prune-class` removes class translations no longer referenced by that class’s rotations.
+changes them); `tests/` is listed, not changed (`--tests` rewrites its `L[...]` sites). `--dry-run` shows the plan. Edit Built In names and descriptions in their class module’s language files. For ordinary text, adding is `locales.py add "New text"` (or `sync` after adding the source literal); `remove` retires the catalog ID. Moving text between catalogs assigns a new destination ID and preserves its translations. `tools/builtin_locales.py` reports class translations no longer referenced by a rotation.
 
 ## What the tools check
 

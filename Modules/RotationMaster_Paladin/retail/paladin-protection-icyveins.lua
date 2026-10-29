@@ -8,15 +8,11 @@
 -- Blessed Hammer or Hammer of the Righteous, Avenger's Shield, Word of Glory with Shining Light,
 -- Consecration as the filler.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.icyveins',revision=8,
  blocks={['retail.paladin.boundaries']=2,['retail.paladin.upkeep']=2,['retail.paladin.prot-defensives']=2,['retail.paladin.prot-cooldowns']=1},
- nameKey="Reference (Icy Veins)",descriptionKey="Reference only, off by default: the Icy Veins and SimulationCraft order needs the Consecration, Vanguard and Shining Light buffs, which Midnight hides in combat. Consecration before the pull; then Divine Toll, Hammer of Light, Consecration when you are not standing in it, Avenger's Shield with Vanguard, Shield of the Righteous at 3 or more Holy Power, Hammer of Wrath, Judgment, Blessed Hammer or Hammer of the Righteous, Avenger's Shield, Word of Glory with Shining Light, Consecration. Reminders: Avenging Wrath or Sentinel, Holy Bulwark, Sacred Weapon outside Avenging Wrath, defensives, aura, Rebuke.",
  applicability={families={'retail'},actionContext='player',class='PALADIN'},
  tags={'protection','tank','reference','single-target','aoe','icy-veins','simulationcraft'},
  sources={
@@ -32,21 +28,21 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('retail.paladin.boundaries','protiv-'),
    {id='protiv-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    spell('protiv-pull-consecration',26573),
+    BuiltinConditions.spell('protiv-pull-consecration',26573),
     {id='protiv-pull-stop',type='stop',suppress_attack=false,conditions={}},
    }},
-   spell('protiv-divine-toll',375576),
-   spell('protiv-hammer-of-light',427453),
-   spell('protiv-consecration-missing',26573,negate(own(188370))),
-   spell('protiv-vanguard',31935,own(1268810)),
-   spell('protiv-shield-of-the-righteous',53600,{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=3}),
-   spell('protiv-hammer-of-wrath',24275),
-   spell('protiv-judgment',275779),
-   spell('protiv-blessed-hammer',204019),
-   spell('protiv-hammer-of-the-righteous',53595),
-   spell('protiv-avengers-shield',31935),
-   spell('protiv-shining-light',85673,own(327510)),
-   spell('protiv-consecration',26573),
+   BuiltinConditions.spell('protiv-divine-toll',375576),
+   BuiltinConditions.spell('protiv-hammer-of-light',427453),
+   BuiltinConditions.spell('protiv-consecration-missing',26573,BuiltinConditions.negate(BuiltinConditions.ownBuff(188370))),
+   BuiltinConditions.spell('protiv-vanguard',31935,BuiltinConditions.ownBuff(1268810)),
+   BuiltinConditions.spell('protiv-shield-of-the-righteous',53600,{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=3}),
+   BuiltinConditions.spell('protiv-hammer-of-wrath',24275),
+   BuiltinConditions.spell('protiv-judgment',275779),
+   BuiltinConditions.spell('protiv-blessed-hammer',204019),
+   BuiltinConditions.spell('protiv-hammer-of-the-righteous',53595),
+   BuiltinConditions.spell('protiv-avengers-shield',31935),
+   BuiltinConditions.spell('protiv-shining-light',85673,BuiltinConditions.ownBuff(327510)),
+   BuiltinConditions.spell('protiv-consecration',26573),
   },
  },
 }))

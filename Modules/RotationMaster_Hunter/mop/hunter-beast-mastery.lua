@@ -7,35 +7,25 @@
 -- outside Bestial Wrath, Serpent Sting kept up by Cobra Shot, Arcane Shot as a focus dump, Cobra
 -- or Steady Shot. Two or more enemies: Multi-Shot keeps Beast Cleave up.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function petbuff(id)return{type='BUFF',unit='pet',spell=id}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function focus(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
 local function cooldown(id,op,v)return{type='SPELL_COOLDOWN',spell=id,operator=op,value=v}end
-local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local WRATH=19574
 local wrath=petbuff(WRATH)
-local worth=all(combat(),any(classified('elite'),classified('rareelite'),classified('worldboss'),{type='INSTANCE',value='party'},{type='INSTANCE',value='raid'},
+local worth=BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(BuiltinConditions.classified('elite'),BuiltinConditions.classified('rareelite'),BuiltinConditions.classified('worldboss'),{type='INSTANCE',value='party'},{type='INSTANCE',value='raid'},
  {type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20}))
 -- Rapid Fire, Stampede and racials inside Bestial Wrath, or when it is more than 15 s away.
-local window=all(worth,any(negate(known(WRATH)),wrath,cooldown(WRATH,'GREATERTHAN',15)))
-local frenzy=any({type='BUFF_STACKS',unit='pet',spell=19615,operator='GREATERTHANOREQUALS',value=5},
- all({type='BUFF_STACKS',unit='pet',spell=19615,operator='GREATERTHANOREQUALS',value=4},{type='BUFF_REMAIN',unit='pet',spell=19615,operator='LESSTHAN',value=3}))
-local focusFire=all(negate(wrath),frenzy)
-local thrill=buff(34720)
+local window=BuiltinConditions.all(worth,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.known(WRATH)),wrath,cooldown(WRATH,'GREATERTHAN',15)))
+local frenzy=BuiltinConditions.any({type='BUFF_STACKS',unit='pet',spell=19615,operator='GREATERTHANOREQUALS',value=5},
+ BuiltinConditions.all({type='BUFF_STACKS',unit='pet',spell=19615,operator='GREATERTHANOREQUALS',value=4},{type='BUFF_REMAIN',unit='pet',spell=19615,operator='LESSTHAN',value=3}))
+local focusFire=BuiltinConditions.all(BuiltinConditions.negate(wrath),frenzy)
+local thrill=BuiltinConditions.buff(34720)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.beastmastery',revision=7,
  blocks={['mop.hunter.boundaries']=3,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=2},
- nameKey="Recommended",descriptionKey="Chosen automatically in the Beast Mastery specialization. Opens with Hunter's Mark and Kill Command, then: Kill Shot, Kill Command (held for a moment when Bestial Wrath is about to be ready), A Murder of Crows, Lynx Rush, Dire Beast and your tier-six shot when talented, Focus Fire at five Frenzy stacks (or four about to fall off) but not during Bestial Wrath, Serpent Sting on targets that will live, Cobra Shot to refresh it, Arcane Shot at 80 focus or during Bestial Wrath, then Cobra Shot (Steady Shot before 81). With two or more enemies fighting you it keeps Beast Cleave up with Multi-Shot, saves Kill Command for spare focus on big packs and suggests Explosive Trap from three. Reminders: pet out, revived and mended, Aspect of the Hawk or Iron Hawk, Counter Shot, Fervor, and Bestial Wrath, Rapid Fire, Stampede and racials when the fight is worth it (an elite, a dungeon or raid, or a target that will live). Trap placement, Misdirection, Feign Death and defensives stay with you; Exhilaration and Deterrence reminders are off by default.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
  tags={'beast-mastery','leveling','single-target','aoe','wowhead'},
  sources={
@@ -47,40 +37,40 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,specs={253},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('bm-pet','mop.hunter.pet','bm-'),
-   block('bm-aspect','mop.hunter.aspect','bm-'),
-   block('bm-utility','mop.hunter.utility','bm-'),
-   spell('bm-bestial-wrath',WRATH,all(worth,{type='PET'},cooldown(34026,'LESSTHAN',1),focus('GREATERTHANOREQUALS',50))),
-   spell('bm-rapid-fire',3045,all(window,negate(buff(3045)))),
-   spell('bm-stampede',121818,window),
-   spell('bm-blood-fury',20572,window),
-   spell('bm-berserking',26297,window),
+   BuiltinConditions.block('bm-pet','mop.hunter.pet','bm-'),
+   BuiltinConditions.block('bm-aspect','mop.hunter.aspect','bm-'),
+   BuiltinConditions.block('bm-utility','mop.hunter.utility','bm-'),
+   BuiltinConditions.spell('bm-bestial-wrath',WRATH,BuiltinConditions.all(worth,{type='PET'},cooldown(34026,'LESSTHAN',1),focus('GREATERTHANOREQUALS',50))),
+   BuiltinConditions.spell('bm-rapid-fire',3045,BuiltinConditions.all(window,BuiltinConditions.negate(BuiltinConditions.buff(3045)))),
+   BuiltinConditions.spell('bm-stampede',121818,window),
+   BuiltinConditions.spell('bm-blood-fury',20572,window),
+   BuiltinConditions.spell('bm-berserking',26297,window),
   },
   rotation={
-   block('bm-boundaries','mop.hunter.boundaries','bm-'),
-   {id='bm-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    block('bm-pull-mark','mop.hunter.mark','bm-pull-'),
-    spell('bm-pull-kill-command',34026),
-    spell('bm-pull-arcane',3044),
-    stop('bm-pull-stop')}},
+   BuiltinConditions.block('bm-boundaries','mop.hunter.boundaries','bm-'),
+   {id='bm-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.block('bm-pull-mark','mop.hunter.mark','bm-pull-'),
+    BuiltinConditions.spell('bm-pull-kill-command',34026),
+    BuiltinConditions.spell('bm-pull-arcane',3044),
+    BuiltinConditions.stop('bm-pull-stop')}},
    {id='bm-aoe',type='branch',conditions=enemies('GREATERTHANOREQUALS',2),onFalse={},onTrue={
-    spell('bm-aoe-beast-cleave',2643,any(negate(petbuff(118455)),{type='BUFF_REMAIN',unit='pet',spell=118455,operator='LESSTHAN',value=1})),
-    spell('bm-aoe-kill-shot',53351),
-    spell('bm-aoe-kill-command',34026,any(enemies('LESSTHANOREQUALS',2),focus('GREATERTHANOREQUALS',80),wrath)),
-    spell('bm-aoe-explosive-trap',13813,enemies('GREATERTHANOREQUALS',3)),
-    block('bm-aoe-shots','mop.hunter.talent-shots','bm-aoe-'),
-    spell('bm-aoe-serpent-sting',1978,all(negate({type='DEBUFF',unit='target',spell=118253,owndebuff=true}),enemies('LESSTHANOREQUALS',4))),
-    spell('bm-aoe-focus-fire',82692,focusFire),
-    spell('bm-aoe-multi-shot',2643,any(focus('GREATERTHANOREQUALS',70),wrath,thrill)),
-    block('bm-aoe-filler','mop.hunter.filler','bm-aoe-')}},
-   spell('bm-kill-shot',53351),
-   spell('bm-kill-command',34026,any(negate(known(WRATH)),cooldown(WRATH,'EQUALS',0),cooldown(WRATH,'GREATERTHANOREQUALS',3))),
-   block('bm-talents','mop.hunter.talents','bm-'),
-   block('bm-shots','mop.hunter.talent-shots','bm-'),
-   spell('bm-focus-fire',82692,focusFire),
-   block('bm-serpent','mop.hunter.serpent','bm-'),
-   spell('bm-arcane',3044,any(focus('GREATERTHANOREQUALS',80),wrath,all(thrill,focus('GREATERTHANOREQUALS',60)))),
-   block('bm-filler','mop.hunter.filler','bm-'),
+    BuiltinConditions.spell('bm-aoe-beast-cleave',2643,BuiltinConditions.any(BuiltinConditions.negate(petbuff(118455)),{type='BUFF_REMAIN',unit='pet',spell=118455,operator='LESSTHAN',value=1})),
+    BuiltinConditions.spell('bm-aoe-kill-shot',53351),
+    BuiltinConditions.spell('bm-aoe-kill-command',34026,BuiltinConditions.any(enemies('LESSTHANOREQUALS',2),focus('GREATERTHANOREQUALS',80),wrath)),
+    BuiltinConditions.spell('bm-aoe-explosive-trap',13813,enemies('GREATERTHANOREQUALS',3)),
+    BuiltinConditions.block('bm-aoe-shots','mop.hunter.talent-shots','bm-aoe-'),
+    BuiltinConditions.spell('bm-aoe-serpent-sting',1978,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=118253,owndebuff=true}),enemies('LESSTHANOREQUALS',4))),
+    BuiltinConditions.spell('bm-aoe-focus-fire',82692,focusFire),
+    BuiltinConditions.spell('bm-aoe-multi-shot',2643,BuiltinConditions.any(focus('GREATERTHANOREQUALS',70),wrath,thrill)),
+    BuiltinConditions.block('bm-aoe-filler','mop.hunter.filler','bm-aoe-')}},
+   BuiltinConditions.spell('bm-kill-shot',53351),
+   BuiltinConditions.spell('bm-kill-command',34026,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.known(WRATH)),cooldown(WRATH,'EQUALS',0),cooldown(WRATH,'GREATERTHANOREQUALS',3))),
+   BuiltinConditions.block('bm-talents','mop.hunter.talents','bm-'),
+   BuiltinConditions.block('bm-shots','mop.hunter.talent-shots','bm-'),
+   BuiltinConditions.spell('bm-focus-fire',82692,focusFire),
+   BuiltinConditions.block('bm-serpent','mop.hunter.serpent','bm-'),
+   BuiltinConditions.spell('bm-arcane',3044,BuiltinConditions.any(focus('GREATERTHANOREQUALS',80),wrath,BuiltinConditions.all(thrill,focus('GREATERTHANOREQUALS',60)))),
+   BuiltinConditions.block('bm-filler','mop.hunter.filler','bm-'),
   },
  },
 }))

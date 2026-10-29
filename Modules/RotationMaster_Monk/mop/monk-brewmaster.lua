@@ -9,25 +9,18 @@
 -- costs Chi, so a last Jab builds it. The damage-first list is
 -- rm.mop.monk.brewmaster.offensive.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function remain(id,op,v)return{type='BUFF_REMAIN',unit='player',spell=id,ownbuff=true,operator=op,value=v}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function health(op,v)return{type='HEALTHPCT',unit='player',operator=op,value=v}end
 local function energy(op,v)return{type='POWER',unit='player',operator=op,value=v}end
 local function chi(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function talent(i)return{type='TALENT',layout='grid',value=i}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local function off(id,action,conditions)local step=BuiltinConditions.spell(id,action,conditions);step.disabled=true;return step end
 local SHUFFLE,KEG=115307,121253
 local stagger=function(id)return{type='DEBUFF',unit='player',spell=id}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.monk.brewmaster',revision=7,
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=2,['mop.monk.brewmaster-pull']=3},
- nameKey="Recommended",descriptionKey="Picked automatically in the Brewmaster specialization. Keeps Shuffle up with Blackout Kick, uses Keg Smash whenever its Chi fits, Expel Harm when you are hurt (at once below 35%), Jab to spend energy, Tiger Palm for Tiger Power and as the free filler (Jab builds Chi before level 34), and Touch of Death when it is usable. From range out of combat: Chi Wave, Dizzying Haze, Clash or Keg Smash. On three or more enemies: Rushing Jade Wind, Breath of Fire and Spinning Crane Kick only while Shuffle has time left. Reminders: Sturdy Ox, Legacy of the Emperor, Purifying Brew on Heavy Stagger (Moderate when Shuffle is banked), Elusive Brew from six stacks, Guard with Power Guard, Chi Brew, Xuen, Fortifying Brew, Dampen Harm or Diffuse Magic when low, Spear Hand Strike. The Black Ox Statue reminder is off; Avert Harm, Zen Meditation and Provoke stay with you.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'brewmaster','tank','leveling','single-target','aoe','wowhead'},
  sources={
@@ -37,39 +30,39 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,specs={268},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('brew-upkeep','mop.monk.brewmaster-upkeep','brew-'),
-   block('brew-class','mop.monk.upkeep','brew-'),
-   spell('brew-purifying',119582,all(combat(),any(stagger(124273),all(stagger(124274),remain(SHUFFLE,'GREATERTHANOREQUALS',3))))),
-   spell('brew-guard',115295,all(combat(),own(118636),remain(SHUFFLE,'GREATERTHAN',2),any(chi('GREATERTHANOREQUALS',3),health('LESSTHAN',.7)))),
-   spell('brew-chi-brew',115399,all(combat(),chi('LESSTHANOREQUALS',1),{type='SPELL_COOLDOWN',spell=KEG,operator='GREATERTHANOREQUALS',value=1.5},
-    negate({type='BUFF_STACKS',unit='player',spell=128939,ownbuff=true,operator='GREATERTHAN',value=10}))),
-   spell('brew-dampen-harm',122278,all(combat(),health('LESSTHAN',.5))),
-   spell('brew-diffuse-magic',122783,all(combat(),health('LESSTHAN',.5))),
-   off('brew-statue',115315,all(combat(),{type='GROUP'},negate({type='SPELL_HISTORY_TIME',spell=115315,operator='LESSTHAN',value=900}))),
+   BuiltinConditions.block('brew-upkeep','mop.monk.brewmaster-upkeep','brew-'),
+   BuiltinConditions.block('brew-class','mop.monk.upkeep','brew-'),
+   BuiltinConditions.spell('brew-purifying',119582,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(stagger(124273),BuiltinConditions.all(stagger(124274),remain(SHUFFLE,'GREATERTHANOREQUALS',3))))),
+   BuiltinConditions.spell('brew-guard',115295,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.ownBuff(118636),remain(SHUFFLE,'GREATERTHAN',2),BuiltinConditions.any(chi('GREATERTHANOREQUALS',3),health('LESSTHAN',.7)))),
+   BuiltinConditions.spell('brew-chi-brew',115399,BuiltinConditions.all(BuiltinConditions.combat(),chi('LESSTHANOREQUALS',1),{type='SPELL_COOLDOWN',spell=KEG,operator='GREATERTHANOREQUALS',value=1.5},
+    BuiltinConditions.negate({type='BUFF_STACKS',unit='player',spell=128939,ownbuff=true,operator='GREATERTHAN',value=10}))),
+   BuiltinConditions.spell('brew-dampen-harm',122278,BuiltinConditions.all(BuiltinConditions.combat(),health('LESSTHAN',.5))),
+   BuiltinConditions.spell('brew-diffuse-magic',122783,BuiltinConditions.all(BuiltinConditions.combat(),health('LESSTHAN',.5))),
+   off('brew-statue',115315,BuiltinConditions.all(BuiltinConditions.combat(),{type='GROUP'},BuiltinConditions.negate({type='SPELL_HISTORY_TIME',spell=115315,operator='LESSTHAN',value=900}))),
   },
   rotation={
-   block('brew-boundaries','mop.monk.boundaries','brew-'),
-   block('brew-pull','mop.monk.brewmaster-pull','brew-'),
-   spell('brew-shuffle-kick',100784,negate(own(SHUFFLE))),
-   spell('brew-desperate-expel',115072,health('LESSTHAN',.35)),
-   spell('brew-touch-of-death',115080),
-   spell('brew-keg-smash',KEG,chi('GREATERTHANOREQUALS',-2)),
+   BuiltinConditions.block('brew-boundaries','mop.monk.boundaries','brew-'),
+   BuiltinConditions.block('brew-pull','mop.monk.brewmaster-pull','brew-'),
+   BuiltinConditions.spell('brew-shuffle-kick',100784,BuiltinConditions.negate(BuiltinConditions.ownBuff(SHUFFLE))),
+   BuiltinConditions.spell('brew-desperate-expel',115072,health('LESSTHAN',.35)),
+   BuiltinConditions.spell('brew-touch-of-death',115080),
+   BuiltinConditions.spell('brew-keg-smash',KEG,chi('GREATERTHANOREQUALS',-2)),
    {id='brew-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell('brew-aoe-jade-wind',116847,chi('GREATERTHANOREQUALS',-1)),
-    spell('brew-aoe-breath',115181,all(negate({type='DEBUFF',unit='target',spell=123725,owndebuff=true}),remain(SHUFFLE,'GREATERTHANOREQUALS',6))),
-    spell('brew-aoe-crane-kick',101546,all(negate(talent(16)),energy('GREATERTHANOREQUALS',70),chi('GREATERTHANOREQUALS',-1),remain(SHUFFLE,'GREATERTHAN',2)))}},
-   spell('brew-expel-harm',115072,all(health('LESSTHAN',.95),chi('GREATERTHANOREQUALS',-1))),
-   spell('brew-shuffle-jab',100780,all(remain(SHUFFLE,'LESSTHANOREQUALS',2),chi('LESSTHANOREQUALS',1))),
-   spell('brew-blackout-kick',100784,any(remain(SHUFFLE,'LESSTHANOREQUALS',2),all({type='SPELL_COOLDOWN',spell=KEG,operator='LESSTHANOREQUALS',value=2},chi('LESSTHANOREQUALS',-1)))),
-   spell('brew-jab',100780,all(energy('GREATERTHANOREQUALS',80),chi('GREATERTHANOREQUALS',-1))),
-   spell('brew-tiger-palm',100787,any(negate(own(125359)),remain(125359,'LESSTHANOREQUALS',1.5))),
-   spell('brew-spend-kick',100784,chi('GREATERTHANOREQUALS',3)),
-   spell('brew-chi-wave',115098),
-   spell('brew-zen-sphere',124081,negate(own(124081))),
-   spell('brew-chi-burst',123986),
-   spell('brew-palm-filler',100787),
-   spell('brew-jab-filler',100780,chi('GREATERTHANOREQUALS',-1)),
-   spell('brew-jade-lightning',117952,{type='BEYOND_MELEE',unit='target'}),
+    BuiltinConditions.spell('brew-aoe-jade-wind',116847,chi('GREATERTHANOREQUALS',-1)),
+    BuiltinConditions.spell('brew-aoe-breath',115181,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=123725,owndebuff=true}),remain(SHUFFLE,'GREATERTHANOREQUALS',6))),
+    BuiltinConditions.spell('brew-aoe-crane-kick',101546,BuiltinConditions.all(BuiltinConditions.negate(talent(16)),energy('GREATERTHANOREQUALS',70),chi('GREATERTHANOREQUALS',-1),remain(SHUFFLE,'GREATERTHAN',2)))}},
+   BuiltinConditions.spell('brew-expel-harm',115072,BuiltinConditions.all(health('LESSTHAN',.95),chi('GREATERTHANOREQUALS',-1))),
+   BuiltinConditions.spell('brew-shuffle-jab',100780,BuiltinConditions.all(remain(SHUFFLE,'LESSTHANOREQUALS',2),chi('LESSTHANOREQUALS',1))),
+   BuiltinConditions.spell('brew-blackout-kick',100784,BuiltinConditions.any(remain(SHUFFLE,'LESSTHANOREQUALS',2),BuiltinConditions.all({type='SPELL_COOLDOWN',spell=KEG,operator='LESSTHANOREQUALS',value=2},chi('LESSTHANOREQUALS',-1)))),
+   BuiltinConditions.spell('brew-jab',100780,BuiltinConditions.all(energy('GREATERTHANOREQUALS',80),chi('GREATERTHANOREQUALS',-1))),
+   BuiltinConditions.spell('brew-tiger-palm',100787,BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.ownBuff(125359)),remain(125359,'LESSTHANOREQUALS',1.5))),
+   BuiltinConditions.spell('brew-spend-kick',100784,chi('GREATERTHANOREQUALS',3)),
+   BuiltinConditions.spell('brew-chi-wave',115098),
+   BuiltinConditions.spell('brew-zen-sphere',124081,BuiltinConditions.negate(BuiltinConditions.ownBuff(124081))),
+   BuiltinConditions.spell('brew-chi-burst',123986),
+   BuiltinConditions.spell('brew-palm-filler',100787),
+   BuiltinConditions.spell('brew-jab-filler',100780,chi('GREATERTHANOREQUALS',-1)),
+   BuiltinConditions.spell('brew-jade-lightning',117952,{type='BEYOND_MELEE',unit='target'}),
   },
  },
 }))

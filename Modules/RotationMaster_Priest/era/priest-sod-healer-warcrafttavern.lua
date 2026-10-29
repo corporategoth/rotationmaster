@@ -8,22 +8,16 @@
 -- Serendipity stacks, and Flash Heal on minor injuries to build those stacks (with Serendipity
 -- engraved; else only below 30%).
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function pct(unit,op,v)return{type='HEALTHPCT',unit=unit,operator=op,value=v}end
 local function hurt(health)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',healthoperator='LESSTHAN',health=health,operator='GREATERTHANOREQUALS',value=3,distance=30,samegroup=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local serendipity={type='BUFF_STACKS',unit='player',spell=413247,operator='GREATERTHANOREQUALS',value=3}
-local function any(...)return{type='OR',value={...}}end
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local P='priest-sod-wct-'
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.priest.healer.warcrafttavern',revision=7,
  blocks={['era.priest.boundaries']=3,['era.priest.enemy-target']=2,['era.priest.dispels']=1,['era.priest.big-heal']=1,
   ['era.priest.friend-fortitude']=1,['era.priest.upkeep']=1,['era.priest.divine-spirit']=1,['sod.priest.healer-damage']=2,['sod.priest.healer-upkeep']=1},
- nameKey="Healer (SoD, Warcraft Tavern)",descriptionKey="Warcraft Tavern's Serendipity loop, built for Serendipity and Soul Warding, an alternative to the recommended Season of Discovery healer premade, off by default: enable it and disable that one, or raise its priority. Prayer of Mending on cooldown, Shield on your target whenever it can take one (with Soul Warding engraved; else below half health), Penance on heavy damage, Circle of Healing for three hurt, Greater Heal or Prayer of Healing at three Serendipity stacks, Renew on minor damage, and Flash Heal on minor injuries to build the stacks (with Serendipity engraved; else below 30%).",
  applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
  tags={'holy','discipline','healer','dungeon','raid','season-of-discovery','warcraft-tavern'},
  sources={
@@ -33,25 +27,25 @@ assert(addon:RegisterDefaultRotation({
  body={
   priority=115,disabled=true,
   switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='GROUP'},{type='OR',value={{type='PRIMARY_TALENT_TREE',tree=2},{type='PRIMARY_TALENT_TREE',tree=1}}}}},
-  cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'spirit','era.priest.divine-spirit',P),block(P..'sod-upkeep','sod.priest.healer-upkeep',P)},
+  cooldowns={BuiltinConditions.block(P..'upkeep','era.priest.upkeep',P),BuiltinConditions.block(P..'spirit','era.priest.divine-spirit',P),BuiltinConditions.block(P..'sod-upkeep','sod.priest.healer-upkeep',P)},
   rotation={
-   block(P..'boundaries','era.priest.boundaries',P),
-   {id=P..'friend',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),
-    onFalse={block(P..'damage','sod.priest.healer-damage',P)},
+   BuiltinConditions.block(P..'boundaries','era.priest.boundaries',P),
+   {id=P..'friend',type='branch',conditions=BuiltinConditions.all({type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='DEAD',unit='target'})),
+    onFalse={BuiltinConditions.block(P..'damage','sod.priest.healer-damage',P)},
     onTrue={
      {id=P..'prepull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-      spell(P..'prepull-mending',401859),block(P..'prepull-fortitude','era.priest.friend-fortitude',P..'prepull-'),stop(P..'prepull-stop')}},
-     spell(P..'mending',401859),
-     spell(P..'shield',17,all(negate({type='DEBUFF',unit='target',spell=6788}),any(rune(402000),pct('target','LESSTHAN',.5)))),
-     spell(P..'penance',402174,pct('target','LESSTHAN',.7)),
-     block(P..'dispels','era.priest.dispels',P),
-     spell(P..'circle',401946,hurt(.8)),
-     spell(P..'serendipity-prayer',596,all(serendipity,hurt(.8))),
-     spell(P..'serendipity-greater',2060,all(serendipity,pct('target','LESSTHAN',.7))),
-     spell(P..'renew',139,all(negate({type='BUFF',unit='target',spell=139,anyrank=true,ownbuff=true}),pct('target','LESSTHAN',.95))),
-     block(P..'big','era.priest.big-heal',P),
-     spell(P..'flash',2061,any(all(rune(413248),pct('target','LESSTHAN',.9)),pct('target','LESSTHAN',.3))),
-     stop(P..'friend-done')}},
+      BuiltinConditions.spell(P..'prepull-mending',401859),BuiltinConditions.block(P..'prepull-fortitude','era.priest.friend-fortitude',P..'prepull-'),BuiltinConditions.stop(P..'prepull-stop')}},
+     BuiltinConditions.spell(P..'mending',401859),
+     BuiltinConditions.spell(P..'shield',17,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=6788}),BuiltinConditions.any(rune(402000),pct('target','LESSTHAN',.5)))),
+     BuiltinConditions.spell(P..'penance',402174,pct('target','LESSTHAN',.7)),
+     BuiltinConditions.block(P..'dispels','era.priest.dispels',P),
+     BuiltinConditions.spell(P..'circle',401946,hurt(.8)),
+     BuiltinConditions.spell(P..'serendipity-prayer',596,BuiltinConditions.all(serendipity,hurt(.8))),
+     BuiltinConditions.spell(P..'serendipity-greater',2060,BuiltinConditions.all(serendipity,pct('target','LESSTHAN',.7))),
+     BuiltinConditions.spell(P..'renew',139,BuiltinConditions.all(BuiltinConditions.negate({type='BUFF',unit='target',spell=139,anyrank=true,ownbuff=true}),pct('target','LESSTHAN',.95))),
+     BuiltinConditions.block(P..'big','era.priest.big-heal',P),
+     BuiltinConditions.spell(P..'flash',2061,BuiltinConditions.any(BuiltinConditions.all(rune(413248),pct('target','LESSTHAN',.9)),pct('target','LESSTHAN',.3))),
+     BuiltinConditions.stop(P..'friend-done')}},
   },
  },
 }))

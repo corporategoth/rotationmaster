@@ -6,19 +6,14 @@
 -- stacks); Living Flame on cooldown; Arcane Blast filler. Arcane Barrage and Fire Blast while moving;
 -- Living Flame and Arcane Explosion on packs. Arcane Power, Presence of Mind and Icy Veins are reminders.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function class(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-sarcane-'
 local combat={type='COMBAT',unit='player'}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=6,
  blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
- nameKey="Arcane (SoD)",descriptionKey="Season of Discovery Arcane damage, chosen when Arcane is your main tree and Arcane Blast is engraved. Arcane Missiles on Missile Barrage; Arcane Barrage at four Arcane Blast stacks; Balefire Bolt when safe, never at four Balefire stacks or more; Living Flame on cooldown; Arcane Blast fills. Arcane Barrage and Fire Blast while moving; Living Flame and Arcane Explosion on packs. Reminders: Arcane Power on elites and long fights, Presence of Mind with Arcane Power or while moving, Icy Veins, Cold Snap and the other Mage reminders.",
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'arcane','raid','single-target','aoe','season-of-discovery','icy-veins'},
  sources={
@@ -28,25 +23,25 @@ assert(addon:RegisterDefaultRotation({
  body={
   priority=104,
   -- The engraved rune first, so a character with no talent points is a clean no-match.
-  switch=all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='RUNE_ENGRAVED',spell=400574},{type='PRIMARY_TALENT_TREE',tree=1}),
-  cooldowns={block(P..'armor','sod.mage.armor',P),
-   spell(P..'arcane-power',12042,all(combat,any(class('elite'),class('rareelite'),class('worldboss'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=15}))),
-   spell(P..'presence-of-mind',12043,all(combat,any({type='BUFF',unit='player',spell=12042},{type='MOVING'}))),
-   block(P..'upkeep','sod.mage.upkeep',P)},
+  switch=BuiltinConditions.all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='RUNE_ENGRAVED',spell=400574},{type='PRIMARY_TALENT_TREE',tree=1}),
+  cooldowns={BuiltinConditions.block(P..'armor','sod.mage.armor',P),
+   BuiltinConditions.spell(P..'arcane-power',12042,BuiltinConditions.all(combat,BuiltinConditions.any(class('elite'),class('rareelite'),class('worldboss'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=15}))),
+   BuiltinConditions.spell(P..'presence-of-mind',12043,BuiltinConditions.all(combat,BuiltinConditions.any({type='BUFF',unit='player',spell=12042},{type='MOVING'}))),
+   BuiltinConditions.block(P..'upkeep','sod.mage.upkeep',P)},
   rotation={
-   block(P..'boundaries','era.mage.boundaries',P),
-   {id=P..'pull',type='branch',conditions=combat,onTrue={},onFalse={spell(P..'pull-arcane-blast',400574),stop(P..'pull-stop')}},
+   BuiltinConditions.block(P..'boundaries','era.mage.boundaries',P),
+   {id=P..'pull',type='branch',conditions=combat,onTrue={},onFalse={BuiltinConditions.spell(P..'pull-arcane-blast',400574),stop(P..'pull-stop')}},
    {id=P..'moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
-    spell(P..'moving-barrage',400610),spell(P..'moving-fire-blast',2136),stop(P..'moving-stop')}},
+    BuiltinConditions.spell(P..'moving-barrage',400610),BuiltinConditions.spell(P..'moving-fire-blast',2136),stop(P..'moving-stop')}},
    {id=P..'aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell(P..'aoe-living-flame',401556),
-    spell(P..'aoe-explosion',1449,{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3})}},
-   spell(P..'missile-barrage',5143,{type='BUFF',unit='player',spell=400589}),
-   spell(P..'barrage',400610,{type='BUFF_STACKS',unit='player',spell=400573,operator='GREATERTHANOREQUALS',value=4}),
-   block(P..'balefire','sod.mage.balefire',P),
-   spell(P..'living-flame',401556),
-   spell(P..'arcane-blast',400574),
-   block(P..'finish','era.mage.wand-finish',P),
+    BuiltinConditions.spell(P..'aoe-living-flame',401556),
+    BuiltinConditions.spell(P..'aoe-explosion',1449,{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3})}},
+   BuiltinConditions.spell(P..'missile-barrage',5143,{type='BUFF',unit='player',spell=400589}),
+   BuiltinConditions.spell(P..'barrage',400610,{type='BUFF_STACKS',unit='player',spell=400573,operator='GREATERTHANOREQUALS',value=4}),
+   BuiltinConditions.block(P..'balefire','sod.mage.balefire',P),
+   BuiltinConditions.spell(P..'living-flame',401556),
+   BuiltinConditions.spell(P..'arcane-blast',400574),
+   BuiltinConditions.block(P..'finish','era.mage.wand-finish',P),
   },
  },
 }))

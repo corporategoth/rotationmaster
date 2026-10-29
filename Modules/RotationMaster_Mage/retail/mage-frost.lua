@@ -5,15 +5,10 @@
 -- highlights for what Assisted Combat leaves to you: Ice Barrier whenever it is ready in combat, Summon
 -- Water Elemental when you have none, Arcane Intellect, Counterspell and racial cooldowns.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost',revision=6,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Summon Water Elemental when you have the talent and no elemental, Arcane Intellect out of combat, Counterspell on an interruptible cast, Ice Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call.",
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'frost','caster','assisted-combat'},
  sources={
@@ -23,12 +18,12 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={64},
   cooldowns={
-   block('frost-utility','retail.mage.utility','frost-'),
-   spell('frost-barrier',11426,combat()),
-   spell('frost-water-elemental',31687,negate({type='PET'})),
+   BuiltinConditions.block('frost-utility','retail.mage.utility','frost-'),
+   BuiltinConditions.spell('frost-barrier',11426,BuiltinConditions.combat()),
+   BuiltinConditions.spell('frost-water-elemental',31687,BuiltinConditions.negate({type='PET'})),
   },
   rotation={
-   block('frost-boundaries','retail.mage.boundaries','frost-'),
+   BuiltinConditions.block('frost-boundaries','retail.mage.boundaries','frost-'),
    {id='frost-assisted',type='assisted',conditions={}},
   },
  },

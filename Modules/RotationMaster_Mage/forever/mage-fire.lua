@@ -7,27 +7,20 @@
 -- stacks only with Improved Scorch talented (trait node 105788). The Icy Veins leveling variant is
 -- rm.forever.mage.fire.icyveins.
 local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Arcane, 2 Fire, 3 Frost; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
 local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
-local fingers=any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='player',spell=400670})
-local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=12494})
+local function off(id,action,conditions)local step=BuiltinConditions.spell(id,action,conditions);step.disabled=true;return step end
+local elite=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
+local fingers=BuiltinConditions.any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='player',spell=400670})
+local frozen=BuiltinConditions.any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=12494})
 local vulnerable={type='DEBUFF',unit='target',spell=22959,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire',revision=7,
  blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=3,['forever.mage.fire-moving']=2,['forever.mage.fire-aoe']=1,['forever.mage.wand']=3,['forever.mage.upkeep']=2},
- nameKey="Fire",descriptionKey="Fire once Fire is your main talent tree with 11 points (Pyroblast's tier). Pulls with Pyroblast on elites, else Frostfire Bolt or Fireball; then Pyroblast at three Heating Up stacks, Ice Lance on Fingers of Frost or a frozen target (Fire/Frost hybrids), Fire Blast on cooldown, Scorch to keep your five Fire Vulnerability stacks on elites, Frostfire Bolt (from 40) or Fireball, wand when solo and you cannot afford a spell. Moving: Fire Blast or Ice Lance. Four or more enemies fighting you: Flamestrike, Blast Wave, Arcane Explosion. Scorch starts the stacks only once you have Improved Scorch; a close-range Scorch is off until you enable it. Reminders: Combustion and Presence of Mind on elites, plus the Mage upkeep reminders.",
  applicability={families={'forever'},actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','warcraft-tavern','wowhead'},
  sources={
@@ -40,27 +33,27 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=30,switch=tree(2,11),
   cooldowns={
-   block('fire-upkeep','forever.mage.upkeep','fire-'),
-   spell('fire-combustion',11129,all(combat(),elite)),
-   spell('fire-presence-of-mind',12043,all(combat(),elite)),
+   BuiltinConditions.block('fire-upkeep','forever.mage.upkeep','fire-'),
+   BuiltinConditions.spell('fire-combustion',11129,BuiltinConditions.all(BuiltinConditions.combat(),elite)),
+   BuiltinConditions.spell('fire-presence-of-mind',12043,BuiltinConditions.all(BuiltinConditions.combat(),elite)),
   },
   rotation={
-   block('fire-lance-batch','forever.mage.lance-batch','fire-'),
-   block('fire-boundaries','forever.mage.boundaries','fire-'),
-   {id='fire-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    spell('fire-pull-pyroblast',11366,elite),spell('fire-pull-frostfire',401502),spell('fire-pull-fireball',133),stop('fire-pull-stop')}},
-   block('fire-moving','forever.mage.fire-moving','fire-'),
-   spell('fire-hot-pyroblast',11366,{type='BUFF_STACKS',unit='player',spell=400625,operator='GREATERTHANOREQUALS',value=3}),
-   spell('fire-ice-lance',1312002,any(fingers,frozen)),
-   spell('fire-blast',2136),
-   spell('fire-scorch-refresh',2948,all(elite,vulnerable,any({type='DEBUFF_STACKS',unit='target',spell=22959,owndebuff=true,operator='LESSTHAN',value=5},
+   BuiltinConditions.block('fire-lance-batch','forever.mage.lance-batch','fire-'),
+   BuiltinConditions.block('fire-boundaries','forever.mage.boundaries','fire-'),
+   {id='fire-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.spell('fire-pull-pyroblast',11366,elite),BuiltinConditions.spell('fire-pull-frostfire',401502),BuiltinConditions.spell('fire-pull-fireball',133),BuiltinConditions.stop('fire-pull-stop')}},
+   BuiltinConditions.block('fire-moving','forever.mage.fire-moving','fire-'),
+   BuiltinConditions.spell('fire-hot-pyroblast',11366,{type='BUFF_STACKS',unit='player',spell=400625,operator='GREATERTHANOREQUALS',value=3}),
+   BuiltinConditions.spell('fire-ice-lance',1312002,BuiltinConditions.any(fingers,frozen)),
+   BuiltinConditions.spell('fire-blast',2136),
+   BuiltinConditions.spell('fire-scorch-refresh',2948,BuiltinConditions.all(elite,vulnerable,BuiltinConditions.any({type='DEBUFF_STACKS',unit='target',spell=22959,owndebuff=true,operator='LESSTHAN',value=5},
     {type='DEBUFF_REMAIN',unit='target',spell=22959,owndebuff=true,operator='LESSTHAN',value=5}))),
-   spell('fire-scorch-apply',2948,all({type='TALENT',layout='traits',node=105788,operator='GREATERTHANOREQUALS',value=1},elite,negate(vulnerable))),
-   block('fire-aoe','forever.mage.fire-aoe','fire-'),
+   BuiltinConditions.spell('fire-scorch-apply',2948,BuiltinConditions.all({type='TALENT',layout='traits',node=105788,operator='GREATERTHANOREQUALS',value=1},elite,BuiltinConditions.negate(vulnerable))),
+   BuiltinConditions.block('fire-aoe','forever.mage.fire-aoe','fire-'),
    off('fire-close-scorch',2948,{type='DISTANCE',unit='target',value=8}),
-   spell('fire-frostfire',401502),
-   spell('fire-fireball',133),
-   block('fire-wand','forever.mage.wand','fire-'),
+   BuiltinConditions.spell('fire-frostfire',401502),
+   BuiltinConditions.spell('fire-fireball',133),
+   BuiltinConditions.block('fire-wand','forever.mage.wand','fire-'),
   },
  },
 }))

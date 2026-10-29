@@ -11,22 +11,16 @@
 -- Mana Tide, Healing Tide, Elemental Mastery / Ancestral Guidance, Spiritwalker's Grace. Ascendance and Spirit
 -- Link Totem ship off (raid assignments). Shared parts: mop/blocks.lua.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function around(health,n)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=40,healthoperator='LESSTHAN',health=health,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local someone=any(hurt(.95),around(.9,1))
+local someone=BuiltinConditions.any(hurt(.95),around(.9,1))
 local heavy=around(.6,3)
-local rain=all({type='SPELL_AVAIL',spell=73920},around(.9,3))
+local rain=BuiltinConditions.all({type='SPELL_AVAIL',spell=73920},around(.9,3))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.shaman.restoration',revision=6,
  blocks={['mop.shaman.manual']=3,['mop.shaman.group']=1,['mop.shaman.restoration-upkeep']=1,['mop.shaman.restoration-damage']=1},
- nameKey="Recommended",descriptionKey="Recommended for Restoration from level 10, chosen in the Restoration specialization. Heals your friendly target (Rotation Master cannot pick who to heal): Greater Healing Wave under Ancestral Swiftness, Healing Surge below 35%, Purify Spirit on Magic or Curses, Unleash Elements then Healing Rain when three allies nearby are hurt, Riptide, Chain Heal for group damage, Greater Healing Wave below 60%, Healing Wave below 90%. With an attackable target it deals damage instead (Flame Shock, Lava Burst, Elemental Blast, Lightning Bolt). Reminders: Water Shield, Earthliving, Earth Shield on your focus, Healing Stream when someone is hurt, Mana Tide, Healing Tide for heavy group damage, Elemental Mastery or Ancestral Guidance, Ancestral Swiftness on a low target, Spiritwalker's Grace while moving, Bloodlust, Wind Shear. Ascendance and Spirit Link Totem are listed but off: use them when your raid assigns them.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
  tags={'restoration','healer','caster','leveling','endgame','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/mists-of-pandaria-classic/restoration-shaman-pve-rotation-cooldowns-abilities',title='Icy Veins: Restoration Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'},
@@ -34,15 +28,15 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.warcrafttavern.com/mop/guides/pve-restoration-shaman-rotation-cooldowns/',title='Warcraft Tavern: Restoration Shaman rotation (MoP)',reviewedAt='2026-10-23'}},
  body={priority=30,specs={264},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.shaman.restoration-upkeep','shaman-resto-'),
-  spell('shaman-resto-healing-stream',5394,all(combat(),negate({type='TOTEM',spell=3}),someone)),
-  spell('shaman-resto-mana-tide',16190,all(combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.8})),
-  spell('shaman-resto-healing-tide',108280,all(combat(),around(.6,5))),
-  spell('shaman-resto-elemental-mastery',16166,all(combat(),heavy)),
-  spell('shaman-resto-ancestral-guidance',108281,all(combat(),heavy)),
-  spell('shaman-resto-ancestral-swiftness',16188,all({type='FRIENDLY',unit='target'},hurt(.35))),
-  spell('shaman-resto-spiritwalkers-grace',79206,all(combat(),{type='MOVING'},someone)),
-  {id='shaman-resto-ascendance',type='spell',action=114049,ranked=false,disabled=true,conditions=all(combat(),around(.5,5))},
-  {id='shaman-resto-spirit-link',type='spell',action=98008,ranked=false,disabled=true,conditions=all(combat(),around(.4,3))},
+  BuiltinConditions.spell('shaman-resto-healing-stream',5394,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate({type='TOTEM',spell=3}),someone)),
+  BuiltinConditions.spell('shaman-resto-mana-tide',16190,BuiltinConditions.all(BuiltinConditions.combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.8})),
+  BuiltinConditions.spell('shaman-resto-healing-tide',108280,BuiltinConditions.all(BuiltinConditions.combat(),around(.6,5))),
+  BuiltinConditions.spell('shaman-resto-elemental-mastery',16166,BuiltinConditions.all(BuiltinConditions.combat(),heavy)),
+  BuiltinConditions.spell('shaman-resto-ancestral-guidance',108281,BuiltinConditions.all(BuiltinConditions.combat(),heavy)),
+  BuiltinConditions.spell('shaman-resto-ancestral-swiftness',16188,BuiltinConditions.all({type='FRIENDLY',unit='target'},hurt(.35))),
+  BuiltinConditions.spell('shaman-resto-spiritwalkers-grace',79206,BuiltinConditions.all(BuiltinConditions.combat(),{type='MOVING'},someone)),
+  {id='shaman-resto-ascendance',type='spell',action=114049,ranked=false,disabled=true,conditions=BuiltinConditions.all(BuiltinConditions.combat(),around(.5,5))},
+  {id='shaman-resto-spirit-link',type='spell',action=98008,ranked=false,disabled=true,conditions=BuiltinConditions.all(BuiltinConditions.combat(),around(.4,3))},
   block('mop.shaman.group','shaman-resto-'),
  },
  rotation={
@@ -52,16 +46,16 @@ assert(addon:RegisterDefaultRotation({
   {id='shaman-resto-dps-stop',type='stop',suppress_attack=false,conditions={}},
  }},
  {id='shaman-resto-enemy',type='stop',suppress_attack=true,conditions={type='ENEMY',unit='target'}},
- spell('shaman-resto-swift-wave',77472,own(16188)),
- spell('shaman-resto-surge',8004,hurt(.35)),
- spell('shaman-resto-purify',77130,any({type='DISPELLABLE',unit='target',debufftype='Magic'},{type='DISPELLABLE',unit='target',debufftype='Curse'})),
- spell('shaman-resto-unleash',73680,rain),
- spell('shaman-resto-healing-rain',73920,rain),
- spell('shaman-resto-riptide',61295,all(negate({type='BUFF',unit='target',spell=61295,ownbuff=true}),any(hurt(.95),{type='ISSAME',unit='target',otherunit='focus'}))),
- spell('shaman-resto-chain-heal',1064,around(.85,3)),
- spell('shaman-resto-greater-wave',77472,hurt(.6)),
- spell('shaman-resto-wave',331,hurt(.9)),
- spell('shaman-resto-early-surge',8004,all(negate({type='SPELL_KNOWN',spell=331}),hurt(.7))),
+ BuiltinConditions.spell('shaman-resto-swift-wave',77472,BuiltinConditions.ownBuff(16188)),
+ BuiltinConditions.spell('shaman-resto-surge',8004,hurt(.35)),
+ BuiltinConditions.spell('shaman-resto-purify',77130,BuiltinConditions.any({type='DISPELLABLE',unit='target',debufftype='Magic'},{type='DISPELLABLE',unit='target',debufftype='Curse'})),
+ BuiltinConditions.spell('shaman-resto-unleash',73680,rain),
+ BuiltinConditions.spell('shaman-resto-healing-rain',73920,rain),
+ BuiltinConditions.spell('shaman-resto-riptide',61295,BuiltinConditions.all(BuiltinConditions.negate({type='BUFF',unit='target',spell=61295,ownbuff=true}),BuiltinConditions.any(hurt(.95),{type='ISSAME',unit='target',otherunit='focus'}))),
+ BuiltinConditions.spell('shaman-resto-chain-heal',1064,around(.85,3)),
+ BuiltinConditions.spell('shaman-resto-greater-wave',77472,hurt(.6)),
+ BuiltinConditions.spell('shaman-resto-wave',331,hurt(.9)),
+ BuiltinConditions.spell('shaman-resto-early-surge',8004,BuiltinConditions.all(BuiltinConditions.negate({type='SPELL_KNOWN',spell=331}),hurt(.7))),
  {id='shaman-resto-heal-stop',type='stop',suppress_attack=true,conditions={}},
  }},
 }))

@@ -8,23 +8,16 @@
 -- hides both, so Hunter's Mark and Serpent Sting go on every target. Pet commands stay with the
 -- player.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function enemies(n)return{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=n}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
-local arcaneTurn=all({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN',value=7},
- negate({type='SPELL_HISTORY_TIME',spell=3044,operator='LESSTHAN',value=17}))
+local elite=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
+local arcaneTurn=BuiltinConditions.all({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN',value=7},
+ BuiltinConditions.negate({type='SPELL_HISTORY_TIME',spell=3044,operator='LESSTHAN',value=17}))
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=6,
  blocks={['forever.hunter.boundaries']=4,['forever.hunter.deadzone']=3,['forever.hunter.pull']=3,['forever.hunter.moving']=2,
   ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
- nameKey="Ranged (Wowhead)",descriptionKey="Every ranged Hunter from level 1 to 60 (Beast Mastery, Marksmanship, and Survival until Strider Kick), and the Forever Hunter default. Pull: Hunter's Mark, Sniper Shot while Rapid Killing lasts, Auto Shot. Then your own Serpent Sting, Summon Hawk twice and Arcane Shot once on their shared cooldown (Arcane Shot on cooldown before Summon Hawk), Sniper Shot under Rapid Killing or on elites, Aimed Shot. Two or more enemies fighting you: Multi-Shot instead of Aimed Shot, Explosive Trap with three near you, Volley on five. Moving: instant shots only. A mob in melee range gets Raptor Strike and Mongoose Bite. Reminders: Aspect of the Hawk (Monkey before it), Trueshot Aura, pet calling and reviving, Rapid Fire, Bestial Wrath and Blood Fury on elites or in dungeons, Intimidation when a mob is on you. Pet commands, feeding, kiting and Feign Death stay with you; disable the pet reminders if you play Lone Wolf. It never reads your mana or anyone's health, which Forever hides from addons, so Hunter's Mark and Serpent Sting go on every target and Mend Pet is yours.",
  applicability={families={'forever'},actionContext='player',class='HUNTER'},
  tags={'beast-mastery','marksmanship','ranged','leveling','single-target','aoe','wowhead'},
  sources={
@@ -37,35 +30,35 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,
   cooldowns={
-   block('ranged-aspects','forever.hunter.aspects-ranged','ranged-'),
-   spell('ranged-trueshot-aura',1299346,negate({type='BUFF',unit='player',spell=1299346,anyrank=true})),
-   block('ranged-pet-care','forever.hunter.pet-care','ranged-'),
-   block('ranged-burst','forever.hunter.burst','ranged-'),
-   spell('ranged-intimidation',19577,all(combat(),{type='THREAT',unit='target',threat=3})),
-   {id='ranged-feign-death',type='spell',action=5384,ranked=false,disabled=true,conditions=all(combat(),{type='GROUP'},{type='THREAT',unit='target',threat=3})},
+   BuiltinConditions.block('ranged-aspects','forever.hunter.aspects-ranged','ranged-'),
+   BuiltinConditions.spell('ranged-trueshot-aura',1299346,BuiltinConditions.negate({type='BUFF',unit='player',spell=1299346,anyrank=true})),
+   BuiltinConditions.block('ranged-pet-care','forever.hunter.pet-care','ranged-'),
+   BuiltinConditions.block('ranged-burst','forever.hunter.burst','ranged-'),
+   BuiltinConditions.spell('ranged-intimidation',19577,BuiltinConditions.all(BuiltinConditions.combat(),{type='THREAT',unit='target',threat=3})),
+   {id='ranged-feign-death',type='spell',action=5384,ranked=false,disabled=true,conditions=BuiltinConditions.all(BuiltinConditions.combat(),{type='GROUP'},{type='THREAT',unit='target',threat=3})},
   },
   rotation={
-   block('ranged-boundaries','forever.hunter.boundaries','ranged-'),
-   block('ranged-deadzone','forever.hunter.deadzone','ranged-'),
-   block('ranged-pull','forever.hunter.pull','ranged-'),
+   BuiltinConditions.block('ranged-boundaries','forever.hunter.boundaries','ranged-'),
+   BuiltinConditions.block('ranged-deadzone','forever.hunter.deadzone','ranged-'),
+   BuiltinConditions.block('ranged-pull','forever.hunter.pull','ranged-'),
    -- Optional (off): solo, hold shots until the pet has the mob's attention.
-   {id='ranged-pet-threat',type='stop',suppress_attack=true,disabled=true,conditions=all({type='PET'},negate({type='GROUP'}),
-    negate({type='ISSAME',unit='targettarget',otherunit='pet'}),{type='TIME_IN_COMBAT',operator='LESSTHAN',value=2})},
-   block('ranged-moving','forever.hunter.moving','ranged-'),
-   spell('ranged-auto-shot',75,negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})),
-   spell('ranged-mark',1130,negate({type='DEBUFF',unit='target',spell=1130,anyrank=true})),
+   {id='ranged-pet-threat',type='stop',suppress_attack=true,disabled=true,conditions=BuiltinConditions.all({type='PET'},BuiltinConditions.negate({type='GROUP'}),
+    BuiltinConditions.negate({type='ISSAME',unit='targettarget',otherunit='pet'}),{type='TIME_IN_COMBAT',operator='LESSTHAN',value=2})},
+   BuiltinConditions.block('ranged-moving','forever.hunter.moving','ranged-'),
+   BuiltinConditions.spell('ranged-auto-shot',75,BuiltinConditions.negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})),
+   BuiltinConditions.spell('ranged-mark',1130,BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1130,anyrank=true})),
    {id='ranged-aoe',type='branch',conditions=engaged(2),onFalse={},onTrue={
-    spell('ranged-explosive-trap',13813,enemies(3)),
-    spell('ranged-aoe-hawk',1293241,negate(arcaneTurn)),
-    spell('ranged-multi-shot',2643),
-    spell('ranged-volley',1510,engaged(5))}},
-   spell('ranged-serpent-sting',1978,all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
-    negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))),
-   spell('ranged-hawk',1293241,negate(arcaneTurn)),
-   spell('ranged-arcane-shot',3044,any(negate({type='SPELL_KNOWN',spell=1293241}),arcaneTurn)),
-   spell('ranged-sniper-shot',1310687,any({type='BUFF',unit='player',spell=415407},elite)),
-   spell('ranged-aimed-shot',19434),
-   stop('ranged-done'),
+    BuiltinConditions.spell('ranged-explosive-trap',13813,enemies(3)),
+    BuiltinConditions.spell('ranged-aoe-hawk',1293241,BuiltinConditions.negate(arcaneTurn)),
+    BuiltinConditions.spell('ranged-multi-shot',2643),
+    BuiltinConditions.spell('ranged-volley',1510,engaged(5))}},
+   BuiltinConditions.spell('ranged-serpent-sting',1978,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
+    BuiltinConditions.negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))),
+   BuiltinConditions.spell('ranged-hawk',1293241,BuiltinConditions.negate(arcaneTurn)),
+   BuiltinConditions.spell('ranged-arcane-shot',3044,BuiltinConditions.any(BuiltinConditions.negate({type='SPELL_KNOWN',spell=1293241}),arcaneTurn)),
+   BuiltinConditions.spell('ranged-sniper-shot',1310687,BuiltinConditions.any({type='BUFF',unit='player',spell=415407},elite)),
+   BuiltinConditions.spell('ranged-aimed-shot',19434),
+   BuiltinConditions.stop('ranged-done'),
   },
  },
 }))

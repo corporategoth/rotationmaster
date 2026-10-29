@@ -6,22 +6,17 @@
 -- and Siphon Life for tough (elite) mobs; in a group Immolate always goes on, after
 -- Corruption and Siphon Life.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
-local function refresh(id)return any(negate(own(id)),{type='DEBUFF_REMAIN',unit='target',spell=id,anyrank=true,owndebuff=true,operator='LESSTHAN',value=1.5})end
+local function refresh(id)return BuiltinConditions.any(BuiltinConditions.negate(own(id)),{type='DEBUFF_REMAIN',unit='target',spell=id,anyrank=true,owndebuff=true,operator='LESSTHAN',value=1.5})end
 local function pct(kind,op,v)return{type=kind,unit='player',operator=op,value=v}end
 local function class(v)return{type='CLASSIFICATION',unit='target',value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local tough=any(class('elite'),class('rareelite'),class('worldboss'))
+local tough=BuiltinConditions.any(class('elite'),class('rareelite'),class('worldboss'))
 local P='warlock-wh-'
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.wowhead',revision=6,
  blocks={['tbc.warlock.boundaries']=3,['tbc.warlock.procs']=1,['tbc.warlock.moving']=2,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
   ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=2,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
- nameKey="Drain-tank (Wowhead)",descriptionKey="Warlock after Wowhead's guides, an alternative to the recommended Icy Veins Warlock premade, off by default: enable it and disable that one, or raise its priority. Solo it drain-tanks: Drain Life is the filler once your DoTs are up and Immolate and Siphon Life are kept for elite mobs. In a group Immolate always goes on, after Corruption and Siphon Life. Otherwise the same as the recommended premade.",
  applicability={families={'tbc'},actionContext='player',class='WARLOCK'},
  tags={'affliction','demonology','destruction','wowhead','leveling','raid','single-target','aoe','drain-tank'},
  sources={
@@ -34,26 +29,26 @@ assert(addon:RegisterDefaultRotation({
  body={
   priority=5,disabled=true,
   switch={type='SPELL_KNOWN',spell=686},
-  cooldowns={block(P..'armor','tbc.warlock.armor',P),block(P..'upkeep','tbc.warlock.upkeep',P)},
+  cooldowns={BuiltinConditions.block(P..'armor','tbc.warlock.armor',P),BuiltinConditions.block(P..'upkeep','tbc.warlock.upkeep',P)},
   rotation={
-   block(P..'boundaries','tbc.warlock.boundaries',P),
-   block(P..'procs','tbc.warlock.procs',P),
-   block(P..'moving','tbc.warlock.moving',P),
-   block(P..'aoe','tbc.warlock.aoe',P),
-   {id=P..'dying',type='branch',conditions=all(negate({type='GROUP'}),{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2}),
-    onTrue={block(P..'finishers','tbc.warlock.finishers',P)},
+   BuiltinConditions.block(P..'boundaries','tbc.warlock.boundaries',P),
+   BuiltinConditions.block(P..'procs','tbc.warlock.procs',P),
+   BuiltinConditions.block(P..'moving','tbc.warlock.moving',P),
+   BuiltinConditions.block(P..'aoe','tbc.warlock.aoe',P),
+   {id=P..'dying',type='branch',conditions=BuiltinConditions.all(BuiltinConditions.negate({type='GROUP'}),{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2}),
+    onTrue={BuiltinConditions.block(P..'finishers','tbc.warlock.finishers',P)},
     onFalse={
-     block(P..'curse','tbc.warlock.curse',P),
-     spell(P..'unstable',30108,refresh(30108)),
-     spell(P..'corruption',172,all(negate(own(172)),any({type='TALENT',layout='tree',tree=1,talent=2,operator='GREATERTHANOREQUALS',value=1},
+     BuiltinConditions.block(P..'curse','tbc.warlock.curse',P),
+     BuiltinConditions.spell(P..'unstable',30108,refresh(30108)),
+     BuiltinConditions.spell(P..'corruption',172,BuiltinConditions.all(BuiltinConditions.negate(own(172)),BuiltinConditions.any({type='TALENT',layout='tree',tree=1,talent=2,operator='GREATERTHANOREQUALS',value=1},
       {type='TALENT_TREE_POINTS',tree=3,operator='LESSTHAN',value=31}))),
-     spell(P..'siphon',18265,all(negate(own(18265)),any({type='DEBUFF',unit='target',spell=17800},all(negate({type='GROUP'}),tough)))),
-     spell(P..'immolate',348,all(refresh(348),any({type='GROUP'},tough))),
+     BuiltinConditions.spell(P..'siphon',18265,BuiltinConditions.all(BuiltinConditions.negate(own(18265)),BuiltinConditions.any({type='DEBUFF',unit='target',spell=17800},BuiltinConditions.all(BuiltinConditions.negate({type='GROUP'}),tough)))),
+     BuiltinConditions.spell(P..'immolate',348,BuiltinConditions.all(refresh(348),BuiltinConditions.any({type='GROUP'},tough))),
     }},
    {id=P..'solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
-    spell(P..'solo-tap',1454,all(pct('MANAPCT','LESSTHAN',.5),pct('HEALTHPCT','GREATERTHAN',.6))),
-    spell(P..'drain-life',689)}},
-   block(P..'filler','tbc.warlock.filler',P),
+    BuiltinConditions.spell(P..'solo-tap',1454,BuiltinConditions.all(pct('MANAPCT','LESSTHAN',.5),pct('HEALTHPCT','GREATERTHAN',.6))),
+    BuiltinConditions.spell(P..'drain-life',689)}},
+   BuiltinConditions.block(P..'filler','tbc.warlock.filler',P),
   },
  },
 }))

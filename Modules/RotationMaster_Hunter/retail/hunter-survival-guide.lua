@@ -6,24 +6,16 @@
 -- Sentinel's Mark and Moonlight Chakram. Three or more enemies: Boomstick and Wildfire Bomb first,
 -- Raptor Swipe. Disabled: Tip of the Spear, charges and Focus are secret in Midnight combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local KILL,BOMB,TAKEDOWN,BOOM,RAPTOR,SWIPE,CHAKRAM=259489,259495,1250646,1261193,186270,1262293,1264949
 local tip=buff(260286)
-local howl=any(buff(471878),buff(472324),buff(472325))
+local howl=BuiltinConditions.any(buff(471878),buff(472324),buff(472325))
 -- Kill Command just before a ready Takedown, without Twin Fangs and with no Tip of the Spear.
-local beforeTakedown=all(negate(known(1272139)),negate(tip),{type='SPELL_AVAIL',spell=TAKEDOWN})
+local beforeTakedown=BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(1272139)),BuiltinConditions.negate(tip),{type='SPELL_AVAIL',spell=TAKEDOWN})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.survival.guide',revision=7,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
- nameKey="Reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Survival priority, where Kill Command builds Tip of the Spear and Takedown, Boomstick, Wildfire Bomb and Raptor Strike spend it. Tip of the Spear and charges are hidden in Midnight combat, so it cannot run there. Calls your pet, marks the target and opens with Wildfire Bomb. Sentinel: Kill Command without Tip of the Spear, Boomstick, Wildfire Bomb on Sentinel's Mark, Kill Command before a ready Takedown, Takedown, Moonlight Chakram, Raptor Strike, then Kill Command, Wildfire Bomb and Takedown. Pack Leader: Kill Command on Howl of the Pack Leader, then Takedown, Wildfire Bomb, Boomstick and Raptor Strike with Tip of the Spear. Three or more enemies: Boomstick and Wildfire Bomb before Takedown, Raptor Swipe. Reminders: Aspect of the Eagle out of melee and the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'survival','melee','pet','reference','simulationcraft'},
  sources={
@@ -32,43 +24,43 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={255},
   cooldowns={
-   block('svguide-utility','retail.hunter.utility','svguide-'),
-   spell('svguide-aspect-of-the-eagle',186289,all(combat(),{type='BEYOND_MELEE',unit='target'})),
+   BuiltinConditions.block('svguide-utility','retail.hunter.utility','svguide-'),
+   BuiltinConditions.spell('svguide-aspect-of-the-eagle',186289,BuiltinConditions.all(BuiltinConditions.combat(),{type='BEYOND_MELEE',unit='target'})),
   },
   rotation={
-   block('svguide-boundaries','retail.hunter.boundaries','svguide-'),
-   spell('svguide-call-pet',883,negate({type='PET'})),
-   {id='svguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={
-    block('svguide-pull-mark','retail.hunter.mark','svguide-pull-'),spell('svguide-pull-bomb',BOMB),stop('svguide-pull-stop')}},
+   BuiltinConditions.block('svguide-boundaries','retail.hunter.boundaries','svguide-'),
+   BuiltinConditions.spell('svguide-call-pet',883,BuiltinConditions.negate({type='PET'})),
+   {id='svguide-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+    BuiltinConditions.block('svguide-pull-mark','retail.hunter.mark','svguide-pull-'),BuiltinConditions.spell('svguide-pull-bomb',BOMB),BuiltinConditions.stop('svguide-pull-stop')}},
    {id='svguide-cleave',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell('svguide-cleave-kill',KILL,negate(tip)),
-    spell('svguide-cleave-boomstick',BOOM),
-    spell('svguide-cleave-bomb',BOMB),
-    spell('svguide-cleave-takedown',TAKEDOWN),
-    spell('svguide-cleave-swipe',SWIPE),
-    spell('svguide-cleave-raptor',RAPTOR),
-    spell('svguide-cleave-kill-filler',KILL),
-    stop('svguide-cleave-stop')}},
-   {id='svguide-pack-leader',type='branch',conditions=known(471876),
+    BuiltinConditions.spell('svguide-cleave-kill',KILL,BuiltinConditions.negate(tip)),
+    BuiltinConditions.spell('svguide-cleave-boomstick',BOOM),
+    BuiltinConditions.spell('svguide-cleave-bomb',BOMB),
+    BuiltinConditions.spell('svguide-cleave-takedown',TAKEDOWN),
+    BuiltinConditions.spell('svguide-cleave-swipe',SWIPE),
+    BuiltinConditions.spell('svguide-cleave-raptor',RAPTOR),
+    BuiltinConditions.spell('svguide-cleave-kill-filler',KILL),
+    BuiltinConditions.stop('svguide-cleave-stop')}},
+   {id='svguide-pack-leader',type='branch',conditions=BuiltinConditions.known(471876),
     onTrue={
-     spell('svguide-pl-howl',KILL,all(howl,any(negate(tip),{type='BUFF_STACKS',unit='player',spell=260286,ownbuff=true,operator='LESSTHAN',value=2}))),
-     spell('svguide-pl-before-takedown',KILL,beforeTakedown),
-     spell('svguide-pl-takedown',TAKEDOWN,any(tip,known(1272139))),
-     spell('svguide-pl-bomb',BOMB,tip),
-     spell('svguide-pl-boomstick',BOOM,tip),
-     spell('svguide-pl-raptor',RAPTOR,any(tip,negate(known(1259003)))),
-     spell('svguide-pl-kill',KILL),
-     spell('svguide-pl-takedown-filler',TAKEDOWN)},
+     BuiltinConditions.spell('svguide-pl-howl',KILL,BuiltinConditions.all(howl,BuiltinConditions.any(BuiltinConditions.negate(tip),{type='BUFF_STACKS',unit='player',spell=260286,ownbuff=true,operator='LESSTHAN',value=2}))),
+     BuiltinConditions.spell('svguide-pl-before-takedown',KILL,beforeTakedown),
+     BuiltinConditions.spell('svguide-pl-takedown',TAKEDOWN,BuiltinConditions.any(tip,BuiltinConditions.known(1272139))),
+     BuiltinConditions.spell('svguide-pl-bomb',BOMB,tip),
+     BuiltinConditions.spell('svguide-pl-boomstick',BOOM,tip),
+     BuiltinConditions.spell('svguide-pl-raptor',RAPTOR,BuiltinConditions.any(tip,BuiltinConditions.negate(BuiltinConditions.known(1259003)))),
+     BuiltinConditions.spell('svguide-pl-kill',KILL),
+     BuiltinConditions.spell('svguide-pl-takedown-filler',TAKEDOWN)},
     onFalse={
-     spell('svguide-sen-kill',KILL,negate(tip)),
-     spell('svguide-sen-boomstick',BOOM),
-     spell('svguide-sen-bomb',BOMB,any(buff(1253601),buff(1266960),{type='SPELL_CHARGES',spell=BOMB,operator='GREATERTHANOREQUALS',value=2})),
-     spell('svguide-sen-before-takedown',KILL,beforeTakedown),
-     spell('svguide-sen-takedown',TAKEDOWN),
-     spell('svguide-sen-chakram',CHAKRAM),
-     spell('svguide-sen-raptor',RAPTOR),
-     spell('svguide-sen-kill-filler',KILL),
-     spell('svguide-sen-bomb-filler',BOMB)}},
+     BuiltinConditions.spell('svguide-sen-kill',KILL,BuiltinConditions.negate(tip)),
+     BuiltinConditions.spell('svguide-sen-boomstick',BOOM),
+     BuiltinConditions.spell('svguide-sen-bomb',BOMB,BuiltinConditions.any(buff(1253601),buff(1266960),{type='SPELL_CHARGES',spell=BOMB,operator='GREATERTHANOREQUALS',value=2})),
+     BuiltinConditions.spell('svguide-sen-before-takedown',KILL,beforeTakedown),
+     BuiltinConditions.spell('svguide-sen-takedown',TAKEDOWN),
+     BuiltinConditions.spell('svguide-sen-chakram',CHAKRAM),
+     BuiltinConditions.spell('svguide-sen-raptor',RAPTOR),
+     BuiltinConditions.spell('svguide-sen-kill-filler',KILL),
+     BuiltinConditions.spell('svguide-sen-bomb-filler',BOMB)}},
   },
  },
 }))

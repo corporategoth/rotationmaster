@@ -7,21 +7,15 @@
 -- enemies: Epidemic for Death Coil, Festering Strike below three Lesser Ghoul charges. Disabled:
 -- secret in Midnight combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function debuff(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local transformed={type='BUFF',unit='pet',spell=1233448}
 local ghouls=buff(1254252)
-local function scythe(id)return spell(id,85948,all(buff(458123),any(negate(debuff(1241077)),{type='DEBUFF_REMAIN',unit='target',spell=1241077,owndebuff=true,operator='LESSTHAN',value=5})))end
+local function scythe(id)return BuiltinConditions.spell(id,85948,BuiltinConditions.all(buff(458123),BuiltinConditions.any(BuiltinConditions.negate(debuff(1241077)),{type='DEBUFF_REMAIN',unit='target',spell=1241077,owndebuff=true,operator='LESSTHAN',value=5})))end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.unholy.simc',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey="Reference (SimulationCraft)",descriptionKey="Reference only, off by default: SimulationCraft's Unholy list, which spends Death Coil far more often. Hidden combat data keeps it from running in Midnight combat; runic power and target health are hidden on Retail, so the cap and execute checks are left out. Festering Scythe upkeep, Soul Reaper in Dark Transformation, Death Coil on Sudden Doom, Putrefy in Dark Transformation, Death Coil in Dark Transformation or Forbidden Knowledge and whenever Army of the Dead is over 5 seconds away, Scourge Strike with Lesser Ghoul charges, Festering Strike. Three or more enemies: Epidemic for Death Coil and Festering Strike below three charges. Reminders: Outbreak, Death and Decay on packs, Army of the Dead, Dark Transformation.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','melee','pet','reference','simulationcraft'},
  sources={
@@ -29,33 +23,33 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=5,disabled=true,specs={252},
   cooldowns={
-   block('usimc-utility','retail.deathknight.utility','usimc-'),
-   spell('usimc-outbreak',77575,all(combat(),negate(debuff(1240996)))),
-   spell('usimc-death-and-decay',43265,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3}),
-   spell('usimc-army-of-the-dead',42650,combat()),
-   spell('usimc-dark-transformation',1233448,combat()),
+   BuiltinConditions.block('usimc-utility','retail.deathknight.utility','usimc-'),
+   BuiltinConditions.spell('usimc-outbreak',77575,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(debuff(1240996)))),
+   BuiltinConditions.spell('usimc-death-and-decay',43265,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3}),
+   BuiltinConditions.spell('usimc-army-of-the-dead',42650,BuiltinConditions.combat()),
+   BuiltinConditions.spell('usimc-dark-transformation',1233448,BuiltinConditions.combat()),
   },
   rotation={
-   block('usimc-boundaries','retail.deathknight.boundaries','usimc-'),
-   spell('usimc-raise-dead',46584,negate({type='PET'})),
+   BuiltinConditions.block('usimc-boundaries','retail.deathknight.boundaries','usimc-'),
+   BuiltinConditions.spell('usimc-raise-dead',46584,BuiltinConditions.negate({type='PET'})),
    {id='usimc-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},
     onTrue={
      scythe('usimc-aoe-festering-scythe'),
-     spell('usimc-aoe-epidemic-proc',207317,buff(81340)),
-     spell('usimc-aoe-putrefy',1247378,transformed),
-     spell('usimc-aoe-epidemic-window',207317,any(transformed,buff(1242223))),
-     spell('usimc-aoe-festering-strike',85948,any(negate(ghouls),{type='BUFF_STACKS',unit='player',spell=1254252,ownbuff=true,operator='LESSTHAN',value=3})),
-     spell('usimc-aoe-scourge-strike',55090),
-     spell('usimc-aoe-epidemic',207317)},
+     BuiltinConditions.spell('usimc-aoe-epidemic-proc',207317,buff(81340)),
+     BuiltinConditions.spell('usimc-aoe-putrefy',1247378,transformed),
+     BuiltinConditions.spell('usimc-aoe-epidemic-window',207317,BuiltinConditions.any(transformed,buff(1242223))),
+     BuiltinConditions.spell('usimc-aoe-festering-strike',85948,BuiltinConditions.any(BuiltinConditions.negate(ghouls),{type='BUFF_STACKS',unit='player',spell=1254252,ownbuff=true,operator='LESSTHAN',value=3})),
+     BuiltinConditions.spell('usimc-aoe-scourge-strike',55090),
+     BuiltinConditions.spell('usimc-aoe-epidemic',207317)},
     onFalse={
      scythe('usimc-festering-scythe'),
-     spell('usimc-soul-reaper',343294,transformed),
-     spell('usimc-death-coil-proc',47541,buff(81340)),
-     spell('usimc-putrefy',1247378,transformed),
-     spell('usimc-death-coil-window',47541,any(transformed,buff(1242223))),
-     spell('usimc-death-coil-army',47541,{type='SPELL_COOLDOWN',spell=42650,operator='GREATERTHAN',value=5}),
-     spell('usimc-scourge-strike',55090,ghouls),
-     spell('usimc-festering-strike',85948)}},
+     BuiltinConditions.spell('usimc-soul-reaper',343294,transformed),
+     BuiltinConditions.spell('usimc-death-coil-proc',47541,buff(81340)),
+     BuiltinConditions.spell('usimc-putrefy',1247378,transformed),
+     BuiltinConditions.spell('usimc-death-coil-window',47541,BuiltinConditions.any(transformed,buff(1242223))),
+     BuiltinConditions.spell('usimc-death-coil-army',47541,{type='SPELL_COOLDOWN',spell=42650,operator='GREATERTHAN',value=5}),
+     BuiltinConditions.spell('usimc-scourge-strike',55090,ghouls),
+     BuiltinConditions.spell('usimc-festering-strike',85948)}},
   },
  },
 }))

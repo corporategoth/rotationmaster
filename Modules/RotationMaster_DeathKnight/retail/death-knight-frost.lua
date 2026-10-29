@@ -4,13 +4,10 @@
 -- Blizzard's Assisted Combat suggestion. Around it, highlights for what Assisted Combat leaves to
 -- you: Breath of Sindragosa, Raise Dead, Mind Freeze, Icebound Fortitude and racial cooldowns.
 local _,addon=...
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.frost',revision=6,
  blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Breath of Sindragosa and Raise Dead in combat, Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call.",
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
  tags={'frost','melee','assisted-combat'},
  sources={
@@ -20,12 +17,12 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=20,specs={251},
   cooldowns={
-   block('frost-utility','retail.deathknight.utility','frost-'),
-   spell('frost-breath-of-sindragosa',152279,combat()),
-   spell('frost-raise-dead',46585,combat()),
+   BuiltinConditions.block('frost-utility','retail.deathknight.utility','frost-'),
+   BuiltinConditions.spell('frost-breath-of-sindragosa',152279,BuiltinConditions.combat()),
+   BuiltinConditions.spell('frost-raise-dead',46585,BuiltinConditions.combat()),
   },
   rotation={
-   block('frost-boundaries','retail.deathknight.boundaries','frost-'),
+   BuiltinConditions.block('frost-boundaries','retail.deathknight.boundaries','frost-'),
    {id='frost-assisted',type='assisted',conditions={}},
   },
  },

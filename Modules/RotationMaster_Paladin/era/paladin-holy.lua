@@ -7,38 +7,34 @@
 -- melees with the Retribution premade. Choosing whom to heal stays with you.
 -- Shared blocks: era/blocks.lua. Original priority data, no guide prose.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function hurt(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function exact(id,action,conditions)return{id=id,type='spell',action=action,ranked=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
-local function noSeal()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return negate({type='OR',value=out})end
+local function noSeal()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return BuiltinConditions.negate({type='OR',value=out})end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.paladin.holy',revision=5,
  blocks={['era.paladin.holy-upkeep']=2,['era.paladin.boundaries']=2,['era.paladin.cleanse']=1},
- nameKey="Holy",descriptionKey="Healing in a group with the Holy tree, from level 10. Acts on your friendly target and picks the heal by missing health: Cleanse or Purify, Holy Shock while you move, maximum-rank Holy Light below 40%, rank-6 Holy Light below 65%, maximum-rank Flash of Light below 85%, rank-4 Flash of Light below 95%. With an enemy in melee range: Seal of Wisdom and, outside raids, Judgement. Reminders: Concentration or Devotion Aura, Blessing of Wisdom, Divine Favor and Lay on Hands for a target that is very low. Choosing whom to heal stays with you; soloing Holy Paladins get the Retribution premade.",
  applicability={families={'era'},actionContext='player',class='PALADIN'},
  tags={'leveling','endgame','holy','healer','dungeon','raid','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/holy-paladin-healer-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Holy Paladin rotation',reviewedAt='2026-10-23',revision='2024-11-18'},
   {url='https://www.wowhead.com/classic/guide/classes/paladin/healer-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Holy Paladin rotation',reviewedAt='2026-10-23',revision='2025-03-20'}},
- body={priority=10,switch=all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='GROUP'},{type='PRIMARY_TALENT_TREE',tree=1}),
-  cooldowns={block('holy-upkeep','era.paladin.holy-upkeep','holy-')},
+ body={priority=10,switch=BuiltinConditions.all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='GROUP'},{type='PRIMARY_TALENT_TREE',tree=1}),
+  cooldowns={BuiltinConditions.block('holy-upkeep','era.paladin.holy-upkeep','holy-')},
   rotation={
-   block('holy-boundaries','era.paladin.boundaries','holy-'),
-   {id='holy-friend',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),onFalse={},onTrue={
-    block('holy-cleanse','era.paladin.cleanse','holy-'),
-    spell('holy-moving-shock',20473,all({type='MOVING'},hurt(0.8))),
-    spell('holy-light-max',635,hurt(0.4)),
+   BuiltinConditions.block('holy-boundaries','era.paladin.boundaries','holy-'),
+   {id='holy-friend',type='branch',conditions=BuiltinConditions.all({type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='DEAD',unit='target'})),onFalse={},onTrue={
+    BuiltinConditions.block('holy-cleanse','era.paladin.cleanse','holy-'),
+    BuiltinConditions.spell('holy-moving-shock',20473,BuiltinConditions.all({type='MOVING'},hurt(0.8))),
+    BuiltinConditions.spell('holy-light-max',635,hurt(0.4)),
     exact('holy-light-rank6',3472,hurt(0.65)),
-    spell('holy-flash-max',19750,hurt(0.85)),
+    BuiltinConditions.spell('holy-flash-max',19750,hurt(0.85)),
     exact('holy-flash-rank4',19941,hurt(0.95)),
     {id='holy-friend-stop',type='stop',suppress_attack=true,conditions={}},
    }},
-   {id='holy-hostile',type='branch',conditions=all({type='ATTACKABLE',unit='target'},negate({type='BEYOND_MELEE',unit='target'})),onFalse={},onTrue={
-    spell('holy-seal-wisdom',20166,noSeal()),
-    spell('holy-judgement',20271,negate({type='GROUP',raid=true})),
+   {id='holy-hostile',type='branch',conditions=BuiltinConditions.all({type='ATTACKABLE',unit='target'},BuiltinConditions.negate({type='BEYOND_MELEE',unit='target'})),onFalse={},onTrue={
+    BuiltinConditions.spell('holy-seal-wisdom',20166,noSeal()),
+    BuiltinConditions.spell('holy-judgement',20271,BuiltinConditions.negate({type='GROUP',raid=true})),
     {id='holy-hostile-stop',type='stop',conditions={}},
    }},
    {id='holy-idle-stop',type='stop',suppress_attack=true,conditions={}},

@@ -7,29 +7,21 @@
 -- Focus is secret on Retail, so Pack Leader's low-Focus Barbed Shot comes after Cobra Shot (when Cobra
 -- Shot is unaffordable). Disabled: charges, cooldowns and procs are secret in Midnight combat.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local BARBED,WRATH,KILL,COBRA,THRASH,BLACK,WAILING=217200,19574,34026,193455,1264359,466930,392060
 -- Barbed Shot about to reach two charges; Bestial Wrath within a global cooldown.
-local capping=any({type='SPELL_CHARGES',spell=BARBED,operator='GREATERTHANOREQUALS',value=2},
- all({type='SPELL_CHARGES',spell=BARBED,operator='GREATERTHANOREQUALS',value=1},{type='SPELL_REMAIN',spell=BARBED,operator='LESSTHAN',value=2}))
+local capping=BuiltinConditions.any({type='SPELL_CHARGES',spell=BARBED,operator='GREATERTHANOREQUALS',value=2},
+ BuiltinConditions.all({type='SPELL_CHARGES',spell=BARBED,operator='GREATERTHANOREQUALS',value=1},{type='SPELL_REMAIN',spell=BARBED,operator='LESSTHAN',value=2}))
 local wrathSoon={type='SPELL_COOLDOWN',spell=WRATH,operator='LESSTHAN',value=1.5}
 local cleave=buff(268877)
 local withering=buff(466991)
 -- Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off.
-local kill=any(buff(471878),buff(472324),buff(472325),buff(1276720),{type='SPELL_COOLDOWN',spell=WRATH,operator='GREATERTHAN',value=5})
+local kill=BuiltinConditions.any(buff(471878),buff(472324),buff(472325),buff(1276720),{type='SPELL_COOLDOWN',spell=WRATH,operator='GREATERTHAN',value=5})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=8,
  blocks={['retail.hunter.boundaries']=3,['retail.hunter.utility']=2,['retail.hunter.mark']=1},
- nameKey="Reference (SimulationCraft and Icy Veins)",descriptionKey="Reference only, off by default: the optimized Beast Mastery priority. Charges, cooldowns and procs are hidden from addons in Midnight combat, so it cannot run there; read it, or clone it to experiment. Focus is hidden on Retail. Calls your pet, marks the target before the pull. Barbed Shot just before Bestial Wrath or before it caps; Bestial Wrath; Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off; Cobra Shot on Cobra Fang; Cobra Shot; Barbed Shot when Cobra Shot is unaffordable. Dark Ranger: Black Arrow during Withering Fire and Wailing Arrow as it ends. Three or more enemies (two with Beast Cleave): Wild Thrash to start Beast Cleave, then Kill Command, Barbed Shot and Cobra Shot while it lasts. Reminders: Bloodshed and the Assisted premade's utility reminders.",
  applicability={families={'retail'},actionContext='player',class='HUNTER'},
  tags={'beast-mastery','ranged','pet','reference','simulationcraft','icy-veins'},
  sources={
@@ -37,39 +29,39 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow/beast-mastery-hunter-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Beast Mastery Hunter rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
  },
  body={priority=10,disabled=true,specs={253},
-  cooldowns={block('bmguide-utility','retail.hunter.utility','bmguide-'),spell('bmguide-bloodshed',321530,combat())},
+  cooldowns={BuiltinConditions.block('bmguide-utility','retail.hunter.utility','bmguide-'),BuiltinConditions.spell('bmguide-bloodshed',321530,BuiltinConditions.combat())},
   rotation={
-   block('bmguide-boundaries','retail.hunter.boundaries','bmguide-'),
-   spell('bmguide-call-pet',883,negate({type='PET'})),
-   {id='bmguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={block('bmguide-pull-mark','retail.hunter.mark','bmguide-pull-'),stop('bmguide-pull-stop')}},
-   {id='bmguide-cleave',type='branch',conditions=any(engaged(3),all(known(115939),engaged(2))),onFalse={},onTrue={
-    spell('bmguide-cleave-wild-thrash',THRASH,negate(cleave)),
-    spell('bmguide-cleave-barbed',BARBED,capping),
-    spell('bmguide-cleave-wrath',WRATH),
-    spell('bmguide-cleave-black-arrow',BLACK),
-    spell('bmguide-cleave-wailing',WAILING),
+   BuiltinConditions.block('bmguide-boundaries','retail.hunter.boundaries','bmguide-'),
+   BuiltinConditions.spell('bmguide-call-pet',883,BuiltinConditions.negate({type='PET'})),
+   {id='bmguide-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={BuiltinConditions.block('bmguide-pull-mark','retail.hunter.mark','bmguide-pull-'),BuiltinConditions.stop('bmguide-pull-stop')}},
+   {id='bmguide-cleave',type='branch',conditions=BuiltinConditions.any(engaged(3),BuiltinConditions.all(BuiltinConditions.known(115939),engaged(2))),onFalse={},onTrue={
+    BuiltinConditions.spell('bmguide-cleave-wild-thrash',THRASH,BuiltinConditions.negate(cleave)),
+    BuiltinConditions.spell('bmguide-cleave-barbed',BARBED,capping),
+    BuiltinConditions.spell('bmguide-cleave-wrath',WRATH),
+    BuiltinConditions.spell('bmguide-cleave-black-arrow',BLACK),
+    BuiltinConditions.spell('bmguide-cleave-wailing',WAILING),
     {id='bmguide-cleave-up',type='branch',conditions=cleave,onFalse={},onTrue={
-     spell('bmguide-cleave-kill',KILL),spell('bmguide-cleave-up-barbed',BARBED),spell('bmguide-cleave-cobra',COBRA)}}}},
-   {id='bmguide-dark-ranger',type='branch',conditions=known(BLACK),
+     BuiltinConditions.spell('bmguide-cleave-kill',KILL),BuiltinConditions.spell('bmguide-cleave-up-barbed',BARBED),BuiltinConditions.spell('bmguide-cleave-cobra',COBRA)}}}},
+   {id='bmguide-dark-ranger',type='branch',conditions=BuiltinConditions.known(BLACK),
     onTrue={
-     spell('bmguide-dr-barbed',BARBED,wrathSoon),
-     spell('bmguide-dr-wrath',WRATH),
-     spell('bmguide-dr-withering-arrow',BLACK,withering),
-     spell('bmguide-dr-kill',KILL,kill),
-     spell('bmguide-dr-wailing',WAILING,all(withering,{type='BUFF_REMAIN',unit='player',spell=466991,ownbuff=true,operator='LESSTHAN',value=2})),
-     spell('bmguide-dr-fang',COBRA,buff(1299389)),
-     spell('bmguide-dr-wrath-cobra',COBRA,all(buff(WRATH),{type='SPELL_CHARGES',spell=BARBED,operator='LESSTHAN',value=1})),
-     spell('bmguide-dr-black-arrow',BLACK),
-     spell('bmguide-dr-barbed-filler',BARBED),
-     spell('bmguide-dr-cobra',COBRA)},
+     BuiltinConditions.spell('bmguide-dr-barbed',BARBED,wrathSoon),
+     BuiltinConditions.spell('bmguide-dr-wrath',WRATH),
+     BuiltinConditions.spell('bmguide-dr-withering-arrow',BLACK,withering),
+     BuiltinConditions.spell('bmguide-dr-kill',KILL,kill),
+     BuiltinConditions.spell('bmguide-dr-wailing',WAILING,BuiltinConditions.all(withering,{type='BUFF_REMAIN',unit='player',spell=466991,ownbuff=true,operator='LESSTHAN',value=2})),
+     BuiltinConditions.spell('bmguide-dr-fang',COBRA,buff(1299389)),
+     BuiltinConditions.spell('bmguide-dr-wrath-cobra',COBRA,BuiltinConditions.all(buff(WRATH),{type='SPELL_CHARGES',spell=BARBED,operator='LESSTHAN',value=1})),
+     BuiltinConditions.spell('bmguide-dr-black-arrow',BLACK),
+     BuiltinConditions.spell('bmguide-dr-barbed-filler',BARBED),
+     BuiltinConditions.spell('bmguide-dr-cobra',COBRA)},
     onFalse={
-     spell('bmguide-pl-barbed',BARBED,any(wrathSoon,capping)),
-     spell('bmguide-pl-wrath',WRATH),
-     spell('bmguide-pl-wild-thrash',THRASH,engaged(2)),
-     spell('bmguide-pl-kill',KILL,kill),
-     spell('bmguide-pl-fang',COBRA,buff(1299389)),
-     spell('bmguide-pl-cobra',COBRA,negate(wrathSoon)),
-     spell('bmguide-pl-barbed-focus',BARBED)}},
+     BuiltinConditions.spell('bmguide-pl-barbed',BARBED,BuiltinConditions.any(wrathSoon,capping)),
+     BuiltinConditions.spell('bmguide-pl-wrath',WRATH),
+     BuiltinConditions.spell('bmguide-pl-wild-thrash',THRASH,engaged(2)),
+     BuiltinConditions.spell('bmguide-pl-kill',KILL,kill),
+     BuiltinConditions.spell('bmguide-pl-fang',COBRA,buff(1299389)),
+     BuiltinConditions.spell('bmguide-pl-cobra',COBRA,BuiltinConditions.negate(wrathSoon)),
+     BuiltinConditions.spell('bmguide-pl-barbed-focus',BARBED)}},
   },
  },
 }))

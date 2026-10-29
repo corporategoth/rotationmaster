@@ -9,23 +9,16 @@
 -- low-mana Evocation is left to you. Disabled: Salvo and Clearcasting are secret in Midnight combat;
 -- only the Arcane Charge tests stay readable.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function salvo(op,v)return{type='BUFF_STACKS',unit='player',spell=1242974,ownbuff=true,operator=op,value=v}end
 local function charges(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function last(id)return{type='SPELL_HISTORY',spell=id,operator='EQUALS',value=1}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local clearcasting,soul,surge=buff(263725),buff(451038),buff(365362)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=8,
  blocks={['retail.mage.boundaries']=3,['retail.mage.utility']=2},
- nameKey="Reference (Icy Veins and SimulationCraft)",descriptionKey="Reference only, off by default: the guides' Arcane priority. Arcane Salvo and Clearcasting are hidden from addons in Midnight combat (only Arcane Charges stay visible), so it cannot run there; mana is hidden on Retail, so the low-mana Evocation is yours; read it, or clone it to experiment. Pulls with Arcane Blast. Sunfury: Arcane Missiles on Clearcasting below 12 Salvo, Prismatic Bolt outside Arcane Soul, Arcane Barrage at four charges with 12 Salvo and Clearcasting or 25 Salvo, or with Arcane Soul at any charge count, Prismatic Bolt, Arcane Orb below three charges, Arcane Pulse on three enemies or at no charges, Arcane Blast. Spellslinger (Splintering Sorcery known): Prismatic Bolt, Orb on packs, Barrage at 20 Salvo (only at four charges against two or more enemies), Missiles on Clearcasting below 15 Salvo, Orb and Pulse below three charges (no Pulse in Arcane Surge), Arcane Blast. Arcane Barrage when Blast cannot be cast. Reminders: Arcane Surge, Touch of the Magi after a Barrage or Prismatic Bolt in or well before Surge, Presence of Mind at no charges after a Barrage, plus the Assisted premade's reminders.",
  applicability={families={'retail'},actionContext='player',class='MAGE'},
  tags={'arcane','caster','reference','icy-veins','simulationcraft'},
  sources={
@@ -34,33 +27,33 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={62},
   cooldowns={
-   block('aguide-utility','retail.mage.utility','aguide-'),
-   spell('aguide-barrier',235450,combat()),
-   spell('aguide-arcane-surge',365350,combat()),
-   spell('aguide-touch-of-the-magi',321507,all(combat(),any(last(44425),last(1295924)),any(surge,{type='SPELL_COOLDOWN',spell=365350,operator='GREATERTHAN',value=30}))),
-   spell('aguide-presence-of-mind',205025,all(combat(),charges('EQUALS',0),last(44425))),
+   BuiltinConditions.block('aguide-utility','retail.mage.utility','aguide-'),
+   BuiltinConditions.spell('aguide-barrier',235450,BuiltinConditions.combat()),
+   BuiltinConditions.spell('aguide-arcane-surge',365350,BuiltinConditions.combat()),
+   BuiltinConditions.spell('aguide-touch-of-the-magi',321507,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(last(44425),last(1295924)),BuiltinConditions.any(surge,{type='SPELL_COOLDOWN',spell=365350,operator='GREATERTHAN',value=30}))),
+   BuiltinConditions.spell('aguide-presence-of-mind',205025,BuiltinConditions.all(BuiltinConditions.combat(),charges('EQUALS',0),last(44425))),
   },
   rotation={
-   block('aguide-boundaries','retail.mage.boundaries','aguide-'),
-   {id='aguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('aguide-pull-blast',30451),stop('aguide-pull-stop')}},
+   BuiltinConditions.block('aguide-boundaries','retail.mage.boundaries','aguide-'),
+   {id='aguide-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={BuiltinConditions.spell('aguide-pull-blast',30451),BuiltinConditions.stop('aguide-pull-stop')}},
    {id='aguide-spellslinger',type='branch',conditions={type='SPELL_KNOWN',spell=443739},
     onTrue={
-     spell('aguide-ss-prismatic-bolt',1295924),
-     spell('aguide-ss-aoe-orb',153626,engaged(3)),
-     spell('aguide-ss-barrage',44425,all(salvo('GREATERTHANOREQUALS',20),any(charges('GREATERTHANOREQUALS',4),negate(engaged(2))))),
-     spell('aguide-ss-missiles',5143,all(clearcasting,salvo('LESSTHAN',15))),
-     spell('aguide-ss-orb',153626,charges('LESSTHAN',3)),
-     spell('aguide-ss-pulse',1241462,all(charges('LESSTHAN',3),negate(surge))),
-     spell('aguide-ss-blast',30451)},
+     BuiltinConditions.spell('aguide-ss-prismatic-bolt',1295924),
+     BuiltinConditions.spell('aguide-ss-aoe-orb',153626,engaged(3)),
+     BuiltinConditions.spell('aguide-ss-barrage',44425,BuiltinConditions.all(salvo('GREATERTHANOREQUALS',20),BuiltinConditions.any(charges('GREATERTHANOREQUALS',4),BuiltinConditions.negate(engaged(2))))),
+     BuiltinConditions.spell('aguide-ss-missiles',5143,BuiltinConditions.all(clearcasting,salvo('LESSTHAN',15))),
+     BuiltinConditions.spell('aguide-ss-orb',153626,charges('LESSTHAN',3)),
+     BuiltinConditions.spell('aguide-ss-pulse',1241462,BuiltinConditions.all(charges('LESSTHAN',3),BuiltinConditions.negate(surge))),
+     BuiltinConditions.spell('aguide-ss-blast',30451)},
     onFalse={
-     spell('aguide-sf-missiles',5143,all(clearcasting,salvo('LESSTHAN',12))),
-     spell('aguide-sf-soulless-bolt',1295924,negate(soul)),
-     spell('aguide-sf-barrage',44425,any(all(charges('GREATERTHANOREQUALS',4),any(all(salvo('GREATERTHANOREQUALS',12),clearcasting),salvo('GREATERTHANOREQUALS',25))),soul)),
-     spell('aguide-sf-prismatic-bolt',1295924),
-     spell('aguide-sf-orb',153626,charges('LESSTHAN',3)),
-     spell('aguide-sf-pulse',1241462,any(engaged(3),charges('EQUALS',0))),
-     spell('aguide-sf-blast',30451)}},
-   spell('aguide-out-of-mana-barrage',44425),
+     BuiltinConditions.spell('aguide-sf-missiles',5143,BuiltinConditions.all(clearcasting,salvo('LESSTHAN',12))),
+     BuiltinConditions.spell('aguide-sf-soulless-bolt',1295924,BuiltinConditions.negate(soul)),
+     BuiltinConditions.spell('aguide-sf-barrage',44425,BuiltinConditions.any(BuiltinConditions.all(charges('GREATERTHANOREQUALS',4),BuiltinConditions.any(BuiltinConditions.all(salvo('GREATERTHANOREQUALS',12),clearcasting),salvo('GREATERTHANOREQUALS',25))),soul)),
+     BuiltinConditions.spell('aguide-sf-prismatic-bolt',1295924),
+     BuiltinConditions.spell('aguide-sf-orb',153626,charges('LESSTHAN',3)),
+     BuiltinConditions.spell('aguide-sf-pulse',1241462,BuiltinConditions.any(engaged(3),charges('EQUALS',0))),
+     BuiltinConditions.spell('aguide-sf-blast',30451)}},
+   BuiltinConditions.spell('aguide-out-of-mana-barrage',44425),
   },
  },
 }))

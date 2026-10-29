@@ -7,23 +7,15 @@
 -- on the move. Disabled: procs, cooldowns and target debuffs are secret in Midnight combat, and RM
 -- cannot pick an empower rank (Icy Veins: rank 1 on one target).
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
 local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local burstRoom={type='BUFF_STACKS',unit='player',spell=359618,ownbuff=true,operator='LESSTHAN',value=2}
-local flames=all(buff(375802),buff(370901))
+local flames=BuiltinConditions.all(buff(375802),buff(370901))
 local sweep=buff(1265871)
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation.guide',revision=7,
  blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
- nameKey="Reference (SimulationCraft and Icy Veins)",descriptionKey="Reference only, off by default: the optimal Devastation priority. Procs, cooldowns and the target's burn are hidden in Midnight combat, so it cannot run there; read it, or clone it to experiment. Pulls with Living Flame. Scalecommander (Mass Disintegrate known): Eternity Surge, Fire Breath, Deep Breath on two or more enemies, Disintegrate with Mass Disintegrate charges, Pyre on five or more, Disintegrate, Living Flame on Burnout with Leaping Flames, Unbound Flame below two Essence Bursts, Azure Sweep. Flameshaper: Eternity Surge, Fire Breath when its burn is missing or ending, Pyre on five or more, Disintegrate, Deep Breath on four or more, Unbound Flame, Living Flame on Burnout with Leaping Flames, Azure Sweep. Then Azure Strike while moving, Living Flame, Azure Strike. Use empowers at rank 1 on one target (Icy Veins). Reminders: Dragonrage, Tip the Scales in Dragonrage or with Fire Breath ready, Deep Breath for Scalecommander, plus the utility reminders.",
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'devastation','ranged','reference','simulationcraft','icy-veins'},
  sources={
@@ -32,37 +24,37 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={1467},
   cooldowns={
-   block('dguide-utility','retail.evoker.utility','dguide-'),
-   spell('dguide-dragonrage',375087,combat()),
-   spell('dguide-tip-the-scales',370553,all(combat(),any(buff(375087),{type='SPELL_AVAIL',spell=357208}))),
-   spell('dguide-deep-breath',357210,all(combat(),known(436335))),
+   BuiltinConditions.block('dguide-utility','retail.evoker.utility','dguide-'),
+   BuiltinConditions.spell('dguide-dragonrage',375087,BuiltinConditions.combat()),
+   BuiltinConditions.spell('dguide-tip-the-scales',370553,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(buff(375087),{type='SPELL_AVAIL',spell=357208}))),
+   BuiltinConditions.spell('dguide-deep-breath',357210,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.known(436335))),
   },
   rotation={
-   block('dguide-boundaries','retail.evoker.boundaries','dguide-'),
-   {id='dguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('dguide-pull-living-flame',361469),stop('dguide-pull-stop')}},
-   {id='dguide-tree',type='branch',conditions=known(436335),
+   BuiltinConditions.block('dguide-boundaries','retail.evoker.boundaries','dguide-'),
+   {id='dguide-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={BuiltinConditions.spell('dguide-pull-living-flame',361469),BuiltinConditions.stop('dguide-pull-stop')}},
+   {id='dguide-tree',type='branch',conditions=BuiltinConditions.known(436335),
     onTrue={
-     spell('dguide-sc-eternity-surge',359073),
-     spell('dguide-sc-fire-breath',357208),
-     spell('dguide-sc-deep-breath',357210,engaged(2)),
-     spell('dguide-sc-mass-disintegrate',356995,buff(436336)),
-     spell('dguide-sc-pyre',357211,engaged(5)),
-     spell('dguide-sc-disintegrate',356995),
-     spell('dguide-sc-flames',361469,flames),
-     spell('dguide-sc-unbound-flame',1292321,burstRoom),
-     spell('dguide-sc-azure-sweep',362969,sweep)},
+     BuiltinConditions.spell('dguide-sc-eternity-surge',359073),
+     BuiltinConditions.spell('dguide-sc-fire-breath',357208),
+     BuiltinConditions.spell('dguide-sc-deep-breath',357210,engaged(2)),
+     BuiltinConditions.spell('dguide-sc-mass-disintegrate',356995,buff(436336)),
+     BuiltinConditions.spell('dguide-sc-pyre',357211,engaged(5)),
+     BuiltinConditions.spell('dguide-sc-disintegrate',356995),
+     BuiltinConditions.spell('dguide-sc-flames',361469,flames),
+     BuiltinConditions.spell('dguide-sc-unbound-flame',1292321,burstRoom),
+     BuiltinConditions.spell('dguide-sc-azure-sweep',362969,sweep)},
     onFalse={
-     spell('dguide-fs-eternity-surge',359073),
-     spell('dguide-fs-fire-breath',357208,any(negate({type='DEBUFF',unit='target',spell=357209,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=357209,owndebuff=true,operator='LESSTHAN',value=4})),
-     spell('dguide-fs-pyre',357211,engaged(5)),
-     spell('dguide-fs-disintegrate',356995),
-     spell('dguide-fs-deep-breath',357210,engaged(4)),
-     spell('dguide-fs-unbound-flame',1292321),
-     spell('dguide-fs-flames',361469,flames),
-     spell('dguide-fs-azure-sweep',362969,sweep)}},
-   spell('dguide-moving-azure-strike',362969,{type='MOVING'}),
-   spell('dguide-living-flame',361469),
-   spell('dguide-azure-strike',362969),
+     BuiltinConditions.spell('dguide-fs-eternity-surge',359073),
+     BuiltinConditions.spell('dguide-fs-fire-breath',357208,BuiltinConditions.any(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=357209,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=357209,owndebuff=true,operator='LESSTHAN',value=4})),
+     BuiltinConditions.spell('dguide-fs-pyre',357211,engaged(5)),
+     BuiltinConditions.spell('dguide-fs-disintegrate',356995),
+     BuiltinConditions.spell('dguide-fs-deep-breath',357210,engaged(4)),
+     BuiltinConditions.spell('dguide-fs-unbound-flame',1292321),
+     BuiltinConditions.spell('dguide-fs-flames',361469,flames),
+     BuiltinConditions.spell('dguide-fs-azure-sweep',362969,sweep)}},
+   BuiltinConditions.spell('dguide-moving-azure-strike',362969,{type='MOVING'}),
+   BuiltinConditions.spell('dguide-living-flame',361469),
+   BuiltinConditions.spell('dguide-azure-strike',362969),
   },
  },
 }))

@@ -6,26 +6,18 @@
 -- tests/fixtures/builtin_composition_ledger.lua. Policy and sources are the consumers'; see
 -- premade-research progression/warrior.md.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function health(op,n)return{type='HEALTHPCT',unit='player',operator=op,value=n}end
-local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
-local function form(id)return{type='FORM',form=id}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local smashed={type='DEBUFF',unit='target',spell=86346,owndebuff=true}
 -- Boundaries for every Warrior premade: manual casts/channels and no attackable target stop with
 -- Attack suppressed; out of combat Charge (the engine checks 8-25 yd) or Heroic Throw from range, then
 -- stop and let Attack start the fight.
 assert(addon:RegisterDefaultBlock({
  id='mop.warrior.boundaries',revision=4,families={'progression'},class='WARRIOR',steps={
- {id='manual',type='stop',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},negate({type='ATTACKABLE',unit='target'}))},
- {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
-  spell('pull-charge',100),
-  spell('pull-throw',57755,{type='BEYOND_MELEE',unit='target'}),
+ {id='manual',type='stop',suppress_attack=true,conditions=BuiltinConditions.any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'},BuiltinConditions.negate({type='ATTACKABLE',unit='target'}))},
+ {id='pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+  BuiltinConditions.spell('pull-charge',100),
+  BuiltinConditions.spell('pull-throw',57755,{type='BEYOND_MELEE',unit='target'}),
   {id='pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
 }}))
@@ -33,9 +25,9 @@ assert(addon:RegisterDefaultBlock({
 -- (below 66 rage), Heroic Throw from range, Victory Rush or Impending Victory under 70% health.
 assert(addon:RegisterDefaultBlock({
  id='mop.warrior.gap',revision=1,families={'progression'},class='WARRIOR',steps={
- spell('charge',100,{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=65}),
- spell('throw',57755,{type='BEYOND_MELEE',unit='target'}),
- {id='sustain',type='branch',conditions=health('LESSTHAN',.7),onFalse={},onTrue={spell('impending-victory',103840),spell('victory-rush',34428)}},
+ BuiltinConditions.spell('charge',100,{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=65}),
+ BuiltinConditions.spell('throw',57755,{type='BEYOND_MELEE',unit='target'}),
+ {id='sustain',type='branch',conditions=health('LESSTHAN',.7),onFalse={},onTrue={BuiltinConditions.spell('impending-victory',103840),BuiltinConditions.spell('victory-rush',34428)}},
 }}))
 -- Independent reminders every damage dealer shares: a shout when neither is up, Battle Stance (Berserker
 -- is left alone; stances are read by spell, so the stance bar order does not matter), the shout during Bladestorm, Skull Banner under Recklessness in a group, Heroic Leap in
@@ -43,14 +35,14 @@ assert(addon:RegisterDefaultBlock({
 -- raid assignment) ships off.
 assert(addon:RegisterDefaultBlock({
  id='mop.warrior.dps-upkeep',revision=2,families={'progression'},class='WARRIOR',steps={
- spell('shout',6673,all(negate(buff(6673)),negate(buff(469)))),
- spell('stance',2457,all(negate(form(2457)),negate(form(2458)))),
- spell('bladestorm-shout',6673,own(46924)),
- spell('skull-banner',114207,all(combat(),{type='GROUP'},own(1719))),
- spell('leap',6544,all(combat(),smashed)),
- spell('pummel',6552,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
- spell('die-by-the-sword',118038,all(combat(),health('LESSTHAN',.4))),
- spell('enraged-regeneration',55694,all(buff(12880),health('LESSTHAN',.5))),
- {id='shattering-throw',type='spell',action=64382,ranked=false,disabled=true,conditions=all({type='GROUP'},classified('worldboss'),
-  any(negate(combat()),{type='TIME_IN_COMBAT',operator='LESSTHAN',value=3}))},
+ BuiltinConditions.spell('shout',6673,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.buff(6673)),BuiltinConditions.negate(BuiltinConditions.buff(469)))),
+ BuiltinConditions.spell('stance',2457,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.form(2457)),BuiltinConditions.negate(BuiltinConditions.form(2458)))),
+ BuiltinConditions.spell('bladestorm-shout',6673,BuiltinConditions.ownBuff(46924)),
+ BuiltinConditions.spell('skull-banner',114207,BuiltinConditions.all(BuiltinConditions.combat(),{type='GROUP'},BuiltinConditions.ownBuff(1719))),
+ BuiltinConditions.spell('leap',6544,BuiltinConditions.all(BuiltinConditions.combat(),smashed)),
+ BuiltinConditions.spell('pummel',6552,BuiltinConditions.any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
+ BuiltinConditions.spell('die-by-the-sword',118038,BuiltinConditions.all(BuiltinConditions.combat(),health('LESSTHAN',.4))),
+ BuiltinConditions.spell('enraged-regeneration',55694,BuiltinConditions.all(BuiltinConditions.buff(12880),health('LESSTHAN',.5))),
+ {id='shattering-throw',type='spell',action=64382,ranked=false,disabled=true,conditions=BuiltinConditions.all({type='GROUP'},BuiltinConditions.classified('worldboss'),
+  BuiltinConditions.any(BuiltinConditions.negate(BuiltinConditions.combat()),{type='TIME_IN_COMBAT',operator='LESSTHAN',value=3}))},
 }}))

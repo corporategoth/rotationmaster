@@ -206,23 +206,21 @@ The exact command list is `tools/check`; `tools/check_all.py` runs the same list
 
 ## Localization
 
-The main `Locales/` catalog contains general interface text and loads at startup. Each Built In class module has a
-`Locales/` directory for that class's rotation names and descriptions. Its locale files load after `bind.lua` and before
-the rotation sources. Shared names that are also used by the interface remain in the main catalog.
+The main `Locales/` catalog contains general interface text and loads at startup. Its `enUS.lua` maps the exact English
+used by code to a stable number. A translation file maps that number to its translation; English joins them into
+`L["English text"] = translated text` at startup. IDs are local to a catalog and retired when removed.
 
-Every English key is exactly the text used by the source: `T["English text"] = 1234` in `enUS.lua`. Translation files
-map the number to translated text. Translation files run before English; the English file joins them and writes
-`L["English text"] = translation` (or the English itself). IDs are local to their catalog and stable within it. A removed
-ID is retired; moving text between catalogs assigns a new ID while retaining translations and context. The English hash
-records when an existing translation needs review after a reword.
+Built In rotation names and descriptions use a separate mechanism. A rotation with ID `rm.tbc.shaman.example` has
+`L["rm.tbc.shaman.example.Name"]` and `L["rm.tbc.shaman.example.Description"]` in every language file under
+`Modules/RotationMaster_Shaman/Locales/`. These files assign text directly with no numeric IDs. The rotation source
+specifies neither locale key: registration derives both from the rotation ID. English loads first, then the game
+language overwrites it. `tools/builtin_locales.py` checks both keys for every rotation in every language, rejects orphaned
+keys, and checks placeholders. `tools/catalog_check.py` runs this check as well.
 
-`Core/text_bundles.lua` and `Data/text_bundle_index.lua` let translated class text load when it is requested before its
-class module. The player's class module normally loads during startup. The four older text modules are empty compatibility
-modules. A missing class module falls back to the English key.
-
-`tools/locales.py check` validates the catalogs and translations; `tools/catalog_check.py` checks literal keys and unused
-class rotation text. `sync` registers source literals, and `sync --prune-class` removes unused class rotation strings.
-`tests/client_locale.lua`, `tests/text_bundles.lua`, and `tests/test_locale_ids.py` exercise runtime loading and tooling.
+`Core/text_bundles.lua` and `Data/text_bundle_index.lua` locate a class module when a Built In key is requested before its
+module loads. The player's class module normally loads during startup. The four older text modules are empty compatibility
+modules. `tools/locales.py check` validates the main catalog; `tests/client_locale.lua`, `tests/text_bundles.lua`, and
+`tests/test_locale_ids.py` exercise runtime loading and tooling.
 
 ## How to...
 
@@ -246,11 +244,13 @@ shipped disabled). Add scenarios to the class suite, run `python3 tools/builtin_
 
 ### Add or change a locale string
 
-English text is the key in code. Write `L["Text"]` or a Built In rotation name/description literal, then run
-`python3 tools/locales.py sync`. General text belongs in the main catalog; class-specific rotation text belongs in that
-class's catalog. Use placeholders rather than concatenating sentences. `locales.py reword "old" "new"` updates literal
-lookups and retains translations; use `--all-literals` for rotation metadata. Context and token notes are maintained with
-`locales.py notes`. `catalog_check.py` and `locales.py check` must pass.
+For general interface text, write `L["Text"]`, then run `python3 tools/locales.py sync`. Use placeholders rather than
+concatenating sentences. `locales.py reword "old" "new"` updates literal lookups and retains translations; context and
+token notes are maintained with `locales.py notes`.
+
+For a Built In rotation, add its `<id>.Name` and `<id>.Description` directly in each language file under its class module's
+`Locales/`. Do not add `nameKey` or `descriptionKey` to the rotation source. Run `tools/builtin_locales.py` to check that
+all rotations and languages match, then run `catalog_check.py` and `locales.py check`.
 
 ### Add a client
 

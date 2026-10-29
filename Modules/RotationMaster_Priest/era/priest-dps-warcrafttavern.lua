@@ -7,18 +7,13 @@
 -- every other mob, which stays with you). In a group: Tavern's Shadow raid order, Pain, Mind
 -- Blast, Mind Flay.
 local _,addon=...
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
-local function stop(id,conditions)return{id=id,type='stop',suppress_attack=true,conditions=conditions or {}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-wct-'
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=6,
  blocks={['era.priest.dps-boundaries']=2,['era.priest.shadowform']=1,['era.priest.moving']=2,
   ['era.priest.filler']=2,['era.priest.wand-fallback']=2,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1},
- nameKey="Damage (Warcraft Tavern wand economy)",descriptionKey="Warcraft Tavern's low-downtime leveling style, an alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority. Solo: Mind Blast to pull, Shadow Word: Pain once, Mind Blast again only while the target is above 30%, and your wand between Mind Blasts instead of Smite or Mind Flay. No automatic shield before pulls. In a group: Shadow Word: Pain, Mind Blast, Mind Flay. Same reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='PRIEST'},
  tags={'shadow','damage','leveling','single-target','warcraft-tavern'},
  sources={
@@ -27,19 +22,19 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=5,disabled=true,
-  cooldowns={block(P..'upkeep','era.priest.upkeep',P),block(P..'dps-upkeep','era.priest.dps-upkeep',P)},
+  cooldowns={BuiltinConditions.block(P..'upkeep','era.priest.upkeep',P),BuiltinConditions.block(P..'dps-upkeep','era.priest.dps-upkeep',P)},
   rotation={
-   block(P..'boundaries','era.priest.dps-boundaries',P),
-   block(P..'form','era.priest.shadowform',P),
+   BuiltinConditions.block(P..'boundaries','era.priest.dps-boundaries',P),
+   BuiltinConditions.block(P..'form','era.priest.shadowform',P),
    {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    spell(P..'pull-blast',8092),spell(P..'pull-smite',585),stop(P..'pull-stop')}},
-   block(P..'moving','era.priest.moving',P),
-   spell(P..'pain',589,negate(own(589))),
-   spell(P..'blast',8092,any({type='GROUP'},{type='HEALTHPCT',unit='target',operator='GREATERTHANOREQUALS',value=.3})),
+    BuiltinConditions.spell(P..'pull-blast',8092),BuiltinConditions.spell(P..'pull-smite',585),BuiltinConditions.stop(P..'pull-stop')}},
+   BuiltinConditions.block(P..'moving','era.priest.moving',P),
+   BuiltinConditions.spell(P..'pain',589,BuiltinConditions.negate(own(589))),
+   BuiltinConditions.spell(P..'blast',8092,BuiltinConditions.any({type='GROUP'},{type='HEALTHPCT',unit='target',operator='GREATERTHANOREQUALS',value=.3})),
    {id=P..'solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
-    stop(P..'solo-wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),spell(P..'solo-shoot',5019)}},
-   block(P..'filler','era.priest.filler',P),
-   block(P..'wand','era.priest.wand-fallback',P),
+    BuiltinConditions.stop(P..'solo-wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),BuiltinConditions.spell(P..'solo-shoot',5019)}},
+   BuiltinConditions.block(P..'filler','era.priest.filler',P),
+   BuiltinConditions.block(P..'wand','era.priest.wand-fallback',P),
   },
  },
 }))

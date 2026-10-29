@@ -7,15 +7,12 @@
 -- Ascendance, Doom Winds and Feral Spirit in combat, Lightning Shield and Skyfury between pulls,
 -- Wind Shear, Astral Shift.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.enhancement',revision=6,
  blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Enhancement in Midnight. Shows Blizzard's Assisted Combat suggestion (it spends Maelstrom Weapon, keeps Flame Shock and handles Surging Totem and Sundering), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Ascendance, Doom Winds and Feral Spirit in combat, Lightning Shield and Skyfury between pulls (Blizzard's suggestion keeps Windfury Weapon), Wind Shear, Astral Shift.",
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'enhancement','melee','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
@@ -27,9 +24,9 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('retail.shaman.upkeep','enh-'),
    block('retail.shaman.lightning-shield','enh-'),
-   spell('enh-ascendance',114051,fight),
-   spell('enh-doom-winds',384352,fight),
-   spell('enh-feral-spirit',51533,fight),
+   BuiltinConditions.spell('enh-ascendance',114051,fight),
+   BuiltinConditions.spell('enh-doom-winds',384352,fight),
+   BuiltinConditions.spell('enh-feral-spirit',51533,fight),
   },
   rotation={
    block('retail.shaman.boundaries','enh-'),

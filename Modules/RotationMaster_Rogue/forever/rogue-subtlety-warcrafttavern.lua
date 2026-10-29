@@ -8,21 +8,18 @@
 -- are being hit), Ghostly Strike on cooldown, Slice and Dice and Eviscerate at five points with
 -- no Rupture, and Vanish into Ambush on a tanked boss. Shared parts: Defaults/blocks/forever-rogue.lua.
 local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
 -- Talent trees in the Forever talent window's order (assumed classic: 1 Assassination, 2 Combat, 3 Subtlety; verify in game).
 -- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
 -- then the primary tree, which settles hybrids.
 local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=25},
  {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
 local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local behind=negate({type='THREAT',unit='target',threat=3})
+local behind=BuiltinConditions.negate({type='THREAT',unit='target',threat=3})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.rogue.subtlety.warcrafttavern',revision=6,
  blocks={['forever.rogue.boundaries']=3,['forever.rogue.stealth-fallback']=3,['forever.rogue.reactive']=1,['forever.rogue.expose-armor']=1,['forever.rogue.upkeep']=2},
- nameKey="Subtlety, Ambush build (Warcraft Tavern)",descriptionKey="Warcraft Tavern's Ambush/Cutthroat Subtlety build: Premeditation and Ambush on every opener, Ambush again whenever Cutthroat allows it, Backstab from behind as the builder (Hemorrhage when the target is facing you), Ghostly Strike on cooldown, and Slice and Dice then Eviscerate at five points with no Rupture. Reminds you to Vanish for another Ambush on a tanked boss. Choose it instead of the recommended Rogue premade if you took the Cutthroat talents; it applies with Subtlety as your main talent tree and Cutthroat talented. Same poison and cooldown reminders as the recommended premade. An alternative to the recommended Rogue DPS premade, off by default: enable it and disable that one, or raise its priority.",
  applicability={families={'forever'},actionContext='player',class='ROGUE'},
  tags={'dps','melee','leveling','endgame','subtlety','warcraft-tavern'},
  sources={
@@ -31,24 +28,24 @@ assert(addon:RegisterDefaultRotation({
  {url='https://wowtbc.gg/warcraftforever/class-guides/subtlety-rogue/',title='wowtbc.gg: WoW Forever Subtlety Rogue (Cutthroat Ambush step)',reviewedAt='2026-10-23'}},
  body={priority=5,disabled=true,switch={type='AND',value={tree(3,21),{type='TALENT',layout='traits',node=105750,operator='GREATERTHANOREQUALS',value=1}}},
  cooldowns={block('forever.rogue.upkeep','rogue-tavern-'),
-  spell('rogue-tavern-vanish',1856,all({type='COMBAT',unit='player'},{type='GROUP'},{type='CLASSIFICATION',unit='target',value='worldboss'},negate({type='THREAT',unit='target',threat=3}))),
-  spell('rogue-tavern-preparation',14185,all({type='COMBAT',unit='player'},{type='SPELL_COOLDOWN',spell=1856,operator='GREATERTHAN',value=30}))},
+  BuiltinConditions.spell('rogue-tavern-vanish',1856,BuiltinConditions.all({type='COMBAT',unit='player'},{type='GROUP'},{type='CLASSIFICATION',unit='target',value='worldboss'},BuiltinConditions.negate({type='THREAT',unit='target',threat=3}))),
+  BuiltinConditions.spell('rogue-tavern-preparation',14185,BuiltinConditions.all({type='COMBAT',unit='player'},{type='SPELL_COOLDOWN',spell=1856,operator='GREATERTHAN',value=30}))},
  rotation={
  block('forever.rogue.boundaries','rogue-tavern-'),
  {id='rogue-tavern-stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
-  spell('rogue-tavern-premeditation',14183,points('LESSTHANOREQUALS',3)),
+  BuiltinConditions.spell('rogue-tavern-premeditation',14183,points('LESSTHANOREQUALS',3)),
   block('forever.rogue.stealth-fallback','rogue-tavern-stealth-'),
  }},
  block('forever.rogue.reactive','rogue-tavern-'),
  {id='rogue-tavern-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
-  spell('rogue-tavern-slice',5171,negate({type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true})),
+  BuiltinConditions.spell('rogue-tavern-slice',5171,BuiltinConditions.negate({type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true})),
   block('forever.rogue.expose-armor','rogue-tavern-'),
-  spell('rogue-tavern-eviscerate',2098),
+  BuiltinConditions.spell('rogue-tavern-eviscerate',2098),
   {id='rogue-tavern-pool',type='stop',suppress_attack=false,conditions={}},
  }},
- spell('rogue-tavern-ghostly-strike',14278),
- spell('rogue-tavern-backstab',53,behind),
- spell('rogue-tavern-hemorrhage',16511),
- spell('rogue-tavern-sinister',1752),
+ BuiltinConditions.spell('rogue-tavern-ghostly-strike',14278),
+ BuiltinConditions.spell('rogue-tavern-backstab',53,behind),
+ BuiltinConditions.spell('rogue-tavern-hemorrhage',16511),
+ BuiltinConditions.spell('rogue-tavern-sinister',1752),
  }},
 }))

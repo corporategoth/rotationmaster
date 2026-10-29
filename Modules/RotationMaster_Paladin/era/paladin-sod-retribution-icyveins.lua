@@ -6,41 +6,36 @@
 -- Same switch as the recommended SoD Retribution premade, lower priority, shipped disabled.
 -- Shared blocks: era/blocks.lua. Original priority data, no guide prose.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function any(...)return{type='OR',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution.icyveins',revision=7,
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
- nameKey="Retribution (SoD, Icy Veins Phase 4)",descriptionKey="The older Phase 4 list from Icy Veins and Warcraft Tavern, also fine for leveling, an alternative to the recommended Season of Discovery Retribution premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader once on elites and long fights, Seal of Martyrdom, Exorcism, Crusader Strike, Divine Storm and Judgement on cooldown, Consecration with mana or three close enemies, Hammer of Wrath. Same reminders as the recommended premade.",
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','retribution','melee','single-target','season-of-discovery','icy-veins','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Retribution Paladin rotation (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-07'},
   {url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-leveling',title='Icy Veins: SoD Retribution Paladin leveling (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-02'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/season-of-discovery-sod-paladin-dps-build-guide/',title='Warcraft Tavern: SoD Paladin DPS guide (Phase 4)',reviewedAt='2026-10-23'}},
  body={priority=101,disabled=true,
-  cooldowns={block('sretiv-upkeep','sod.paladin.ret-upkeep','sretiv-'),block('sretiv-safety','era.paladin.safety','sretiv-')},
+  cooldowns={BuiltinConditions.block('sretiv-upkeep','sod.paladin.ret-upkeep','sretiv-'),BuiltinConditions.block('sretiv-safety','era.paladin.safety','sretiv-')},
   rotation={
-   block('sretiv-opening','era.paladin.melee-opening','sretiv-'),
-   spell('sretiv-crusader-judgement',20271,own(21082)),
-   spell('sretiv-crusader-seal',21082,all(negate({type='DEBUFF',unit='target',spell=21183,anyrank=true}),negate({type='GROUP',raid=true}),{type='SPELL_AVAIL',spell=20271},
-    any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20}))),
-   block('sretiv-seal','sod.paladin.seal','sretiv-'),
+   BuiltinConditions.block('sretiv-opening','era.paladin.melee-opening','sretiv-'),
+   BuiltinConditions.spell('sretiv-crusader-judgement',20271,own(21082)),
+   BuiltinConditions.spell('sretiv-crusader-seal',21082,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=21183,anyrank=true}),BuiltinConditions.negate({type='GROUP',raid=true}),{type='SPELL_AVAIL',spell=20271},
+    BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='worldboss'},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=20}))),
+   BuiltinConditions.block('sretiv-seal','sod.paladin.seal','sretiv-'),
    {id='sretiv-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
-    spell('sretiv-pull-exorcism',415068),
-    spell('sretiv-pull-judgement',20271),
+    BuiltinConditions.spell('sretiv-pull-exorcism',415068),
+    BuiltinConditions.spell('sretiv-pull-judgement',20271),
     {id='sretiv-pull-stop',type='stop',conditions={}},
    }},
-   spell('sretiv-exorcism',415068),
-   spell('sretiv-crusader-strike',407676),
-   spell('sretiv-divine-storm',407778),
-   spell('sretiv-judgement',20271,mana('GREATERTHANOREQUALS',0.15)),
-   spell('sretiv-consecration',26573,any(mana('GREATERTHANOREQUALS',0.5),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3})),
-   spell('sretiv-hammer-of-wrath',24275),
+   BuiltinConditions.spell('sretiv-exorcism',415068),
+   BuiltinConditions.spell('sretiv-crusader-strike',407676),
+   BuiltinConditions.spell('sretiv-divine-storm',407778),
+   BuiltinConditions.spell('sretiv-judgement',20271,mana('GREATERTHANOREQUALS',0.15)),
+   BuiltinConditions.spell('sretiv-consecration',26573,BuiltinConditions.any(mana('GREATERTHANOREQUALS',0.5),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3})),
+   BuiltinConditions.spell('sretiv-hammer-of-wrath',24275),
   },
  },
 }))

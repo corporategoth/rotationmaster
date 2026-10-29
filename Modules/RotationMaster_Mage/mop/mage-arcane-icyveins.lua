@@ -5,19 +5,13 @@
 -- Arcane Barrage, whatever the mana. Off by default; the recommended Arcane premade is
 -- rm.mop.mage.arcane (same switch, higher priority).
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
-local function buff(id)return{type='BUFF',unit='player',spell=id}end
-local function combat()return{type='COMBAT',unit='player'}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function charges(v)return{type='DEBUFF_STACKS',unit='player',spell=36032,owndebuff=true,operator='GREATERTHANOREQUALS',value=v}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local MISSILES=79683
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane.icyveins',revision=7,
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1,['mop.mage.arcane-open']=3,['mop.mage.arcane-aoe-moving']=2},
- nameKey="Barrage at four charges (Icy Veins)",descriptionKey="The guides' Arcane rule (Icy Veins, Wowhead, Method, wowtbc.gg), an alternative to the recommended Arcane premade: at four Arcane Charges, Arcane Missiles if a proc is up, otherwise Arcane Barrage, whatever your mana; Missiles only at four charges. Everything else (Alter Time, bombs, AoE, moving, reminders) matches the recommended one, except that Arcane Power is suggested at four charges without waiting for a proc. Off by default: enable it and disable the recommended Arcane premade, or raise its priority.",
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'arcane','leveling','single-target','aoe','icy-veins','wowhead'},
  sources={
@@ -28,19 +22,19 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=25,disabled=true,specs={62},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
-   block('arcaneiv-armor','mop.mage.armor-frost','arcaneiv-'),
-   block('arcaneiv-upkeep','mop.mage.upkeep','arcaneiv-'),
-   {id='arcaneiv-mana-gem',type='item',action={36799,81901},conditions=all(combat(),mana('LESSTHAN',.84),charges(2))},
-   spell('arcaneiv-arcane-power',12042,all(combat(),charges(4))),
-   spell('arcaneiv-alter-time',108978,all(combat(),charges(4),buff(12042),negate(buff(110909)))),
+   BuiltinConditions.block('arcaneiv-armor','mop.mage.armor-frost','arcaneiv-'),
+   BuiltinConditions.block('arcaneiv-upkeep','mop.mage.upkeep','arcaneiv-'),
+   {id='arcaneiv-mana-gem',type='item',action={36799,81901},conditions=BuiltinConditions.all(BuiltinConditions.combat(),mana('LESSTHAN',.84),charges(2))},
+   BuiltinConditions.spell('arcaneiv-arcane-power',12042,BuiltinConditions.all(BuiltinConditions.combat(),charges(4))),
+   BuiltinConditions.spell('arcaneiv-alter-time',108978,BuiltinConditions.all(BuiltinConditions.combat(),charges(4),BuiltinConditions.buff(12042),BuiltinConditions.negate(BuiltinConditions.buff(110909)))),
   },
   rotation={
-   block('arcaneiv-boundaries','mop.mage.boundaries','arcaneiv-'),
-   block('arcaneiv-open','mop.mage.arcane-open','arcaneiv-'),
-   block('arcaneiv-aoe-moving','mop.mage.arcane-aoe-moving','arcaneiv-'),
-   spell('arcaneiv-missiles',5143,all(charges(4),buff(MISSILES))),
-   spell('arcaneiv-barrage',44425,all(charges(4),negate({type='BUFF_STACKS',unit='player',spell=145252,operator='GREATERTHANOREQUALS',value=2}))),
-   spell('arcaneiv-blast',30451),
+   BuiltinConditions.block('arcaneiv-boundaries','mop.mage.boundaries','arcaneiv-'),
+   BuiltinConditions.block('arcaneiv-open','mop.mage.arcane-open','arcaneiv-'),
+   BuiltinConditions.block('arcaneiv-aoe-moving','mop.mage.arcane-aoe-moving','arcaneiv-'),
+   BuiltinConditions.spell('arcaneiv-missiles',5143,BuiltinConditions.all(charges(4),BuiltinConditions.buff(MISSILES))),
+   BuiltinConditions.spell('arcaneiv-barrage',44425,BuiltinConditions.all(charges(4),BuiltinConditions.negate({type='BUFF_STACKS',unit='player',spell=145252,operator='GREATERTHANOREQUALS',value=2}))),
+   BuiltinConditions.spell('arcaneiv-blast',30451),
   },
  },
 }))

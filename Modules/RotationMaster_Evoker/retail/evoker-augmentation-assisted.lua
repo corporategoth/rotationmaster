@@ -6,13 +6,10 @@
 -- it leaves to you: Breath of Eons, Deep Breath, Tip the Scales and Time Skip in combat, plus the
 -- Evoker utility reminders.
 local _,addon=...
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation.assisted',revision=7,
  blocks={['retail.evoker.boundaries']=3,['retail.evoker.utility']=2},
- nameKey="Blizzard Assisted",descriptionKey="Blizzard's Assisted Combat suggestion for Augmentation, an alternative to the recommended Icy Veins Augmentation premade, off by default: enable it and disable that one, or raise its priority. It recasts Ebon Might only after it has fallen off, and waits while you cast or hold an empowered spell. Reminders in combat for Breath of Eons, Deep Breath, Tip the Scales and Time Skip, plus Quell, Obsidian Scales, Blessing of the Bronze and Source of Magic as in the other Evoker premades.",
  applicability={families={'retail'},actionContext='player',class='EVOKER'},
  tags={'augmentation','ranged','support','assisted-combat'},
  sources={
@@ -22,14 +19,14 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,disabled=true,specs={1473},
   cooldowns={
-   block('augac-utility','retail.evoker.utility','augac-'),
-   spell('augac-breath-of-eons',403631,combat()),
-   spell('augac-deep-breath',357210,combat()),
-   spell('augac-tip-the-scales',370553,combat()),
-   spell('augac-time-skip',404977,combat()),
+   BuiltinConditions.block('augac-utility','retail.evoker.utility','augac-'),
+   BuiltinConditions.spell('augac-breath-of-eons',403631,BuiltinConditions.combat()),
+   BuiltinConditions.spell('augac-deep-breath',357210,BuiltinConditions.combat()),
+   BuiltinConditions.spell('augac-tip-the-scales',370553,BuiltinConditions.combat()),
+   BuiltinConditions.spell('augac-time-skip',404977,BuiltinConditions.combat()),
   },
   rotation={
-   block('augac-boundaries','retail.evoker.boundaries','augac-'),
+   BuiltinConditions.block('augac-boundaries','retail.evoker.boundaries','augac-'),
    {id='augac-assisted',type='assisted',conditions={}},
   },
  },

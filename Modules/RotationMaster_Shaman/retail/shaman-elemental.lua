@@ -8,15 +8,12 @@
 -- Spiritwalker's Grace while moving, Lightning Shield and Skyfury between pulls, Wind Shear,
 -- Astral Shift.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.shaman.elemental',revision=6,
  blocks={['retail.shaman.boundaries']=2,['retail.shaman.upkeep']=2,['retail.shaman.lightning-shield']=1},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Elemental in Midnight. In combat the game now hides Flame Shock, your buffs, Maelstrom, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Ascendance, Fire or Storm Elemental and Nature's Swiftness in combat, Spiritwalker's Grace while moving, Lightning Shield and Skyfury between pulls (Blizzard's suggestion keeps your weapon and shield imbues), Wind Shear on an interruptible cast (it lights only where the game lets the cast be read), Astral Shift whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).",
  applicability={families={'retail'},actionContext='player',class='SHAMAN'},
  tags={'elemental','ranged','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
@@ -28,11 +25,11 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={
    block('retail.shaman.upkeep','ele-'),
    block('retail.shaman.lightning-shield','ele-'),
-   spell('ele-ascendance',114050,fight),
-   spell('ele-fire-elemental',198067,fight),
-   spell('ele-storm-elemental',192249,fight),
-   spell('ele-natures-swiftness',378081,fight),
-   spell('ele-spiritwalkers-grace',79206,all(fight,{type='MOVING'})),
+   BuiltinConditions.spell('ele-ascendance',114050,fight),
+   BuiltinConditions.spell('ele-fire-elemental',198067,fight),
+   BuiltinConditions.spell('ele-storm-elemental',192249,fight),
+   BuiltinConditions.spell('ele-natures-swiftness',378081,fight),
+   BuiltinConditions.spell('ele-spiritwalkers-grace',79206,BuiltinConditions.all(fight,{type='MOVING'})),
   },
   rotation={
    block('retail.shaman.boundaries','ele-'),

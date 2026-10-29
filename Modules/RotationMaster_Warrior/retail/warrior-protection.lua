@@ -9,15 +9,12 @@
 -- Demoralizing Shout, Champion's Spear, Shield Wall and Last Stand when ready, Taunt on a grouped
 -- target attacking someone else, Battle Shout, Pummel.
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
-local fight=all(combat(),{type='ATTACKABLE',unit='target'})
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection',revision=6,
  blocks={['retail.warrior.boundaries']=2,['retail.warrior.upkeep']=1},
- nameKey="Blizzard Assisted",descriptionKey="Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat suggestion for your damage and threat, and stops while you cast or have no enemy targeted. The suggestion never casts Shield Block or Ignore Pain, so both are reminders whenever they are usable and your target is attacking you; the game hides rage, so Ignore Pain will light more often than you need it. Other reminders: Avatar, Demoralizing Shout and Champion's Spear in combat, Shield Wall and Last Stand whenever they are ready in combat (health is hidden on Retail, so when to use them is your call), Taunt in a group when your target attacks someone else, Battle Shout between pulls, Pummel.",
  applicability={families={'retail'},actionContext='player',class='WARRIOR'},
  tags={'protection','tank','assisted-combat','single-target','aoe','simulationcraft'},
  sources={
@@ -28,14 +25,14 @@ assert(addon:RegisterDefaultRotation({
  body={priority=10,specs={73},
   cooldowns={
    block('retail.warrior.upkeep','prot-'),
-   spell('prot-shield-block',2565,all(fight,{type='THREAT',unit='target',threat=3})),
-   spell('prot-ignore-pain',190456,all(fight,{type='THREAT',unit='target',threat=3})),
-   spell('prot-avatar',107574,fight),
-   spell('prot-demoralizing-shout',1160,fight),
-   spell('prot-champions-spear',376079,fight),
-   spell('prot-shield-wall',871,combat()),
-   spell('prot-last-stand',12975,combat()),
-   spell('prot-taunt',355,all(fight,{type='GROUP'},{type='COMBAT',unit='target'},{type='NOT',value={type='THREAT',unit='target',threat=3}})),
+   BuiltinConditions.spell('prot-shield-block',2565,BuiltinConditions.all(fight,{type='THREAT',unit='target',threat=3})),
+   BuiltinConditions.spell('prot-ignore-pain',190456,BuiltinConditions.all(fight,{type='THREAT',unit='target',threat=3})),
+   BuiltinConditions.spell('prot-avatar',107574,fight),
+   BuiltinConditions.spell('prot-demoralizing-shout',1160,fight),
+   BuiltinConditions.spell('prot-champions-spear',376079,fight),
+   BuiltinConditions.spell('prot-shield-wall',871,BuiltinConditions.combat()),
+   BuiltinConditions.spell('prot-last-stand',12975,BuiltinConditions.combat()),
+   BuiltinConditions.spell('prot-taunt',355,BuiltinConditions.all(fight,{type='GROUP'},{type='COMBAT',unit='target'},{type='NOT',value={type='THREAT',unit='target',threat=3}})),
   },
   rotation={
    block('retail.warrior.boundaries','prot-'),

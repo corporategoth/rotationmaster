@@ -6,20 +6,15 @@
 -- last (one Wrath, two Starfires), Wrath to fill. Hurricane (no cooldown on Forever) on three or
 -- more enemies fighting you (engaged count; RM cannot count enemies around the target).
 local _,addon=...
-local function all(...)return{type='AND',value={...}}end
-local function negate(c)return{type='NOT',value=c}end
+local BuiltinConditions=addon.BuiltInConditionHelpers
 local function aura(id)return{type='BUFF',unit='player',spell=id}end
 local function own(id,unit)return{type='BUFF',unit=unit or'player',spell=id,anyrank=true,ownbuff=true}end
 local function dot(id,mine)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=mine}end
-local function combat()return{type='COMBAT',unit='player'}end
-local function solo()return negate({type='GROUP'})end
-local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local function solo()return BuiltinConditions.negate({type='GROUP'})end
 local function stop(id,conditions,attack)return{id=id,type='stop',suppress_attack=not attack,conditions=conditions or{}}end
-local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance',revision=6,
  blocks={['forever.druid.boundaries']=3,['forever.druid.upkeep']=1,['forever.druid.dots']=2},
- nameKey="Balance",descriptionKey="Balance from level 1 to 60, and the default for any Forever Druid no other premade fits (levels 1–9, untalented casters, solo Restoration). Pulls with Wrath; while moving, refreshes Moonfire, Insect Swarm and, in a group, Faerie Fire. Hurricane when three or more enemies are fighting you, then your own Moonfire and Insect Swarm, Starfire while Eclipse charges or Clearcasting are up, and Wrath; when you cannot afford Wrath it lets you melee. Health and mana are hidden from addons on Forever, so healing yourself and judging whether a target is worth a DoT are your call. Reminders: Mark of the Wild, Thorns while solo, Moonkin Form, a pre-pull Rejuvenation while solo, Nature's Grasp when a mob is on you, Innervate whenever it is ready in combat while solo. Form changes, crowd control, Barkskin and target choice stay with you. Built from level-30 beta guides; level 31–60 steps follow the class design and are untested.",
  applicability={families={'forever'},actionContext='player',class='DRUID'},
  tags={'balance','leveling','single-target','aoe','icy-veins'},
  sources={
@@ -31,28 +26,28 @@ assert(addon:RegisterDefaultRotation({
  },
  body={priority=10,
   cooldowns={
-   block('bal-upkeep','forever.druid.upkeep','bal-'),
-   spell('bal-moonkin',24858,negate(aura(24858))),
-   spell('bal-prepull-rejuvenation',774,all(solo(),negate(combat()),{type='ATTACKABLE',unit='target'},negate(own(774)))),
-   spell('bal-natures-grasp',16689,all(combat(),solo(),{type='THREAT',unit='target',threat=3},negate(own(16689)))),
-   {id='bal-barkskin',type='spell',action=22812,ranked=false,disabled=true,conditions=all({type='CHANNELING',unit='player'},{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3})},
-   spell('bal-innervate',29166,all(combat(),solo())),
+   BuiltinConditions.block('bal-upkeep','forever.druid.upkeep','bal-'),
+   BuiltinConditions.spell('bal-moonkin',24858,BuiltinConditions.negate(aura(24858))),
+   BuiltinConditions.spell('bal-prepull-rejuvenation',774,BuiltinConditions.all(solo(),BuiltinConditions.negate(BuiltinConditions.combat()),{type='ATTACKABLE',unit='target'},BuiltinConditions.negate(own(774)))),
+   BuiltinConditions.spell('bal-natures-grasp',16689,BuiltinConditions.all(BuiltinConditions.combat(),solo(),{type='THREAT',unit='target',threat=3},BuiltinConditions.negate(own(16689)))),
+   {id='bal-barkskin',type='spell',action=22812,ranked=false,disabled=true,conditions=BuiltinConditions.all({type='CHANNELING',unit='player'},{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3})},
+   BuiltinConditions.spell('bal-innervate',29166,BuiltinConditions.all(BuiltinConditions.combat(),solo())),
   },
   rotation={
-   block('bal-boundaries','forever.druid.boundaries','bal-'),
-   stop('bal-target',negate({type='ATTACKABLE',unit='target'}),true),
-   {id='bal-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('bal-pull-wrath',5176),stop('bal-pull-stop')}},
+   BuiltinConditions.block('bal-boundaries','forever.druid.boundaries','bal-'),
+   stop('bal-target',BuiltinConditions.negate({type='ATTACKABLE',unit='target'}),true),
+   {id='bal-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={BuiltinConditions.spell('bal-pull-wrath',5176),stop('bal-pull-stop')}},
    {id='bal-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
-    spell('bal-moving-moonfire',8921,negate(dot(8921,true))),
-    spell('bal-moving-insect-swarm',5570,negate(dot(5570,true))),
-    spell('bal-moving-faerie-fire',770,all({type='GROUP'},negate(dot(770)))),
+    BuiltinConditions.spell('bal-moving-moonfire',8921,BuiltinConditions.negate(dot(8921,true))),
+    BuiltinConditions.spell('bal-moving-insect-swarm',5570,BuiltinConditions.negate(dot(5570,true))),
+    BuiltinConditions.spell('bal-moving-faerie-fire',770,BuiltinConditions.all({type='GROUP'},BuiltinConditions.negate(dot(770)))),
     stop('bal-moving-stop')}},
    {id='bal-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
-    spell('bal-hurricane',16914)}},
-   block('bal-dots','forever.druid.dots','bal-'),
-   spell('bal-eclipse-starfire',2912,aura(408255)),
-   spell('bal-clearcasting-starfire',2912,aura(16870)),
-   spell('bal-wrath',5176),
+    BuiltinConditions.spell('bal-hurricane',16914)}},
+   BuiltinConditions.block('bal-dots','forever.druid.dots','bal-'),
+   BuiltinConditions.spell('bal-eclipse-starfire',2912,aura(408255)),
+   BuiltinConditions.spell('bal-clearcasting-starfire',2912,aura(16870)),
+   BuiltinConditions.spell('bal-wrath',5176),
    -- Wrath unaffordable (mana is secret on Forever; an unaffordable spell is not ready): let the
    -- DoTs run and melee (implicit Attack).
   },
