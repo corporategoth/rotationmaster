@@ -4,6 +4,7 @@
 from pathlib import Path
 import importlib.util
 import errno
+import os
 import subprocess
 import sys
 import tempfile
@@ -15,6 +16,12 @@ INSTALLER = Path(__file__).resolve().parents[1] / 'tools/install_hooks.py'
 
 class HookTests(unittest.TestCase):
     def setUp(self):
+        # Git exports repository paths to hooks. A disposable fixture must not
+        # inherit those paths, or its git init targets the caller's repository.
+        for key in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_PREFIX'):
+            if key in os.environ:
+                value = os.environ.pop(key)
+                self.addCleanup(os.environ.__setitem__, key, value)
         self.folder = tempfile.TemporaryDirectory()
         self.addCleanup(self.folder.cleanup)
         self.root = Path(self.folder.name)
@@ -205,6 +212,17 @@ class HookTests(unittest.TestCase):
         self.hooks.symlink_to(self.root / 'saved-hooks', target_is_directory=True)
         self.assertNotEqual(self.install('--install').returncode, 0)
         self.assertFalse((self.root / 'saved-hooks/pre-commit').exists())
+
+class HookEnvironmentTests(unittest.TestCase):
+    def test_fixture_ignores_git_hook_repository_context(self):
+        with mock.patch.dict(os.environ, {'GIT_DIR': '/not-the-fixture', 'GIT_PREFIX': 'nested/'}):
+            fixture = HookTests('test_dry_run_does_not_write_and_check_reports_absence')
+            try:
+                fixture.setUp()
+                self.assertTrue((fixture.root / '.git').is_dir())
+                self.assertTrue(fixture.hooks.is_dir())
+            finally:
+                fixture.doCleanups()
 
 
 if __name__ == '__main__':
