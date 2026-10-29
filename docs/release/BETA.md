@@ -142,8 +142,9 @@ These are the features most likely to misbehave. If you can exercise one, please
 7. **Integrations** (Masque, Questie, boss mods, EllesmereUI, Dominos) and the native profiler: tested with fakes only.
 8. **Translations**: the ten non-English locales are complete, but the AI-assisted translations have not been reviewed by native speakers.
 9. **Premade quality**: the Built In rotations follow public guides; they are a starting point, not proof of an optimal rotation.
-10. **Raid markers**: mark conditions, marked units and the Set Mark step have only been tested with simulated clients. See
-    `docs/raid-marks.md` for in-game checks, including Retail restricted-data behavior.
+10. **Raid markers**: direct Set Mark worked in a TBC in-game test; mark conditions and units need more in-game testing.
+    Retail returned a secret marker and rejected direct marking as protected. Mark-dependent features and Set Mark are
+    disabled on Retail and Forever. See `docs/raid-marks.md` for the test checklist.
 11. **German layout**: the specialization picker and rotation list have only been checked with estimated font widths.
 
 ## Thanks

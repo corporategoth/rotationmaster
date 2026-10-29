@@ -36,7 +36,9 @@ The five item predicates now use protected per-evaluation observations through `
 
 Item Available retains its level/cooldown policy and uses the same Classic/later global-cooldown probe as spells. Actual item actions still enforce their own ownership, usability and range. Item Cooldown measures nonnegative remaining seconds at the evaluation timestamp; a disabled timer is unavailable, not an invented zero. Legacy UI item-set helpers and other remaining raw callers still need migration; these five predicates no longer depend on those helpers.
 
-Raid marks (`docs/raid-marks.md`) are covered by fake-client suites only. The direct `SetRaidTarget` call, events, `UnitTokenFromGUID` availability and marker readability need real-client checks. `/rm debug marks` reports the readable capabilities.
+Raid marks (`docs/raid-marks.md`) have fake-client coverage. Direct `SetRaidTarget` worked in TBC; Retail rejected the
+call as protected and returned a secret marker in the user's test. Mark features are disabled on Retail and Forever.
+Other marker behavior and `UnitTokenFromGUID` availability need real-client checks. `/rm debug marks` reports capabilities.
 
 ## Client API manifests and loadDeprecationFallbacks
 
