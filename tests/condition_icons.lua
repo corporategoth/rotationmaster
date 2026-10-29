@@ -34,7 +34,12 @@ end
 
 -- Conditions that borrow the artwork of a condition of a related meaning until a design of their own exists
 -- (Conditions/raid_marks.lua). They are the only conditions allowed to share an icon.
-local borrowed = { MARKED = 'CLASSIFICATION', MARK_COUNT = 'DISTANCE_COUNT' }
+local borrowed = {
+    MARKED = 'CLASSIFICATION',
+    MARK_COUNT = 'DISTANCE_COUNT',
+    UNIT_EXISTS = 'FRIENDLY',
+    RAID_ROLE = 'GROUP',
+}
 
 test('all reviewed Built In declarations use bundled original semantic icons', function()
     local seen, icons = {}, {}
@@ -92,7 +97,7 @@ test('all reviewed Built In declarations use bundled original semantic icons', f
         count = count + 1
     end
 
-    assert(count == 143, 'reviewed icon inventory changed: ' .. count)
+    assert(count == 145, 'reviewed icon inventory changed: ' .. count)
 end)
 
 test('category defaults follow stable identity while saved custom choices remain exact', function()

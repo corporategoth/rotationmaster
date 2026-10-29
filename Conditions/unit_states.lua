@@ -9,6 +9,10 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Borrow related artwork until dedicated icons are available.
+addon.Artwork.condition['UNIT_EXISTS'] = addon.Artwork.condition['UNIT_EXISTS'] or addon.Artwork.condition['FRIENDLY']
+addon.Artwork.condition['RAID_ROLE'] = addon.Artwork.condition['RAID_ROLE'] or addon.Artwork.condition['GROUP']
+
 -- Canonical helper leaves these callbacks call; the table below names the Built In helper behind each one.
 local Functions = {
     values = { isin = addon.Functions.values.isin },
@@ -124,7 +128,7 @@ addon:RegisterCondition('FRIENDLY', {
 -- A marked-unit kind is evaluated without first replacing it with a token, so a missing mark can be false under NOT.
 addon:RegisterCondition('UNIT_EXISTS', {
     description = L['Unit Exists'],
-    icon = addon.Artwork.condition['FRIENDLY'],
+    icon = addon.Artwork.condition['UNIT_EXISTS'],
     fields = { unit = 'string' },
     requiredFields = { 'unit' },
     valid = valid,
@@ -155,7 +159,7 @@ addon:RegisterCondition('UNIT_EXISTS', {
 -- Raid role is independent of the Set Mark action and matches only while the player is in a raid.
 addon:RegisterCondition('RAID_ROLE', {
     description = L['Raid Role'],
-    icon = addon.Artwork.condition['GROUP'],
+    icon = addon.Artwork.condition['RAID_ROLE'],
     fields = { role = 'string' },
     -- Checks the selected raid role.
     -- @param _ any  Unused specialization.

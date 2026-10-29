@@ -400,7 +400,7 @@ test('every actual branch source compiles current duplicates without an Ace bind
         count = count + 1
     end
 
-    assert(count == 143, 'current source inventory unexpectedly narrowed: ' .. count)
+    assert(count == 145, 'current source inventory unexpectedly narrowed: ' .. count)
 end)
 
 test(
@@ -457,7 +457,7 @@ test(
             count = count + 1
         end
 
-        assert(count == 143 and rendered > 1000, 'native render inventory narrowed')
+        assert(count == 145 and rendered > 1000, 'native render inventory narrowed')
     end
 )
 

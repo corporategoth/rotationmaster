@@ -238,9 +238,10 @@ local default_condition_groups = {
         name = L["Character"],
         conditions = {
             "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION", "LEVEL", "TALENT", "SPECIALIZATION", "ROLE", "GROUP",
-            "FORM", "PET", "PET_NAME", "HEALTH", "HEALTHPCT", "TT_HEALTH", "TT_HEALTHPCT", "MANA", "MANAPCT", "POWER",
-            "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN", "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN",
-            "STAT", "ECS_STAT", "ECS_STAT_PCT", "HERO_TALENT", "GROUP_COUNT", "PET_HAPPINESS", "STAGGER", "ECLIPSE"
+            "RAID_ROLE", "UNIT_EXISTS", "FORM", "PET", "PET_NAME", "HEALTH", "HEALTHPCT", "TT_HEALTH", "TT_HEALTHPCT",
+            "MANA", "MANAPCT", "POWER", "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN", "TOTEM", "TOTEM_SPELL",
+            "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN", "STAT", "ECS_STAT", "ECS_STAT_PCT", "HERO_TALENT", "GROUP_COUNT",
+            "PET_HAPPINESS", "STAGGER", "ECLIPSE"
         },
     },
     {
