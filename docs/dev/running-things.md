@@ -125,7 +125,7 @@ python3 tools/locales.py check
 | `tools/check`, `tools/check_all.py` | The command list of every check; fail-fast and run-everything runners |
 | `tools/fast_tests.py` | Suites named after changed Lua files |
 | `tools/format_lua.py`, `tools/bytecode_equal.py`, `tools/readability_report.py` | Reformat Lua without changing what it compiles to, prove a formatting-only commit, report long lines and uncommented functions (`docs/dev/formatting.md`) |
-| `tools/copyright.py` | The copyright notice line and the TOC licence field: `--check`, `--write`, `--list` (`docs/dev/conventions.md`) |
+| `tools/copyright.py` | The copyright notice line and the TOC license field: `--check`, `--write`, `--list` (`docs/dev/conventions.md`) |
 | `tools/function_comments.py` | `--check` (part of `tools/check --static`; zero violations, no baseline) lists the functions that lack the structured header comment (brief line, `@param` and `@return` lines) or have a malformed one; `--summary`, `--strict`, `--baseline FILE` and `--write-baseline FILE` (`docs/dev/formatting.md`, "Function headers") |
 | `tools/test_devtools.py` | Tests of the tools in this table |
 | `tools/setup_lint.py`, `tools/lint.py`, `tools/lint-tool.json`, `tools/lint-baseline.json` | Pinned wowlua-ls: download once, run against the baseline |

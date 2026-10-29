@@ -81,7 +81,7 @@ Standard library only, four spaces, single quotes, a module docstring that is th
 has a check mode that does not (`--check`, or no flag); a generator writes only with `--write`. Tools never download except
 `tools/setup_lint.py`, which verifies a pinned checksum.
 
-## Copyright notice and licence
+## Copyright notice and license
 
 Rotation Master is released under a modified MIT license ("MIT + Attribution"); the only place the terms are written is
 `LICENSE`. Every original source file carries one line, the first line of the file (after a shebang, or after the XML
@@ -100,7 +100,7 @@ declaration), in its own comment syntax:
   idempotent. The years and the wording are constants at the top of the tool and nowhere else; a new year is one edit and
   `--write`.
 - The tool classifies every tracked file, by path then extension: `include` with a comment syntax, or `skip` with a reason.
-  Skipped: vendored code (`Libs/`, `LibsAugment/`, `tools/vendor/`, which keep their own licences), art, fonts, textures, JSON
+  Skipped: vendored code (`Libs/`, `LibsAugment/`, `tools/vendor/`, which keep their own licenses), art, fonts, textures, JSON
   and prose (no comment syntax or not source), and generated files whose generator owns the first line
   (`Locales/*.lua`, the text bundles' locale tables, `Data/text_bundle_index.lua`, `Data/artwork.lua`, the generated client API
   fixtures). A new kind of file (an extension or a name no rule covers) fails with "not classified": add a rule.
