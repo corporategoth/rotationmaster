@@ -15,7 +15,7 @@ Built In rotation for your class, or create your own in game. You press the butt
 for you.
 
 <p align="center">
-  <img src="Assets/Branding/rotation-master-small.png" alt="Rotation Master logo" width="240">
+  <img src="Assets/Branding/rotation-master.png" alt="Rotation Master logo" width="240">
 </p>
 
 Version 2.0 is a rewrite of the 1.x addon and is being prepared as a beta. See the [beta guide](docs/release/BETA.md) for
