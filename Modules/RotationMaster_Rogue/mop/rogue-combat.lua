@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
  tags={'combat','dps','melee','leveling','endgame','wowhead'},
  sources={{url='https://www.wowhead.com/mop-classic/guide/classes/rogue/combat/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Combat Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},
- 
+
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/combat/dps-leveling-talent-builds-tips',title='Wowhead: Combat Rogue leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/combat-rogue-leveling',title='Icy Veins: Combat Rogue leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},
  body={priority=30,specs={260},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

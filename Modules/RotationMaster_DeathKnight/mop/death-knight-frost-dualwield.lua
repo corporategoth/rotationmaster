@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-death-knight-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Frost Death Knight rotation (dual-wield)',reviewedAt='2026-10-23',revision='2025-09-23'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-death-knight-leveling',title='Icy Veins: MoP Classic Frost Death Knight leveling',reviewedAt='2026-10-23',revision='2025-09-23'},
-  
+
   {url='https://www.wowhead.com/mop-classic/guide/classes/death-knight/frost/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Frost Death Knight rotation',reviewedAt='2026-10-23',revision='2025-08-02',notes='Read from a Wayback snapshot; same order.'},
  },
  body={priority=30,specs={251},switch={type='WEAPON_TYPE',slot='offhand',kind='weapon'},

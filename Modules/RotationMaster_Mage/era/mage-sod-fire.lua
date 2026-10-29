@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'fire','leveling','raid','single-target','aoe','season-of-discovery'},
  sources={
-  
+
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/mage/dps-talent-builds-runes',title='Wowhead: SoD Mage DPS runes (Phase 7)',reviewedAt='2026-10-23',revision='2025-02-07'},
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/mage/dps-overview',title='Wowhead: SoD Mage DPS overview (Phase 7)',reviewedAt='2026-10-23',revision='2025-01-30'},
   {url='https://www.icy-veins.com/wow-classic/fire-mage-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Fire Mage rotation (Phase 6)',reviewedAt='2026-10-23',revision='2025-04-08'},

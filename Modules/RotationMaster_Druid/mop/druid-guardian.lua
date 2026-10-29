@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
  tags={'guardian','tank','leveling','single-target','aoe','wowhead'},
  sources={
-  
+
   {url='https://www.wowhead.com/mop-classic/guide/classes/druid/guardian/tank-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Guardian Druid rotation',reviewedAt='2026-10-23',revision='2026-06-20'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/guardian-druid-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Guardian Druid rotation',reviewedAt='2026-10-23',revision='2025-06-22',notes='Maul on Tooth and Claw procs; Swipe at three enemies.'},
   {url='https://www.warcrafttavern.com/mop/guides/pve-guardian-druid-tank-rotations-cooldowns/',title='Warcraft Tavern: MoP Classic Guardian Druid',reviewedAt='2026-10-23',notes='Faerie Fire as a filler for Mangle resets.'},

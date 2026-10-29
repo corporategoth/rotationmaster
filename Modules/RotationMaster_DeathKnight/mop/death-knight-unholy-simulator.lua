@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'unholy','single-target','aoe'},
  sources={
-  
+
   {url='https://wowtbc.gg/mop/class-guides/unholy-death-knight/',title='wowtbc.gg: MoP Unholy Death Knight',reviewedAt='2026-10-23',notes='Death Coil to five stacks while Dark Transformation is down; rune-pair order.'},
   {url='https://www.method.gg/mop-classic/unholy-death-knight-class-guide-mop-classic',title='Method: MoP Classic Unholy Death Knight',reviewedAt='2026-10-23',revision='2025-07-22'},
   {url='https://github.com/kaminaris/MaxDps-DeathKnight/blob/95faf1baa6e91b0d5e32480227e35f54409dcfc2/Specialization/Mop/Unholy.lua',title='MaxDps-DeathKnight MoP Unholy',reviewedAt='2026-10-23',revision='95faf1baa6',notes='Same rune-pair rule; IDs not used.'},

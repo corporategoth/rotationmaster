@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  tags={'arcane','raid','single-target','aoe','season-of-discovery','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/arcane-mage-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Arcane Mage rotation (Phase 4)',reviewedAt='2026-10-23',revision='2025-04-08'},
-  
+
  },
  body={
   priority=104,

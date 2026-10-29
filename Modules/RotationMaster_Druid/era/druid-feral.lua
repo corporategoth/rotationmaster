@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/classic/guide/classes/druid/feral/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Feral DPS rotation',reviewedAt='2026-10-23',revision='2023-11-21'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/pve-feral-druid-tank-rotations-cooldowns/',title='Warcraft Tavern: Classic Feral tank',reviewedAt='2026-10-23'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/druid-leveling-guide/',title='Warcraft Tavern: Druid leveling',reviewedAt='2026-10-23'},
-  
+
  },
  body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=2}}},
   cooldowns={ref('era-feral-upkeep','era.druid.upkeep','era-feral-'),ref('era-feral-cooldowns','era.druid.feral-cooldowns','era-feral-')},

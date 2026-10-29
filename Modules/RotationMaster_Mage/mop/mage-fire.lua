@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'fire','leveling','single-target','aoe','wowhead'},
  sources={
-  
+
   {url='https://www.wowhead.com/mop-classic/guide/classes/mage/fire/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Fire Mage rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/MageFire.simc',title='Hekili (MoP Classic fork): Fire Mage priority',reviewedAt='2026-10-23',revision='0750b5dd98'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/fire-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Fire Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Inferno Blast spreading, AoE, talent rows.'},

@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/blood-death-knight-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Blood Death Knight rotation',reviewedAt='2026-10-23',revision='2025-09-23'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/blood-death-knight-leveling',title='Icy Veins: MoP Classic Blood Death Knight leveling',reviewedAt='2026-10-23',revision='2025-09-23'},
-  
+
   {url='https://www.wowhead.com/mop-classic/guide/classes/death-knight/blood/tank-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Blood Death Knight rotation',reviewedAt='2026-10-23',revision='2025-08-02',notes='Read from a Wayback snapshot; Crimson Scourge split at 15 s.'},
  },
  body={priority=30,specs={250},

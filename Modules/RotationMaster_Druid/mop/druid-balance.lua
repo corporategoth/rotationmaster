@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
  tags={'balance','leveling','single-target','aoe','wowhead'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/druid/balance/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Balance Druid rotation',reviewedAt='2026-10-23',revision='2026-06-20'},
-  
+
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/balance-druid-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Balance Druid rotation',reviewedAt='2026-10-23',revision='2025-06-22',notes='Same list; Innervate at 70% mana.'},
   {url='https://www.warcrafttavern.com/mop/guides/pve-balance-druid-rotations-cooldowns/',title='Warcraft Tavern: MoP Classic Balance Druid',reviewedAt='2026-10-23',notes='Astral Storm in Lunar for AoE.'},
  },

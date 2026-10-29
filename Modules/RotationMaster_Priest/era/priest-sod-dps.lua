@@ -21,7 +21,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
  tags={'shadow','damage','leveling','raid','single-target','aoe','season-of-discovery','icy-veins'},
  sources={
-  
+
   {url='https://www.icy-veins.com/wow-classic/shadow-priest-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Shadow Priest rotation',reviewedAt='2026-10-23',revision='2025-04-08',notes='Text describes Phase 4.'},
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/priest/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Priest DPS rotation',reviewedAt='2026-10-23',revision='2025-02-01',notes='Phase 7 text; AoE and cooldowns only.'},
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/priest/dps-leveling-tips',title='Wowhead: SoD Priest DPS leveling',reviewedAt='2026-10-23',revision='2025-02-01'},

@@ -41,8 +41,8 @@ assert(addon:RegisterDefaultRotation({
  tags={'dps','melee','survival','leveling','endgame','season-of-discovery','wowhead'},
  sources={
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/melee-dps-rotation-cooldowns-abilities-pve',title='Wowhead: Melee Hunter rotation, Season of Discovery',reviewedAt='2026-10-23',revision='2025-08-20'},
-  
-  
+
+
  },
  body={priority=110,switch=all(any(rune(415320),rune(458479),rune(425711)),negate(rune(409433)),negate(rune(409552))),
  cooldowns={block('sod.hunter.upkeep','hunter-'),

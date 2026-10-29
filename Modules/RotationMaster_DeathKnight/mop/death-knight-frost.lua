@@ -20,7 +20,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
  tags={'frost','leveling','single-target','aoe','hekili'},
  sources={
-  
+
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/DeathKnightFrost.simc',title='Hekili MoP fork: Frost Death Knight (obliterate_build)',reviewedAt='2026-10-23',revision='0750b5dd98'},
   {url='https://www.warcrafttavern.com/mop/guides/death-knight-leveling-guide/',title='Warcraft Tavern: MoP Death Knight leveling',reviewedAt='2026-10-23',notes='Two-handers while leveling; Obliterate on Killing Machine.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-death-knight-leveling',title='Icy Veins: MoP Classic Frost Death Knight leveling',reviewedAt='2026-10-23',revision='2025-09-23',notes='Shared opening: Pillar, diseases, Death Strike at low health.'},

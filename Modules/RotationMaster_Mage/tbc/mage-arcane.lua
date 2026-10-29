@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/tbc/guide/classes/mage/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Mage DPS rotation',reviewedAt='2026-10-23',revision='2026-05-31'},
   {url='https://www.warcrafttavern.com/tbc/guides/pve-arcane-mage-rotation-cooldowns-abilities/',title='Warcraft Tavern: Arcane Mage PvE rotation',reviewedAt='2026-10-23'},
   {url='https://github.com/kaminaris/MaxDps-Mage/tree/886c8e27f48e38e0f9b8c22cf56b5e625dfce3f0/Specialization/TBC',title='MaxDps-Mage TBC Arcane module',reviewedAt='2026-10-23',revision='886c8e2'},
-  
+
  },
  body={
   priority=20,

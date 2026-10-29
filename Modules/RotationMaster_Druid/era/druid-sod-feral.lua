@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
  tags={'season-of-discovery','leveling','endgame','feral','melee','single-target','aoe','wowhead','icy-veins'},
  sources={
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/druid/feral/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2025-04-07'},
-  
+
   {url='https://www.icy-veins.com/wow-classic/feral-druid-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  },
  body={priority=130,switch=any(rune(407988),all(negate(rune(409824)),negate(rune(417157)),{type='PRIMARY_TALENT_TREE',tree=2})),

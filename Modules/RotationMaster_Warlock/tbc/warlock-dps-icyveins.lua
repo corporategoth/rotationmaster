@@ -35,8 +35,8 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/tbc-classic/destruction-warlock-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Destruction Warlock rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.wowhead.com/tbc/guide/classes/warlock/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Warlock DPS rotation (Siphon Life and refresh timing)',reviewedAt='2026-10-23',revision='2026-02-10'},
   {url='https://github.com/kaminaris/MaxDps-Warlock/tree/432c75e0dd45802eabaeee3cb472513392b9b83d/Specialization/TBC',title='MaxDps-Warlock TBC modules',reviewedAt='2026-10-23',revision='432c75e'},
-  
-  
+
+
  },
  body={
   priority=10,

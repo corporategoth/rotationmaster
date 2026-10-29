@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
  tags={'frost','leveling','single-target','aoe','method'},
  sources={
-  
+
   {url='https://www.method.gg/mop-classic/frost-mage-class-guide-mop-classic',title='Method: MoP Classic Frost Mage guide',reviewedAt='2026-10-23',notes='Phase 1 text.'},
   {url='https://wowtbc.gg/mop/class-guides/frost-mage',title='wowtbc.gg: MoP Classic Frost Mage PvE guide',reviewedAt='2026-10-23'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Frost Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Freeze on rootable targets, AoE and Blizzard, talent rows.'},

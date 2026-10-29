@@ -19,8 +19,8 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.wowhead.com/tbc/guide/classes/mage/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Mage DPS rotation',reviewedAt='2026-10-23',revision='2026-05-31'},
   {url='https://www.wowhead.com/tbc/guide/classes/mage/fire/leveling-tips',title='Wowhead: Fire Mage leveling',reviewedAt='2026-10-23',revision='2026-01-04'},
-  
-  
+
+
  },
  body={
   priority=10,disabled=true,

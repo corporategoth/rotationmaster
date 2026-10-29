@@ -41,7 +41,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/hunter/beast-mastery/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Beast Mastery Hunter rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/hunter/beast-mastery/dps-leveling-talent-builds-tips',title='Wowhead: MoP Classic Beast Mastery Hunter leveling',reviewedAt='2026-10-23',revision='2026-06-29'},
-  
+
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/HunterBeastMastery.simc',title='Hekili MoP Classic Beast Mastery priority',reviewedAt='2026-10-23',revision='0750b5dd98',notes='Bestial Wrath at 50 focus; no Focus Fire during Bestial Wrath.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/beast-mastery-hunter-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Beast Mastery Hunter rotation',reviewedAt='2026-10-23',revision='2026-05-29',notes='Same abilities; Kill Command before Kill Shot.'},
  },

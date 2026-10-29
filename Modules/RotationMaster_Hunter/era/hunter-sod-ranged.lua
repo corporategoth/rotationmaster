@@ -41,8 +41,8 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
  tags={'dps','ranged','leveling','endgame','season-of-discovery','wowhead'},
  sources={
-  
-  
+
+
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/ranged/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Ranged Hunter rotation, Season of Discovery',reviewedAt='2026-10-23',revision='2025-04-28'},
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/dps-leveling-tips',title='Wowhead: Ranged Hunter leveling tips, Season of Discovery',reviewedAt='2026-10-23',revision='2025-02-07'},
  },

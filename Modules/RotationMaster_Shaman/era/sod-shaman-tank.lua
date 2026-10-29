@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
  tags={'tank','melee','endgame','aoe','season-of-discovery','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/enhancement-shaman-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Enhancement Shaman tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/shaman/tank-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Shaman tank rotation',reviewedAt='2026-10-23',revision='2025-04-07'},
- 
+
  {url='https://www.warcrafttavern.com/wow-classic/guides/sod-shaman-tank/',title='Warcraft Tavern: SoD Shaman tank (Phase 4)',reviewedAt='2026-10-23'}},
  -- Way of Earth: 408531 is the rune's first taught spell (simulator/exporter), 408680 the same name on Wowhead.
  body={priority=70,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=30},any({type='RUNE_ENGRAVED',spell=408531},{type='RUNE_ENGRAVED',spell=408680})}},

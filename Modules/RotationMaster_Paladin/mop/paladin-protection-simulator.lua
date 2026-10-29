@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'protection','tank','single-target','aoe'},
  sources={
-  
+
   {url='https://wowtbc.gg/mop/class-guides/protection-paladin/',title='wowtbc.gg: MoP Protection Paladin guide',reviewedAt='2026-10-23',notes='Same generator order; Sacred Shield maintained.'},
  },
  body={priority=20,disabled=true,specs={66},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

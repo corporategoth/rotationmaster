@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
  tags={'survival','leveling','single-target','aoe','wowhead'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/hunter/survival/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Survival Hunter rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},
-  
+
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/survival-hunter-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Survival Hunter rotation',reviewedAt='2026-10-23',revision='2026-05-29',notes='Explosive Shot opener while leveling.'},
  },
  body={priority=10,specs={255},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

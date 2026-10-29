@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'brewmaster','tank','leveling','single-target','aoe','wowhead'},
  sources={
-  
+
   {url='https://www.wowhead.com/mop-classic/guide/classes/monk/brewmaster/tank-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Brewmaster Monk rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20',notes='Read from a Wayback snapshot; Shuffle before Purifying Brew.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/brewmaster-monk-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Brewmaster Monk rotation',reviewedAt='2026-10-23',revision='2025-07-09',notes='Elusive Brew from six stacks, Breath of Fire only with Shuffle safe; leveling equals the cap rotation.'},
  },

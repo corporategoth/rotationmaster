@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/tbc/guide/classes/warlock/demonology/leveling-tips',title='Wowhead: Demonology Warlock leveling',reviewedAt='2026-10-23',revision='2026-02-02'},
   {url='https://www.wowhead.com/tbc/guide/classes/warlock/destruction/leveling-tips',title='Wowhead: Destruction Warlock leveling',reviewedAt='2026-10-23',revision='2026-02-02'},
   {url='https://www.wowhead.com/tbc/guide/classes/warlock/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Warlock DPS rotation',reviewedAt='2026-10-23',revision='2026-02-10'},
-  
+
  },
  body={
   priority=5,disabled=true,

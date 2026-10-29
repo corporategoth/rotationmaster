@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
  tags={'windwalker','leveling','single-target','aoe','wowhead'},
  sources={
-  
+
   {url='https://www.wowhead.com/mop-classic/guide/classes/monk/windwalker/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Windwalker Monk rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20',notes='Read from a Wayback snapshot; Tigereye Brew at 19, 15 with Chi or 10 with a burst buff.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/windwalker-monk-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Windwalker Monk rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Fists of Fury gates and Expel Harm instead of Jab when hurt; leveling order.'},
  },

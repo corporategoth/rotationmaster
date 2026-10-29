@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-destruction-warlock-rotations-cooldowns/',title='Warcraft Tavern: Destruction Warlock rotation (MoP)',reviewedAt='2026-10-23'},
  {url='https://www.method.gg/mop-classic/destruction-warlock-class-guide-mop-classic',title='Method: Destruction Warlock guide (MoP Classic)',reviewedAt='2026-10-23',revision='2025-07-23'},
  {url='https://wowtbc.gg/mop/class-guides/destruction-warlock/',title='wowtbc.gg: Destruction Warlock (MoP Classic)',reviewedAt='2026-10-23'},
- 
+
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/WarlockDestruction.simc',title='Hekili (MoP fork): Destruction Warlock priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
  body={priority=30,specs={267},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.warlock.upkeep','warlock-'),block('mop.warlock.pet-felhunter','warlock-'),

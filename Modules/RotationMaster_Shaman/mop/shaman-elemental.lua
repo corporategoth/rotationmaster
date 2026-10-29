@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
  tags={'elemental','dps','caster','ranged','leveling','endgame','wowhead','icy-veins'},
  sources={{url='https://www.wowhead.com/mop-classic/guide/classes/shaman/elemental/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Elemental Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/elemental-shaman-pve-rotation-cooldowns-abilities',title='Icy Veins: Elemental Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'},
- 
+
  {url='https://www.warcrafttavern.com/mop/guides/pve-elemental-shaman-rotation-cooldowns/',title='Warcraft Tavern: Elemental Shaman rotation (MoP)',reviewedAt='2026-10-23'},
  {url='https://wowtbc.gg/mop/class-guides/elemental-shaman/',title='wowtbc.gg: Elemental Shaman (MoP Classic)',reviewedAt='2026-10-23'}},
  body={priority=30,specs={262},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

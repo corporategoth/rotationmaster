@@ -18,7 +18,7 @@ assert(addon:RegisterDefaultRotation({
  tags={'season-of-discovery','leveling','endgame','feral','tank','melee','single-target','aoe','icy-veins','warcraft-tavern'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/feral-druid-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Feral Druid tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
-  
+
   {url='https://www.warcrafttavern.com/wow-classic-sod/guides/druid-tank/',title='Warcraft Tavern: SoD Druid tank (Phase 4)',reviewedAt='2026-10-23'},
  },
  body={priority=140,switch={type='RUNE_ENGRAVED',spell=414644},

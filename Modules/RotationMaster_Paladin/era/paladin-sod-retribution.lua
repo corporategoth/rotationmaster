@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
  tags={'leveling','endgame','retribution','melee','single-target','season-of-discovery','wowhead','icy-veins'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin DPS rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-06-06'},
-  
+
   {url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-leveling',title='Icy Veins: SoD Retribution Paladin leveling (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-02',notes='Leveling order and the mana-gated Hammer of Wrath.'}},
  body={priority=102,
   cooldowns={block('sret-upkeep','sod.paladin.ret-upkeep','sret-'),block('sret-safety','era.paladin.safety','sret-')},

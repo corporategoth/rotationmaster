@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'frost','raid','single-target','aoe','season-of-discovery'},
  sources={
-  
+
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/mage/dps-talent-builds-runes',title='Wowhead: SoD Mage DPS runes (Phase 7)',reviewedAt='2026-10-23',revision='2025-02-07'},
   {url='https://www.icy-veins.com/wow-classic/frost-mage-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Frost Mage rotation (Phase 4)',reviewedAt='2026-10-23',revision='2025-04-08'},
  },

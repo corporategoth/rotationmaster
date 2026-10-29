@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
  tags={'marksmanship','leveling','single-target','aoe','wowhead'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/hunter/marksmanship/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Marksmanship Hunter rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},
-  
+
   {url='https://www.warcrafttavern.com/mop/guides/pve-marksmanship-hunter-dps-rotations-cooldowns/',title='Warcraft Tavern: MoP Marksmanship Hunter rotation',reviewedAt='2026-10-23',notes='Arcane Shot when you cannot stand still.'},
  },
  body={priority=10,specs={254},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

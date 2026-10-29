@@ -30,7 +30,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
  tags={'retribution','leveling','single-target','aoe','hekili','wowhead','icy-veins'},
  sources={
-  
+
   {url='https://github.com/Smufrik/Hekili/blob/main/MistsOfPandaria/Priorities/PaladinRetribution.simc',title='Hekili MoP Classic: Retribution priority',reviewedAt='2026-10-23',revision='1c11434a',notes='A port of the simulator list; Inquisition at 3 Holy Power or Divine Purpose.'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/paladin/retribution/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Retribution Paladin rotation',reviewedAt='2026-10-23',revision='2025-07-27',notes='Read from a Wayback snapshot; Divine Storm at 2+, Hammer of the Righteous at 4+.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/retribution-paladin-leveling',title='Icy Veins: MoP Classic Retribution Paladin leveling',reviewedAt='2026-10-23',revision='2025-09-23',notes='Word of Glory when in danger; Inquisition only from 81.'},

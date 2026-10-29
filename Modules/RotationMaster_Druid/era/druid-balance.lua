@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/classic/guide/classes/druid/balance/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Balance Druid rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/balance-druid-pve-dps/',title='Warcraft Tavern: Classic Balance Druid',reviewedAt='2026-10-23'},
   {url='https://www.icy-veins.com/wow-classic/balance-druid-leveling-talent-build-from-1-to-60',title='Icy Veins: Balance Druid leveling',reviewedAt='2026-10-23',revision='2026-07-18'},
-  
+
   {url='https://github.com/kaminaris/MaxDps-Druid/tree/0164267887c2efffb3068100a290c4513f961b7f/Specialization/Classic',title='MaxDps-Druid Classic modules',reviewedAt='2026-10-23',revision='0164267'},
  },
  body={priority=2,

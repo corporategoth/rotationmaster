@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/classic/guide/classes/hunter/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Hunter DPS rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/pve-marksmanship-hunter/',title='Warcraft Tavern: PvE Marksmanship Hunter',reviewedAt='2026-10-23'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/hunter-leveling-guide/',title='Warcraft Tavern: Hunter leveling guide',reviewedAt='2026-10-23'},
-  
+
  },
  body={priority=10,
  cooldowns={block('era.hunter.hawk','hunter-'),block('era.hunter.upkeep','hunter-'),block('era.hunter.cooldowns','hunter-')},

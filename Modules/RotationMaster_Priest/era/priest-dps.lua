@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/classic/guide/classes/priest/shadow/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Shadow Priest rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
   {url='https://www.wowhead.com/classic/guide/classes/priest/hardcore-leveling-tips',title='Wowhead: Hardcore Priest leveling',reviewedAt='2026-10-23',revision='2024-11-20'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/shadow-priest-pve/',title='Warcraft Tavern: Classic Shadow Priest PvE',reviewedAt='2026-10-23'},
-  
+
  },
  body={
   priority=10,
