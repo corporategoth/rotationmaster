@@ -27,7 +27,7 @@ installation, testing and known issues.
 ## What it does
 
 - **Build rotations in game.** Put spells and items in priority order, add conditions, and use Branch and Stop steps to
-  handle different situations. Start with one of about 155 Built In rotations and adjust it for your character.
+  handle different situations. Start with a Built In rotation and adjust it for your character.
 - **Choose when to use them.** Keep several rotations and select one manually or let Rotation Master switch when a
   rotation's conditions match.
 - **Highlight your actions.** Light matching buttons on supported action bars, show cooldowns alongside your main

@@ -24,7 +24,7 @@ a real client. Your reports are what turn it into a release.
 
 - **A new rotation editor** with cards and a tree, a library of rotations with Class and Character scopes, tags and search,
   drafts with undo and redo, unsaved-change guards, and Compare / Preview / Check for imported rotations.
-- **About 155 Built In rotations** for Classic Era / Season of Discovery, TBC Anniversary, Mists, Forever and Retail, shipped as
+- **Built In rotations** for Classic Era / Season of Discovery, TBC Anniversary, Mists, Forever and Retail, shipped as
   one small add-on per class so only your class and client load. Enable, disable and re-prioritize them per profile; each
   specialization has one recommended premade enabled and alternatives off.
 - **Many more conditions**, talent trees named instead of numbered, a talent picker with a "Show talent tree" window on Retail
