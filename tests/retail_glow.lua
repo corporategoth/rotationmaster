@@ -71,6 +71,22 @@ local function find(lines, pattern)
     end
 end
 
+test('diagnostic sends the saved report to the real copy window', function()
+    local F = dofile('tests/fixtures/addon.lua')
+    local f = F.new(1, 12, 'SHAMAN')
+    dofile('tests/fixtures/native_ui.lua')(f.env)
+    f.env.RotationMasterDB = {}
+    f.load('UI/condition_text.lua')
+    f.load('Diagnostics/glow.lua')
+    f.addon.BuildGlowDiagnostic = function() return { 'Glow diagnostic', 'spell 188196 is not ready' }, 'not ready' end
+    f.addon.print = function() end
+    local lines = f.addon:RunGlowDiagnostic()
+    local dialog = assert(f.addon.conditionTextWindow)
+    assert(dialog.edit:GetText() == table.concat(lines, '\n'))
+    f.addon:ShowGlowDiagnostic()
+    assert(dialog.edit:GetText() == table.concat(lines, '\n'))
+end)
+
 -- Diagnostic ------------------------------------------------------------------
 test('diagnostic: walks the chain, names the step, the button and the glow, and saves the report', function()
     local c = whole()
