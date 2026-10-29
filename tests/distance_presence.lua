@@ -25,7 +25,7 @@ local function evaluator()
     local signature = '    evaluate = function(value, cache)'
     local _, start = assert(section:find(signature, 1, true))
     assert(not section:find(signature, start + 1, true))
-    local ending = assert(section:find('    end,\n    print = function', start + 1, true))
+    local ending = assert(section:find('\n    end,\n', start + 1, true) + 1)
     local body = section:sub(start + 1, ending + 3)
 
     assert(

@@ -541,6 +541,7 @@ test('the rotation editor offers Blizzard\'s suggestion in the rotation list onl
     local source = assert(io.open('tests/rotation_editor_ui.lua')):read('*a')
     local editor, card = assert(loadstring(assert(source:match('^(.-)\ntest%(')) .. '\nreturn fixture,card'))()
     local f, parent = editor()
+    f.addon.Platform.GetAssistedAvailability = function() return { available = true } end
     local pane = assert(f.addon:CreateRotationEditor(parent, 0, 'mine'))
 
     local function rows(id)
