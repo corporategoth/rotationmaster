@@ -191,10 +191,17 @@ for _, name in ipairs({ 'enUS', 'deDE', 'ruRU' }) do
 
                     assert(icon.type == 'RM-ConditionIcon' and upper and lower, 'the block lacks the icon or a list')
 
+                    local tree = kind == 'retail' and assert(find(box, label('Talent Tree')), 'missing tree selector')
+                        or nil
+
                     assert(
-                        box.children[2] == upper and box.children[3] == lower,
+                        box.children[2] == upper and box.children[tree and 4 or 3] == lower,
                         'the lists are not the rows, top to bottom'
                     )
+
+                    if tree then
+                        assert(box.children[3] == tree, 'tree selector is not between specialization and talent')
+                    end
 
                     local resolve = audit.resolver(parent.frame)
                     local ri, ru, rl = resolve(icon.frame), resolve(upper.frame), resolve(lower.frame)
@@ -209,6 +216,17 @@ for _, name in ipairs({ 'enUS', 'deDE', 'ruRU' }) do
                     ))
 
                     assert(ru.bottom >= rl.top - .5, 'the lists are not one above the other')
+
+                    if tree then
+                        local rt = assert(resolve(tree.frame), 'tree selector has no position')
+
+                        assert(
+                            within(rt, width) and not overlap(rt, ri) and not overlap(rt, ru) and not overlap(rt, rl)
+                        )
+
+                        assert(ru.bottom >= rt.top - .5 and rt.bottom >= rl.top - .5, 'tree selector is out of order')
+                    end
+
                     assert(math.abs(ru.left - rl.left) < 1, 'the lists do not line up')
                     -- The icon spans the two rows: it reaches above the lower row and below the upper one,
                     -- and is centered on them.
@@ -232,7 +250,7 @@ for _, name in ipairs({ 'enUS', 'deDE', 'ruRU' }) do
                     )
 
                     assert(not overlap(ri, ru) and not overlap(ri, rl) and not overlap(ru, rl), 'controls overlap')
-                    local button = box.children[4]
+                    local button = box.children[tree and 5 or 4]
 
                     if button then
                         assert(button.type == 'RM-ConditionButton' and button:GetUserData('side'))

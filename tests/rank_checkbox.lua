@@ -416,7 +416,7 @@ test('no current English or locale text still offers Match all ranks', function(
         local text = h:read('*a')
         h:close()
         -- English maps the label to its ID; a translation records the English in the comment above it.
-        local marker = path:match('enUS%.lua$') and ('N["' .. LABEL .. '"] = ') or (' English: ' .. LABEL .. '\n')
+        local marker = path:match('enUS%.lua$') and ('T["' .. LABEL .. '"] = ') or (' English: ' .. LABEL .. '\n')
         assert(text:find(marker, 1, true), path .. ' lacks the shared rank label')
     end
 

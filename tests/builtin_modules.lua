@@ -86,9 +86,24 @@ local function client(f, project, options)
 
         for _, path in ipairs(modules.entries(toc)) do
             ran[#ran + 1] = path
-            local chunk = assert(loadfile(path))
-            setfenv(chunk, f.env)
-            chunk(name, namespace)
+
+            if path:match('%.xml$') then
+                local file = assert(io.open(path))
+                local xml = file:read('*a')
+                file:close()
+                f.env.GetLocale = function() return 'enUS' end
+
+                for file in xml:gmatch('<Script%s+file="([^"]+)"') do
+                    local script = path:match('^(.*)/') .. '/' .. file:gsub('\\', '/')
+                    local chunk = assert(loadfile(script))
+                    setfenv(chunk, f.env)
+                    chunk(name, namespace)
+                end
+            else
+                local chunk = assert(loadfile(path))
+                setfenv(chunk, f.env)
+                chunk(name, namespace)
+            end
         end
 
         loaded[name] = true
@@ -152,7 +167,9 @@ for _, c in ipairs({
 
         for _, path in ipairs(ran) do
             assert(
-                path == 'Modules/' .. c[6] .. '/bind.lua' or path:find('^Modules/' .. c[6] .. '/' .. c[5] .. '/'),
+                path == 'Modules/' .. c[6] .. '/bind.lua' or path == 'Modules/' .. c[6] .. '/locales.xml' or path:find(
+                    '^Modules/' .. c[6] .. '/' .. c[5] .. '/'
+                ),
                 path .. ' ran on a ' .. c[5] .. ' client'
             )
         end
@@ -277,10 +294,13 @@ test('outside a client (no loader) nothing is requested or reported', function()
 end)
 
 -- What a file registers, run in isolation through a recording namespace.
+local helperFixture = corpus.load(5, 1, 'SHAMAN', { modules = false })
+
 local function registrations(path)
     local rows = {}
 
     local namespace = {
+        BuiltInConditionHelpers = helperFixture.addon.BuiltInConditionHelpers,
         RegisterDefaultBlock = function(_, b)
             rows[#rows + 1] = { kind = 'block', families = b.families, class = b.class }
             return true
@@ -305,8 +325,16 @@ do
     local text = h:read('*a')
     h:close()
 
+    local classModules = {}
+
+    for _, module in ipairs(modules.list()) do
+        classModules[module.name] = true
+    end
+
     for module in text:gmatch('"module"%s*:%s*"([^"]+)"') do
-        notBuiltIn[module] = true
+        if not classModules[module] then
+            notBuiltIn[module] = true
+        end
     end
 end
 
@@ -369,7 +397,7 @@ test(
         local onDisk = 0
 
         for path in p:lines() do
-            if not notBuiltInPath(path) then
+            if not notBuiltInPath(path) and not path:find('/Locales/', 1, true) then
                 onDisk = onDisk + 1
                 assert(listed[path], path .. ' is in no flavour TOC')
             end

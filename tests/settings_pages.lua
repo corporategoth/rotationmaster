@@ -246,11 +246,11 @@ test('General page help retains authored explanations without scattering questio
 end)
 
 test('General help localizes whole field explanations in the visible control order',function()
-    local f,parent=fixture();local a=f.addon;local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
+    local f,parent=fixture();local a=f.addon
     local controls={'enable','disable_buttons','minimap','poll','idle_poll','autoswitch_poll','live_config_update','rotation_view',
         'spell_history','combat_history','damage_history','preview_spells','preview_opacity','preview_locked','preview_vertical','preview_reset',
         'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling','cpu_capture','cpu_report'}
-    for _,key in ipairs(controls) do L['Help.General.'..key]='Translated field '..key end
+    for _,row in ipairs(a:GetGeneralOptionHelp()) do if row.id then f.translations[row.text]='Translated field '..row.id end end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
     local found,last={},0
     for index,entry in ipairs(a:GetGeneralOptionHelp()) do if entry.id then found[entry.id]={entry=entry,index=index} end end
@@ -332,7 +332,7 @@ test('other settings Help pages retain their authored field descriptions',functi
     end
 end)
 test('Effects help covers every real effect type and its sequence controls with whole translations',function()
-    local f,parent=fixture();local a=f.addon;local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
+    local f,parent=fixture();local a=f.addon
     local variants={
         texture={texture='texture'},
         pixel={lines='pixel.lines',frequency='pixel.frequency',length='pixel.length',thickness='pixel.thickness'},
@@ -345,10 +345,11 @@ test('Effects help covers every real effect type and its sequence controls with 
         rotate={texture='texture',frequency='rotate.frequency',steps='rotate.steps',reverse='rotate.reverse'},
         custom={frequency='custom.frequency',seq1texture='sequence.texture',seq1angle='sequence.angle',seq1mag='sequence.magnification',seq1color='sequence.color'},
     }
-    for _,id in ipairs({'name','type','save','delete','collections','sequence','sequence.texture','sequence.color','sequence.magnification','sequence.angle'}) do L['Help.Effects.'..id]='Translated effect '..id end
-    for kind,fields in pairs(variants) do
-        L['Help.Effects.type.'..kind]='Translated type '..kind
-        for _,id in pairs(fields) do L['Help.Effects.'..id]='Translated effect '..id end
+    for _,row in ipairs(a:GetDocument_layout_effects_options_help()) do
+        if row.id then
+            local kind = row.id:match('^type%.(.+)$')
+            f.translations[row.text] = kind and ('Translated type '..kind) or ('Translated effect '..row.id)
+        end
     end
     for kind,fields in pairs(variants) do
         local entry=kind=='animate' and 'texture' or kind=='pulse' and 1 or kind=='dazzle' and {r=1,g=1,b=1,a=1} or {texture='texture',angle=0,magnification=1,color={r=1,g=1,b=1,a=1}}
@@ -994,10 +995,10 @@ test('ordered reorder confirmation defers changes and rejects stale accepted mov
     p:Release()
 end)
 test('Profiles Help documents actual controls creation and immediate actions with localized field order',function()
-    local f,parent=fixture();local a=f.addon;local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
+    local f,parent=fixture();local a=f.addon
     assert(a.GetProfileOptionHelp,'Profiles lacks structured field Help')
     local order={'activate','copy','reset','delete','new_name','collections'}
-    for _,key in ipairs(order) do L['Help.Profiles.'..key]='Translated profile '..key end
+    for _,row in ipairs(a:GetProfileOptionHelp()) do f.translations[row.text]='Translated profile '..row.id end
     local rows=a:GetProfileOptionHelp();local documented,position={},{}
     for i,row in ipairs(rows) do documented[row.id]=row;position[row.id]=i end
     for i,key in ipairs(order) do assert(documented[key] and documented[key].text=='Translated profile '..key);if i>1 then assert(position[key]>position[order[i-1]]) end end
@@ -1012,9 +1013,8 @@ end)
 test('Integrations Help covers provider choices line numbers and loaded versus connected status',function()
     local f,parent=fixture();local a=f.addon;f.load('UI/lua_editor.lua');f.load('UI/settings_integrations.lua')
     assert(a.GetIntegrationOptionHelp,'Integrations lacks structured field Help')
-    local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
     local order={'lua_editor','lua_line_numbers','optional_addons'}
-    for _,key in ipairs(order) do L['Help.Integrations.'..key]='Translated integration '..key end
+    for _,row in ipairs(a:GetIntegrationOptionHelp()) do f.translations[row.text]='Translated integration '..row.id end
     local rows=a:GetIntegrationOptionHelp();for i,key in ipairs(order) do assert(rows[i].id==key and rows[i].text=='Translated integration '..key) end
     local p=a:OpenNativeSettings(parent,'Integrations');assert(p.fields.integration_status_editor_native and p.fields.lua_native_highlighting and p.fields.lua_line_numbers)
     local all=a:WorkbenchPageHelp('Integrations');local found={};for _,row in ipairs(all) do if row.id then found[row.id]=row.text end end

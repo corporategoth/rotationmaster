@@ -68,6 +68,17 @@ local function inverse(value, tag, mode)
         local result = copy(value)
         result.print = old[tag]
 
+        -- The English-key migration changed this help callback after the archived export.
+        -- Reconstruct the historical source, including its original locale key, for its frozen hash.
+        if tag == 'ITEM_COOLDOWN' then
+            result.help = replaceOnce(
+                result.help,
+                'L["Choose a trinket slot to read whatever is equipped there, so one rotation works for every trinket; the item above is then ignored. An empty slot is false, and a trinket with no on-use effect is unavailable."]',
+                'L["Help.Conditions.ITEM_COOLDOWN_SLOT"]',
+                'historical trinket help key'
+            )
+        end
+
         for key in pairs(added[tag]) do
             result.bindings[key] = nil
         end

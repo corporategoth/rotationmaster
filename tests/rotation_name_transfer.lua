@@ -7,7 +7,7 @@
 local F = dofile('tests/fixtures/addon.lua')
 local make = dofile('tests/fixtures/rotation_data.lua')
 local test, finish = F.suite()
-local KEY = "Blizzard Assisted with brews"
+local KEY = "rm.test.brewmaster.Name"
 
 -- The real AceLocale keeps its entries raw in the locale table; the fixture keeps them aside. Mirror them.
 local function localize(f, entries)
@@ -324,8 +324,15 @@ test('no shipped Built In shows a dotted key as its name, in English, in German,
     end
 
     local entries = dofile('tests/fixtures/locale_entries.lua')
-    local english = entries.entries('enUS')
-    localize(f)
+    local english = {}
+
+    for _, module in ipairs(modules.list()) do
+        for key, value in pairs(entries.dir_entries(module.dir .. '/Locales', 'enUS')) do
+            english[key] = value
+        end
+    end
+
+    localize(f, english)
     local rows = a:ListDefaultRotations(0)
     assert(#rows > 0)
 
@@ -345,7 +352,7 @@ test('no shipped Built In shows a dotted key as its name, in English, in German,
             local text_ = text[exported.nameKey]
 
             assert(
-                exported.body.name == text_ and exported.nameKey:find('^Default%.'),
+                exported.body.name == text_ and exported.nameKey:find('^rm%.'),
                 label .. ' export of ' .. row.id .. ' names it ' .. tostring(exported.body.name)
             )
 
@@ -358,7 +365,14 @@ test('no shipped Built In shows a dotted key as its name, in English, in German,
 
     check('enUS', english)
     -- The German file as the client reads it: its own entries over English.
-    local german = entries.entries('deDE')
+    local german = {}
+
+    for _, module in ipairs(modules.list()) do
+        for key, value in pairs(entries.dir_entries(module.dir .. '/Locales', 'deDE')) do
+            german[key] = value
+        end
+    end
+
     localize(f, german)
     check('deDE', german)
     local differs = 0

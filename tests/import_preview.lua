@@ -320,14 +320,11 @@ test('tooltips and help tell the two actions apart: what you would get, and what
         L["Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."],
         L["Check import lists problems with the text instead of its content: why it cannot be imported and any unsupported data. It does not import or change anything."]
 
+    local entries = dofile('tests/fixtures/locale_entries.lua').entries('enUS', true)
+
     assert(
-        compare
-            ~= "Compare import shows what would change in the entry you are replacing, side by side with its current content. Nothing is saved."
-            and preview
-                ~= "Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."
-            and inspect
-                ~= "Check import lists problems with the text instead of its content: why it cannot be imported and any unsupported data. It does not import or change anything.",
-        'help texts are defined'
+        entries[compare] == compare and entries[preview] == preview and entries[inspect] == inspect,
+        'help texts are registered with their exact English source'
     )
 
     assert(
@@ -355,8 +352,8 @@ test('tooltips and help tell the two actions apart: what you would get, and what
         L["This view shows the rotation as it would be imported: name, specializations, switch condition, steps and cooldowns. It is read-only and works on a copy; it saves and changes nothing. Close it to choose the destination and import from the transfer dialog. A changed text, closed transfer or changed profile retires this Help."]:find(
             'read%-only'
         )
-            and L["Explain this read-only preview of the incoming rotation."]
-                ~= "Explain this read-only preview of the incoming rotation."
+            and entries["Explain this read-only preview of the incoming rotation."]
+                == "Explain this read-only preview of the incoming rotation."
     )
 end)
 
