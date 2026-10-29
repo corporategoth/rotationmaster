@@ -49,7 +49,7 @@ class RankWording(unittest.TestCase):
         for name in ['enUS'] + LOCALES:
             text = (ROOT / f'Locales/{name}.lua').read_text(encoding='utf-8')
             # English maps the label to its ID; translations record the English above each entry.
-            marker = f'N["{LABEL}"] = ' if name == 'enUS' else f' English: {LABEL}\n'
+            marker = f'T["{LABEL}"] = ' if name == 'enUS' else f' English: {LABEL}\n'
             self.assertIn(marker, text, name)
 
     def test_every_rank_surface_uses_the_shared_label(self):

@@ -67,14 +67,18 @@ def lua_strings(source):
             yield source.count('\n', 0, match.start()) + 1, decode_string(match.group())
 
 
+def english_source(path):
+    return (not str(path.relative_to(ROOT)).startswith(SKIP) and '.tools' not in path.parts
+            and not (path.parent.parent.name == 'Modules' and path.stem in TRANSLATIONS + ('enUS',))
+            and not (path.parent.name == 'Locales' and path.stem in TRANSLATIONS))
+
+
 def findings():
     found = []
     # The English of every catalog (the main one and each load-on-demand text bundle), never the translations.
     sources = [ROOT / 'Locales/enUS.lua']
     sources += sorted(ROOT.glob('Modules/*/enUS.lua'))
-    sources += sorted(p for p in ROOT.rglob('*.lua')
-                      if not str(p.relative_to(ROOT)).startswith(SKIP) and '.tools' not in p.parts
-                      and not (p.parent.parent.name == 'Modules' and p.stem in TRANSLATIONS + ('enUS',)))
+    sources += sorted(p for p in ROOT.rglob('*.lua') if english_source(p))
     for path in sources:
         for line, text in lua_strings(path.read_text(encoding='utf-8')):
             for word in british(text):
@@ -89,6 +93,11 @@ def findings():
 
 
 class USSpellingTests(unittest.TestCase):
+    def test_class_locales_scan_english_but_not_other_languages(self):
+        module = ROOT / 'Modules/RotationMaster_Shaman/Locales'
+        self.assertTrue(english_source(module / 'enUS.lua'))
+        self.assertFalse(english_source(module / 'frFR.lua'))
+
     def test_detector_catches_british_and_accepts_american(self):
         for word in ('colour', 'coloured', 'behaviour', 'favourite', 'centre', 'grey', 'greyed', 'optimised',
                      'organise', 'recognised', 'analyse', 'licence', 'defence', 'catalogue', 'cancelled',
