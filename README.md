@@ -9,9 +9,7 @@
 
 [![Retail 12.1.5][retail-badge]][client-support] [![Forever 1.60.1][forever-badge]][client-support]
 [![Classic Era 1.15.9][era-badge]][client-support] [![Season of Discovery 1.15.9][sod-badge]][client-support]
-[![TBC Anniversary 2.5.6][tbc-badge]][client-support] [![Wrath Classic 3.4.5][wrath-badge]][client-support]
-[![Titan Reforged 3.80.2][titan-badge]][client-support] [![Cataclysm Classic 4.4.2][cata-badge]][client-support]
-[![Mists Classic 5.5.4][mists-badge]][client-support]
+[![TBC Anniversary 2.5.6][tbc-badge]][client-support] [![Mists Classic 5.5.4][mists-badge]][client-support]
 
 Rotation Master is a World of Warcraft addon that highlights the next spell or item in a rotation you choose. Start with a
 Built In rotation for your class, or create your own in game. You press the buttons: the addon does not cast spells or play
@@ -45,9 +43,6 @@ Built In rotations are starting points, not guarantees of the best action for ev
 | --- | --- |
 | Classic Era / Season of Discovery 1.15.9 | 11509 |
 | TBC Anniversary 2.5.6 | 20506 |
-| Wrath of the Lich King Classic 3.4.5 | 30405 |
-| Wrath Titan Reforged 3.80.2 | 38002 |
-| Cataclysm Classic 4.4.2 | 40402 |
 | Mists of Pandaria Classic 5.5.4 | 50504 |
 | Retail (Midnight) 12.1.5 | 120105 |
 | WoW Forever 1.60.1 | 16001 |
@@ -116,8 +111,5 @@ acknowledge Rotation Master and its original author, PreZ, in any credits or Abo
 [era-badge]: https://img.shields.io/badge/Classic%20Era-1.15.9-orange?style=for-the-badge
 [sod-badge]: https://img.shields.io/badge/Season%20of%20Discovery-1.15.9-orange?style=for-the-badge
 [tbc-badge]: https://img.shields.io/badge/TBC%20Anniversary-2.5.6-orange?style=for-the-badge
-[wrath-badge]: https://img.shields.io/badge/Wrath%20Classic-3.4.5-orange?style=for-the-badge
-[titan-badge]: https://img.shields.io/badge/Titan%20Reforged-3.80.2-orange?style=for-the-badge
-[cata-badge]: https://img.shields.io/badge/Cataclysm%20Classic-4.4.2-orange?style=for-the-badge
 [mists-badge]: https://img.shields.io/badge/Mists%20Classic-5.5.4-orange?style=for-the-badge
 [client-support]: docs/quality/client-support.md
