@@ -9260,6 +9260,22 @@ N["Include disabled rotations"] = 4088
 --     conditions'. On: a condition that is switched off in the rotation editor is not counted when
 --     tooltips list the rotations that use a spell or item.
 N["Exclude disabled conditions"] = 4089
+-- 9d030584
+N["Unit Exists"] = 4092
+-- 57e392e8
+N["{unit} {{!exists|does not exist}}"] = 4093
+-- ab06b6f8
+N["Highest priority unset"] = 4095
+-- da73f55a
+N["Raid Role"] = 4096
+-- 7c968fb7
+N["Member"] = 4097
+-- 391e4051
+N["Assistant"] = 4098
+-- 3f53871b
+N["Leader"] = 4099
+-- 901e4ca6
+N["you {{!are|are not}} a raid %s"] = 4100
 
 for text, id in pairs(N) do
     local translation = T[id]

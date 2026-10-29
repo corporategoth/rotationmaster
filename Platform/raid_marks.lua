@@ -5,8 +5,8 @@
 -- RAID_TARGET_UPDATE says that some mark changed without saying which. This file keeps an event-driven table, mark ->
 -- { guid, token, reachable, seen, ... }, rebuilt by one rescan of the tokens the client can reach when a mark changes
 -- and updated for a single token when that token changes (target, focus, mouseover, a nameplate, a raid member's
--- target). It owns the table, its event frame and the readers over it, and it never sets a mark: Set Mark steps only
--- recommend a button the player presses (Platform/raid_mark_actions.lua, Core/raid_mark_buttons.lua). Nothing is
+-- target). It owns the table, its event frame and the readers over it; Set Mark steps call the game API through
+-- Platform/raid_mark_actions.lua. Nothing is
 -- registered until something asks for marks (a mark unit type, MARKED, MARK_COUNT), and the events are dropped again
 -- when nothing has asked for a while.
 -- Every read goes through platform:CanReadValue: an unreadable answer is unavailable with a reason, never a guess.
@@ -64,6 +64,12 @@ end
 -- @return string|nil  nil when marks can be read; 'unsupported-policy' on a client with no known data policy;
 --   'missing-api' when the client has no GetRaidTargetIndex.
 function platform:GetRaidMarkSupport()
+    local family = self:GetClientFamily()
+
+    if family == 'retail' or family == 'forever' then
+        return 'unsupported-client'
+    end
+
     local policy = self:GetCombatDataPolicy()
 
     if policy ~= 'probe' and policy ~= 'restricted' then
@@ -136,6 +142,12 @@ end
 --
 -- The one place that calls GetRaidTargetIndex. A missing mark is 0 (the game returns nil for it).
 function platform:GetUnitRaidMark(unit)
+    local unsupported = self:GetRaidMarkSupport()
+
+    if unsupported then
+        return nil, unsupported
+    end
+
     local read = env.GetRaidTargetIndex
 
     if type(read) ~= 'function' then

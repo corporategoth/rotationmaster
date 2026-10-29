@@ -166,8 +166,10 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `LOC_TYPE` | `C_LossOfControl.GetActiveLossOfControlData` `locType`/`timeRemaining` | N (player) | N | no annotation | n/a |
 | `MANA` | `UnitPower(unit, Mana)` | A unless Mana is flagged never secret (`secret-power`) | A unless flagged | `SecretWhenUnitPowerRestricted` | unsupported; if supported, unavailable |
 | `MANAPCT` | `UnitPower`, `UnitPowerMax` (Mana) | A unless flagged (`secret-power`) | A unless flagged | `SecretWhenUnitPowerRestricted`, `SecretWhenUnitPowerMaxRestricted` | unsupported; if supported, unavailable |
-| `MARKED` | `UnitExists`, `GetRaidTargetIndex(unit)` | C (unverified: an earlier survey found the mark secret on Retail; read through `CanReadValue`) | C | not in Blizzard's generated documentation of this tree | unavailable (`restricted-value`), also under NOT; a missing unit is false |
-| `MARK_COUNT` | the mark table: `GetRaidTargetIndex` over the reachable tokens, `UnitGUID`, `UnitTokenFromGUID`, `UnitCanAttack`, `UnitIsFriend` | C (as MARKED; an NPC's GUID is identity-restricted, so a record may have no GUID) | C | as MARKED; `UnitGUID` `SecretWhenUnitIdentityRestricted` | unavailable (`unreadable`) while a token could not be read, or with a filter while a unit's hostility is unknown |
+| `UNIT_EXISTS` | `UnitExists` or group-unit resolution | N (marked-unit selectors disabled) | N (marked-unit selectors disabled) | unit presence | unavailable when the selected unit cannot be resolved |
+| `RAID_ROLE` | `IsInRaid`, `UnitIsGroupLeader`, `UnitIsGroupAssistant` | N | N | group-role APIs | false outside a raid; unavailable when the role cannot be read |
+| `MARKED` | `UnitExists`, `GetRaidTargetIndex(unit)` | A (`unsupported-client`) | A (`unsupported-client`) | Retail in-game test returned a secret marker | unavailable on these clients, also under NOT |
+| `MARK_COUNT` | marker table and reachable unit observations | A (`unsupported-client`) | A (`unsupported-client`) | same marker restriction as MARKED | unavailable on these clients |
 | `MOVING` | `GetUnitSpeed("player")` | C (stats restricted) | C | `SecretWhenUnitStatsRestricted` | unavailable |
 | `OUTDOORS` | `IsOutdoors` | N | N | no annotation | n/a |
 | `PET` | `UnitExists("pet")` | N | N | no annotation | n/a |
@@ -249,12 +251,10 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `maintank`, `mainassist` | `GetRaidRosterInfo` role field over `raid1-40` (raids only) | N (group members) | N | undocumented, unannotated | an unreadable member: the unit is unavailable |
 | `assignedtank`, `assignedhealer` | `UnitGroupRolesAssigned` over `player`/`party1-4`/`raid1-40` | C (identity; a group member is readable) | C | `SecretWhenUnitIdentityRestricted`; not Classic Era or Burning Crusade (`no-group-roles`) | an unreadable member: the unit is unavailable |
 | `groupleader` | `UnitIsGroupLeader` over the same tokens | C (identity; a group member is readable) | C | `SecretWhenUnitIdentityRestricted` | an unreadable member: the unit is unavailable |
-| `skull`, `cross`, `square`, `moon`, `triangle`, `diamond`, `circle`, `star`, `anymark` | the mark table (`Platform/raid_marks.lua`): `GetRaidTargetIndex` over `player`, `target`, `focus`, `mouseover`, soft targets, `pet`, the group and its targets, `boss1-8`, `arena1-5`, `nameplate1-40`; `UnitGUID`, `UnitTokenFromGUID` | C (unverified: the mark may be secret, an NPC's GUID is identity-restricted) | C | as MARKED | unavailable with `unreadable`, `no-marked-unit` or `no-token` (docs/raid-marks.md) |
+| `skull`, `cross`, `square`, `moon`, `triangle`, `diamond`, `circle`, `star`, `anymark` | marker table over reachable unit tokens | A (`unsupported-client`) | A (`unsupported-client`) | same marker restriction as MARKED | saved uses unavailable; omitted from unit selectors |
 
-The Set Mark step (docs/raid-marks.md) runs a secure macro (`/tm [@unit] N`) and reads nothing to place a mark. It reads
-`UnitExists` and `GetRaidTargetIndex` of the chosen unit to know whether the mark is already there (an unreadable answer
-means the step is not advised), `UnitIsGroupLeader` / `UnitIsGroupAssistant` for the raid rule, and macro bodies
-(`GetMacroBody`) to find its button on the bars.
+The Set Mark step calls `SetRaidTarget` directly when its conditions match. It does not check marker state or raid
+permissions. Retail rejected the call as protected in game; RM skips it on Retail and Forever.
 
 A condition on a resolved unit then reads what that condition always reads of a
 unit token, so on Retail and Forever only the non-secret facts of a group member

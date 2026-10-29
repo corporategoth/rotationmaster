@@ -203,7 +203,7 @@ local function callCondition(
         -- the token of whoever holds it now; nobody holding it is unavailable.
         local kinds = addon.groupUnitKinds
 
-        if kinds and (kinds[value.unit] or kinds[value.otherunit]) then
+        if value.type ~= 'UNIT_EXISTS' and kinds and (kinds[value.unit] or kinds[value.otherunit]) then
             local resolved, why = addon:ResolveConditionUnits(value, cache)
 
             if not resolved then
@@ -1781,7 +1781,7 @@ local function evaluatePlan(node, cache, start, stepId)
         planLeafContext.conditionPath, planLeafContext.conditionTag, planLeafContext.stepId = node.path, tag, stepId
         local kinds = addon.groupUnitKinds
 
-        if kinds and (kinds[value.unit] or kinds[value.otherunit]) then
+        if value.type ~= 'UNIT_EXISTS' and kinds and (kinds[value.unit] or kinds[value.otherunit]) then
             local resolved = addon:ResolveConditionUnits(value, cache)
 
             if not resolved then

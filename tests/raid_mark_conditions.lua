@@ -10,7 +10,7 @@ local C = dofile('tests/fixtures/condition_client.lua')
 
 local KEYS = { 'skull', 'cross', 'square', 'moon', 'triangle', 'diamond', 'circle', 'star' }
 local NUMBER = { skull = 8, cross = 7, square = 6, moon = 5, triangle = 4, diamond = 3, circle = 2, star = 1 }
-local FAMILIES = { 'retail', 'forever', 'mists', 'tbc', 'era' }
+local FAMILIES = { 'mists', 'tbc', 'era' }
 
 local function unit(guid, mark, enemy)
     return { guid = guid, mark = mark, enemy = enemy == true, friend = enemy == false }
@@ -92,7 +92,7 @@ test('MARKED is unavailable, also under NOT, when the mark is hidden or the clie
         C.expect(a, marked('target', 'none'), 'unavailable', name)
         C.expect(a, marked('target', 'skull'), 'unavailable', name)
         local _, reason = C.status(a, marked('target', 'any'))
-        assert(reason == 'restricted-value', tostring(reason))
+        assert(reason == 'unsupported-client', tostring(reason))
     end
 
     local _, b, e = W.client('tbc')
@@ -199,7 +199,7 @@ test('MARK_COUNT filters by enemy and friendly', function()
 end)
 
 test('MARK_COUNT is unavailable, also under NOT, when a mark cannot be read', function()
-    local _, a, _, w = W.client('retail')
+    local _, a, _, w = W.client('tbc')
     w:set('target', unit('G1', 8, true))
     w.secretMarks.nameplate1 = true
     C.expect(a, { type = 'MARK_COUNT', operator = 'GREATERTHAN', value = 0 }, 'unavailable')
@@ -208,7 +208,7 @@ test('MARK_COUNT is unavailable, also under NOT, when a mark cannot be read', fu
 end)
 
 test('MARK_COUNT with a filter is unavailable while a unit hostility is unknown', function()
-    local _, a, e, w = W.client('retail')
+    local _, a, e, w = W.client('tbc')
     w:set('target', unit('G1', 8, true))
     e.UnitCanAttack = function() return W.SECRET end
     C.expect(a, { type = 'MARK_COUNT', filter = 'enemy', operator = 'GREATERTHAN', value = 0 }, 'unavailable')
@@ -264,6 +264,19 @@ test('MARK_COUNT summaries name the filter', function()
         1,
         true
     ))
+end)
+
+test('Retail and Forever reject mark conditions even for readable or absent marks', function()
+    for _, name in ipairs({ 'retail', 'forever' }) do
+        local _, a, _, w = W.client(name)
+        w:set('target', unit('G1', 8, true))
+        w.calls.GetRaidTargetIndex = 0
+        C.expect(a, marked('target', 'skull'), 'unavailable', name)
+        C.expect(a, { type = 'MARK_COUNT', operator = 'EQUALS', value = 1 }, 'unavailable', name)
+        assert(C.support(a, 'MARKED', marked('target', 'skull')) == 'unsupported-client')
+        assert(C.support(a, 'MARK_COUNT', {}) == 'unsupported-client')
+        assert(w.calls.GetRaidTargetIndex == 0, 'unsupported client queried marks')
+    end
 end)
 
 test('support: both conditions need a client that can read marks', function()

@@ -226,4 +226,43 @@ test('summaries and help retain literal unit labels and explain unavailable reci
     end
 end)
 
+test('unit existence handles absent targets and marked units', function()
+    local W = dofile('tests/fixtures/raid_mark_world.lua')
+    local C = dofile('tests/fixtures/condition_client.lua')
+    local _, a, _, w = W.client('tbc')
+    local target = { type = 'UNIT_EXISTS', unit = 'target' }
+    local skull = { type = 'UNIT_EXISTS', unit = 'skull' }
+    C.expect(a, target, 'no-match')
+    C.expect(a, skull, 'no-match')
+    w:set('target', { guid = 'target', mark = 8, enemy = true })
+    w:fire('RAID_TARGET_UPDATE')
+    C.expect(a, target, 'match')
+    C.expect(a, skull, 'match')
+end)
+
+test('raid role distinguishes member, assistant and leader and does not match outside raids', function()
+    local W = dofile('tests/fixtures/raid_mark_world.lua')
+    local C = dofile('tests/fixtures/condition_client.lua')
+    local f, a, e = W.client('tbc')
+    f.load('Platform/communication.lua')
+    local inRaid, leader, assistant = false, false, false
+    e.IsInRaid = function() return inRaid end
+    e.UnitIsGroupLeader = function() return leader end
+    e.UnitIsGroupAssistant = function() return assistant end
+
+    for _, role in ipairs({ 'member', 'assistant', 'leader' }) do
+        C.expect(a, { type = 'RAID_ROLE', role = role }, 'no-match')
+    end
+
+    inRaid = true
+
+    for _, role in ipairs({ 'member', 'assistant', 'leader' }) do
+        leader, assistant = role == 'leader', role == 'assistant'
+
+        for _, choice in ipairs({ 'member', 'assistant', 'leader' }) do
+            C.expect(a, { type = 'RAID_ROLE', role = choice }, choice == role and 'match' or 'no-match')
+        end
+    end
+end)
+
 finish()

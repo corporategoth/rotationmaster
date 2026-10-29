@@ -1,9 +1,9 @@
 # Raid marks
 
 Rotation Master can follow raid target markers (skull, cross, square, moon, triangle, diamond, circle, star) and can
-recommend placing one. There are four parts: the mark table, the mark unit types, two conditions and the Set Mark step.
-`/rm debug marks` reports all of them in game. Nothing here has been run in a real client yet; the in-game test script
-is at the end.
+attempt to place one directly. There are four parts: the mark table, the mark unit types, two conditions and the Set Mark step.
+`/rm debug marks` reports their availability in game. Direct Set Mark has been confirmed in TBC. Retail rejected
+the direct call as protected and returned a secret mark in the in-game test; the same restrictions apply to Forever.
 
 ## What the game gives an addon
 
@@ -12,9 +12,8 @@ is at the end.
 - There is no unit token for a mark and no call that says which unit holds a mark.
 - `RAID_TARGET_UPDATE` fires with no payload when any mark changes.
 - `UnitTokenFromGUID(guid)` turns a GUID back into a token where the client has it.
-- Retail and Forever hide some data in combat. `GetRaidTargetIndex` and an NPC's GUID may come back secret there
-  (`docs/restricted-clients.md`); every read goes through `platform:CanReadValue`, and an unreadable answer is
-  unavailable with a reason, never a guess.
+- Retail returned a secret mark in game. RM disables mark conditions and marked-unit selectors on Retail and Forever;
+  a saved use is unavailable. Classic-family observations pass through `platform:CanReadValue`.
 
 ## The mark table (`Platform/raid_marks.lua`)
 
@@ -53,9 +52,8 @@ once when the unit is found). Nothing is scanned per poll.
 
 ## Capabilities
 
-Detected from the client, never from its name: `GetRaidTargetIndex` (read marks; the unit types and conditions are
-offered only with it), `SetRaidTarget` or a `TARGET_MARKER` entry in `SecureCmdList` / `SlashCmdList` (the Set Mark
-step), `UnitTokenFromGUID`, and each event (`C_EventUtils.IsEventValid`). Names are read through the file environment
+Retail and Forever disable mark reads and marked-unit selectors. Elsewhere, availability is detected from the client:
+`GetRaidTargetIndex` (read marks; the unit types and conditions are offered only with it), `SetRaidTarget` (the Set Mark step), `UnitTokenFromGUID`, and each event (`C_EventUtils.IsEventValid`). Names are read through the file environment
 (`getfenv(1)`, as `Platform/focus_unit.lua` does), so the generated client manifests make no claim about which client
 has what. `/rm debug marks` prints the answers.
 
@@ -91,62 +89,31 @@ Both borrow a related condition's icon until artwork of their own is generated (
 
 ## The Set Mark step
 
-Step type `mark`, rotation list only. Fields: `unit` (one of `player target focus mouseover pet targettarget
-focustarget`; the focus tokens only where the client has a focus target) and `action` (`skull cross square moon
-triangle diamond circle star`, or `none` to clear). It is a recommendation: Rotation Master lights an action bar
-button; the player presses it. It is offered in the step type menu only where the client has the target marker command
-or `SetRaidTarget`; an imported step on a client without them is kept and flagged unresolved
-(`unsupported-mark-step`), never dropped.
+A Set Mark step is part of the rotation list. It selects a unit (`player`, `target`, `focus`, `mouseover`, `pet`,
+`targettarget` or `focustarget`) and a marker (one of the eight icons, `highest_unset`, or `none` to clear). When its conditions match,
+the evaluator calls `SetRaidTarget(unit, index)` directly, then continues to the next step. It does not create a button
+or macro, check raid permissions, or check the existing marker. The player chooses the step's conditions; for example,
+use a `MARKED` condition to avoid repeatedly applying the same mark. The client may reject the API call.
 
-**The macro.** The command is `/tm [@unit] N` (`TARGET_MARKER`; `N` 1 to 8, `0` clears). The syntax is from memory of
-Blizzard's `SecureCmdList["TARGET_MARKER"]` and the common `/tm [@mouseover] 8` macro; it was not checked against
-Blizzard's source in this tree and is part of the in-game test.
-
-**The hidden button** `RM_Mark_<unit>_<mark>` (for example `RM_Mark_target_skull`, `RM_Mark_focus_none`) is a
-`SecureActionButtonTemplate` button of type `macro` whose `macrotext` is that one line. It is made in
-`Core/raid_mark_buttons.lua`, out of combat only, the first time a Set Mark step is evaluated (or bound). This is the
-second place Rotation Master writes secure text, after `Core/itemset_services.lua`, with a stricter rule: the text is
-built by `Platform:GetMarkMacroText` from the whitelist tables in `Platform/raid_mark_actions.lua`. A saved or imported
-`unit` or `action` is only ever a lookup key into those tables; when it is not a key, nothing is built. A global of the
-same name that is not ours is never reused. `tests/raid_mark_step.lua` feeds hostile values (macro syntax, newlines,
-control characters, brackets, escapes, near misses, wrong types) through every path and checks every attribute write
-against the template.
-
-**Bind** (the "Put on an action bar" button on the card) makes the character macro `RM <mark>/<unit code>` with the
-body `/click RM_Mark_<unit>_<mark>` if it does not exist, and picks it up. The player drops it on a slot. A macro of
-the player's own that contains the same `/click` line works the same.
-
-**Finding it on the bars.** The bar index maps an action button to a spell id. A Set Mark step stands for a pseudo spell
-id (`1073741824 + 16 * unit + mark`, far above any real spell id) and `Platform:GetMacroAction` answers that id for a
-macro whose body has a `/click RM_Mark_...` line naming a whitelisted button. Macro bodies are read only after a Set Mark
-step has been evaluated or bound once (`Platform:SetMarkActionTracking`), so a player who never uses the step pays
-nothing. The id also gives the preview window and reports a name and the raid target icon
-(`Platform:GetSpellInfo` answers it first). The same-name button lookup that Retail and Forever use for spells skips
-pseudo ids, so the step for the skull on your target never takes the button for the skull on your focus.
-
-**Ready.** The step is advisable while the unit exists, does not already carry the mark (or, for `none`, carries one),
-and you may place marks: anyone in a party or alone, only the leader and assistants in a raid. A client that cannot
-answer the raid question is given the benefit of the doubt; an unreadable unit or mark is not ready.
+Highest priority unset tries Skull, Cross, Square, Moon, Triangle, Diamond, Circle, then Star, skipping marks already held.
+It does nothing if none is known to be unset. Direct Set Mark worked in the user’s TBC test. Retail rejected the call
+as protected, so RM skips Set Mark on Retail and Forever.
 
 ## `/rm debug marks`
 
 Prints, read only: what the client offers (functions, event catalog), the table (mark, GUID, token, reachable, seconds
-since seen, enemy, friendly), what each mark unit resolves to, whether the unit pickers offer them, the state of the Set
-Mark step, and whether you may place marks. It starts the watch for the usual lease so the table is current, and
+since seen, enemy, friendly), what each mark unit resolves to, and whether the unit pickers offer them. It starts the watch for the usual lease so the table is current, and
 changes nothing else.
 
 ## Restricted clients
 
-See the rows in `docs/restricted-clients.md`. On Retail and Forever `GetRaidTargetIndex` was documented as secret in an
-earlier survey; the code reads it through `CanReadValue` and everything that depends on it becomes unavailable, not
-false. The Set Mark step never reads a mark through the table and its macro does not depend on any read, so placing
-marks does not need readable data; only the "already marked" check does, and an unreadable mark means the step is not
-advised.
+See the rows in `docs/restricted-clients.md`. On Retail and Forever mark conditions and marked-unit selectors are
+unsupported, and Set Mark steps are skipped. No player action or permission check is added by Rotation Master.
 
 ## Known limits
 
-- Unverified in game: the `/tm` syntax, the events and `UnitTokenFromGUID` on each client, `GetMacroBody` and the bar
-  macro recognition on Retail, and whether the data is secret there.
+- Unverified in game: the direct `SetRaidTarget` call, the events and `UnitTokenFromGUID` on each client, and whether
+  marker data is secret on restricted clients.
 - An out-of-reach record cannot see its mark removed; it ends on a loading screen or when the unit comes back in reach.
 - `MARK_COUNT` counts what the table knows, so a marked unit nobody can reach and nobody saw leave still counts.
 - `UNIT_TARGET` fires for every unit in the world while the watch runs; the handler returns at once for any unit that is
@@ -178,20 +145,14 @@ Run these on the client in question; each line says what a pass looks like. Noth
 3. Mark two units, then change target. The marked unit you left stays in the table as `NOT reachable` with
    `last target`, the mark unit shows `unavailable (no-token)` (or a new token, if it is on a nameplate or in your
    group's targets), and a condition on `skull` that needs the unit is unavailable.
-4. Build a rotation with a Set Mark step (Set Mark, your target, Skull) above a spell step, and put the macro on a bar
-   with Put on an action bar. Target an unmarked mob: the macro's slot lights. Press it: the mark appears and the
-   glow moves on. In a raid without leader or assistant rights the slot stays dark; in a party it lights.
-5. `/rm debug marks` ends with `Set Mark step: available; hidden buttons made 1` (more if you used more steps), and
-   `macros on the bars recognized: yes`.
+4. Build a rotation with a Set Mark step (your target, Skull) above a spell step. Add a condition that the target is
+   not already skull-marked. Select the rotation and target an unmarked mob: the step attempts to set the mark directly,
+   and the next eligible spell remains the recommendation. Check that no new macro or button is needed.
+5. Try a Clear the mark step with a condition that the target has a mark. Check that it calls for marker 0 and continues.
 
-**Retail.** The same steps. The mark may read as hidden: then the table rows stay `-`, `Watching:` shows a count of
-`unreadable reads`, every mark unit is `unavailable (unreadable)`, `MARKED` and `MARK_COUNT` are unavailable, and the Set
-Mark step is not advised (it cannot tell whether the unit already carries the mark) although the macro still works if
-you press it. If the mark reads (for group members, or everything), the output matches the Classic one. Either answer
-is the finding; please copy the whole report.
+**Retail and Forever.** Mark conditions, marked-unit selectors and Set Mark execution are disabled. The Retail test
+confirmed that the call is protected and a marked target returned a secret marker index.
 
 ## Known open questions
 
-These are answered by the report above: whether `/tm [@unit] N` is the right syntax on each client, which events and
-`UnitTokenFromGUID` exist where, whether `GetMacroBody` and the bar macro recognition work on Retail, and whether the
-mark is secret there.
+Verify direct marking on each client, which events and `UnitTokenFromGUID` exist, and whether marker data is readable.

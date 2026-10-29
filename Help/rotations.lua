@@ -314,11 +314,9 @@ local function help_action_group(group, singular)
             .. L["Recommends whatever spell Blizzard's Assisted Combat suggests next, read each time the rotation is evaluated. It highlights that spell's button and shows in the preview like a spell step, and is held to the same requirements: known, usable, off cooldown and in range. When nothing is suggested, the suggested spell is not on your bars, or Assisted Combat is unavailable (anywhere but Retail, or a specialization without it), the step is skipped. Rotation list only."]
     )))
 
-    if addon.Platform.GetMarkActionSupport and addon.Platform:GetMarkActionSupport() == nil then
-        group:AddChild(Indent(40, CreateText(
-            color.GREEN .. L["Set Mark"] .. color.RESET .. " - " .. L["Help.Rotations.SetMark"]
-        )))
-    end
+    group:AddChild(Indent(40, CreateText(
+        color.GREEN .. L["Set Mark"] .. color.RESET .. " - " .. L["Help.Rotations.SetMark"]
+    )))
 
     group:AddChild(Indent(40, CreateText(
         color.GREEN

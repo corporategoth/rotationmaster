@@ -127,15 +127,6 @@ function platform:GetSpellInfo(spell)
         return nil, reason
     end
 
-    -- The pseudo spell id of a Set Mark step has a name and an icon of its own (Platform/raid_mark_actions.lua).
-    if type(spell) == "number" and self.GetMarkActionInfo then
-        local info = self:GetMarkActionInfo(spell)
-
-        if info then
-            return info
-        end
-    end
-
     local ok, record, built
 
     if C_Spell and type(C_Spell.GetSpellInfo) == "function" then

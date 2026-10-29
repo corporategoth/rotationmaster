@@ -593,12 +593,7 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
             types[#types + 1] = { value = 'assisted', text = L["Blizzard's suggestion"] }
         end
 
-        -- Set Mark is offered where the client can place marks, and kept for a step that is already one.
-        local platform = addon.Platform
-
-        if step.type == 'mark' or platform.GetMarkActionSupport and platform:GetMarkActionSupport() == nil then
-            types[#types + 1] = { value = 'mark', text = L['Set Mark'] }
-        end
+        types[#types + 1] = { value = 'mark', text = L['Set Mark'] }
 
         types[#types + 1] = { value = 'stop', text = L['Stop'] }
     end

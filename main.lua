@@ -3307,6 +3307,14 @@ local function leanAction(plan, entry, decisionRow)
         return nil, false
     end
 
+    if cond.type == 'mark' then
+        if plan.recommended == 0 and plan.current() then
+            addon.Platform:TrySetRaidMark(cond)
+        end
+
+        return nil, false
+    end
+
     local firstMapped, firstItem
     -- Spell rank lists change with SPELLS_CHANGED (a context event) or spell
     -- data loads (the plan's age cap); items follow bags, so stay fresh.
@@ -4021,6 +4029,11 @@ function addon:EvaluateNextActionInternal()
                     return nil, false
                 end
 
+                if cond.type == 'mark' then
+                    addon.Platform:TrySetRaidMark(cond)
+                    return nil, false
+                end
+
                 local spellids, itemids = addon:GetSpellIds(cond)
 
                 for index, id in ipairs(spellids or {}) do
@@ -4190,6 +4203,10 @@ function addon:EvaluateNextActionInternal()
                 return addon:evaluateConditionResult(condition, context)
             end,
             function(cond, index)
+                if cond.type == 'mark' and preview > 0 then
+                    return true
+                end
+
                 local spellid, enabled, itemId = eval(cond, 'rotation')
 
                 if not dispatchCurrent('resume') then
@@ -4531,7 +4548,7 @@ end
 -- @return number[]  The spell ids. Spell, pet and "any" steps return the action alone on Retail and on ranked steps,
 --   otherwise every known rank from the spell catalog. Item steps expand an item set (or a literal item list) to each
 --   item's use-spell. "assisted" steps return Blizzard's suggestion and its override ids, read fresh on every call;
---   "mark" steps return their one pseudo spell id. Anything else returns an empty list.
+--   other step types return an empty list.
 -- @return number[]|nil  For item steps, a parallel list of item ids; an item whose use-spell or id is not loaded yet is
 --   left out and retried on the next poll.
 function addon:GetSpellIds(rot)
@@ -4570,10 +4587,6 @@ function addon:GetSpellIds(rot)
             end
 
             return spellids, itemids
-        elseif rot.type == "mark" then
-            -- Set Mark: one pseudo spell id for the (unit, mark) pair, found on a macro that presses its button
-            -- (Core/raid_mark_buttons.lua).
-            return self:GetMarkStepSpellIds(rot)
         end
     elseif rot.type == "assisted" then
         -- Blizzard's Assisted Combat suggestion, resolved fresh on every call:

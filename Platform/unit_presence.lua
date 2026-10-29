@@ -8,6 +8,53 @@
 local _, addon = ...
 local platform = addon.Platform
 
+-- Answers whether a selected unit or group-unit assignment exists.
+-- @param unit string  Unit token or group-unit kind.
+-- @return boolean|nil  Whether it exists; nil when the observation is unavailable.
+-- @return string|nil  The reason an observation is unavailable.
+function platform:GetUnitExistence(unit)
+    if not self:CanReadValue(unit) or type(unit) ~= 'string' or unit == '' then
+        return nil, 'invalid-unit'
+    end
+
+    if addon.groupUnitKinds and addon.groupUnitKinds[unit] then
+        local token, reason = self:ResolveGroupUnit(unit)
+
+        if token then
+            return true
+        end
+        if reason == 'no-marked-unit' or reason == 'no-assigned-unit' then
+            return false
+        end
+        if reason == 'no-token' then
+            return true
+        end
+
+        return nil, reason or 'unit-data-unavailable'
+    end
+
+    if type(UnitExists) ~= 'function' then
+        return nil, 'missing-api'
+    end
+
+    local ok, exists = pcall(UnitExists, unit)
+
+    if not ok then
+        return nil, 'api-error'
+    end
+    if not self:CanReadValue(exists) then
+        return nil, 'restricted-value'
+    end
+    if exists == nil or exists == false then
+        return false
+    end
+    if exists == true or exists == 1 then
+        return true
+    end
+
+    return nil, 'invalid-api-result'
+end
+
 -- Reads whether a unit token exists (UnitExists).
 -- @param unit string  The unit token to read; must be a non-empty string.
 -- @return boolean|nil  True or false for whether the unit exists; nil when it cannot be read.

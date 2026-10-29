@@ -2,7 +2,7 @@
 
 -- /rm debug marks: prints, read only, what this client offers for raid marks (which functions and events exist), the
 -- raid mark table (mark, GUID, token, reachable, age since last seen), what each mark unit type resolves to now, and the
--- state of the Set Mark step (support, hidden buttons made). It starts the mark watch for the usual lease so the table
+-- mark capabilities. It starts the mark watch for the usual lease so the table
 -- is current, changes no saved data and sets no mark. The report is plain English like the other debug reports.
 -- Loaded from RotationMaster.toc after Diagnostics/timeline.lua; Diagnostics/glow.lua routes /rm debug marks here.
 local _, addon = ...
@@ -136,22 +136,6 @@ function addon:BuildRaidMarkDiagnostic()
     add('  %-9s %s', 'anymark', token and ('-> ' .. token) or ('unavailable (' .. show(reason) .. ')'))
     local offered = self.units and self.units.skull ~= nil
     add('Offered in the unit pickers: %s', yes(offered))
-    local action = platform:GetMarkActionSupport()
-    local built = 0
-
-    for _ in pairs(self.markButtons or {}) do
-        built = built + 1
-    end
-
-    add(
-        'Set Mark step: %s; hidden buttons made %d; macros on the bars recognized: %s',
-        action and ('unavailable (' .. action .. ')') or 'available',
-        built,
-        yes(platform:IsMarkActionTracking())
-    )
-
-    local allowed, why = platform:CanSetRaidMark()
-    add('You may place marks now: %s%s', yes(allowed), why and (' (' .. why .. ')') or '')
     return lines
 end
 

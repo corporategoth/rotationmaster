@@ -474,8 +474,8 @@ local S = {
 [3389] = { "Help.General.ignore_mana_restricted", "Retail and Forever can hide whether a spell is usable from addons in some situations. The spell is then skipped whether or not this option is on." },
 -- 0c4bd263
 [3390] = { "Help.General.ignore_range", "Advise a spell or item even when your target is out of its range. Without this, a step whose range check fails is skipped. The spell or item must still be learned or owned, off cooldown and usable, and its conditions still apply." },
--- d6efe8ce
-[4087] = { "Help.Rotations.SetMark", "Recommends placing a raid target marker on a unit (you, your target, focus, mouseover, pet or their targets), or clearing the marker with the Clear the mark choice. Rotation Master never places the mark itself: it lights an action bar button, and you press it. Choose Put on an action bar to make a macro for the step and drop it on a slot, or write /click RM_Mark_target_skull in a macro of your own (the button is RM_Mark_ then the unit, an underscore and the mark in lower case, or none to clear; it is made the first time the step is evaluated out of combat). The step is skipped while no action bar holds its macro, the unit does not exist, the unit already carries that mark, or you may not place marks: in a party anyone can, in a raid only the leader and assistants. Rotation list only." },
+-- b5559325
+[4087] = { "Help.Rotations.SetMark", "When its conditions match, attempts to set or clear the selected raid marker on the chosen unit, then continues to the next rotation step." },
 -- e3334d5c
 [4090] = { "Help.General.tooltip_disabled_rotations", "Also list the rotations for your current specialization that are switched off, dimmed and marked disabled, after the ones that are on. Turn this off to list only rotations that are on; the \"(+N more)\" count then leaves the switched-off ones out too." },
 -- 766abde1

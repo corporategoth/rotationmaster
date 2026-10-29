@@ -155,26 +155,20 @@ local function contains(list, wanted)
     return false
 end
 
-test(
-    'the step type menu offers Set Mark where the client can place marks and keeps it on a step that is one',
-    function()
-        local f, parent = fixture(true)
-        local pane = assert(f.addon:CreateRotationEditor(parent, 0, 'mine'))
-        card(pane, 'bolt').action:Click()
-        assert(contains(offers(pane, 'bolt', 'type'), 'Set Mark'), 'Set Mark is offered')
-        local g, other = fixture(false)
-        local second = assert(g.addon:CreateRotationEditor(other, 0, 'mine'))
-        card(second, 'bolt').action:Click()
+test('the step type menu offers Set Mark regardless of client capabilities', function()
+    local f, parent = fixture(true)
+    local pane = assert(f.addon:CreateRotationEditor(parent, 0, 'mine'))
+    card(pane, 'bolt').action:Click()
+    assert(contains(offers(pane, 'bolt', 'type'), 'Set Mark'), 'Set Mark is offered')
+    local g, other = fixture(false)
+    local second = assert(g.addon:CreateRotationEditor(other, 0, 'mine'))
+    card(second, 'bolt').action:Click()
 
-        assert(
-            not contains(offers(second, 'bolt', 'type'), 'Set Mark'),
-            'Set Mark is offered where marks cannot be placed'
-        )
+    assert(contains(offers(second, 'bolt', 'type'), 'Set Mark'), 'Set Mark must remain available')
 
-        card(second, 'mark').action:Click()
-        assert(contains(offers(second, 'mark', 'type'), 'Set Mark'), 'an imported Set Mark step is still shown as one')
-    end
-)
+    card(second, 'mark').action:Click()
+    assert(contains(offers(second, 'mark', 'type'), 'Set Mark'), 'an imported Set Mark step is still shown as one')
+end)
 
 test('choosing the Set Mark type fills in a valid unit and mark, and leaving it removes them', function()
     local f, parent = fixture(true)
@@ -199,10 +193,14 @@ test('the unit and mark are chosen from fixed lists and written as the choice', 
     assert(#units == 7 and contains(units, 'your target'), table.concat(units, ','))
     local marks = offers(pane, 'mark', 'mark')
 
-    assert(#marks == 9 and marks[1] == 'Skull' and marks[8] == 'Star' and marks[9] == 'Clear the mark', table.concat(
-        marks,
-        ','
-    ))
+    assert(
+        #marks == 10
+            and marks[1] == 'Skull'
+            and marks[8] == 'Star'
+            and marks[9] == 'Highest priority unset'
+            and marks[10] == 'Clear the mark',
+        table.concat(marks, ',')
+    )
 
     choose(pane, 'mark', 'mark', 'moon')
     choose(pane, 'mark', 'markunit', 'focus')
@@ -210,6 +208,8 @@ test('the unit and mark are chosen from fixed lists and written as the choice', 
     assert(step.unit == 'focus' and step.action == 'moon')
     choose(pane, 'mark', 'mark', 'none')
     assert(pane.workspace:Snapshot().rotation[2].action == 'none')
+    choose(pane, 'mark', 'mark', 'highest_unset')
+    assert(pane.workspace:Snapshot().rotation[2].action == 'highest_unset')
     -- A value that is not in the list cannot be chosen, and a saved hostile value is only text on the button.
     local _, found = choose(pane, 'mark', 'markunit', 'target]\n/run x')
     assert(found == false and pane.workspace:Snapshot().rotation[2].unit == 'focus')
@@ -224,39 +224,18 @@ test('the card shows the step in words and with the mark icon', function()
     assert(f.addon:GetStepIcon(shown.model.step, 'fallback') == 'Interface\\TargetingFrame\\UI-RaidTargetingIcon_8')
 end)
 
-test('Bind makes the macro, puts it on the cursor and tells the player what to do next', function()
-    local f, parent, macros, picked = fixture(true)
+test('the Set Mark card has no action-bar binding button', function()
+    local f, parent = fixture(true)
     local pane = assert(f.addon:CreateRotationEditor(parent, 0, 'mine'))
     card(pane, 'mark').action:Click()
-    local bind = card(pane, 'mark').fieldControls.bind
-    assert(bind and bind.text == 'Put on an action bar' and bind.tooltip, 'the Bind button')
-    bind.scripts.OnClick(bind)
-    assert(#macros == 1 and macros[1].body == '/click RM_Mark_target_skull' and picked[1] == 1)
-    assert(pane.status.text == 'Drag the macro RM skull/tgt to an action bar slot.', tostring(pane.status.text))
-    f.env.GetCursorInfo = function() return 'item' end
-    bind.scripts.OnClick(bind)
-    assert(#macros == 1 and pane.status.text == 'Empty your cursor before binding.', tostring(pane.status.text))
-    f.env.GetCursorInfo = function() return nil end
-    f.env.InCombatLockdown = function() return true end
-    bind.scripts.OnClick(bind)
-    assert(pane.status.text == 'Leave combat before changing action bar bindings.', tostring(pane.status.text))
-    f.env.InCombatLockdown = function() return false end
-    f.env.CreateMacro = function() return nil end
-    f.env.GetMacroIndexByName = function() return 0 end
-    bind.scripts.OnClick(bind)
-
-    assert(pane.status.text == 'Your character macros are full, so the macro could not be made.', tostring(
-        pane.status.text
-    ))
+    assert(card(pane, 'mark').fieldControls.bind == nil)
 end)
 
-test('a read-only Set Mark card cannot Bind or change', function()
+test('a read-only Set Mark card cannot change', function()
     local f, parent = fixture(true)
     local pane = assert(f.addon:CreateRotationEditor(parent, 0, 'builtin'))
     local shown = assert(card(pane, 'mark'), 'the Set Mark card is drawn')
     shown.action:Click()
-    local bind = card(pane, 'mark').fieldControls.bind
-    assert(bind and bind.enabled == false, 'Bind is disabled')
     local control = card(pane, 'mark').fieldControls.mark
     assert(control.enabled == false, 'the mark choice is disabled')
 end)

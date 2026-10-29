@@ -10,7 +10,7 @@ local C = dofile('tests/fixtures/condition_client.lua')
 local SECRET = W.SECRET
 
 local SKULL, CROSS, MOON, STAR = 8, 7, 5, 1
-local FAMILIES = { 'retail', 'forever', 'mists', 'tbc', 'era' }
+local FAMILIES = { 'mists', 'tbc', 'era' }
 
 -- A unit of the world: a GUID, the mark it carries (nil for none) and its hostility.
 local function unit(guid, mark, enemy)
@@ -144,7 +144,7 @@ test('a token event reads only that token', function()
 end)
 
 test('mouseover, focus, soft targets, nameplates and a raid member target each update the table', function()
-    local _, a, _, w = W.client('retail', { group = { raid = true, size = 5 } })
+    local _, a, _, w = W.client('tbc', { group = { raid = true, size = 5 } })
     assert(select(2, a.Platform:ResolveRaidMarkUnit('skull')) == 'no-marked-unit')
     w:set('mouseover', unit('GM', SKULL, true))
     w:fire('UPDATE_MOUSEOVER_UNIT')
@@ -192,7 +192,7 @@ test('a unit seen under a new token with a new mark is not kept under its old ma
 end)
 
 test('a marked unit that leaves reach stays by GUID, flagged out of reach, and is found again by its GUID', function()
-    local _, a, _, w = W.client('retail')
+    local _, a, _, w = W.client('tbc')
     local add = unit('G1', SKULL, true)
     w:set('target', add)
     assert(a.Platform:ResolveRaidMarkUnit('skull') == 'target')
@@ -212,7 +212,7 @@ test('a marked unit that leaves reach stays by GUID, flagged out of reach, and i
 end)
 
 test('UnitTokenFromGUID re-points a marked unit at another token it is still reachable by', function()
-    local _, a, _, w = W.client('retail', { group = { raid = true, size = 4 } })
+    local _, a, _, w = W.client('tbc', { group = { raid = true, size = 4 } })
     local boss = unit('G1', SKULL, true)
     w:set('target', boss)
     w:set('raid2target', boss)
@@ -224,7 +224,7 @@ test('UnitTokenFromGUID re-points a marked unit at another token it is still rea
 end)
 
 test('the mark is pruned when a rescan shows it gone from a unit that is still reachable', function()
-    local _, a, _, w = W.client('retail')
+    local _, a, _, w = W.client('tbc')
     local boss = unit('G1', SKULL, true)
     w:set('target', boss)
     assert(a.Platform:ResolveRaidMarkUnit('skull') == 'target')
@@ -274,7 +274,7 @@ test(
 )
 
 test('a mark moved from an unreachable unit to a reachable one replaces the record', function()
-    local _, a, _, w = W.client('retail')
+    local _, a, _, w = W.client('tbc')
     w:set('target', unit('G1', SKULL, true))
     assert(a.Platform:ResolveRaidMarkUnit('skull') == 'target')
     w:remove('target')
@@ -309,7 +309,7 @@ test('anymark answers the highest-priority reachable mark, skull first, and says
 end)
 
 test('an unreadable mark is unavailable with the reason, never a guess', function()
-    local _, a, _, w = W.client('retail')
+    local _, a, _, w = W.client('tbc')
     w:set('target', unit('G1', SKULL, true))
     w.secretMarks.target = true
     local token, why = a.Platform:ResolveRaidMarkUnit('skull')
@@ -321,7 +321,7 @@ test('an unreadable mark is unavailable with the reason, never a guess', functio
     local mark, markReason = a.Platform:GetUnitRaidMark('target')
     assert(mark == nil and markReason == 'restricted-value')
     -- A mark that was read and then becomes unreadable on the remembered token is unreadable too.
-    local _, b, _, v = W.client('retail')
+    local _, b, _, v = W.client('tbc')
     v:set('target', unit('G1', SKULL, true))
     assert(b.Platform:ResolveRaidMarkUnit('skull') == 'target')
     v.secretMarks.target = true
@@ -331,7 +331,7 @@ test('an unreadable mark is unavailable with the reason, never a guess', functio
 end)
 
 test('an unreadable GUID keeps the unit by its token, and it is out of reach once the token moves on', function()
-    local _, a, _, w = W.client('retail')
+    local _, a, _, w = W.client('tbc')
     w:set('target', unit('G1', SKULL, true))
     w.secretGuids.target = true
     assert(a.Platform:ResolveRaidMarkUnit('skull') == 'target')
@@ -552,10 +552,24 @@ test('support: a mark unit type needs a client that can read marks, for any cond
     assert(C.support(b, 'COMBAT', { unit = 'target' }) == nil, 'ordinary units are not affected')
 end)
 
-test('the real TOC order gives every client its mark unit types', function()
+test('Retail and Forever do not offer or resolve mark units', function()
+    for _, name in ipairs({ 'retail', 'forever' }) do
+        local _, a, _, w = W.client(name)
+        w:set('target', unit('G1', SKULL, true))
+        w.calls.GetRaidTargetIndex = 0
+        assert(a.Platform:GetRaidMarkSupport() == 'unsupported-client')
+        assert(not a.units.skull and not a.units.anymark)
+        assert(select(2, a.Platform:ResolveRaidMarkUnit('skull')) == 'unsupported-client')
+        assert(select(2, a.Platform:GetUnitRaidMark('target')) == 'unsupported-client')
+        assert(C.support(a, 'COMBAT', { unit = 'skull' }) == 'unsupported-client')
+        assert(w.calls.GetRaidTargetIndex == 0, 'unsupported client queried marks')
+    end
+end)
+
+test('the real TOC order hides mark units on Retail and keeps them on Classic', function()
     local T = dofile('tests/fixtures/toc_addon.lua')
     local retail = T.new({ project = 1, class = 'WARRIOR' }).addon.units
-    assert(retail.skull and retail.anymark, 'Retail lost its mark unit types')
+    assert(not retail.skull and not retail.anymark, 'Retail offered mark unit types')
     local era = T.new({ project = 2, expansion = 1, class = 'WARRIOR' }).addon.units
     assert(era.skull and era.star, 'Classic Era lost its mark unit types')
 end)

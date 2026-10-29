@@ -121,6 +121,93 @@ addon:RegisterCondition('FRIENDLY', {
     end,
 })
 
+-- A marked-unit kind is evaluated without first replacing it with a token, so a missing mark can be false under NOT.
+addon:RegisterCondition('UNIT_EXISTS', {
+    description = L['Unit Exists'],
+    icon = addon.Artwork.condition['FRIENDLY'],
+    fields = { unit = 'string' },
+    requiredFields = { 'unit' },
+    valid = valid,
+    -- Checks the selected unit or marked-unit kind.
+    -- @param value table  The condition fields.
+    -- @param cache table  The per-evaluation cache.
+    -- @return boolean|nil  Whether the selected unit exists; nil if unavailable.
+    -- @return string|nil  The reason when the result is unavailable.
+    evaluate = function(value, cache)
+        return Functions.cache.getCached(cache, addon.Platform.GetUnitExistence, addon.Platform, value.unit)
+    end,
+    -- Builds the summary of the existence condition.
+    -- @param _ any  Unused specialization.
+    -- @param value table  The condition fields.
+    -- @return string  The condition summary.
+    print = function(_, value)
+        return addon.Functions.presentation.phrase(L['{unit} {{!exists|does not exist}}'], {unit = addon.units[value.unit] or L['<unit>']})
+    end,
+    widget = widget,
+    -- Builds the condition's help text.
+    -- @param frame table  The help page container.
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(addon.help_funcs.CreateText(L['Matches when the selected unit exists. A marked unit exists when that mark is known, even if the unit is currently out of reach.']))
+    end,
+})
+
+-- Raid role is independent of the Set Mark action and matches only while the player is in a raid.
+addon:RegisterCondition('RAID_ROLE', {
+    description = L['Raid Role'],
+    icon = addon.Artwork.condition['GROUP'],
+    fields = { role = 'string' },
+    -- Checks the selected raid role.
+    -- @param _ any  Unused specialization.
+    -- @param value table  The condition fields.
+    -- @return boolean  True for a known role.
+    valid = function(_, value)
+        return value.role == nil or value.role == 'member' or value.role == 'assistant' or value.role == 'leader'
+    end,
+    -- Matches the player's current raid role.
+    -- @param value table  The condition fields.
+    -- @param cache table  The per-evaluation cache.
+    -- @return boolean|nil  Whether the role matches; nil if unavailable.
+    -- @return string|nil  The reason when unavailable.
+    evaluate = function(value, cache)
+        local role, reason = Functions.cache.getCached(cache, addon.Platform.GetPlayerRaidRole, addon.Platform)
+        if role == nil then return nil, reason end
+        return role == (value.role or 'member')
+    end,
+    -- Describes the selected raid role.
+    -- @param _ any  Unused specialization.
+    -- @param value table  The condition fields.
+    -- @return string  The condition summary.
+    print = function(_, value)
+        local names = { member = L['Member'], assistant = L['Assistant'], leader = L['Leader'] }
+        return string.format(L['you {{!are|are not}} a raid %s'], names[value.role or 'member'] or L['Member'])
+    end,
+    -- Builds the raid-role dropdown.
+    -- @param parent table  The editor group.
+    -- @param spec any  The specialization.
+    -- @param value table  The condition fields.
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData('top')
+        local choice = addon:CreateConditionDropdown()
+        choice:SetLabel(L['Role'])
+        choice:SetCallback('OnValueChanged', function(_, _, selected)
+            value.role = selected
+            top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'), spec))
+        end)
+        choice.configure = function()
+            choice:SetList({ member = L['Member'], assistant = L['Assistant'], leader = L['Leader'] },
+                { 'member', 'assistant', 'leader' })
+            choice:SetValue(value.role or 'member')
+        end
+        parent:AddChild(choice)
+    end,
+    -- Builds the help page.
+    -- @param frame table  The help page container.
+    help = function(frame)
+        frame:AddChild(addon.help_funcs.CreateText(L['Matches your role in a raid: member, assistant or leader. Outside a raid it does not match.']))
+    end,
+})
+
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)

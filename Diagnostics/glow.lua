@@ -307,13 +307,7 @@ local function explainNoSpellIds(self, step)
             return 'mark: the step does not name a valid unit and mark (' .. show(reason) .. ')'
         end
 
-        local support = platform:GetMarkActionSupport()
-
-        if support then
-            return 'mark: this client cannot place marks (' .. show(support) .. ')'
-        end
-
-        return 'mark: no pseudo spell id'
+        return 'mark: executed directly; no action bar binding is needed'
     end
 
     if action == nil then

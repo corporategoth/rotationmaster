@@ -9,6 +9,80 @@
 local _, addon = ...
 local platform = addon.Platform
 
+-- Reads the player's role in a raid.
+-- @return string|boolean|nil  'member', 'assistant', 'leader', false outside a raid, or nil if unavailable.
+-- @return string|nil  The reason when the observation is unavailable.
+function platform:GetPlayerRaidRole()
+    -- Reads a raid membership or role predicate.
+    -- @param fn function|nil  The native predicate.
+    -- @param ... any  Arguments forwarded to the predicate.
+    -- @return boolean|nil  The result, or nil when it cannot be read.
+    -- @return string|nil  The reason when the result is unavailable.
+    local function read(fn, ...)
+        if type(fn) ~= 'function' then
+            return nil, 'missing-api'
+        end
+
+        local ok, value = pcall(fn, ...)
+
+        if not ok then
+            return nil, 'api-error'
+        end
+        if not self:CanReadValue(value) then
+            return nil, 'restricted-value'
+        end
+        if value == nil or value == false or value == 0 then
+            return false
+        end
+        if value == true or value == 1 then
+            return true
+        end
+
+        return nil, 'invalid-api-result'
+    end
+
+    local raid, reason = read(IsInRaid)
+
+    if raid == nil then
+        return nil, reason
+    end
+    if not raid then
+        return false
+    end
+
+    local leader, leaderReason
+
+    if type(UnitIsGroupLeader) == 'function' then
+        leader, leaderReason = read(UnitIsGroupLeader, 'player')
+    else
+        leader, leaderReason = read(IsRaidLeader)
+    end
+
+    if leader == nil then
+        return nil, leaderReason
+    end
+    if leader then
+        return 'leader'
+    end
+
+    local assistant, assistantReason
+
+    if type(UnitIsGroupAssistant) == 'function' then
+        assistant, assistantReason = read(UnitIsGroupAssistant, 'player')
+    else
+        assistant, assistantReason = read(IsRaidOfficer)
+    end
+
+    if assistant == nil then
+        return nil, assistantReason
+    end
+    if assistant then
+        return 'assistant'
+    end
+
+    return 'member'
+end
+
 -- Calls a native predicate under pcall and requires a boolean answer.
 -- @param fn function|nil  The native predicate; a non-function is "missing-api".
 -- @param ... any  The arguments passed to fn.

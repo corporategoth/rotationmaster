@@ -1441,6 +1441,10 @@ N["Marked enemies"] = 4082
 N["Marked friendly units"] = 4083
 -- 205bd60c
 N["A number from 0 to 8: there are eight marks, and a unit carries at most one."] = 4084
+-- 8dfc9fc3
+N["Matches when the selected unit exists. A marked unit exists when that mark is known, even if the unit is currently out of reach."] = 4094
+-- 8aee3f95
+N["Matches your role in a raid: member, assistant or leader. Outside a raid it does not match."] = 4101
 
 for text, id in pairs(N) do
     local translation = T[id]

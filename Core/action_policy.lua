@@ -22,7 +22,6 @@ local _, addon = ...
 -- stamp of the poll that made them, so reset() starts a new poll without discarding (and reallocating) the tables.
 local function buildReadiness(platform)
     local spells, spellStamps, items, itemStamps, availability, availableStamps = {}, {}, {}, {}, {}, {}
-    local marks, markStamps = {}, {}
     local range, resetRange = platform:NewSpellRangeReader()
     local stamp, now = 0, nil
     -- Profile options read once per poll (reset): "Ignore Mana" lets a spell
@@ -71,17 +70,6 @@ local function buildReadiness(platform)
             end
 
             return items[itemID]
-        end
-
-        -- A Set Mark step is ready while its unit exists, does not carry the mark yet and you may place marks
-        -- (Platform/raid_mark_actions.lua); an unreadable answer is not ready.
-        if kind == "mark" then
-            if markStamps[id] ~= stamp then
-                marks[id] = platform:IsMarkActionReady(id) == true
-                markStamps[id] = stamp
-            end
-
-            return marks[id]
         end
 
         -- "ranged" is the implicit Shoot or Auto Shot: a player spell whose

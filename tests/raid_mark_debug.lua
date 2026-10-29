@@ -50,12 +50,10 @@ test('the report lists what the client offers, the table and each mark unit', fu
     assert(report:find('cross     unavailable (no-marked-unit)', 1, true), report)
     assert(report:find('anymark   -> target', 1, true), 'anymark takes the skull')
     assert(report:find('Offered in the unit pickers: yes', 1, true))
-    assert(report:find('Set Mark step: available; hidden buttons made 0', 1, true), report)
-    assert(report:find('You may place marks now: yes', 1, true))
 end)
 
 test('the report shows a unit out of reach, an unreadable table and a client with no mark API', function()
-    local _, a, _, w, printed = client('retail')
+    local _, a, _, w, printed = client('tbc')
     w:set('target', unit('G1', 8, true))
     a.Platform:ResolveRaidMarkUnit('skull')
     w:remove('target')
@@ -65,7 +63,7 @@ test('the report shows a unit out of reach, an unreadable table and a client wit
     local report = text(printed)
     assert(report:find('G1, last target, NOT reachable, 2.5s', 1, true), report)
     assert(report:find('skull     unavailable (no-token)', 1, true), report)
-    local _, b, _, v, second = client('retail')
+    local _, b, _, v, second = client('tbc')
     v.secretMarks.player = true
     b:RunRaidMarkDiagnostic()
     assert(text(second):find('unreadable', 1, true), text(second))
@@ -74,7 +72,6 @@ test('the report shows a unit out of reach, an unreadable table and a client wit
     local none = text(third)
     assert(none:find('Reading marks: unavailable (missing-api)', 1, true), none)
     assert(none:find('GetRaidTargetIndex=no', 1, true) and none:find('Offered in the unit pickers: no', 1, true), none)
-    assert(none:find('Set Mark step: unavailable (missing-api)', 1, true), none)
     assert(#x.frames == x.baseline, 'a client with no mark API made a frame')
 end)
 
@@ -90,10 +87,7 @@ test('the report is read only and cheap', function()
     local profile = a:CopySettingsData(a.db.profile)
     a:RunRaidMarkDiagnostic()
 
-    assert(
-        sets == 0 and #w.attributeWrites == 0 and #w.macros == 0 and next(a.markButtons) == nil,
-        'the report changed the game or made a button'
-    )
+    assert(sets == 0 and #w.attributeWrites == 0 and #w.macros == 0, 'the report changed the game or made a button')
 
     assert(a:SettingsDataEqual(profile, a.db.profile), 'the report changed saved data')
     -- One rescan of every token a solo player can reach (sixty with nameplates, bosses and arena), plus one verification read
