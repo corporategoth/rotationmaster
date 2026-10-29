@@ -735,12 +735,12 @@ test('real AceDB defaults to diagram and preserves the chosen rotation view on r
     assert(b.db.profile.rotation_view=='list')
 end)
 
--- The 2.0 betas wrote profile.transfer_format ('rm' or 'wowsims') for the rotation transfer window's Format choice.
+-- The 2.0 betas wrote profile.transfer_format ('rm' or 'simulator') for the rotation transfer window's Format choice.
 -- That choice and the converter behind it are gone; a save that still carries the key must load without a warning,
 -- lose the key, and a profile exported with it must still import.
 test('a save with the retired transfer Format key loads quietly, drops the key and still imports',function()
     local warned={}
-    local saved={profiles={Default={version=1,transfer_format='wowsims'},Other={version=1,transfer_format='rm'},Plain={version=1}}}
+    local saved={profiles={Default={version=1,transfer_format='simulator'},Other={version=1,transfer_format='rm'},Plain={version=1}}}
     local _,a,_,load=persistentFixture({RotationMasterDB=saved},nil,true,function(addon)
         addon.warn=function(_,fmt,...) warned[#warned+1]=select('#',...)==0 and fmt or string.format(fmt,...) end
     end)
@@ -749,22 +749,22 @@ test('a save with the retired transfer Format key loads quietly, drops the key a
     assert(a.db.profile.transfer_format==nil and saved.profiles.Default.transfer_format==nil,'the active profile kept the key')
     assert(saved.profiles.Other.transfer_format==nil and saved.profiles.Plain.transfer_format==nil,'another profile kept the key')
     load('UI/settings_draft.lua');load('Core/profile_data.lua')
-    for _,value in ipairs({'wowsims','rm'}) do
+    for _,value in ipairs({'simulator','rm'}) do
         assert(a:ValidateProfileTransfer({version=3,transfer_format=value}),'a profile exported with '..value..' was refused')
     end
     assert(not a:ValidateProfileTransfer({version=3,transfer_format=5}),'a non-string transfer_format was accepted')
     assert(a.NewTransferFormatState==nil and a.GetTransferFormat==nil and a.ConvertRotationFromFormat==nil,'the Format layer is still loaded')
 end)
 
--- There never was a WowSims slash command, but the words a player might try with the retired feature are not special:
+-- There never was a Simulator slash command, but the words a player might try with the retired feature are not special:
 -- each is an unknown option (one warning, no error), and /rm help does not offer them.
-test('retired WowSims slash arguments are unknown options and the help does not list them',function()
+test('retired Simulator slash arguments are unknown options and the help does not list them',function()
     local env,a=persistentFixture({RotationMasterDB={}},nil,true)
     env.LibStub('AceConsole-3.0').GetArgs=function(_,text) local word,after=text:match('^(%S*)()');return word~='' and word or nil,after end
     local warned,printed={},{}
     local function say(list) return function(_,fmt,...) list[#list+1]=select('#',...)==0 and fmt or string.format(fmt,...) end end
     a.warn=say(warned);a.print=say(printed)
-    for _,command in ipairs({'wowsims','wowsims import','wowsims export','WowSims','import wowsims','export wowsims','format wowsims','transfer wowsims'}) do
+    for _,command in ipairs({'simulator','simulator import','simulator export','Simulator','import simulator','export simulator','format simulator','transfer simulator'}) do
         warned={};a.warn=say(warned)
         local ok,why=pcall(a.HandleCommand,a,command)
         assert(ok,command..' raised: '..tostring(why))
@@ -773,7 +773,7 @@ test('retired WowSims slash arguments are unknown options and the help does not 
     assert(not a.initializationErrorReport,'a retired command opened the error report')
     printed={};a.print=say(printed);a:HandleCommand('help')
     assert(#printed>5,'the help printed nothing')
-    for _,line in ipairs(printed) do assert(not line:lower():find('wowsims',1,true),'the help mentions it: '..line) end
+    for _,line in ipairs(printed) do assert(not line:lower():find('simulator',1,true),'the help mentions it: '..line) end
 end)
 
 -- validate.lua warns "Extra Field" about every saved key the AceDB defaults do not declare, at every login, so each

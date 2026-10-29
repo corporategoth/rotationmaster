@@ -13,7 +13,7 @@ local RET, RETTAV, PROT, PROTSIM, HOLY, START =
     'rm.mop.paladin.retribution',
     'rm.mop.paladin.retribution.warcrafttavern',
     'rm.mop.paladin.protection',
-    'rm.mop.paladin.protection.wowsims',
+    'rm.mop.paladin.protection.simulator',
     'rm.mop.paladin.holy',
     'rm.mop.paladin.unspecialized'
 
@@ -88,7 +88,7 @@ test(
         assert(M.switch(a, RETTAV) == 'match', 'the Warcraft Tavern variant shares the switch')
         s.specID(66)
         assert(M.selected(a) == PROT, 'Protection')
-        assert(M.switch(a, PROTSIM) == 'match', 'the wowsims variant shares the switch')
+        assert(M.switch(a, PROTSIM) == 'match', 'the simulator variant shares the switch')
         s.specID(65)
         assert(M.selected(a) == HOLY, 'Holy')
         s.setLevel(90)
@@ -436,7 +436,7 @@ test(
     end
 )
 
-test('Protection, wowsims: Shield of the Righteous pools to full, melee generators first', function()
+test('Protection, simulator: Shield of the Righteous pools to full, melee generators first', function()
     local a, s = paladin()
     s.learn(35395, 20271, 31935, 53600, 119072, 20925)
     s.resource[HP] = 3

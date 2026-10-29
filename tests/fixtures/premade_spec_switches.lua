@@ -4,7 +4,7 @@
 -- specialization, with that switch. tests/premade_specs.lua checks the conversion.
 return {
  ["rm.mop.deathknight.blood"]={spec=250,type="SPECIALIZATION"},
- ["rm.mop.deathknight.blood.wowsims"]={spec=250,type="SPECIALIZATION"},
+ ["rm.mop.deathknight.blood.simulator"]={spec=250,type="SPECIALIZATION"},
  ["rm.mop.deathknight.frost"]={spec=251,type="SPECIALIZATION"},
  ["rm.mop.deathknight.frost.dualwield"]={type="AND",value={{spec=251,type="SPECIALIZATION"},{kind="weapon",slot="offhand",type="WEAPON_TYPE"}}},
  ["rm.mop.druid.balance"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=102,type="SPECIALIZATION"}}},
@@ -29,7 +29,7 @@ return {
  ["rm.mop.monk.windwalker.simc"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=269,type="SPECIALIZATION"}}},
  ["rm.mop.paladin.holy"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=65,type="SPECIALIZATION"}}},
  ["rm.mop.paladin.protection"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=66,type="SPECIALIZATION"}}},
- ["rm.mop.paladin.protection.wowsims"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=66,type="SPECIALIZATION"}}},
+ ["rm.mop.paladin.protection.simulator"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=66,type="SPECIALIZATION"}}},
  ["rm.mop.paladin.retribution"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=70,type="SPECIALIZATION"}}},
  ["rm.mop.paladin.retribution.warcrafttavern"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=70,type="SPECIALIZATION"}}},
  ["rm.mop.priest.discipline"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=256,type="SPECIALIZATION"}}},
@@ -47,7 +47,7 @@ return {
  ["rm.mop.shaman.elemental"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=262,type="SPECIALIZATION"}}},
  ["rm.mop.shaman.enhancement"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=263,type="SPECIALIZATION"}}},
  ["rm.mop.shaman.enhancement.icyveins"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=263,type="SPECIALIZATION"}}},
- ["rm.mop.shaman.enhancement.wowsims"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=263,type="SPECIALIZATION"}}},
+ ["rm.mop.shaman.enhancement.simulator"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=263,type="SPECIALIZATION"}}},
  ["rm.mop.shaman.restoration"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=264,type="SPECIALIZATION"}}},
  ["rm.mop.shaman.restoration.hekili"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=264,type="SPECIALIZATION"}}},
  ["rm.mop.warlock.affliction"]={type="AND",value={{operator="GREATERTHANOREQUALS",type="LEVEL",unit="player",value=10},{spec=265,type="SPECIALIZATION"}}},

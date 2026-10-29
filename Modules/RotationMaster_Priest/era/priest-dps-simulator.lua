@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Classic Era Priest damage after wowsims' Shadow APL, levels 1–60; same switch as
+-- Classic Era Priest damage after simulator' Shadow APL, levels 1–60; same switch as
 -- rm.era.priest.dps at a lower priority, for raid groups with spare debuff slots. Differs from the
 -- default by spending Inner Focus on Devouring Plague (Undead) instead of Mind Blast and casting
 -- Devouring Plague in raids too; no Vampiric Embrace. Leveling steps match the default.
@@ -15,16 +15,14 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local combat={type='COMBAT',unit='player'}
 local P='priest-sim-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.wowsims',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.simulator',revision=6,
  blocks={['era.priest.dps-boundaries']=2,['era.priest.shadowform']=1,['era.priest.pull']=3,['era.priest.pull-shield']=1,
   ['era.priest.moving']=2,['era.priest.wand-finish']=2,['era.priest.pain']=1,['era.priest.filler']=2,['era.priest.wand-fallback']=2,
   ['era.priest.upkeep']=1},
- nameKey='Default.Era.Priest.Dps.Wowsims.Name',descriptionKey='Default.Era.Priest.Dps.Wowsims.Description',
+ nameKey='Default.Era.Priest.Dps.Simulator.Name',descriptionKey='Default.Era.Priest.Dps.Simulator.Description',
  applicability={families={'era'},actionContext='player',class='PRIEST'},
- tags={'shadow','damage','raid','single-target','wowsims'},
- sources={
-  {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/shadow_priest/apls/p1.apl.json',title='wowsims/classic Shadow Priest P1 APL',reviewedAt='2026-10-23',revision='7779ebb'},
- },
+ tags={'shadow','damage','raid','single-target'},
+ sources={},
  body={
   priority=4,disabled=true,
   cooldowns={block(P..'upkeep','era.priest.upkeep',P),

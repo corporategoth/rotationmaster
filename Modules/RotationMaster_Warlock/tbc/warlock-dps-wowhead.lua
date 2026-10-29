@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/tbc/guide/classes/warlock/demonology/leveling-tips',title='Wowhead: Demonology Warlock leveling',reviewedAt='2026-10-23',revision='2026-02-02'},
   {url='https://www.wowhead.com/tbc/guide/classes/warlock/destruction/leveling-tips',title='Wowhead: Destruction Warlock leveling',reviewedAt='2026-10-23',revision='2026-02-02'},
   {url='https://www.wowhead.com/tbc/guide/classes/warlock/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Warlock DPS rotation',reviewedAt='2026-10-23',revision='2026-02-10'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/ui/core/talents/warlock.ts',title='wowsims TBC Warlock talent layout',reviewedAt='2026-10-23',revision='3301fca',notes='Talent positions only.'},
+  
  },
  body={
   priority=5,disabled=true,

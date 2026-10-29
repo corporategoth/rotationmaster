@@ -60,7 +60,7 @@ local scalar = {
     disable_buttons = 'boolean',
     assisted_highlight = 'string',
     rotation_view = 'string',
-    -- Written by the beta's WowSims Format choice, which no longer exists: nothing reads it, but a profile saved or
+    -- Written by the beta's Simulator Format choice, which no longer exists: nothing reads it, but a profile saved or
     -- exported with it must still load and import.
     transfer_format = 'string',
     preview_spells = 'number',

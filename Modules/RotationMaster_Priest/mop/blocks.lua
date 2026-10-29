@@ -61,7 +61,7 @@ assert(addon:RegisterDefaultBlock({
 }}))
 -- Shadow boundaries, pull, movement and packs, shared by both Shadow premades. A cast stops the list; a channel
 -- stops it too unless it is Mind Flay (or Mind Flay: Insanity) and either Mind Blast (or Shadow Word: Death on a
--- target below 20%) is ready to clip it (Icy Veins) or its second of three ticks is done (wowsims clips at two
+-- target below 20%) is ready to clip it (Icy Veins) or its second of three ticks is done (simulator clips at two
 -- ticks; ticks are evenly spaced, so that is two thirds of the channel whatever the haste). Out of combat: Mind Spike, Mind Blast, Vampiric Touch, Shadow Word: Pain, Mind Flay, then
 -- stop. Moving: instants only (Hekili's moving list). Five or more engaged enemies: the tier-6 talent, DoTs on
 -- the current target, Mind Sear from 76 (guide consensus), then stop; before Mind Sear the single-target list runs.

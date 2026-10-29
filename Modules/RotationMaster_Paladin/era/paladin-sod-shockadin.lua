@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Season of Discovery Shockadin (wowsims Phase 8): a Holy-tree damage build. Seal of Martyrdom (else
+-- Season of Discovery Shockadin (simulator Phase 8): a Holy-tree damage build. Seal of Martyrdom (else
 -- Righteousness) judged as it runs out, Holy Shock to keep Sunlight up or at three Holy Power,
 -- Exorcism, Crusader Strike. Disabled by default (opt-in); it applies with Holy as the main tree and
 -- the Shock and Awe rune (passive, Holy Shock damage builds) engraved, which no Holy healer takes.
@@ -16,8 +16,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Shockadin.Name',descriptionKey='Default.SoD.Paladin.Shockadin.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
- tags={'endgame','raid','holy','melee','single-target','season-of-discovery','wowsims'},
- sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/retribution_paladin',title='wowsims/sod Phase 8 Shockadin APLs',reviewedAt='2026-10-23',revision='0e3f6ef'}},
+ tags={'endgame','raid','holy','melee','single-target','season-of-discovery'},
+ sources={},
  body={priority=100,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=40},{type='RUNE_ENGRAVED',spell=462834},{type='PRIMARY_TALENT_TREE',tree=1}}},
   cooldowns={block('shock-upkeep','sod.paladin.ret-upkeep','shock-'),block('shock-safety','era.paladin.safety','shock-')},
   rotation={

@@ -23,7 +23,7 @@ local SRET, SRETIV, STWIST, SSTACK, SHOCK =
 
 local SPROT, SPROTWS, SHOLY, SHOLYWH =
     'rm.sod.paladin.protection',
-    'rm.sod.paladin.protection.wowsims',
+    'rm.sod.paladin.protection.simulator',
     'rm.sod.paladin.holy',
     'rm.sod.paladin.holy.wowhead'
 
@@ -89,7 +89,7 @@ test('every Paladin premade registers valid, localized, sourced, composed and sc
     end
 
     for _, source in ipairs(M.row(a, PROTIV).envelope.sources) do
-        assert(not source.url:find('wowsims'), 'Icy Veins variant cites wowsims')
+        assert(not source.url:find('simulator'), 'Icy Veins variant cites simulator')
     end
 end)
 
@@ -625,7 +625,7 @@ test('SoD Protection: pull, Holy Shield, single target and pack orders, reminder
     assert(not lit[407631], 'no taunt when tanking')
 end)
 
-test('SoD Protection wowsims variant: Judgement first, renew the seal, Shield of Righteousness last', function()
+test('SoD Protection simulator variant: Judgement first, renew the seal, Shield of Righteousness last', function()
     local a, s = paladin(60, 2)
     s.learn(407798, 20925, 407669, 415068, 407632, 440658, 20271)
     s.buff('player', 407798, { expirationTime = 120 })

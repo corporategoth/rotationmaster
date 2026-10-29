@@ -28,7 +28,7 @@ local function soul()return any(own(113860),own(113861),own(113858))end
 local function lust()return any(buff(2825),buff(32182),buff(80353),buff(90355))end
 -- No pet, out of combat (a summon is a 6 s cast), and not sacrificed to Grimoire of Sacrifice.
 local petless=all(negate(combat()),negate({type='PET'}),negate(buff(108503)))
--- Hard casts, and channels other than Malefic Grasp and Drain Soul (wowsims clips those at every GCD, so
+-- Hard casts, and channels other than Malefic Grasp and Drain Soul (simulator clips those at every GCD, so
 -- the next action stays visible; the channel is read by spell), run to the end; no target to attack, no
 -- advice.
 assert(addon:RegisterDefaultBlock({
@@ -72,7 +72,7 @@ assert(addon:RegisterDefaultBlock({
  spell('grimoire-felhunter',111897,combat()),
  spell('life-tap',1454,all({type='MANAPCT',unit='player',operator='LESSTHANOREQUALS',value=.15},negate({type='MOVING'}))),
 }}))
--- Affliction up to the Haunt decision (wowsims order; both variants agree): pre-cast Haunt or Unstable
+-- Affliction up to the Haunt decision (simulator order; both variants agree): pre-cast Haunt or Unstable
 -- Affliction to pull; moving without Kil'jaeden's Cunning, instants then stop; a fresh elite or long-lived
 -- target with none of your DoTs gets Soulburn + Soul Swap; on three or more engaged enemies Soulburn + Seed
 -- of Corruption at six, plain Seed before Soulburn: Seed; then Agony, Corruption and Unstable Affliction

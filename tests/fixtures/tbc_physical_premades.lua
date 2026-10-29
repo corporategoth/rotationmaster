@@ -21,19 +21,19 @@ local families = {
 local packs = {
     WARRIOR = {
         'Modules/RotationMaster_Warrior/tbc/blocks.lua',
-        'Modules/RotationMaster_Warrior/tbc/warrior-dps-wowsims.lua',
+        'Modules/RotationMaster_Warrior/tbc/warrior-dps-simulator.lua',
         'Modules/RotationMaster_Warrior/tbc/warrior-dps-icyveins.lua',
         'Modules/RotationMaster_Warrior/tbc/warrior-protection-wowhead.lua',
         'Modules/RotationMaster_Warrior/tbc/warrior-protection-icyveins.lua',
     },
     ROGUE = {
         'Modules/RotationMaster_Rogue/tbc/blocks.lua',
-        'Modules/RotationMaster_Rogue/tbc/rogue-dps-wowsims.lua',
+        'Modules/RotationMaster_Rogue/tbc/rogue-dps-simulator.lua',
         'Modules/RotationMaster_Rogue/tbc/rogue-dps-wowhead.lua',
     },
     HUNTER = {
         'Modules/RotationMaster_Hunter/tbc/blocks.lua',
-        'Modules/RotationMaster_Hunter/tbc/hunter-ranged-wowsims.lua',
+        'Modules/RotationMaster_Hunter/tbc/hunter-ranged-simulator.lua',
         'Modules/RotationMaster_Hunter/tbc/hunter-ranged-wowhead.lua',
     },
 }

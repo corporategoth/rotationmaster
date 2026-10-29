@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Retribution Paladin, levels 10–90, in the Retribution specialization (70).
--- wowsims' measured order (Hekili ports it, Wowhead's guide matches it) with Icy Veins' leveling
+-- simulator' measured order (Hekili ports it, Wowhead's guide matches it) with Icy Veins' leveling
 -- advice: Inquisition kept up at 3 Holy Power, Templar's Verdict at full Holy Power before any
 -- generator, Hammer of Wrath > Crusader Strike > Judgment > Exorcism, no pooling in Avenging Wrath,
 -- Divine Storm at two or more enemies. The Exorcism-first variant is
@@ -28,10 +28,10 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.paladin.damage-boundaries']=2,['mop.paladin.upkeep']=1,['mop.paladin.seal-truth']=2,['mop.paladin.defensives']=1,['mop.paladin.ret-survival']=1},
  nameKey='Default.MoP.Paladin.Retribution.Name',descriptionKey='Default.MoP.Paladin.Retribution.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
- tags={'retribution','leveling','single-target','aoe','wowsims','hekili','wowhead','icy-veins'},
+ tags={'retribution','leveling','single-target','aoe','hekili','wowhead','icy-veins'},
  sources={
-  {url='https://github.com/wowsims/mop/blob/master/ui/specs/paladin/retribution/apls/default.apl.json',title='wowsims MoP: Retribution default APL',reviewedAt='2026-10-23',revision='ec2c6c2552'},
-  {url='https://github.com/Smufrik/Hekili/blob/main/MistsOfPandaria/Priorities/PaladinRetribution.simc',title='Hekili MoP Classic: Retribution priority',reviewedAt='2026-10-23',revision='1c11434a',notes='A port of the wowsims list; Inquisition at 3 Holy Power or Divine Purpose.'},
+  
+  {url='https://github.com/Smufrik/Hekili/blob/main/MistsOfPandaria/Priorities/PaladinRetribution.simc',title='Hekili MoP Classic: Retribution priority',reviewedAt='2026-10-23',revision='1c11434a',notes='A port of the simulator list; Inquisition at 3 Holy Power or Divine Purpose.'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/paladin/retribution/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Retribution Paladin rotation',reviewedAt='2026-10-23',revision='2025-07-27',notes='Read from a Wayback snapshot; Divine Storm at 2+, Hammer of the Righteous at 4+.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/retribution-paladin-leveling',title='Icy Veins: MoP Classic Retribution Paladin leveling',reviewedAt='2026-10-23',revision='2025-09-23',notes='Word of Glory when in danger; Inquisition only from 81.'},
  },

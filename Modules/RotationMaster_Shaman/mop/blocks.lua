@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Shared Mists of Pandaria Classic Shaman blocks (Built In composition; authoring-time only).
--- Consumers: rm.mop.shaman.{unspecialized,elemental,enhancement,enhancement.wowsims,enhancement.icyveins,
+-- Consumers: rm.mop.shaman.{unspecialized,elemental,enhancement,enhancement.simulator,enhancement.icyveins,
 -- restoration,restoration.hekili}. A content change needs a block revision bump, every consumer's pin and
 -- revision bumped, and both recorded in tests/fixtures/builtin_composition_ledger.lua. Policy and sources are
 -- the consumers'; see premade-research progression/shaman.md. Totem slots: 1 Fire, 2 Earth, 3 Water, 4 Air.
@@ -69,7 +69,7 @@ assert(addon:RegisterDefaultBlock({
  spell('elemental-mastery',16166,all(combat(),any(sync(114049),sync(2894)))),
  spell('ancestral-swiftness',16188,all(combat(),negate(stacks(53817,2)))),
 }}))
--- The Wowhead/wowsims Enhancement pack arm (two or more engaged enemies; rejoins the single-target list):
+-- The Wowhead/simulator Enhancement pack arm (two or more engaged enemies; rejoins the single-target list):
 -- Magma at six instead of Searing, Fire Nova at four once Lava Lash has spread Flame Shock, Chain Lightning at
 -- five Maelstrom Weapon (three when it finishes before the next swing), Lava Lash on a Flame Shocked target.
 assert(addon:RegisterDefaultBlock({

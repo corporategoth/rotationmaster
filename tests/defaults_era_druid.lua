@@ -25,7 +25,7 @@ local SBAL, SBALIV, SBALWH, SFER, STANK, STANKWS, SRES =
     'rm.sod.druid.balance.wowhead',
     'rm.sod.druid.feral',
     'rm.sod.druid.tank',
-    'rm.sod.druid.tank.wowsims',
+    'rm.sod.druid.tank.simulator',
     'rm.sod.druid.restoration'
 
 local VANILLA = { BAL, BALIV, FER, FERWT, FERWTC, FERWH, RES, RESWT }
@@ -53,7 +53,7 @@ local OFF = {
 local CAT, BEAR, DIRE, TRAVEL = 768, 5487, 9634, 783
 local FORMS = { [CAT] = true, [BEAR] = true, [DIRE] = true, [TRAVEL] = true, [1066] = true, [24858] = true }
 local SR, LACERATE, LIFEBLOOM, STARSURGE = 407988, 414644, 408124, 417157
--- The Lifebloom rune's first taught spell (wowsims/exporter); 408124 is the heal it grants.
+-- The Lifebloom rune's first taught spell (simulator/exporter); 408124 is the heal it grants.
 local LIFEBLOOM_RUNE, GALE_WINDS, ELUNES_FIRES, IMPROVED_SWIPE = 409824, 417135, 414719, 439510
 
 local function druid(level, talents, ...)

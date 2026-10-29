@@ -13,7 +13,7 @@ This is not JSON or LibDeflate. Numeric keys, Boolean false, Unicode bytes and p
 `tests/fixtures/legacy_rotation_exports.lua` contains Store/LZW/Huffman golden rotations produced with Rotation Master's original bundled LibCompress90083 (2018 revision83), using AceSerializer protocol1. The untouched backup used to produce them remains in the thread's work/library-backup. The fixtures also give the future website a fixed compatibility target. `tests/rotation_codec.lua` uses the actual current vendored libraries in LuaJIT for golden decode, envelope/legacy roundtrips, numeric priority order, Unicode/false, malformed transport, expansion/depth/token limits and checking that rejected streams never reach expensive parser/decompressor callbacks.
 
 
-**Other formats.** There are none: the rotation Import/Export window reads and writes the Rotation Master text only. Early 2.0 test builds also converted to and from WowSims' Action Priority List; that was removed before release (the WowSims maintainers' attitude toward addon developers they consider beneath them; see `.claude/learnings/product-decisions.md`). A profile saved or exported by those builds may carry `transfer_format`; it is ignored and dropped on load.
+**Transfer format.** Rotation import and export use Rotation Master text. The obsolete `profile.transfer_format` field is ignored and dropped on load.
 
 ## Staged import boundary
 

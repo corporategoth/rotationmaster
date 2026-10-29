@@ -10,7 +10,7 @@ local ENH, ENHWT, ELE, ELEWS, RESTO, RESTOWT =
     'rm.era.shaman.enhancement',
     'rm.era.shaman.enhancement.warcrafttavern',
     'rm.era.shaman.elemental',
-    'rm.era.shaman.elemental.wowsims',
+    'rm.era.shaman.elemental.simulator',
     'rm.era.shaman.restoration',
     'rm.era.shaman.restoration.warcrafttavern'
 
@@ -324,7 +324,7 @@ test('Elemental: execute shock, moving shocks, solo melee, packs, Chain Lightnin
     assert(not M.upkeep(f, s, ELE)['ele-rockbiter-weapon'], 'no imbue in raids')
 end)
 
-test('wowsims Elemental: Chain Lightning on cooldown, Earth Shock in Elemental Mastery', function()
+test('simulator Elemental: Chain Lightning on cooldown, Earth Shock in Elemental Mastery', function()
     local f, s = shaman(60, kit, { 421, 16166 })
     s.talents = { 31, 0, 0 }
     s.range[6603] = false

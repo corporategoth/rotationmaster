@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Shaman premades: Elemental, Enhancement (Wowhead, recommended), Enhancement wowsims
+-- Mists of Pandaria Classic Shaman premades: Elemental, Enhancement (Wowhead, recommended), Enhancement simulator
 -- and Icy Veins variants (off by default), Restoration, Restoration Hekili (off) and the Unspecialized catch-all.
 -- Real predicates, catalog, composition, sequence executor, readiness and publisher on a modeled MoP Classic
 -- client (tests/fixtures/mop_premade_model_b.lua).
@@ -10,7 +10,7 @@ local test, finish = M.F.suite()
 local ELE, ENH, SIM, IV =
     'rm.mop.shaman.elemental',
     'rm.mop.shaman.enhancement',
-    'rm.mop.shaman.enhancement.wowsims',
+    'rm.mop.shaman.enhancement.simulator',
     'rm.mop.shaman.enhancement.icyveins'
 
 local RESTO, HK, NEW = 'rm.mop.shaman.restoration', 'rm.mop.shaman.restoration.hekili', 'rm.mop.shaman.unspecialized'
@@ -453,7 +453,7 @@ test(
 )
 
 test(
-    'wowsims variant: any stack whose cast fits before the swing, Unleash for a missing Flame Shock, Earth Shock below two stacks',
+    'simulator variant: any stack whose cast fits before the swing, Unleash for a missing Flame Shock, Earth Shock below two stacks',
     function()
         local f, s = shaman(90, starter, enh)
         s.debuffs = { { id = 8050, expires = 130 } }

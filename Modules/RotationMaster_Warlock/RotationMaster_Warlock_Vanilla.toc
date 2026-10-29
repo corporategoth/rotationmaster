@@ -19,4 +19,4 @@ era/sod-warlock-tank.lua
 era/sod-warlock-fire.lua
 era/sod-warlock-fire-icyveins.lua
 era/sod-warlock-shadow.lua
-era/sod-warlock-shadow-wowsims.lua
+era/sod-warlock-shadow-simulator.lua

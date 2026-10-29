@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Season of Discovery Warlock tank, levels 1–60 (Metamorphosis engraved). wowsims/sod Phase 4 tank
+-- Season of Discovery Warlock tank, levels 1–60 (Metamorphosis engraved). simulator/sod Phase 4 tank
 -- order with Icy Veins, Wowhead and Warcraft Tavern: Shadow Cleave whenever Defender's Resolve is
 -- missing or ending (even on one target); a Soul Fire! proc; Incinerate to keep its fire buff; on
 -- three engaged enemies Shadow Cleave, Lake of Fire, Shadowflame and Hellfire; a curse (Agony,
@@ -29,8 +29,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.warlock.boundaries']=3,['era.warlock.armor']=1,['era.warlock.pets']=1},
  nameKey='Default.SoD.Warlock.Tank.Name',descriptionKey='Default.SoD.Warlock.Tank.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
- tags={'tank','ranged','caster','endgame','aoe','season-of-discovery','wowsims','icy-veins','wowhead','warcraft-tavern'},
- sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/tank_warlock/apls',title='wowsims/sod: Warlock tank Phase 4 APLs',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
+ tags={'tank','ranged','caster','endgame','aoe','season-of-discovery','icy-veins','wowhead','warcraft-tavern'},
+ sources={
  {url='https://www.icy-veins.com/wow-classic/demonology-warlock-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Demonology Warlock tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warlock/tank-overview',title='Wowhead: SoD Warlock tank overview',reviewedAt='2026-10-23',revision='2025-01-26'},
  {url='https://www.warcrafttavern.com/wow-classic-sod/guides/warlock-tank/',title='Warcraft Tavern: SoD Warlock tank (Phase 4)',reviewedAt='2026-10-23'}},

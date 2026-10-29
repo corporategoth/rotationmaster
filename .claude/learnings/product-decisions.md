@@ -9,13 +9,6 @@ These were decided by the maintainer; do not reopen them without being asked, an
 - **No RM-to-RM signals** (addon messages between players): Retail and Forever refuse addon sends in boss encounters, M+ and PvP
   and hide mob identity in instances, so the use cases die where they matter. Scrapped.
 - **No language picker**: the addon uses the client's language.
-- **No WowSims import or export** (2026-10-27): the converter, the Format choice of the rotation transfer window and
-  everything that fed them were removed before 2.0 shipped; do not reintroduce them. The reason is the WowSims
-  maintainers' attitude toward addon developers they consider beneath them: they indicated that community submissions
-  supporting small addons, with only around 200,000 downloads, are not wanted. Rotation Master therefore no longer
-  supports their project, and the pull requests sent to their repositories were closed. Saved data tolerates the one key
-  the feature wrote (`profile.transfer_format`, dropped on load; a profile exported with it still imports). Built In
-  rotations that cite WowSims rotation lists among their sources are rotations, not transfer support, and are unchanged.
 - **Integrations** that do nothing for a client are dropped for that client. Tooltips are on by default with a master switch.
 
 ## Selection and eligibility

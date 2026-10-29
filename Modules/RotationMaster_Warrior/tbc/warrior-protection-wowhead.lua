@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- TBC Warrior tank, levels 10–70, Wowhead/wowsims order (the recommended tank variant).
+-- TBC Warrior tank, levels 10–70, Wowhead/simulator order (the recommended tank variant).
 -- Selected by Defensive Stance (read by spell, 71), ahead of the DPS premades by priority; a Battle or
 -- Berserker Stance pull shows the DPS premade instead. Shield Slam > Revenge > Thunder Clap and
 -- Demoralizing Shout kept up on elites and bosses > Devastate (or Sunder to five). Shield Block
@@ -20,10 +20,10 @@ assert(addon:RegisterDefaultRotation({
  blocks={['tbc.warrior.boundaries']=4,['tbc.warrior.upkeep']=1,['tbc.warrior.prot-upkeep']=1,['tbc.warrior.prot-core']=1,['tbc.warrior.sunder']=1},
  nameKey='Default.TBC.Warrior.Protection.Wowhead.Name',descriptionKey='Default.TBC.Warrior.Protection.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
- tags={'tank','melee','leveling','endgame','aoe','wowhead','wowsims'},
+ tags={'tank','melee','leveling','endgame','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/warrior/protection/tank-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Protection Warrior tank rotation',reviewedAt='2026-10-23',revision='2026-02-23'},
  {url='https://www.wowhead.com/tbc/guide/classes/warrior/protection/leveling-tips',title='Wowhead: TBC Protection Warrior leveling',reviewedAt='2026-10-23',revision='2026-09-04'},
- {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/warrior/protection/rotation.go',title='wowsims/tbc: Protection Warrior rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'}},
+ },
  body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='FORM',form=71}}},
  cooldowns={block('tbc.warrior.upkeep','warrior-prot-'),block('tbc.warrior.prot-upkeep','warrior-prot-'),
   spell('warrior-prot-shield-block',2565,all({type='COMBAT',unit='player'},{type='WEAPON_TYPE',slot='offhand',kind='shield'},negate({type='BUFF',unit='player',spell=2565,anyrank=true}),

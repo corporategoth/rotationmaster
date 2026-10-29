@@ -5,7 +5,7 @@
 -- ranged hands rune (Chimera or Explosive Shot) is. Keeps the Flanking Strike buff up, Mongoose Bite
 -- at four Raptor Fury stacks, Raptor Strike on every reset, Wyvern Strike on Clever Strikes,
 -- Immolation Trap and Wing Clip only in empty gaps; Carve and Explosive Trap on packs; shots while
--- out of melee (Wowhead P8 melee guide, wowsims P8 melee builds). Falcon (Hawk before 60), Viper
+-- out of melee (Wowhead P8 melee guide, simulator P8 melee builds). Falcon (Hawk before 60), Viper
 -- below 5% mana; no pet reminders with Lone Wolf engraved. Left manual: positioning, pet commands,
 -- Feed Pet and Tranquilizing Shot.
 local _,addon=...
@@ -38,11 +38,11 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.hunter.boundaries']=3,['sod.hunter.upkeep']=1},
  nameKey='Default.SoD.Hunter.Melee.Name',descriptionKey='Default.SoD.Hunter.Melee.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
- tags={'dps','melee','survival','leveling','endgame','season-of-discovery','wowhead','wowsims'},
+ tags={'dps','melee','survival','leveling','endgame','season-of-discovery','wowhead'},
  sources={
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/melee-dps-rotation-cooldowns-abilities-pve',title='Wowhead: Melee Hunter rotation, Season of Discovery',reviewedAt='2026-10-23',revision='2025-08-20'},
-  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/hunter/builds/p8_melee_2h.build.json',title='wowsims/sod: Hunter P8 two-hand melee build',reviewedAt='2026-10-23',revision='0e3f6ef'},
-  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/hunter/builds/p8_melee_dw.build.json',title='wowsims/sod: Hunter P8 dual-wield melee build',reviewedAt='2026-10-23',revision='0e3f6ef'},
+  
+  
  },
  body={priority=110,switch=all(any(rune(415320),rune(458479),rune(425711)),negate(rune(409433)),negate(rune(409552))),
  cooldowns={block('sod.hunter.upkeep','hunter-'),

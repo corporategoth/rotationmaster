@@ -1,8 +1,8 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Beast Mastery Hunter, levels 10–90, in the Beast Mastery
--- specialization (253). Wowhead's Phase 5 order, which the wowsims APL matches, with
--- wowsims' Beast Cleave and pack Kill Command gates and Hekili's Bestial Wrath focus floor: Kill
+-- specialization (253). Wowhead's Phase 5 order, which the simulator APL matches, with
+-- simulator' Beast Cleave and pack Kill Command gates and Hekili's Bestial Wrath focus floor: Kill
 -- Shot, Kill Command (held in the 3 s before Bestial Wrath), talents, Focus Fire at five Frenzy
 -- outside Bestial Wrath, Serpent Sting kept up by Cobra Shot, Arcane Shot as a focus dump, Cobra
 -- or Steady Shot. Two or more enemies: Multi-Shot keeps Beast Cleave up.
@@ -37,11 +37,11 @@ assert(addon:RegisterDefaultRotation({
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=2},
  nameKey='Default.MoP.Hunter.BeastMastery.Name',descriptionKey='Default.MoP.Hunter.BeastMastery.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
- tags={'beast-mastery','leveling','single-target','aoe','wowhead','wowsims'},
+ tags={'beast-mastery','leveling','single-target','aoe','wowhead'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/hunter/beast-mastery/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Beast Mastery Hunter rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/hunter/beast-mastery/dps-leveling-talent-builds-tips',title='Wowhead: MoP Classic Beast Mastery Hunter leveling',reviewedAt='2026-10-23',revision='2026-06-29'},
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/hunter/beast_mastery/apls/bm.apl.json',title='wowsims/mop Beast Mastery APL',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Beast Cleave refresh, Kill Command gate on packs, Focus Fire at five or expiring.'},
+  
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/HunterBeastMastery.simc',title='Hekili MoP Classic Beast Mastery priority',reviewedAt='2026-10-23',revision='0750b5dd98',notes='Bestial Wrath at 50 focus; no Focus Fire during Bestial Wrath.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/beast-mastery-hunter-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Beast Mastery Hunter rotation',reviewedAt='2026-10-23',revision='2026-05-29',notes='Same abilities; Kill Command before Kill Shot.'},
  },

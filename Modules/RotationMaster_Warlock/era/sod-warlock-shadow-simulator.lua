@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Season of Discovery Shadow Warlock, wowsims Phase 6 "Drain Soul filler" (alternative premade;
+-- Season of Discovery Shadow Warlock, simulator Phase 6 "Drain Soul filler" (alternative premade;
 -- same switch, lower priority). For a Soul Siphon build: Drain Soul is the filler at every health
 -- and is not protected as a channel, so the next step shows as soon as it is due (clip the channel
 -- for it); any other channel (Hellfire, Health Funnel, a channelled Drain Life) is protected. DoTs
@@ -20,12 +20,12 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local curses={980,603,1490,17862,704,1714,702,18223}
 local others={type='OR',value={}};for i,id in ipairs(curses)do if id~=980 then others.value[#others.value+1]=own(id)end end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow.wowsims',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow.simulator',revision=6,
  blocks={['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1},
- nameKey='Default.SoD.Warlock.Shadow.Wowsims.Name',descriptionKey='Default.SoD.Warlock.Shadow.Wowsims.Description',
+ nameKey='Default.SoD.Warlock.Shadow.Simulator.Name',descriptionKey='Default.SoD.Warlock.Shadow.Simulator.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
- tags={'dps','ranged','caster','endgame','season-of-discovery','wowsims'},
- sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warlock/apls/p6/affliction.apl.json',title='wowsims/sod: Affliction Warlock Phase 6 APL (Drain Soul filler)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'}},
+ tags={'dps','ranged','caster','endgame','season-of-discovery'},
+ sources={},
  body={priority=55,disabled=true,
  cooldowns={block('era.warlock.armor','sod-ws-'),block('era.warlock.pets','sod-ws-'),
   spell('sod-ws-pet-life-tap',1454,all(combat(),{type='PET'},{type='MANAPCT',unit='pet',operator='LESSTHAN',value=.3},{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.6})),

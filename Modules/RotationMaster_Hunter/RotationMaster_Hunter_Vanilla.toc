@@ -14,6 +14,6 @@ bind.lua
 era/blocks.lua
 era/hunter-ranged.lua
 era/hunter-ranged-icyveins.lua
-era/hunter-ranged-wowsims.lua
+era/hunter-ranged-simulator.lua
 era/hunter-sod-ranged.lua
 era/hunter-sod-melee.lua

@@ -5,7 +5,7 @@
 -- Counterattack) are offered once known. Solo: the pet tanks, your own sting, extra shots only on
 -- spare mana. In a group: Aimed Shot and Multi-Shot straight after an Auto Shot (the full rotation),
 -- Serpent Sting outside raids (debuff limit), Arcane Shot before Aimed Shot or on a dying target.
--- Variants: rm.era.hunter.ranged.icyveins (clipped), rm.era.hunter.ranged.wowsims (raid sting).
+-- Variants: rm.era.hunter.ranged.icyveins (clipped), rm.era.hunter.ranged.simulator (raid sting).
 -- Left manual: melee weaving, traps, Wing Clip/Disengage, Feed Pet, Tranquilizing Shot, positioning.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1,['era.hunter.cooldowns']=1},
  nameKey='Default.Era.Hunter.Ranged.Name',descriptionKey='Default.Era.Hunter.Ranged.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER'},
- tags={'dps','ranged','leveling','endgame','icy-veins','warcraft-tavern','wowsims'},
+ tags={'dps','ranged','leveling','endgame','icy-veins','warcraft-tavern'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/hunter-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Hunter DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2024-11-17'},
   {url='https://www.icy-veins.com/wow-classic/marksmanship-hunter-leveling-guide-1-60',title='Icy Veins: Marksmanship Hunter leveling 1-60',reviewedAt='2026-10-23',revision='2024-11-17'},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/classic/guide/classes/hunter/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Hunter DPS rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/pve-marksmanship-hunter/',title='Warcraft Tavern: PvE Marksmanship Hunter',reviewedAt='2026-10-23'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/hunter-leveling-guide/',title='Warcraft Tavern: Hunter leveling guide',reviewedAt='2026-10-23'},
-  {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/hunter/apls/p1.apl.json',title='wowsims/classic: Hunter P1 APL',reviewedAt='2026-10-23',revision='7779ebb'},
+  
  },
  body={priority=10,
  cooldowns={block('era.hunter.hawk','hunter-'),block('era.hunter.upkeep','hunter-'),block('era.hunter.cooldowns','hunter-')},

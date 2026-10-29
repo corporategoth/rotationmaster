@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Arcane Mage, levels 10–90, in the Arcane specialization
--- (62). wowsims' measured list (Hekili matches it): Arcane Blast builds four Arcane
+-- (62). simulator' measured list (Hekili matches it): Arcane Blast builds four Arcane
 -- Charges; with four, a single Arcane Missiles! proc is spent above 95% mana and Barrage comes out
 -- below 90%, so between 90% and 95% it keeps blasting. Arcane Power and Alter Time at four charges
 -- with a proc, Missiles never left at two procs, Barrage every four charges with two or more enemies.
@@ -24,9 +24,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1,['mop.mage.arcane-open']=3,['mop.mage.arcane-aoe-moving']=2},
  nameKey='Default.MoP.Mage.Arcane.Name',descriptionKey='Default.MoP.Mage.Arcane.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
- tags={'arcane','leveling','single-target','aoe','wowsims','hekili'},
+ tags={'arcane','leveling','single-target','aoe','hekili'},
  sources={
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/mage/arcane/apls/default.apl.json',title='wowsims/mop: Arcane Mage default APL',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Mana-gated four-charge spend, Alter Time and Arcane Power timing, end-of-fight dump.'},
+  
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/MageArcane.simc',title='Hekili (MoP Classic fork): Arcane Mage priority',reviewedAt='2026-10-23',revision='0750b5dd98'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/arcane-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Arcane Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Bomb upkeep, AoE and Alter Time handling, talent rows.'},
   {url='https://www.wowhead.com/mop-classic/guide/classes/mage/arcane/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Arcane Mage rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20',notes='Barrage every four charges in cleave; Frost Armor.'},

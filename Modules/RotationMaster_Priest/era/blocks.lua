@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Shared Classic Era and Season of Discovery Priest blocks (Built In composition; authoring-time only).
--- Consumers: rm.era.priest.dps, rm.era.priest.dps.warcrafttavern, rm.era.priest.dps.wowsims,
+-- Consumers: rm.era.priest.dps, rm.era.priest.dps.warcrafttavern, rm.era.priest.dps.simulator,
 -- rm.era.priest.healer, rm.sod.priest.dps, rm.sod.priest.dps.wowhead, rm.sod.priest.healer and
 -- rm.sod.priest.healer.warcrafttavern. A content change needs a block revision bump, every
 -- consumer's pin and revision bumped, and both recorded in tests/fixtures/builtin_composition_ledger.lua.

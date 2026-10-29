@@ -10,11 +10,11 @@ local M = dofile('tests/fixtures/mop_premade_model_a.lua')
 
 local BLOOD, BSIM, FROST, DW, UNHOLY, UCAP =
     'rm.mop.deathknight.blood',
-    'rm.mop.deathknight.blood.wowsims',
+    'rm.mop.deathknight.blood.simulator',
     'rm.mop.deathknight.frost',
     'rm.mop.deathknight.frost.dualwield',
     'rm.mop.deathknight.unholy',
-    'rm.mop.deathknight.unholy.wowsims'
+    'rm.mop.deathknight.unholy.simulator'
 
 local ALL = { BLOOD, BSIM, FROST, DW, UNHOLY, UCAP }
 
@@ -248,7 +248,7 @@ test('Blood reminders: presence, Bone Shield, Rune Tap, defensives by health, Ar
 end)
 
 test(
-    'Blood (wowsims): Death Strike only when hurt, shield fading or runes capping; lone Heart Strike by rune timers',
+    'Blood (simulator): Death Strike only when hurt, shield fading or runes capping; lone Heart Strike by rune timers',
     function()
         local a, s = dk(90)
         s.learn(DC, DS, IT, PS, BS, BB, DND, OUTBREAK, HORN, HS, RS, SR_B, 50034)
@@ -473,7 +473,7 @@ test('Unholy reminders: presence, ghoul, Gargoyle on lust or a long elite, Frenz
     assert(lit[IBF] and lit[48743], 'defensives; Death Pact with the ghoul up')
 end)
 
-test('Unholy (wowsims): Death Coil rebuilds Shadow Infusion; rune pairs choose Scourge or Festering', function()
+test('Unholy (simulator): Death Coil rebuilds Shadow Infusion; rune pairs choose Scourge or Festering', function()
     local a, s = dk(90)
     s.learn(DC, DS, IT, PS, OUTBREAK, HORN, SS, FEST, DT, SR_U)
     diseased(s)

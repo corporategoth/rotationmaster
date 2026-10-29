@@ -4,7 +4,7 @@
 -- Consumers: rm.tbc.warlock.dps.icyveins and rm.tbc.warlock.dps.wowhead. A content change
 -- needs a block revision bump, every consumer's pin and revision bumped, and both recorded
 -- in tests/fixtures/builtin_composition_ledger.lua.
--- Talent positions (tier, then column) follow the wowsims TBC layout cited by the consumers:
+-- Talent positions (tier, then column) follow the simulator TBC layout cited by the consumers:
 -- Affliction 2 Improved Corruption, 4 Improved Drain Soul; Destruction 16 Emberstorm.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end

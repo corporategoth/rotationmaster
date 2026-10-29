@@ -15,7 +15,7 @@ local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
--- The Devastate rune's first taught spell is 403195 (wowsims/exporter); 403196 is the ability.
+-- The Devastate rune's first taught spell is 403195 (simulator/exporter); 403196 is the ability.
 local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function rage(op,n)return{type='POWER',unit='player',operator=op,value=n}end
@@ -27,7 +27,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
 local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local unqueued=all(negate(queued(78)),negate(queued(845)))
--- Defender's Resolve: 460171 per wowsims and Wowhead's text, 462230 per Wowhead's link (verify).
+-- Defender's Resolve: 460171 per simulator and Wowhead's text, 462230 per Wowhead's link (verify).
 local function resolve(id)return any(negate(buff(id)),{type='BUFF_REMAIN',unit='player',spell=id,operator='LESSTHAN',value=2})end
 local shield={type='WEAPON_TYPE',slot='offhand',kind='shield'}
 local stacked=all({type='DEBUFF',unit='target',spell=7386,anyrank=true},{type='DEBUFF_STACKS',unit='target',spell=7386,anyrank=true,operator='GREATERTHANOREQUALS',value=5})
@@ -36,9 +36,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1},
  nameKey='Default.SoD.Warrior.Tank.Name',descriptionKey='Default.SoD.Warrior.Tank.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
- tags={'tank','melee','leveling','endgame','aoe','season-of-discovery','wowhead','wowsims'},
+ tags={'tank','melee','leveling','endgame','aoe','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/tank-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Protection Warrior tank rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-09'},
- {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/tank_warrior/apls/phase_4.apl.json',title='wowsims/sod: Warrior tank Phase 4 APL',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'}},
+ },
  body={priority=70,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='FORM',form=71}}},
  cooldowns={block('era.warrior.upkeep','sod-tank-'),
   spell('sod-tank-commanding-shout',403215,negate(buff(403215))),

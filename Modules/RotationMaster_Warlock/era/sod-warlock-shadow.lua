@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Season of Discovery Shadow Warlock, levels 1–60: Affliction and Felguard builds, and every SoD
--- Warlock no other premade fits (the SoD catch-all). wowsims/sod Phase 6 order with Wowhead and
+-- Warlock no other premade fits (the SoD catch-all). simulator/sod Phase 6 order with Wowhead and
 -- Icy Veins: Nightfall procs; Shadowburn or Drain Soul to finish; a dying solo target gets Drain
 -- Soul, not DoTs; instants while moving; Lake of Fire and Hellfire on packs; a curse (group
 -- Recklessness when nobody has it, else Agony); Unstable Affliction, Master Channeler Drain Life,
@@ -35,8 +35,8 @@ assert(addon:RegisterDefaultRotation({
  format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow',revision=6,blocks=blocks,
  nameKey='Default.SoD.Warlock.Shadow.Name',descriptionKey='Default.SoD.Warlock.Shadow.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
- tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead','icy-veins'},
- sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warlock/apls/p6',title='wowsims/sod: Affliction and Demonology Warlock Phase 6 APLs',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
+ tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowhead','icy-veins'},
+ sources={
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warlock/dps-talent-builds-runes',title='Wowhead: SoD Warlock DPS talents and runes (Phase 6)',reviewedAt='2026-10-23',revision='2025-01-13'},
  {url='https://www.icy-veins.com/wow-classic/affliction-warlock-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Affliction Warlock DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/affliction-warlock-dps-season-of-discovery-leveling',title='Icy Veins: SoD Affliction Warlock leveling',reviewedAt='2026-10-23',revision='2025-04-08'}},

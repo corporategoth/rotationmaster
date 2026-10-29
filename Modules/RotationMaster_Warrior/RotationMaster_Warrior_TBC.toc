@@ -12,7 +12,7 @@
 
 bind.lua
 tbc/blocks.lua
-tbc/warrior-dps-wowsims.lua
+tbc/warrior-dps-simulator.lua
 tbc/warrior-dps-icyveins.lua
 tbc/warrior-protection-wowhead.lua
 tbc/warrior-protection-icyveins.lua

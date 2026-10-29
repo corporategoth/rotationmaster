@@ -150,13 +150,13 @@ test('TBC: the tank premade takes over at level 10 in Defensive Stance, live, th
     s.forms = 3
     s.shift(71)
     poll()
-    assert(selected() == 'rm.tbc.warrior.dps.wowsims', 'level 9 in Defensive Stance: ' .. tostring(selected()))
+    assert(selected() == 'rm.tbc.warrior.dps.simulator', 'level 9 in Defensive Stance: ' .. tostring(selected()))
     s.level = 10
     poll()
     assert(selected() == 'rm.tbc.warrior.protection.wowhead', 'level 10 in Defensive Stance: ' .. tostring(selected()))
     s.shift(2457)
     poll()
-    assert(selected() == 'rm.tbc.warrior.dps.wowsims', 'Battle Stance: ' .. tostring(selected()))
+    assert(selected() == 'rm.tbc.warrior.dps.simulator', 'Battle Stance: ' .. tostring(selected()))
 end)
 
 test('Era: a level-up and a respec move a grouped Priest between the damage and healer premades live', function()

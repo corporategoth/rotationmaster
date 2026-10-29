@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Frost Death Knight with a two-handed weapon, levels 55–90 (wowsims'
+-- Mists of Pandaria Classic Frost Death Knight with a two-handed weapon, levels 55–90 (simulator'
 -- obliterate APL, the same as Hekili's obliterate_build; Warcraft Tavern's leveling advice). The
 -- default Frost premade: Killing Machine goes to Obliterate, Obliterate spends any capped rune pair,
 -- Frost Strike only above 76 runic power and as a 40 filler, Howling Blast on Rime and with spare
@@ -18,9 +18,9 @@ assert(addon:RegisterDefaultRotation({
   ['mop.deathknight.frost-tail']=1,['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
  nameKey='Default.MoP.DeathKnight.Frost.Name',descriptionKey='Default.MoP.DeathKnight.Frost.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
- tags={'frost','leveling','single-target','aoe','wowsims','hekili'},
+ tags={'frost','leveling','single-target','aoe','hekili'},
  sources={
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/death_knight/frost/apls/obliterate.apl.json',title='wowsims/mop Frost two-hand Obliterate APL',reviewedAt='2026-10-23',revision='ec2c6c2552'},
+  
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/DeathKnightFrost.simc',title='Hekili MoP fork: Frost Death Knight (obliterate_build)',reviewedAt='2026-10-23',revision='0750b5dd98'},
   {url='https://www.warcrafttavern.com/mop/guides/death-knight-leveling-guide/',title='Warcraft Tavern: MoP Death Knight leveling',reviewedAt='2026-10-23',notes='Two-handers while leveling; Obliterate on Killing Machine.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-death-knight-leveling',title='Icy Veins: MoP Classic Frost Death Knight leveling',reviewedAt='2026-10-23',revision='2025-09-23',notes='Shared opening: Pillar, diseases, Death Strike at low health.'},

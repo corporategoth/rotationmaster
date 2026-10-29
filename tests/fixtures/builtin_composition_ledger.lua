@@ -1045,7 +1045,7 @@ return {
                 ['tbc.priest.upkeep'] = 1,
             },
         },
-        ['rm.tbc.warrior.dps.wowsims'] = {
+        ['rm.tbc.warrior.dps.simulator'] = {
             [1] = {
                 ['tbc.warrior.boundaries'] = 1,
                 ['tbc.warrior.upkeep'] = 1,
@@ -1226,7 +1226,7 @@ return {
                 ['tbc.warrior.upkeep'] = 1,
             },
         },
-        ['rm.tbc.rogue.dps.wowsims'] = {
+        ['rm.tbc.rogue.dps.simulator'] = {
             [1] = { ['tbc.rogue.opening'] = 1, ['tbc.rogue.upkeep'] = 1, ['tbc.rogue.builders'] = 1 },
             [2] = { ['tbc.rogue.builders'] = 2, ['tbc.rogue.opening'] = 2, ['tbc.rogue.upkeep'] = 2 },
             [3] = { ['tbc.rogue.builders'] = 3, ['tbc.rogue.opening'] = 2, ['tbc.rogue.upkeep'] = 2 },
@@ -1234,7 +1234,7 @@ return {
             [5] = { ['tbc.rogue.builders'] = 3, ['tbc.rogue.opening'] = 4, ['tbc.rogue.upkeep'] = 2 },
             [6] = { ['tbc.rogue.builders'] = 3, ['tbc.rogue.opening'] = 4, ['tbc.rogue.upkeep'] = 2 },
         },
-        ['rm.tbc.hunter.ranged.wowsims'] = {
+        ['rm.tbc.hunter.ranged.simulator'] = {
             [1] = { ['tbc.hunter.opening'] = 1, ['tbc.hunter.leveling'] = 1, ['tbc.hunter.upkeep'] = 1 },
             [2] = { ['tbc.hunter.leveling'] = 1, ['tbc.hunter.opening'] = 2, ['tbc.hunter.upkeep'] = 1 },
             [3] = { ['tbc.hunter.leveling'] = 1, ['tbc.hunter.opening'] = 3, ['tbc.hunter.upkeep'] = 1 },
@@ -1314,7 +1314,7 @@ return {
                 ['tbc.shaman.shield'] = 1,
             },
         },
-        ['rm.tbc.shaman.enhancement.wowsims'] = {
+        ['rm.tbc.shaman.enhancement.simulator'] = {
             [1] = {
                 ['tbc.shaman.bloodlust'] = 1,
                 ['tbc.shaman.boundaries'] = 1,
@@ -2343,7 +2343,7 @@ return {
                 ['era.rogue.upkeep'] = 2,
             },
         },
-        ['rm.era.rogue.dps.wowsims'] = {
+        ['rm.era.rogue.dps.simulator'] = {
             [1] = {
                 ['era.rogue.boundaries'] = 1,
                 ['era.rogue.builders'] = 1,
@@ -2638,7 +2638,7 @@ return {
                 ['era.shaman.shield'] = 1,
             },
         },
-        ['rm.era.shaman.elemental.wowsims'] = {
+        ['rm.era.shaman.elemental.simulator'] = {
             [1] = {
                 ['era.shaman.caster-totems'] = 1,
                 ['era.shaman.interrupt'] = 1,
@@ -3122,7 +3122,7 @@ return {
                 ['era.warlock.sustain'] = 3,
             },
         },
-        ['rm.sod.warlock.shadow.wowsims'] = {
+        ['rm.sod.warlock.shadow.simulator'] = {
             [1] = { ['era.warlock.armor'] = 1, ['era.warlock.pets'] = 1, ['era.warlock.safety'] = 1 },
             [2] = { ['era.warlock.armor'] = 1, ['era.warlock.pets'] = 1, ['era.warlock.safety'] = 1 },
             [3] = { ['era.warlock.armor'] = 1, ['era.warlock.pets'] = 1, ['era.warlock.safety'] = 1 },
@@ -5845,7 +5845,7 @@ return {
                 ['sod.druid.tank-humanoid'] = 2,
             },
         },
-        ['rm.sod.druid.tank.wowsims'] = {
+        ['rm.sod.druid.tank.simulator'] = {
             [1] = {
                 ['era.druid.boundaries'] = 1,
                 ['era.druid.upkeep'] = 1,
@@ -6022,7 +6022,7 @@ return {
                 ['era.hunter.upkeep'] = 1,
             },
         },
-        ['rm.era.hunter.ranged.wowsims'] = {
+        ['rm.era.hunter.ranged.simulator'] = {
             [1] = {
                 ['era.hunter.boundaries'] = 1,
                 ['era.hunter.cooldowns'] = 1,
@@ -6883,7 +6883,7 @@ return {
             [5] = { ['era.paladin.melee-opening'] = 3, ['sod.paladin.seal'] = 2, ['sod.paladin.tank-upkeep'] = 2 },
             [6] = { ['era.paladin.melee-opening'] = 3, ['sod.paladin.seal'] = 2, ['sod.paladin.tank-upkeep'] = 2 },
         },
-        ['rm.sod.paladin.protection.wowsims'] = {
+        ['rm.sod.paladin.protection.simulator'] = {
             [1] = {
                 ['era.paladin.boundaries'] = 1,
                 ['era.paladin.melee-opening'] = 1,
@@ -7116,7 +7116,7 @@ return {
                 ['era.priest.wand-fallback'] = 2,
             },
         },
-        ['rm.era.priest.dps.wowsims'] = {
+        ['rm.era.priest.dps.simulator'] = {
             [1] = {
                 ['era.priest.boundaries'] = 1,
                 ['era.priest.enemy-target'] = 1,
@@ -7648,7 +7648,7 @@ return {
                 ['mop.deathknight.upkeep'] = 1,
             },
         },
-        ['rm.mop.deathknight.blood.wowsims'] = {
+        ['rm.mop.deathknight.blood.simulator'] = {
             [1] = {
                 ['mop.deathknight.blood-pull'] = 1,
                 ['mop.deathknight.blood-upkeep'] = 1,
@@ -7840,7 +7840,7 @@ return {
                 ['mop.deathknight.upkeep'] = 1,
             },
         },
-        ['rm.mop.deathknight.unholy.wowsims'] = {
+        ['rm.mop.deathknight.unholy.simulator'] = {
             [1] = {
                 ['mop.deathknight.boundaries'] = 1,
                 ['mop.deathknight.spread'] = 1,
@@ -9101,7 +9101,7 @@ return {
                 ['mop.paladin.upkeep'] = 1,
             },
         },
-        ['rm.mop.paladin.protection.wowsims'] = {
+        ['rm.mop.paladin.protection.simulator'] = {
             [1] = {
                 ['mop.paladin.boundaries'] = 1,
                 ['mop.paladin.prot-aoe'] = 1,
@@ -9972,7 +9972,7 @@ return {
                 ['mop.shaman.manual-target'] = 2,
             },
         },
-        ['rm.mop.shaman.enhancement.wowsims'] = {
+        ['rm.mop.shaman.enhancement.simulator'] = {
             [1] = {
                 ['mop.shaman.enhancement-aoe'] = 1,
                 ['mop.shaman.enhancement-upkeep'] = 1,

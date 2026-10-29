@@ -2,7 +2,7 @@
 
 -- Season of Discovery Shaman tank (Way of Earth), levels 30–60: chosen when the Way of Earth rune
 -- (passive: a tank with Rockbiter and a shield) is engraved. Icy Veins and
--- Wowhead order with wowsims' details: Flame Shock to pull; Earth Shock taunts a target that is
+-- Wowhead order with simulator' details: Flame Shock to pull; Earth Shock taunts a target that is
 -- not on you and interrupts; on two engaged enemies Molten Blast, Flame Shock, Chain Lightning at
 -- five Maelstrom stacks or on Power Surge, Fire Nova at five stacks, Magma; Flame Shock kept up;
 -- Lava Burst on Power Surge or while Flame Shock lasts; Stormstrike; Earth Shock; Lightning Bolt
@@ -27,12 +27,12 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1},
  nameKey='Default.SoD.Shaman.Tank.Name',descriptionKey='Default.SoD.Shaman.Tank.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
- tags={'tank','melee','endgame','aoe','season-of-discovery','icy-veins','wowhead','wowsims','warcraft-tavern'},
+ tags={'tank','melee','endgame','aoe','season-of-discovery','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/wow-classic/enhancement-shaman-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Enhancement Shaman tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/shaman/tank-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Shaman tank rotation',reviewedAt='2026-10-23',revision='2025-04-07'},
- {url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warden_shaman/apls',title='wowsims/sod: Shaman tank Phase 4 APLs (Enhancement and Elemental)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
+ 
  {url='https://www.warcrafttavern.com/wow-classic/guides/sod-shaman-tank/',title='Warcraft Tavern: SoD Shaman tank (Phase 4)',reviewedAt='2026-10-23'}},
- -- Way of Earth: 408531 is the rune's first taught spell (wowsims/exporter), 408680 the same name on Wowhead.
+ -- Way of Earth: 408531 is the rune's first taught spell (simulator/exporter), 408680 the same name on Wowhead.
  body={priority=70,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=30},any({type='RUNE_ENGRAVED',spell=408531},{type='RUNE_ENGRAVED',spell=408680})}},
  cooldowns={
   spell('sod-tank-rockbiter',8017,negate(rockbiter)),

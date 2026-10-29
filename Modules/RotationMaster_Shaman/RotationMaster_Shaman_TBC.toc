@@ -13,7 +13,7 @@
 bind.lua
 tbc/blocks.lua
 tbc/shaman-enhancement-icyveins.lua
-tbc/shaman-enhancement-wowsims.lua
+tbc/shaman-enhancement-simulator.lua
 tbc/shaman-elemental-icyveins.lua
 tbc/shaman-elemental-wowhead.lua
 tbc/shaman-elemental-nextaction.lua

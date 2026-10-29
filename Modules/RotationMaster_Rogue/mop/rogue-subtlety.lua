@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Subtlety Rogue, levels 10-90 (the recommended variant): wowsims' Phase 5 order with Shadow
+-- Mists of Pandaria Classic Subtlety Rogue, levels 10-90 (the recommended variant): simulator' Phase 5 order with Shadow
 -- Focus, which Wowhead's Phase 5 page agrees with. Selected in the Subtlety specialization (261) from
 -- level 10. In Stealth or Shadow Dance: Premeditation, Slice and Dice before
 -- the pull, five-point finishers in combat, Ambush, Garrote. Three or more engaged enemies: Slice and Dice, Crimson
@@ -34,8 +34,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.subtlety-builders']=2},
  nameKey='Default.MoP.Rogue.Subtlety.Name',descriptionKey='Default.MoP.Rogue.Subtlety.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
- tags={'subtlety','dps','melee','leveling','endgame','wowsims','wowhead','icy-veins'},
- sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/rogue/subtlety/apls/subtlety.apl.json',title='wowsims/mop: Subtlety Rogue APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ tags={'subtlety','dps','melee','leveling','endgame','wowhead','icy-veins'},
+ sources={
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/subtlety/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Subtlety Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/subtlety-rogue-leveling',title='Icy Veins: Subtlety Rogue leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},
  body={priority=30,specs={261},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

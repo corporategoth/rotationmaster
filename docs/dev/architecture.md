@@ -47,23 +47,13 @@ and has not been verified in a real client is in `docs/quality/client-support.md
 | `Integrations/` | Optional addons: Masque, Questie, boss mods, LuaWorkbench, the supported-addon catalog |
 | `Modules/` | Load-on-demand add-ons: 13 class modules of Built In rotations and four text bundles (`RotationMaster_HelpText`, `_ConditionText`, `_DiagnosticsText`, `_IntegrationsText`) |
 | `Libs/`, `LibsAugment/` | Vendored libraries (hash-pinned in `Libs/UPSTREAM.json`) and local additions |
-| `THIRD_PARTY_NOTICES.md` | The WowSims MIT notice for the Built In rotations written from its APLs; ships in the package, and `tools/package_release.py --check` requires it |
+| `THIRD_PARTY_NOTICES.md` | Third-party notices shipped with the package |
 | `Locales/` | `enUS.lua` (source) and ten generated translations for the text read at startup; `bundles.json` names the load-on-demand text bundles that hold the rest (see "Text bundles") |
 | `Assets/`, `Fonts/`, `textures/` | Icons and overlays (`Assets/*/provenance.json` records each one), the monospace font, the two `.blp` textures the help and condition pages still draw |
 | `tests/` | Headless suites (Lua 5.1 and LuaJIT) and Python checks; `tests/fixtures/` holds client models and frozen predecessor sources |
 | `tools/` | Generators, checkers, the package builder, translation tools (`docs/dev/running-things.md`) |
 | `docs/` | Human documentation: `dev/`, `translators/`, `release/`, and the topic documents |
 | `.gitea/`, `.claude/`, `.pre-commit-config.yaml` | CI, agent instructions and personas, hooks. None of these ship. |
-
-### Integrations that do not exist
-
-Rotation Master has no WowSims import or export, and none will be added. Early 2.0 test builds had a converter (a
-load-on-demand module, a Format choice in the rotation transfer window and pinned simulator data); it was removed before
-release because of the WowSims maintainers' attitude toward addon developers they consider beneath them: they indicated that
-community submissions supporting small addons, with only around 200,000 downloads, are not wanted. The decision record is
-in `.claude/learnings/product-decisions.md`; the only trace in saved data is `profile.transfer_format`, which `init.lua`
-drops on load and `Core/profile_data.lua` still accepts in an imported profile. The addon-side integrations that do exist
-are in `docs/architecture/integrations.md`.
 
 ### Where a new file goes
 

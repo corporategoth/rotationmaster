@@ -1,8 +1,8 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Shared Mists of Pandaria Classic Death Knight blocks (Built In composition; authoring-time only).
--- Consumers: rm.mop.deathknight.blood, .blood.wowsims, .frost, .frost.dualwield, .unholy and
--- .unholy.wowsims. A content change needs a block revision bump, every consumer's pin and revision
+-- Consumers: rm.mop.deathknight.blood, .blood.simulator, .frost, .frost.dualwield, .unholy and
+-- .unholy.simulator. A content change needs a block revision bump, every consumer's pin and revision
 -- bumped, and both recorded in tests/fixtures/builtin_composition_ledger.lua.
 -- Runes are read by current type (RUNE: 1 Blood, 2 Frost, 3 Unholy, 4 Death; ready runes only), so
 -- "a Frost or Death rune" is an OR. The engine already checks rune and runic power costs.

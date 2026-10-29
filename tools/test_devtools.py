@@ -95,7 +95,6 @@ class Pkgmeta(unittest.TestCase):
         # load-on-demand text bundles.
         folders = sorted(d.name for d in (ROOT / 'Modules').iterdir() if d.is_dir())
         self.assertEqual(sorted(meta['move-folders'].values()), folders)
-        self.assertNotIn('RotationMaster_WowSims', meta['move-folders'].values())
         for item in ('tests', 'tools', 'docs', '.claude', '.gitea', 'README.md', 'Data/talent_trees.json'):
             self.assertIn(item, meta['ignore'])
 
@@ -190,10 +189,10 @@ class Check(unittest.TestCase):
             del layout[path]
             self.assertTrue(self.problems(layout), path)
 
-    def test_the_third_party_notice_must_carry_the_wowsims_mit_notice(self):
+    def test_the_third_party_notice_must_carry_the_required_mit_notice(self):
         layout = minimal_layout()
         layout['RotationMaster/THIRD_PARTY_NOTICES.md'] = b'Notices.\n'
-        self.assertTrue(any('WowSims MIT notice' in problem for problem in self.problems(layout)))
+        self.assertTrue(any('required third-party MIT notice' in problem for problem in self.problems(layout)))
 
     def test_toc_rules(self):
         wrong_clients = minimal_layout()
@@ -243,7 +242,6 @@ class Check(unittest.TestCase):
         layout = P.build_files(ROOT, meta, info, changelog=None)
         self.assertEqual(P.check_layout(layout, meta, '2.0.0-beta.1', ROOT), [])
         self.assertEqual(info['type'], 'beta')
-        self.assertNotIn('RotationMaster_WowSims/RotationMaster_WowSims.toc', layout)
         self.assertNotIn('RotationMaster/tests', ' '.join(layout))
 
     def test_zip_round_trip_is_deterministic(self):

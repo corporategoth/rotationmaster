@@ -1,11 +1,11 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Blood Death Knight (tank), levels 55–90, after Icy Veins' rotation and
--- leveling pages with wowsims' readable guards: Death Strike below 50% health, to restore a missing
+-- leveling pages with simulator' readable guards: Death Strike below 50% health, to restore a missing
 -- Blood Shield (from 80) and before all four Frost and Unholy runes cap; Rune Strike at 90 runic
 -- power; diseases by Outbreak, refreshed by Blood Boil; Soul Reaper under 35%; Heart Strike on two
 -- Blood runes; Crimson Scourge; Death Strike as the main filler. Bone Shield, presence and
--- defensive cooldowns by health are reminders. The health-reactive variant is .blood.wowsims.
+-- defensive cooldowns by health are reminders. The health-reactive variant is .blood.simulator.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -25,11 +25,11 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.blood-upkeep']=2,['mop.deathknight.blood-pull']=2,['mop.deathknight.spread']=1},
  nameKey='Default.MoP.DeathKnight.Blood.Name',descriptionKey='Default.MoP.DeathKnight.Blood.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
- tags={'blood','tank','leveling','single-target','aoe','icy-veins','wowsims'},
+ tags={'blood','tank','leveling','single-target','aoe','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/blood-death-knight-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Blood Death Knight rotation',reviewedAt='2026-10-23',revision='2025-09-23'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/blood-death-knight-leveling',title='Icy Veins: MoP Classic Blood Death Knight leveling',reviewedAt='2026-10-23',revision='2025-09-23'},
-  {url='https://github.com/wowsims/mop/tree/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/death_knight/blood/apls',title='wowsims/mop Blood APLs (sha, iron_juggernaut)',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Health, Blood Shield and rune-cap Death Strike; Rune Strike at 90; Heart Strike on two Blood runes.'},
+  
   {url='https://www.wowhead.com/mop-classic/guide/classes/death-knight/blood/tank-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Blood Death Knight rotation',reviewedAt='2026-10-23',revision='2025-08-02',notes='Read from a Wayback snapshot; Crimson Scourge split at 15 s.'},
  },
  body={priority=30,specs={250},

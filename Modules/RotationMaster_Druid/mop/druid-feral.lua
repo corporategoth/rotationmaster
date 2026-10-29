@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Feral Druid, levels 10–90, in the Feral specialization (103). wowsims' measured
+-- Mists of Pandaria Classic Feral Druid, levels 10–90, in the Feral specialization (103). simulator' measured
 -- order, which Wowhead's Phase 5 list matches except for Ferocious Bite: Savage Roar never drops,
 -- Healing Touch on Predatory Swiftness at four or five combo points for Dream of Cenarius, Rip at
 -- five points (Ferocious Bite refreshes it below 25%), Bite at five points while Rip and Roar both
@@ -32,9 +32,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.druid.melee-boundaries']=2,['mop.druid.mark']=1,['mop.druid.feral-upkeep']=2,['mop.druid.feral-open']=4,['mop.druid.feral-aoe']=2},
  nameKey='Default.MoP.Druid.Feral.Name',descriptionKey='Default.MoP.Druid.Feral.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
- tags={'feral','leveling','single-target','aoe','wowsims','wowhead'},
+ tags={'feral','leveling','single-target','aoe','wowhead'},
  sources={
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/sim/druid/feral/rotation.go',title='wowsims/mop Feral rotation (default APL)',reviewedAt='2026-10-23',revision='ec2c6c2552'},
+  
   {url='https://www.wowhead.com/mop-classic/guide/classes/druid/feral/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Feral Druid rotation',reviewedAt='2026-10-23',revision='2026-06-20'},
   {url='https://www.method.gg/mop-classic/feral-druid-class-guide-mop-classic',title='Method: MoP Classic Feral Druid',reviewedAt='2026-10-23',revision='2025-07-22',notes='Bite at five points when safe.'},
   {url='https://wowtbc.gg/mop/class-guides/feral-druid/',title='wowtbc.gg: MoP Feral Druid',reviewedAt='2026-10-23'},

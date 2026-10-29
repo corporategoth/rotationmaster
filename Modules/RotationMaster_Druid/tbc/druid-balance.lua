@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Balance (Icy Veins, Wowhead, Warcraft Tavern, wowsims agree): Faerie Fire when a group
+-- Balance (Icy Veins, Wowhead, Warcraft Tavern, simulator agree): Faerie Fire when a group
 -- benefits, Moonfire never clipped and dropped first when mana runs short, Force of Nature
 -- when the treants will live, Starfire filler (Wrath before Starfire and in melee while
 -- leveling), Insect Swarm and Moonfire while moving, Hurricane for packs.
@@ -18,12 +18,12 @@ assert(addon:RegisterDefaultRotation({
  blocks={['tbc.druid.feral-form-target']=2,['tbc.druid.boundaries']=4,['tbc.druid.upkeep']=1},
  nameKey='Default.TBC.Druid.Balance.Name',descriptionKey='Default.TBC.Druid.Balance.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID'},
- tags={'leveling','endgame','balance','caster','single-target','aoe','icy-veins','wowhead','warcraft-tavern','wowsims'},
+ tags={'leveling','endgame','balance','caster','single-target','aoe','icy-veins','wowhead','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/tbc-classic/balance-druid-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Balance Druid rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/balance-druid-leveling-guide',title='Icy Veins: Balance Druid leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.wowhead.com/tbc/guide/classes/druid/balance/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Balance Druid rotation',reviewedAt='2026-10-23',revision='2026-03-31'},
   {url='https://www.warcrafttavern.com/tbc/guides/pve-balance-druid-boomkin-dps-rotation-cooldowns-abilities/',title='Warcraft Tavern: Balance Druid rotation',reviewedAt='2026-10-23'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/druid/balance/rotation.go',title='wowsims/tbc Balance rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'}},
+  },
  body={priority=0,
   cooldowns={
    {id='balance-upkeep',type='block',block='tbc.druid.upkeep',prefix='balance-'},

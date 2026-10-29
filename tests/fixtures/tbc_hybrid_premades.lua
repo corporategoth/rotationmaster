@@ -11,7 +11,7 @@ local packs = {
     SHAMAN = {
         'Modules/RotationMaster_Shaman/tbc/blocks.lua',
         'Modules/RotationMaster_Shaman/tbc/shaman-enhancement-icyveins.lua',
-        'Modules/RotationMaster_Shaman/tbc/shaman-enhancement-wowsims.lua',
+        'Modules/RotationMaster_Shaman/tbc/shaman-enhancement-simulator.lua',
         'Modules/RotationMaster_Shaman/tbc/shaman-elemental-icyveins.lua',
         'Modules/RotationMaster_Shaman/tbc/shaman-elemental-wowhead.lua',
         'Modules/RotationMaster_Shaman/tbc/shaman-elemental-nextaction.lua',

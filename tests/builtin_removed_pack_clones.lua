@@ -46,13 +46,13 @@ end
 
 local new = {
     WARRIOR = {
-        'rm.tbc.warrior.dps.wowsims',
+        'rm.tbc.warrior.dps.simulator',
         'rm.tbc.warrior.dps.icyveins',
         'rm.tbc.warrior.protection.wowhead',
         'rm.tbc.warrior.protection.icyveins',
     },
-    ROGUE = { 'rm.tbc.rogue.dps.wowsims', 'rm.tbc.rogue.dps.wowhead' },
-    HUNTER = { 'rm.tbc.hunter.ranged.wowsims', 'rm.tbc.hunter.ranged.wowhead' },
+    ROGUE = { 'rm.tbc.rogue.dps.simulator', 'rm.tbc.rogue.dps.wowhead' },
+    HUNTER = { 'rm.tbc.hunter.ranged.simulator', 'rm.tbc.hunter.ranged.wowhead' },
 }
 
 -- Same-switch alternatives of the recommended premades ship disabled.

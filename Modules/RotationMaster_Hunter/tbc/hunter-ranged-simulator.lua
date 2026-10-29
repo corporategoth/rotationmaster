@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- TBC Hunter ranged DPS, levels 1–70, wowsims/rotationtools shot timing (the recommended variant).
+-- TBC Hunter ranged DPS, levels 1–70, simulator/rotationtools shot timing (the recommended variant).
 -- One premade for every spec: spec spells (Aimed Shot, Bestial Wrath, Trueshot Aura, Readiness,
 -- Silencing Shot) are offered once known. Before Steady Shot: own sting, then mana-gated shots.
 -- From Steady Shot: Multi-Shot when ready, Steady Shot straight after an Auto Shot, Arcane Shot
@@ -18,12 +18,12 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowsims',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.simulator',revision=5,
  blocks={['tbc.hunter.opening']=4,['tbc.hunter.leveling']=2,['tbc.hunter.upkeep']=1},
- nameKey='Default.TBC.Hunter.Ranged.Wowsims.Name',descriptionKey='Default.TBC.Hunter.Ranged.Wowsims.Description',
+ nameKey='Default.TBC.Hunter.Ranged.Simulator.Name',descriptionKey='Default.TBC.Hunter.Ranged.Simulator.Description',
  applicability={families={'tbc'},actionContext='player',class='HUNTER'},
- tags={'dps','ranged','leveling','endgame','wowsims','icy-veins'},
- sources={{url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/hunter/rotation.go',title='wowsims/tbc: Hunter rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'},
+ tags={'dps','ranged','leveling','endgame','icy-veins'},
+ sources={
  {url='https://diziet559.github.io/rotationtools/',title='diziet559 rotationtools: TBC Hunter shot rotations',reviewedAt='2026-10-23',revision='2bd1759b0e0d04bea7b4bb3a4dc356f484423ced'},
  {url='https://www.icy-veins.com/tbc-classic/beast-mastery-hunter-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Beast Mastery Hunter rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-01-12'},
  {url='https://www.icy-veins.com/tbc-classic/hunter-leveling-guide',title='Icy Veins: Hunter leveling',reviewedAt='2026-10-23',revision='2026-01-12'}},

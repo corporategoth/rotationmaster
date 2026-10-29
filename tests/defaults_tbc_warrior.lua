@@ -1,13 +1,13 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- TBC Warrior premades: DPS (wowsims recommended, Icy Veins) and tank (Wowhead recommended,
+-- TBC Warrior premades: DPS (simulator recommended, Icy Veins) and tank (Wowhead recommended,
 -- Icy Veins). Real predicates, catalog, composition, sequence and publisher; WoW observations
 -- are modeled in tests/fixtures/tbc_physical_premades.lua.
 local M = dofile('tests/fixtures/tbc_physical_premades.lua')
 local test, finish = M.F.suite()
 
 local DW, DI, PW, PI =
-    'rm.tbc.warrior.dps.wowsims',
+    'rm.tbc.warrior.dps.simulator',
     'rm.tbc.warrior.dps.icyveins',
     'rm.tbc.warrior.protection.wowhead',
     'rm.tbc.warrior.protection.icyveins'
@@ -208,7 +208,7 @@ test(
 )
 
 test(
-    'wowsims keeps Execute behind Mortal Strike/Bloodthirst/Whirlwind; Icy Veins puts it first for Arms, second for Fury',
+    'simulator keeps Execute behind Mortal Strike/Bloodthirst/Whirlwind; Icy Veins puts it first for Arms, second for Fury',
     function()
         local f, s = warrior(70, mid, arms)
         local g, t = warrior(70, mid, arms)
@@ -220,7 +220,7 @@ test(
         s.power, t.power = 40, 40
         assert(first(f, s, DW) == 5308 and first(g, t, DI) == 5308)
         s.power, t.power = 60, 60
-        assert(first(f, s, DW) == 1680, 'wowsims Whirlwind with rage to spare before Execute')
+        assert(first(f, s, DW) == 1680, 'simulator Whirlwind with rage to spare before Execute')
         s.targetHealth, t.targetHealth = 100, 100
         s.power, t.power = 40, 40
         assert(first(f, s, DW) == nil and first(g, t, DI) == 1680, 'Icy Veins Whirlwind holds no rage')
@@ -261,7 +261,7 @@ test('full-kit training stages: highest learned rank, Rampage upkeep, Intercept 
 end)
 
 test(
-    'wowsims spends spare rage on Devastate or Sunder to five then Hamstring; Icy Veins only Hamstring near the cap',
+    'simulator spends spare rage on Devastate or Sunder to five then Hamstring; Icy Veins only Hamstring near the cap',
     function()
         local f, s = warrior(40, mid)
         local g, t = warrior(40, mid)

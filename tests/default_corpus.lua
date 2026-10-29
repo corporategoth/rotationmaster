@@ -282,13 +282,13 @@ test('TOC includes every reviewed starter pack exactly once', function()
 
     -- TBC Warrior, Rogue and Hunter premades (one per role and source family).
     for _, id in ipairs({
-        'rm.tbc.warrior.dps.wowsims',
+        'rm.tbc.warrior.dps.simulator',
         'rm.tbc.warrior.dps.icyveins',
         'rm.tbc.warrior.protection.wowhead',
         'rm.tbc.warrior.protection.icyveins',
-        'rm.tbc.rogue.dps.wowsims',
+        'rm.tbc.rogue.dps.simulator',
         'rm.tbc.rogue.dps.wowhead',
-        'rm.tbc.hunter.ranged.wowsims',
+        'rm.tbc.hunter.ranged.simulator',
         'rm.tbc.hunter.ranged.wowhead',
     }) do
         wanted[id] = true
@@ -296,7 +296,7 @@ test('TOC includes every reviewed starter pack exactly once', function()
 
     -- TBC Shaman, Druid and Paladin premades (one per role and source family).
     for _, id in ipairs({
-        'rm.tbc.shaman.enhancement.icyveins', 'rm.tbc.shaman.enhancement.wowsims', 'rm.tbc.shaman.elemental.icyveins',
+        'rm.tbc.shaman.enhancement.icyveins', 'rm.tbc.shaman.enhancement.simulator', 'rm.tbc.shaman.elemental.icyveins',
         'rm.tbc.shaman.elemental.wowhead', 'rm.tbc.shaman.elemental.nextaction', 'rm.tbc.shaman.restoration',
         'rm.tbc.druid.balance', 'rm.tbc.druid.feral.icyveins', 'rm.tbc.druid.feral.wowhead', 'rm.tbc.druid.restoration',
         'rm.tbc.paladin.retribution.wowhead', 'rm.tbc.paladin.retribution.icyveins', 'rm.tbc.paladin.retribution.twist',
@@ -375,15 +375,16 @@ test('TOC includes every reviewed starter pack exactly once', function()
 
     -- Classic Era and Season of Discovery Rogue, Shaman, Warlock and Warrior premades.
     for _, id in ipairs({
-        'rm.era.rogue.dps', 'rm.era.rogue.dps.warcrafttavern', 'rm.era.rogue.dps.wowsims', 'rm.sod.rogue.tank',
+        'rm.era.rogue.dps', 'rm.era.rogue.dps.warcrafttavern', 'rm.era.rogue.dps.simulator', 'rm.sod.rogue.tank',
         'rm.sod.rogue.dps', 'rm.sod.rogue.dps.icyveins', 'rm.sod.rogue.dps.zockify', 'rm.era.shaman.enhancement',
-        'rm.era.shaman.enhancement.warcrafttavern', 'rm.era.shaman.elemental', 'rm.era.shaman.elemental.wowsims',
+        'rm.era.shaman.enhancement.warcrafttavern', 'rm.era.shaman.elemental', 'rm.era.shaman.elemental.simulator',
         'rm.era.shaman.restoration', 'rm.era.shaman.restoration.warcrafttavern', 'rm.sod.shaman.tank',
         'rm.sod.shaman.restoration', 'rm.sod.shaman.elemental', 'rm.sod.shaman.enhancement', 'rm.era.warlock.dps',
         'rm.era.warlock.dps.warcrafttavern', 'rm.era.warlock.dps.icyveins', 'rm.sod.warlock.tank',
-        'rm.sod.warlock.fire', 'rm.sod.warlock.fire.icyveins', 'rm.sod.warlock.shadow', 'rm.sod.warlock.shadow.wowsims',
-        'rm.era.warrior.protection', 'rm.era.warrior.protection.icyveins', 'rm.era.warrior.dps', 'rm.sod.warrior.tank',
-        'rm.sod.warrior.dps', 'rm.sod.warrior.dps.wowhead', 'rm.sod.warrior.dps.icyveins'
+        'rm.sod.warlock.fire', 'rm.sod.warlock.fire.icyveins', 'rm.sod.warlock.shadow',
+        'rm.sod.warlock.shadow.simulator', 'rm.era.warrior.protection', 'rm.era.warrior.protection.icyveins',
+        'rm.era.warrior.dps', 'rm.sod.warrior.tank', 'rm.sod.warrior.dps', 'rm.sod.warrior.dps.wowhead',
+        'rm.sod.warrior.dps.icyveins'
     }) do
         wanted[id] = true
     end
@@ -394,16 +395,16 @@ test('TOC includes every reviewed starter pack exactly once', function()
         'rm.era.druid.feral.warcrafttavern', 'rm.era.druid.feral.wowhead', 'rm.era.druid.feral',
         'rm.era.druid.restoration.warcrafttavern', 'rm.era.druid.restoration', 'rm.sod.druid.balance.icyveins',
         'rm.sod.druid.balance.wowhead', 'rm.sod.druid.balance', 'rm.sod.druid.feral', 'rm.sod.druid.restoration',
-        'rm.sod.druid.tank.wowsims', 'rm.sod.druid.tank', 'rm.era.hunter.ranged.icyveins',
-        'rm.era.hunter.ranged.wowsims', 'rm.era.hunter.ranged', 'rm.sod.hunter.melee', 'rm.sod.hunter.ranged',
+        'rm.sod.druid.tank.simulator', 'rm.sod.druid.tank', 'rm.era.hunter.ranged.icyveins',
+        'rm.era.hunter.ranged.simulator', 'rm.era.hunter.ranged', 'rm.sod.hunter.melee', 'rm.sod.hunter.ranged',
         'rm.era.mage.fire.warcrafttavern', 'rm.era.mage.fire', 'rm.era.mage.frost.icyveins', 'rm.era.mage.frost',
         'rm.sod.mage.arcane', 'rm.sod.mage.fire', 'rm.sod.mage.frost.warcrafttavern', 'rm.sod.mage.frost',
         'rm.sod.mage.healer', 'rm.era.paladin.holy', 'rm.era.paladin.protection.icyveins', 'rm.era.paladin.protection',
         'rm.era.paladin.retribution.twist', 'rm.era.paladin.retribution', 'rm.sod.paladin.holy.wowhead',
-        'rm.sod.paladin.holy', 'rm.sod.paladin.protection.wowsims', 'rm.sod.paladin.protection',
+        'rm.sod.paladin.holy', 'rm.sod.paladin.protection.simulator', 'rm.sod.paladin.protection',
         'rm.sod.paladin.retribution.icyveins', 'rm.sod.paladin.retribution.stacking',
         'rm.sod.paladin.retribution.twist', 'rm.sod.paladin.retribution', 'rm.sod.paladin.shockadin',
-        'rm.era.priest.dps.warcrafttavern', 'rm.era.priest.dps.wowsims', 'rm.era.priest.dps', 'rm.era.priest.healer',
+        'rm.era.priest.dps.warcrafttavern', 'rm.era.priest.dps.simulator', 'rm.era.priest.dps', 'rm.era.priest.healer',
         'rm.sod.priest.dps.wowhead', 'rm.sod.priest.dps', 'rm.sod.priest.healer.warcrafttavern', 'rm.sod.priest.healer'
     }) do
         wanted[id] = true
@@ -411,8 +412,8 @@ test('TOC includes every reviewed starter pack exactly once', function()
 
     -- Mists of Pandaria Classic Death Knight, Druid, Hunter, Mage, Monk and Paladin premades.
     for _, id in ipairs({
-        'rm.mop.deathknight.blood', 'rm.mop.deathknight.blood.wowsims', 'rm.mop.deathknight.frost',
-        'rm.mop.deathknight.frost.dualwield', 'rm.mop.deathknight.unholy', 'rm.mop.deathknight.unholy.wowsims',
+        'rm.mop.deathknight.blood', 'rm.mop.deathknight.blood.simulator', 'rm.mop.deathknight.frost',
+        'rm.mop.deathknight.frost.dualwield', 'rm.mop.deathknight.unholy', 'rm.mop.deathknight.unholy.simulator',
         'rm.mop.druid.unspecialized', 'rm.mop.druid.balance', 'rm.mop.druid.feral', 'rm.mop.druid.feral.icyveins',
         'rm.mop.druid.guardian', 'rm.mop.druid.restoration', 'rm.mop.druid.restoration.wowhead',
         'rm.mop.hunter.unspecialized', 'rm.mop.hunter.beastmastery', 'rm.mop.hunter.marksmanship',
@@ -421,7 +422,7 @@ test('TOC includes every reviewed starter pack exactly once', function()
         'rm.mop.mage.frost', 'rm.mop.monk.unspecialized', 'rm.mop.monk.brewmaster', 'rm.mop.monk.brewmaster.offensive',
         'rm.mop.monk.windwalker', 'rm.mop.monk.windwalker.simc', 'rm.mop.monk.mistweaver',
         'rm.mop.paladin.unspecialized', 'rm.mop.paladin.retribution', 'rm.mop.paladin.retribution.warcrafttavern',
-        'rm.mop.paladin.protection', 'rm.mop.paladin.protection.wowsims', 'rm.mop.paladin.holy'
+        'rm.mop.paladin.protection', 'rm.mop.paladin.protection.simulator', 'rm.mop.paladin.holy'
     }) do
         wanted[id] = true
     end
@@ -433,7 +434,7 @@ test('TOC includes every reviewed starter pack exactly once', function()
         'rm.mop.rogue.assassination.icyveins', 'rm.mop.rogue.combat', 'rm.mop.rogue.combat.icyveins',
         'rm.mop.rogue.combat.hekili', 'rm.mop.rogue.subtlety', 'rm.mop.rogue.subtlety.warcrafttavern',
         'rm.mop.rogue.unspecialized', 'rm.mop.shaman.elemental', 'rm.mop.shaman.enhancement',
-        'rm.mop.shaman.enhancement.wowsims', 'rm.mop.shaman.enhancement.icyveins', 'rm.mop.shaman.restoration',
+        'rm.mop.shaman.enhancement.simulator', 'rm.mop.shaman.enhancement.icyveins', 'rm.mop.shaman.restoration',
         'rm.mop.shaman.restoration.hekili', 'rm.mop.shaman.unspecialized', 'rm.mop.warlock.affliction',
         'rm.mop.warlock.affliction.warcrafttavern', 'rm.mop.warlock.demonology', 'rm.mop.warlock.demonology.guide',
         'rm.mop.warlock.destruction', 'rm.mop.warlock.unspecialized', 'rm.mop.warrior.arms',

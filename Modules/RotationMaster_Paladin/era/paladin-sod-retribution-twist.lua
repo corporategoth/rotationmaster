@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Season of Discovery Retribution seal twisting (Wowhead Phase 8, wowsims): Seal of Martyrdom and Seal
+-- Season of Discovery Retribution seal twisting (Wowhead Phase 8, simulator): Seal of Martyrdom and Seal
 -- of Command swapped in the last 0.4 s before each swing, nothing on the global cooldown in the 1.9 s
 -- before it, Judgement while both seals linger, then one filler per swing: Divine Storm at three Holy
 -- Power, Crusader Strike, Exorcism. Disabled by default (opt-in): needs a slow two-hander, a swing
@@ -21,9 +21,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
  nameKey='Default.SoD.Paladin.Retribution.Twist.Name',descriptionKey='Default.SoD.Paladin.Retribution.Twist.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
- tags={'endgame','raid','retribution','melee','single-target','seal-twisting','season-of-discovery','wowhead','wowsims'},
+ tags={'endgame','raid','retribution','melee','single-target','seal-twisting','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin DPS rotation, seal twisting (Phase 8)',reviewedAt='2026-10-23',revision='2025-06-06'},
-  {url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/retribution_paladin',title='wowsims/sod Phase 8 twisting APL',reviewedAt='2026-10-23',revision='0e3f6ef'}},
+  },
  body={priority=104,disabled=true,switch=all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=20},known(20375),rune(407778),{type='PRIMARY_TALENT_TREE',tree=3}),
   cooldowns={block('stwist-upkeep','sod.paladin.ret-upkeep','stwist-'),block('stwist-safety','era.paladin.safety','stwist-')},
   rotation={

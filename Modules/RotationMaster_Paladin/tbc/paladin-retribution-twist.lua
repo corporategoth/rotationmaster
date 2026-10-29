@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Retribution seal twisting (Wowhead, Icy Veins and wowsims agree): open with Judgement of
+-- Retribution seal twisting (Wowhead, Icy Veins and simulator agree): open with Judgement of
 -- the Crusader, then every swing prepare Seal of Command (rank 1) early and replace it with
 -- Seal of Blood or the Martyr in the last 0.4 s, Crusader Strike as the anchor, judge only
 -- Blood or Martyr, fillers last; below 12% mana roll Blood without twisting.
@@ -22,10 +22,10 @@ assert(addon:RegisterDefaultRotation({
  blocks={['tbc.paladin.ret-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
  nameKey='Default.TBC.Paladin.Retribution.Twist.Name',descriptionKey='Default.TBC.Paladin.Retribution.Twist.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
- tags={'endgame','raid','retribution','melee','single-target','seal-twisting','wowhead','icy-veins','wowsims'},
+ tags={'endgame','raid','retribution','melee','single-target','seal-twisting','wowhead','icy-veins'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/paladin/retribution/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Retribution Paladin DPS rotation',reviewedAt='2026-10-23',revision='2026-02-10'},
   {url='https://www.icy-veins.com/tbc-classic/retribution-paladin-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Retribution Paladin rotation (twisting)',reviewedAt='2026-10-23',revision='2026-01-12'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/paladin/retribution/rotation.go',title='wowsims/tbc Retribution twist rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'}},
+  },
  body={priority=3,disabled=true,switch=all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=64},known(20375),any(known(31892),known(348700)),{type='PRIMARY_TALENT_TREE',tree=3}),
   cooldowns={{id='twist-upkeep',type='block',block='tbc.paladin.ret-upkeep',prefix='twist-'}},
   rotation={

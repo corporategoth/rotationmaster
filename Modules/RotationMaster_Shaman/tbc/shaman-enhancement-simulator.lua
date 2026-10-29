@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Enhancement, Wowhead and wowsims level-70 model: Stormstrike, Fire Nova weave,
+-- Enhancement, Wowhead and simulator level-70 model: Stormstrike, Fire Nova weave,
 -- Flame Shock whenever it is down, Earth Shock as the main shock, Windfury /
 -- Grace of Air totem twist. Same catch-all switch as the Icy Veins variant, lower priority.
 -- Shared opening/upkeep: Defaults/blocks/shaman.lua. Original priority data, no guide prose.
@@ -10,14 +10,14 @@ local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function windfuryWithin(s)return{type='SPELL_HISTORY_TIME',spell=8512,operator='LESSTHAN',value=s}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.wowsims',revision=7,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.shaman.enhancement.simulator',revision=7,
  blocks={['tbc.shaman.enhancement-upkeep']=2,['tbc.shaman.mainhand-imbue']=1,['tbc.shaman.shield']=1,['tbc.shaman.bloodlust']=1,
   ['tbc.shaman.enhancement-opening']=3,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1},
- nameKey='Default.TBC.Shaman.Enhancement.Wowsims.Name',descriptionKey='Default.TBC.Shaman.Enhancement.Wowsims.Description',
+ nameKey='Default.TBC.Shaman.Enhancement.Simulator.Name',descriptionKey='Default.TBC.Shaman.Enhancement.Simulator.Description',
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
- tags={'endgame','raid','enhancement','melee','single-target','aoe','wowhead','wowsims'},
+ tags={'endgame','raid','enhancement','melee','single-target','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/shaman/enhancement/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2026-02-17'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/shaman/enhancement/rotation.go',title='wowsims/tbc Enhancement rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'}},
+  },
  body={priority=5,disabled=true,
   cooldowns={
    {id='enh-sim-upkeep',type='block',block='tbc.shaman.enhancement-upkeep',prefix='enh-sim-'},

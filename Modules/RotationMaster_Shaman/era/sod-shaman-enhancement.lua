@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Season of Discovery Enhancement Shaman, levels 1–60, dual wield and two-hander (the SoD
--- catch-all). wowsims/sod Phase 6 order with Icy Veins' five-stack Maelstrom test: Flame Shock to
+-- catch-all). simulator/sod Phase 6 order with Icy Veins' five-stack Maelstrom test: Flame Shock to
 -- pull; Earth Shock interrupts; on three engaged enemies Magma, Fire Nova from a fire totem,
 -- Chain Lightning at four Maelstrom stacks and Flame Shock; Lava Burst at five stacks; Stormstrike;
 -- Lava Lash; Lightning Bolt at five stacks; Flame Shock when it will run; Earth Shock; Molten
@@ -33,8 +33,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.SoD.Shaman.Enhancement.Name',descriptionKey='Default.SoD.Shaman.Enhancement.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
- tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','icy-veins','wowhead'},
- sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/enhancement_shaman/apls/phase_6.apl.json',title='wowsims/sod: Enhancement Shaman Phase 6 APL',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
+ tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','icy-veins','wowhead'},
+ sources={
  {url='https://www.icy-veins.com/wow-classic/enhancement-shaman-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/enhancement-shaman-dps-season-of-discovery-leveling',title='Icy Veins: SoD Enhancement Shaman leveling',reviewedAt='2026-10-23',revision='2026-07-18'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/shaman/enhancement/dps-talent-builds-runes',title='Wowhead: SoD Enhancement Shaman talents and runes',reviewedAt='2026-10-23',revision='2025-02-15'}},

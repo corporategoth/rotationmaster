@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Season of Discovery Rogue melee DPS, levels 1–60 (the recommended SoD premade and the SoD
--- catch-all). wowsims/sod Phase 6 presets with Icy Veins and Zockify Phase 8: on three engaged
+-- catch-all). simulator/sod Phase 6 presets with Icy Veins and Zockify Phase 8: on three engaged
 -- enemies Blunderbuss, Crimson Tempest and Fan of Knives first; Ambush on a Cutthroat proc; Saber
 -- Slash stacks kept; Poisoned Knife at four poison stacks; Slice and Dice from two points,
 -- refreshed from four in its last two seconds (not with Cut to the Chase, whose finishers refresh
@@ -31,8 +31,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.rogue.boundaries']=3,['era.rogue.sod-opener']=4,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3,['era.rogue.expose-armor']=2},
  nameKey='Default.SoD.Rogue.DPS.Name',descriptionKey='Default.SoD.Rogue.DPS.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
- tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','icy-veins','zockify'},
- sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/rogue/apls',title='wowsims/sod: Rogue Phase 6 APLs (Mutilate, Saber, Backstab)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
+ tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','icy-veins','zockify'},
+ sources={
  {url='https://www.icy-veins.com/wow-classic/assassination-rogue-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Assassination Rogue DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/subtlety-rogue-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Subtlety Rogue DPS rotation (area damage)',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/assassination-rogue-dps-season-of-discovery-leveling',title='Icy Veins: SoD Assassination Rogue leveling',reviewedAt='2026-10-23',revision='2025-04-08'},

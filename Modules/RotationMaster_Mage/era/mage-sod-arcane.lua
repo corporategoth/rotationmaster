@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
  tags={'arcane','raid','single-target','aoe','season-of-discovery','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/arcane-mage-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Arcane Mage rotation (Phase 4)',reviewedAt='2026-10-23',revision='2025-04-08'},
-  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/mage/apls/p4_arcane.apl.json',title='wowsims/sod Phase 4 Arcane APL (Balefire stack limit)',reviewedAt='2026-10-23',revision='0e3f6ef'},
+  
  },
  body={
   priority=104,

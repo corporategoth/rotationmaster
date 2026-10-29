@@ -293,7 +293,7 @@ test('inverted TBC Branches give the same advice as their negated form (true, fa
     local cases = {
         {
             'WARRIOR',
-            'rm.tbc.warrior.dps.wowsims',
+            'rm.tbc.warrior.dps.simulator',
             'warrior-dps-pull',
             function(s)
                 M.know(s, 6603, 78, 6673, 100, 772, 6343, 1715)
@@ -302,7 +302,7 @@ test('inverted TBC Branches give the same advice as their negated form (true, fa
         },
         {
             'ROGUE',
-            'rm.tbc.rogue.dps.wowsims',
+            'rm.tbc.rogue.dps.simulator',
             'rogue-behind',
             function(s)
                 M.know(s, 6603, 1752, 2098, 53, 1329)
@@ -312,7 +312,7 @@ test('inverted TBC Branches give the same advice as their negated form (true, fa
         },
         {
             'HUNTER',
-            'rm.tbc.hunter.ranged.wowsims',
+            'rm.tbc.hunter.ranged.simulator',
             'hunter-melee',
             function(s)
                 M.know(s, 75, 6603, 2973, 1978, 3044, 2974)
@@ -323,7 +323,7 @@ test('inverted TBC Branches give the same advice as their negated form (true, fa
         },
         {
             'HUNTER',
-            'rm.tbc.hunter.ranged.wowsims',
+            'rm.tbc.hunter.ranged.simulator',
             'hunter-pull',
             function(s)
                 M.know(s, 75, 6603, 2973, 1978, 3044)

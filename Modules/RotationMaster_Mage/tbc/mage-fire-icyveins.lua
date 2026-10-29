@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.icy-veins.com/tbc-classic/fire-mage-leveling-guide',title='Icy Veins: Fire Mage leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/fire-mage-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Fire Mage rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/ui/core/talents/mage.ts',title='wowsims TBC Mage talent layout (Improved Scorch is Fire talent 10)',reviewedAt='2026-10-23',revision='3301fca',notes='Talent position only; no priority is taken from it.'},
+  
  },
  body={
   priority=20,

@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Season of Discovery Elemental Shaman, levels 10–60 (primary tree 1). wowsims/sod Phase 6 order,
+-- Season of Discovery Elemental Shaman, levels 10–60 (primary tree 1). simulator/sod Phase 6 order,
 -- which Wowhead's matches: Earth Shock interrupts; while moving Flame Shock, Rolling Thunder Earth
 -- Shock and Power Surge casts; on three engaged enemies Flame Shock, Chain Lightning, Fire Nova,
 -- Lava Burst, Earth Shock at eight Lightning Shield charges, Magma; Lava Burst on a Power Surge
@@ -28,8 +28,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.shaman.manual-target']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.caster-totems']=1},
  nameKey='Default.SoD.Shaman.Elemental.Name',descriptionKey='Default.SoD.Shaman.Elemental.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',rulesets={'season:2'}},
- tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead','icy-veins'},
- sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/elemental_shaman/apls/phase_6.apl.json',title='wowsims/sod: Elemental Shaman Phase 6 APL',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
+ tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowhead','icy-veins'},
+ sources={
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/shaman/elemental/dps-rotation-cooldowns-abilities',title='Wowhead: SoD Elemental Shaman DPS rotation',reviewedAt='2026-10-23',revision='2025-01-20'},
  {url='https://www.icy-veins.com/wow-classic/elemental-shaman-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Elemental Shaman DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.icy-veins.com/wow-classic/elemental-shaman-dps-season-of-discovery-leveling',title='Icy Veins: SoD Elemental Shaman leveling',reviewedAt='2026-10-23',revision='2026-07-18'}},

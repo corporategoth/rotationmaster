@@ -511,14 +511,14 @@ test('Classic (TBC): overrides and list order work on a client with one speciali
     local first = a:GetDefaultIdForRuntime(0, a.currentRotation)
     assert(first == 'rm.tbc.shaman.enhancement.icyveins', tostring(first))
     -- The alternative ships disabled: a raised priority alone does not choose it; enabled, it wins.
-    assert(a:SetBuiltinPriority('rm.tbc.shaman.enhancement.wowsims', 99))
+    assert(a:SetBuiltinPriority('rm.tbc.shaman.enhancement.simulator', 99))
     a:UpdateAutoSwitch()
     a:SwitchRotation()
     assert(a:GetDefaultIdForRuntime(0, a.currentRotation) == 'rm.tbc.shaman.enhancement.icyveins')
-    assert(a:SetDefaultRotationEnabled('rm.tbc.shaman.enhancement.wowsims', true))
+    assert(a:SetDefaultRotationEnabled('rm.tbc.shaman.enhancement.simulator', true))
     a:UpdateAutoSwitch()
     a:SwitchRotation()
-    assert(a:GetDefaultIdForRuntime(0, a.currentRotation) == 'rm.tbc.shaman.enhancement.wowsims')
+    assert(a:GetDefaultIdForRuntime(0, a.currentRotation) == 'rm.tbc.shaman.enhancement.simulator')
     local overlaps = a:GetSwitchOverlaps(0)
     local list = overlaps[a.currentRotation]
     assert(list and #list >= 1, 'the two level>=1 Enhancement packs do not overlap')

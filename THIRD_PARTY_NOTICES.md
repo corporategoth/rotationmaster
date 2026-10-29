@@ -1,13 +1,8 @@
 # Third-party notices
 
-## WowSims
+## Built In rotation material
 
-Many Built In rotations in this addon were written from, or cite, the Action Priority Lists (APLs) of the open-source
-WowSims simulators (https://github.com/wowsims/classic, /tbc, /sod and /mop) as sources. Those rotations carry the
-`wowsims` tag and name the simulator file they follow. Rotation Master has no WowSims import or export, and ships no
-WowSims code or data.
-
-The WowSims repositories are published under the MIT license, whose notice follows.
+The following MIT license notice applies to material used in certain Built In rotations.
 
 ```
 MIT License

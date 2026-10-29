@@ -15,7 +15,7 @@ era/blocks.lua
 era/shaman-enhancement.lua
 era/shaman-enhancement-warcrafttavern.lua
 era/shaman-elemental.lua
-era/shaman-elemental-wowsims.lua
+era/shaman-elemental-simulator.lua
 era/shaman-restoration.lua
 era/shaman-restoration-warcrafttavern.lua
 era/sod-shaman-tank.lua

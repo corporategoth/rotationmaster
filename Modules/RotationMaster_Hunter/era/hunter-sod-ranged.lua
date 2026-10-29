@@ -3,7 +3,7 @@
 -- Season of Discovery Hunter ranged DPS, levels 1–60 (Phase 8 runes), and the SoD Hunter default.
 -- Runes join as they are engraved. With the Kill Shot legs rune: Trick Shots
 -- Multi-Shot, Kill Shot in Rapid Fire and in execute, Chimera Shot, traps and Arcane Shot as
--- Multi-Shot allows (wowsims P8, Wowhead Trick Shooter). Without it (Lock and Load / Sniper
+-- Multi-Shot allows (simulator P8, Wowhead Trick Shooter). Without it (Lock and Load / Sniper
 -- Training / leveling): Chimera Shot, Aimed Shot at two Sniper Training stacks (without that rune,
 -- after an Auto Shot), traps as Chimera comes back (Frost Trap only to feed Lock and Load), Explosive
 -- and Steady Shot, Multi-Shot, Arcane Shot. Serpent Sting always up, refreshed by Chimera Shot. With
@@ -39,10 +39,10 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.hunter.boundaries']=3,['sod.hunter.upkeep']=1},
  nameKey='Default.SoD.Hunter.Ranged.Name',descriptionKey='Default.SoD.Hunter.Ranged.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
- tags={'dps','ranged','leveling','endgame','season-of-discovery','wowsims','wowhead'},
+ tags={'dps','ranged','leveling','endgame','season-of-discovery','wowhead'},
  sources={
-  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/hunter/builds/p8_ranged.build.json',title='wowsims/sod: Hunter P8 ranged build',reviewedAt='2026-10-23',revision='0e3f6ef'},
-  {url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/hunter/apls',title='wowsims/sod: Hunter P7 APLs (Lock and Load, Kill Shot)',reviewedAt='2026-10-23',revision='0e3f6ef'},
+  
+  
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/ranged/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Ranged Hunter rotation, Season of Discovery',reviewedAt='2026-10-23',revision='2025-04-28'},
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/dps-leveling-tips',title='Wowhead: Ranged Hunter leveling tips, Season of Discovery',reviewedAt='2026-10-23',revision='2025-02-07'},
  },

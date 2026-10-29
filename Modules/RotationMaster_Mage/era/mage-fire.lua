@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow-classic/fire-mage-leveling-talent-build-from-1-to-60',title='Icy Veins: Fire Mage leveling',reviewedAt='2026-10-23',revision='2026-07-18'},
   {url='https://www.wowhead.com/classic/guide/classes/mage/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Mage DPS rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
   {url='https://www.wowhead.com/classic/guide/classes/mage/fire/leveling-tips',title='Wowhead: Classic Fire Mage leveling',reviewedAt='2026-10-23',revision='2024-11-20'},
-  {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/mage/apls/p1.apl.json',title='wowsims/classic Mage APL (Combustion and Scorch gates)',reviewedAt='2026-10-23',revision='7779ebb'},
+  
   {url='https://github.com/kaminaris/MaxDps-Mage/tree/886c8e27f48e38e0f9b8c22cf56b5e625dfce3f0/Specialization/Classic',title='MaxDps-Mage Classic Fire module',reviewedAt='2026-10-23',revision='886c8e2'},
  },
  body={

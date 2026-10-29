@@ -25,5 +25,5 @@ era/druid-sod-balance-wowhead.lua
 era/druid-sod-balance-icyveins.lua
 era/druid-sod-feral.lua
 era/druid-sod-tank.lua
-era/druid-sod-tank-wowsims.lua
+era/druid-sod-tank-simulator.lua
 era/druid-sod-restoration.lua

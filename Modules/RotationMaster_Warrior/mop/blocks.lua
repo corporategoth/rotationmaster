@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultBlock({
   {id='pull-stop',type='stop',suppress_attack=false,conditions={}},
  }},
 }}))
--- Damage-dealer gap closing and sustain (wowsims, Icy Veins): Charge for rage when you have stepped out
+-- Damage-dealer gap closing and sustain (simulator, Icy Veins): Charge for rage when you have stepped out
 -- (below 66 rage), Heroic Throw from range, Victory Rush or Impending Victory under 70% health.
 assert(addon:RegisterDefaultBlock({
  id='mop.warrior.gap',revision=1,families={'progression'},class='WARRIOR',steps={

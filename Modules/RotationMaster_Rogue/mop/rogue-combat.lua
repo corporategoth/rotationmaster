@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Combat Rogue, levels 10-90 (the recommended variant): Wowhead's Phase 5 page and wowsims
+-- Mists of Pandaria Classic Combat Rogue, levels 10-90 (the recommended variant): Wowhead's Phase 5 page and simulator
 -- after the Siege of Orgrimmar patch (Sinister Strike now costs 50 energy), so Revealing Strike is the builder and
 -- Sinister Strike is used only under a Bloodlust effect with Adrenaline Rush. Selected in the Combat specialization (260).
 -- Stealth opens with Cheap Shot solo, else Ambush. Eight or more engaged enemies: Slice and Dice, Crimson Tempest,
@@ -30,9 +30,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.combat-opener']=2,['mop.rogue.out-of-combat']=3,['mop.rogue.combat-aoe']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1,['mop.rogue.combat-upkeep']=1},
  nameKey='Default.MoP.Rogue.Combat.Name',descriptionKey='Default.MoP.Rogue.Combat.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
- tags={'combat','dps','melee','leveling','endgame','wowhead','wowsims'},
+ tags={'combat','dps','melee','leveling','endgame','wowhead'},
  sources={{url='https://www.wowhead.com/mop-classic/guide/classes/rogue/combat/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Combat Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},
- {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/rogue/combat/apls/combat.apl.json',title='wowsims/mop: Combat Rogue APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ 
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/combat/dps-leveling-talent-builds-tips',title='Wowhead: Combat Rogue leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/combat-rogue-leveling',title='Icy Veins: Combat Rogue leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},
  body={priority=30,specs={260},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

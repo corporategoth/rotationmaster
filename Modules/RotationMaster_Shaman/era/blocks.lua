@@ -2,7 +2,7 @@
 
 -- Shared Classic Era Shaman blocks, vanilla and Season of Discovery (Built In composition;
 -- authoring-time only). Consumers: rm.era.shaman.enhancement, .enhancement.warcrafttavern,
--- .elemental, .elemental.wowsims, .restoration, .restoration.warcrafttavern and
+-- .elemental, .elemental.simulator, .restoration, .restoration.warcrafttavern and
 -- rm.sod.shaman.enhancement, .elemental, .restoration, .tank. A content change needs a block
 -- revision bump, every consumer's pin and revision bumped, and both recorded in
 -- tests/fixtures/builtin_composition_ledger.lua.

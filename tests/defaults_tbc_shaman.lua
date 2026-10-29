@@ -5,7 +5,7 @@
 local F = dofile('tests/fixtures/addon.lua')
 local test, finish = F.suite()
 local H = dofile('tests/fixtures/tbc_hybrid_premades.lua')
-local ENH, SIM = 'rm.tbc.shaman.enhancement.icyveins', 'rm.tbc.shaman.enhancement.wowsims'
+local ENH, SIM = 'rm.tbc.shaman.enhancement.icyveins', 'rm.tbc.shaman.enhancement.simulator'
 
 local ELE, EWH, ENA, RESTO =
     'rm.tbc.shaman.elemental.icyveins',
@@ -281,7 +281,7 @@ test('Enhancement upkeep reminders stay independent of the damage priority', fun
     assert(disabled.disabled == true and disabled.action == 2894)
 end)
 
-test('Wowhead & wowsims variant: Fire Nova weave, unconditional Flame Shock, totem twist, Rage when low', function()
+test('Wowhead & simulator variant: Fire Nova weave, unconditional Flame Shock, totem twist, Rage when low', function()
     local f, s = fixture(70)
     H.learn(f, s, unpack(ENH70))
     fight(s)
@@ -313,44 +313,47 @@ test('Wowhead & wowsims variant: Fire Nova weave, unconditional Flame Shock, tot
     assert(lit(f, s, SIM) == '30823', 'Shamanistic Rage only when mana runs low')
 end)
 
-test('Elemental (Icy Veins & wowsims): Bolt filler, adaptive Chain Lightning, Flame Shock only while moving', function()
-    local f, s = fixture(20, { 11, 0, 0 })
-    s.near = true
-    fight(s)
-    assert(H.first(f, s, ELE) == nil, 'before Chain Lightning a target in melee is left to auto-attack')
-    s.near = false
-    assert(H.first(f, s, ELE) == 403)
-    H.learn(f, s, 421, 8050, 16166, 1535, 8190)
-    s.level = 70
-    s.near = true
-    s.mana = 0.5
-    assert(H.first(f, s, ELE) == 403, 'Bolt filler at 70 without a reason to Chain')
-    s.buffs = { { id = 16166 } }
-    assert(H.first(f, s, ELE) == 421, 'Chain Lightning with Elemental Mastery')
-    s.buffs = { { id = 16246 } }
-    s.mana = 0.5
-    assert(H.first(f, s, ELE) == 421, 'Clearcasting with mana to spare')
-    s.mana = 0.3
-    assert(H.first(f, s, ELE) == 403)
-    s.buffs = {}
-    s.mana = 0.9
-    assert(H.first(f, s, ELE) == 421, 'mana surplus')
-    s.mana = 0.5
-    s.moving = true
-    assert(H.first(f, s, ELE) == 8050, 'Flame Shock while moving')
-    s.debuffs = { { id = 8050 } }
-    local spell, result = H.first(f, s, ELE)
-    assert(not spell and result.status == 'stopped', 'nothing else while moving')
-    s.moving = false
-    s.debuffs = {}
-    assert(H.first(f, s, ELE) == 403, 'no Flame Shock when standing')
-    s.enemies = 3
-    assert(H.first(f, s, ELE) == 1535)
-    s.totems[1] = 1535
-    assert(H.first(f, s, ELE) == 421, 'Chain Lightning for packs')
-    s.target.cast = true
-    assert(H.first(f, s, ELE) == 8042, 'interrupt')
-end)
+test(
+    'Elemental (Icy Veins & simulator): Bolt filler, adaptive Chain Lightning, Flame Shock only while moving',
+    function()
+        local f, s = fixture(20, { 11, 0, 0 })
+        s.near = true
+        fight(s)
+        assert(H.first(f, s, ELE) == nil, 'before Chain Lightning a target in melee is left to auto-attack')
+        s.near = false
+        assert(H.first(f, s, ELE) == 403)
+        H.learn(f, s, 421, 8050, 16166, 1535, 8190)
+        s.level = 70
+        s.near = true
+        s.mana = 0.5
+        assert(H.first(f, s, ELE) == 403, 'Bolt filler at 70 without a reason to Chain')
+        s.buffs = { { id = 16166 } }
+        assert(H.first(f, s, ELE) == 421, 'Chain Lightning with Elemental Mastery')
+        s.buffs = { { id = 16246 } }
+        s.mana = 0.5
+        assert(H.first(f, s, ELE) == 421, 'Clearcasting with mana to spare')
+        s.mana = 0.3
+        assert(H.first(f, s, ELE) == 403)
+        s.buffs = {}
+        s.mana = 0.9
+        assert(H.first(f, s, ELE) == 421, 'mana surplus')
+        s.mana = 0.5
+        s.moving = true
+        assert(H.first(f, s, ELE) == 8050, 'Flame Shock while moving')
+        s.debuffs = { { id = 8050 } }
+        local spell, result = H.first(f, s, ELE)
+        assert(not spell and result.status == 'stopped', 'nothing else while moving')
+        s.moving = false
+        s.debuffs = {}
+        assert(H.first(f, s, ELE) == 403, 'no Flame Shock when standing')
+        s.enemies = 3
+        assert(H.first(f, s, ELE) == 1535)
+        s.totems[1] = 1535
+        assert(H.first(f, s, ELE) == 421, 'Chain Lightning for packs')
+        s.target.cast = true
+        assert(H.first(f, s, ELE) == 8042, 'interrupt')
+    end
+)
 
 test('Elemental upkeep: caster totems, Totemic Call, Mastery paired with Chain Lightning', function()
     local f, s = fixture(70, { 41, 20, 0 })

@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Season of Discovery Druid Feral cat: chosen when Savage Roar is engraved, or Feral is the primary
--- tree with no other legs rune. After Wowhead's SoD decision tree with wowsims P5 and Icy Veins:
+-- tree with no other legs rune. After Wowhead's SoD decision tree with simulator P5 and Icy Veins:
 -- Faerie Fire (Feral), Savage Roar, Swipe (Cat) on four or more, the Mangle debuff, Clearcasting on
 -- Shred, Rip at five combo points while Savage Roar lasts, Rake, Shred from behind, powershift.
 -- Tiger's Fury and Berserk are reminders. In Bear Form it plays the SoD tank section.
@@ -21,10 +21,10 @@ assert(addon:RegisterDefaultRotation({
   ['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.bear']=2,['era.druid.feral-humanoid']=2},
  nameKey='Default.SoD.Druid.Feral.Name',descriptionKey='Default.SoD.Druid.Feral.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
- tags={'season-of-discovery','leveling','endgame','feral','melee','single-target','aoe','wowhead','wowsims','icy-veins'},
+ tags={'season-of-discovery','leveling','endgame','feral','melee','single-target','aoe','wowhead','icy-veins'},
  sources={
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/druid/feral/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2025-04-07'},
-  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/feral_druid/apls/phase_5.apl.json',title='wowsims/sod Feral Phase 5 APL',reviewedAt='2026-10-23',revision='0e3f6ef'},
+  
   {url='https://www.icy-veins.com/wow-classic/feral-druid-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  },
  body={priority=130,switch=any(rune(407988),all(negate(rune(409824)),negate(rune(417157)),{type='PRIMARY_TALENT_TREE',tree=2})),

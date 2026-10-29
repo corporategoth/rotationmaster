@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Season of Discovery Fire Warlock, levels 1–60 (Chaos Bolt or Incinerate engraved).
--- wowsims/sod Phase 6 and Wowhead Phase 6: Shadowburn and Searing Pain to finish; instants while
+-- simulator/sod Phase 6 and Wowhead Phase 6: Shadowburn and Searing Pain to finish; instants while
 -- moving; Incinerate's buff, Lake of Fire and Hellfire on packs; a curse (group Recklessness when
 -- nobody has it, Doom on long fights, else Agony); Conflagrate only to keep Backdraft; Immolate
 -- kept up; Incinerate's buff kept up; below 35% Soul Fire under Decimation instead of Chaos Bolt;
@@ -32,8 +32,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.warlock.boundaries']=3,['era.warlock.armor']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Fire.Name',descriptionKey='Default.SoD.Warlock.Fire.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',rulesets={'season:2'}},
- tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead'},
- sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warlock/apls/p6/destruction.apl.json',title='wowsims/sod: Destruction Warlock Phase 6 APL',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
+ tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowhead'},
+ sources={
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warlock/dps-talent-builds-runes',title='Wowhead: SoD Warlock DPS talents and runes (Phase 6)',reviewedAt='2026-10-23',revision='2025-01-13'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warlock/dps-leveling-tips',title='Wowhead: SoD Warlock DPS leveling tips',reviewedAt='2026-10-23',revision='2025-01-26'}},
  body={priority=70,switch=any(rune(403629),rune(412758)),

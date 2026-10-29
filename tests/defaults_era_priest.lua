@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Classic Era and Season of Discovery Priest premades: damage (default, Warcraft Tavern, wowsims),
+-- Classic Era and Season of Discovery Priest premades: damage (default, Warcraft Tavern, simulator),
 -- healer, and their Season of Discovery counterparts. Real catalog, composition, predicates, build
 -- context, sequence executor, readiness and auto-select order on a modeled 1.15 client
 -- (tests/fixtures/era_premade_model_a.lua).
@@ -9,7 +9,7 @@ local test, finish = F.suite()
 local M = dofile('tests/fixtures/era_premade_model_a.lua')
 
 local DPS, TAVERN, SIMS, HEAL =
-    'rm.era.priest.dps', 'rm.era.priest.dps.warcrafttavern', 'rm.era.priest.dps.wowsims', 'rm.era.priest.healer'
+    'rm.era.priest.dps', 'rm.era.priest.dps.warcrafttavern', 'rm.era.priest.dps.simulator', 'rm.era.priest.healer'
 
 local SDPS, SSPIKE, SHEAL, STAVERN =
     'rm.sod.priest.dps', 'rm.sod.priest.dps.wowhead', 'rm.sod.priest.healer', 'rm.sod.priest.healer.warcrafttavern'
@@ -107,7 +107,7 @@ test('all eight Priest premades register valid, localized, sourced, composed and
     end
 
     for _, source in ipairs(M.row(a, SSPIKE).envelope.sources) do
-        assert(not source.url:find('wowsims'), 'Mind Spike variant cites wowsims')
+        assert(not source.url:find('simulator'), 'Mind Spike variant cites simulator')
     end
 end)
 
@@ -382,7 +382,7 @@ test('Warcraft Tavern: Mind Blast pull, wand between Mind Blasts solo, Mind Flay
     M.expect(a, s, TAVERN, FLAY, nil, 'group: Mind Flay')
 end)
 
-test('wowsims: Inner Focus on Devouring Plague, Devouring Plague in raids', function()
+test('simulator: Inner Focus on Devouring Plague, Devouring Plague in raids', function()
     local a, s = shadow(PLAGUE, 14751)
     s.buff('player', FORM)
     s.debuff('target', PAIN)

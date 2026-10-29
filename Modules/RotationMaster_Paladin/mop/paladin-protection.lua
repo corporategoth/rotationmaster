@@ -6,7 +6,7 @@
 -- whenever it is usable (3 Holy Power), Eternal Flame on yourself when it is running out with three
 -- Bastion of Glory stacks and 3 Holy Power. Rotation: Grand Crusader Avenger's Shield, AoE at three
 -- enemies, Avenger's Shield, Hammer of Wrath, Crusader Strike, Judgment, tier-six talent,
--- Consecration, Holy Wrath. The pool-to-five variant is rm.mop.paladin.protection.wowsims.
+-- Consecration, Holy Wrath. The pool-to-five variant is rm.mop.paladin.protection.simulator.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end

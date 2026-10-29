@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Season of Discovery Druid bear tank, wowsims P7 "cat weave": off by default (expert, needs Savage
+-- Season of Discovery Druid bear tank, simulator P7 "cat weave": off by default (expert, needs Savage
 -- Roar from gear as well as Lacerate). Leaves Bear for Cat to keep Rake and Savage Roar up, then
 -- returns to Dire Bear and plays the tank list. Same switch as rm.sod.druid.tank at a lower priority.
 local _,addon=...
@@ -16,14 +16,12 @@ local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 local rake={type='DEBUFF',unit='target',spell=1822,anyrank=true,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank.wowsims',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank.simulator',revision=6,
  blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=2,['sod.druid.tank-humanoid']=2},
- nameKey='Default.SoD.Druid.Tank.Wowsims.Name',descriptionKey='Default.SoD.Druid.Tank.Wowsims.Description',
+ nameKey='Default.SoD.Druid.Tank.Simulator.Name',descriptionKey='Default.SoD.Druid.Tank.Simulator.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
- tags={'season-of-discovery','endgame','feral','tank','melee','single-target','wowsims'},
- sources={
-  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/feral_tank_druid/apls/catweave_rake.apl.json',title='wowsims/sod Feral tank cat-weave APL (Phase 7)',reviewedAt='2026-10-23',revision='0e3f6ef'},
- },
+ tags={'season-of-discovery','endgame','feral','tank','melee','single-target'},
+ sources={},
  body={priority=139,disabled=true,switch=rune(414644),
   cooldowns={ref('sod-tank-ws-upkeep','era.druid.upkeep','sod-tank-ws-'),ref('sod-tank-ws-maul','sod.druid.maul','sod-tank-ws-'),ref('sod-tank-ws-cooldowns','sod.druid.tank-cooldowns','sod-tank-ws-')},
   rotation={

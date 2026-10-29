@@ -671,8 +671,8 @@ end
 
 -- Drops profile.transfer_format from every saved profile.
 --
--- The rotation transfer window's Format choice (Rotation Master or WowSims, written by the 2.0 betas) was retired
--- together with the WowSims converter, nothing reads the value any more, and the validator would report the key in
+-- The rotation transfer window's Format choice (Rotation Master or Simulator, written by the 2.0 betas) was retired
+-- together with the Simulator converter, nothing reads the value any more, and the validator would report the key in
 -- each profile that still carries it.
 local function dropRetiredTransferFormat()
     for _, profile in pairs(addon.db.sv and addon.db.sv.profiles or {}) do

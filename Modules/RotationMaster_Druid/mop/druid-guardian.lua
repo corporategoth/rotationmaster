@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Guardian Druid, levels 10–90, in the Guardian specialization (104). wowsims'
+-- Mists of Pandaria Classic Guardian Druid, levels 10–90, in the Guardian specialization (104). simulator'
 -- default list as Wowhead writes it, with the guides' Tooth and Claw Maul: Savage Defense whenever
 -- it is down (Enrage to fund it), Frenzied Regeneration when low or rage-capped, Thrash for Weakened
 -- Blows and Faerie Fire for Weakened Armor, Mangle on cooldown, Thrash and Swipe at three enemies,
@@ -29,9 +29,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.druid.melee-boundaries']=2,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Guardian.Name',descriptionKey='Default.MoP.Druid.Guardian.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
- tags={'guardian','tank','leveling','single-target','aoe','wowsims','wowhead'},
+ tags={'guardian','tank','leveling','single-target','aoe','wowhead'},
  sources={
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/druid/guardian/apls/default.apl.json',title='wowsims/mop Guardian default APL',reviewedAt='2026-10-23',revision='ec2c6c2552'},
+  
   {url='https://www.wowhead.com/mop-classic/guide/classes/druid/guardian/tank-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Guardian Druid rotation',reviewedAt='2026-10-23',revision='2026-06-20'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/guardian-druid-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Guardian Druid rotation',reviewedAt='2026-10-23',revision='2025-06-22',notes='Maul on Tooth and Claw procs; Swipe at three enemies.'},
   {url='https://www.warcrafttavern.com/mop/guides/pve-guardian-druid-tank-rotations-cooldowns/',title='Warcraft Tavern: MoP Classic Guardian Druid',reviewedAt='2026-10-23',notes='Faerie Fire as a filler for Mangle resets.'},

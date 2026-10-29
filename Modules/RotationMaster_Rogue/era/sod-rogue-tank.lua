@@ -2,7 +2,7 @@
 
 -- Season of Discovery Rogue tank, levels 1–60, chosen when the Just a Flesh Wound rune (which teaches
 -- Tease) is engraved.
--- wowsims/sod Phase 6 Main Gauche order with Icy Veins, Zockify and Warcraft Tavern: Riposte, Main
+-- simulator/sod Phase 6 Main Gauche order with Icy Veins, Zockify and Warcraft Tavern: Riposte, Main
 -- Gauche on cooldown, Blade Dance from one point and refreshed from three, Slice and Dice from
 -- three (refreshed from four), Fan of Knives, Crimson Tempest and Blunderbuss on three engaged
 -- enemies, Blunderbuss while Blade Dance is up, Eviscerate at five with both buffs up, Poisoned
@@ -29,8 +29,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.rogue.boundaries']=3},
  nameKey='Default.SoD.Rogue.Tank.Name',descriptionKey='Default.SoD.Rogue.Tank.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
- tags={'tank','melee','endgame','aoe','season-of-discovery','wowsims','icy-veins','zockify','warcraft-tavern'},
- sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/tank_rogue/apls',title='wowsims/sod: Rogue tank Phase 6 APLs (Main Gauche, Saber Slash)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
+ tags={'tank','melee','endgame','aoe','season-of-discovery','icy-veins','zockify','warcraft-tavern'},
+ sources={
  {url='https://www.icy-veins.com/wow-classic/combat-rogue-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Combat Rogue tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.zockify.com/wowclassic/rogue/tank/',title='Zockify: SoD Rogue tank (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-10'},
  {url='https://www.warcrafttavern.com/wow-classic-sod/guides/combat-rogue-tank/',title='Warcraft Tavern: SoD Combat Rogue tank (Phase 4)',reviewedAt='2026-10-23'}},

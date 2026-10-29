@@ -23,11 +23,11 @@ distinguishing word added; the four names worded by hand are marked.
 | Death Knight | Retail | Unholy | `rm.retail.deathknight.unholy.guide` | Death Knight: Unholy reference (Retail, Icy Veins and Wowhead) | Reference (Icy Veins and Wowhead) |  |
 | Death Knight | Retail | Unholy | `rm.retail.deathknight.unholy.simc` | Death Knight: Unholy reference (Retail, SimulationCraft) | Reference (SimulationCraft) |  |
 | Death Knight | Mists of Pandaria | Blood | `rm.mop.deathknight.blood` | Death Knight: Blood (MoP) | Recommended |  |
-| Death Knight | Mists of Pandaria | Blood | `rm.mop.deathknight.blood.wowsims` | Death Knight: Blood, health-reactive (MoP, wowsims) | Health-reactive (wowsims) |  |
+| Death Knight | Mists of Pandaria | Blood | `rm.mop.deathknight.blood.simulator` | Death Knight: Blood, health-reactive (MoP, simulator) | Health-reactive (simulator) |  |
 | Death Knight | Mists of Pandaria | Frost | `rm.mop.deathknight.frost` | Death Knight: Frost, two-hander (MoP) | Two-hander |  |
 | Death Knight | Mists of Pandaria | Frost | `rm.mop.deathknight.frost.dualwield` | Death Knight: Frost, two weapons (MoP) | Two weapons |  |
 | Death Knight | Mists of Pandaria | not tied to one | `rm.mop.deathknight.unholy` | Death Knight: Unholy (MoP) | Unholy |  |
-| Death Knight | Mists of Pandaria | not tied to one | `rm.mop.deathknight.unholy.wowsims` | Death Knight: Unholy, rune-cap pooling (MoP, wowsims) | Unholy, rune-cap pooling (wowsims) |  |
+| Death Knight | Mists of Pandaria | not tied to one | `rm.mop.deathknight.unholy.simulator` | Death Knight: Unholy, rune-cap pooling (MoP, simulator) | Unholy, rune-cap pooling (simulator) |  |
 | Demon Hunter | Retail | Devourer | `rm.retail.demonhunter.devourer` | Demon Hunter: Devourer (Retail, Blizzard Assisted) | Blizzard Assisted |  |
 | Demon Hunter | Retail | Devourer | `rm.retail.demonhunter.devourer.guide` | Demon Hunter: Devourer reference (Retail, Icy Veins) | Reference (Icy Veins) |  |
 | Demon Hunter | Retail | Devourer | `rm.retail.demonhunter.devourer.simc` | Demon Hunter: Devourer reference (Retail, SimulationCraft) | Reference (SimulationCraft) |  |
@@ -59,7 +59,7 @@ distinguishing word added; the four names worded by hand are marked.
 | Druid | Forever | not tied to one | `rm.forever.druid.restoration` | Druid: Restoration (Forever) | Restoration |  |
 | Druid | Forever | not tied to one | `rm.forever.druid.restoration.icyveins` | Druid: Restoration, HoTs first (Forever, Icy Veins) | Restoration, HoTs first (Icy Veins) |  |
 | Druid | TBC | not tied to one | `rm.tbc.druid.balance` | Druid: Balance | Balance |  |
-| Druid | TBC | not tied to one | `rm.tbc.druid.feral.icyveins` | Druid: Feral (Icy Veins, Warcraft Tavern & wowsims) | Feral (Icy Veins, Warcraft Tavern & wowsims) |  |
+| Druid | TBC | not tied to one | `rm.tbc.druid.feral.icyveins` | Druid: Feral (Icy Veins, Warcraft Tavern & simulator) | Feral (Icy Veins, Warcraft Tavern & simulator) |  |
 | Druid | TBC | not tied to one | `rm.tbc.druid.feral.wowhead` | Druid: Feral (Wowhead) | Feral (Wowhead) |  |
 | Druid | TBC | not tied to one | `rm.tbc.druid.restoration` | Druid: Restoration | Restoration |  |
 | Druid | Classic Era | not tied to one | `rm.era.druid.balance` | Druid: Balance | Balance |  |
@@ -76,7 +76,7 @@ distinguishing word added; the four names worded by hand are marked.
 | Druid | Season of Discovery | not tied to one | `rm.sod.druid.feral` | Druid: Feral cat (Season of Discovery) | Feral cat (SoD) |  |
 | Druid | Season of Discovery | not tied to one | `rm.sod.druid.restoration` | Druid: Restoration (Season of Discovery) | Restoration (SoD) |  |
 | Druid | Season of Discovery | not tied to one | `rm.sod.druid.tank` | Druid: Bear tank (Season of Discovery) | Bear tank (SoD) |  |
-| Druid | Season of Discovery | not tied to one | `rm.sod.druid.tank.wowsims` | Druid: Bear tank (Season of Discovery, wowsims cat weave) | Bear tank (SoD, wowsims cat weave) |  |
+| Druid | Season of Discovery | not tied to one | `rm.sod.druid.tank.simulator` | Druid: Bear tank (Season of Discovery, simulator cat weave) | Bear tank (SoD, simulator cat weave) |  |
 | Evoker | Retail | Augmentation | `rm.retail.evoker.augmentation` | Evoker: Augmentation (Retail, Icy Veins) | Icy Veins |  |
 | Evoker | Retail | Augmentation | `rm.retail.evoker.augmentation.assisted` | Evoker: Augmentation (Retail, Blizzard Assisted) | Blizzard Assisted |  |
 | Evoker | Retail | Devastation | `rm.retail.evoker.devastation` | Evoker: Devastation (Retail, Blizzard Assisted) | Blizzard Assisted |  |
@@ -100,10 +100,10 @@ distinguishing word added; the four names worded by hand are marked.
 | Hunter | Forever | not tied to one | `rm.forever.hunter.survival` | Hunter: Survival melee (Forever, Wowhead) | Survival melee (Wowhead) |  |
 | Hunter | Forever | not tied to one | `rm.forever.hunter.survival.weave` | Hunter: Survival two-hand weave (Forever, Wowhead) | Survival two-hand weave (Wowhead) |  |
 | Hunter | TBC | not tied to one | `rm.tbc.hunter.ranged.wowhead` | Hunter: ranged DPS (Wowhead) | Ranged DPS (Wowhead) |  |
-| Hunter | TBC | not tied to one | `rm.tbc.hunter.ranged.wowsims` | Hunter: ranged DPS (wowsims) | Ranged DPS (wowsims) |  |
+| Hunter | TBC | not tied to one | `rm.tbc.hunter.ranged.simulator` | Hunter: ranged DPS (simulator) | Ranged DPS (simulator) |  |
 | Hunter | Classic Era | not tied to one | `rm.era.hunter.ranged` | Hunter: Ranged | Ranged |  |
 | Hunter | Classic Era | not tied to one | `rm.era.hunter.ranged.icyveins` | Hunter: Ranged, clipped (Icy Veins) | Ranged, clipped (Icy Veins) |  |
-| Hunter | Classic Era | not tied to one | `rm.era.hunter.ranged.wowsims` | Hunter: Ranged, raid Serpent Sting (wowsims) | Ranged, raid Serpent Sting (wowsims) |  |
+| Hunter | Classic Era | not tied to one | `rm.era.hunter.ranged.simulator` | Hunter: Ranged, raid Serpent Sting (simulator) | Ranged, raid Serpent Sting (simulator) |  |
 | Hunter | Season of Discovery | not tied to one | `rm.sod.hunter.melee` | Hunter: Melee (Season of Discovery) | Melee (SoD) |  |
 | Hunter | Season of Discovery | not tied to one | `rm.sod.hunter.ranged` | Hunter: Ranged (Season of Discovery) | Ranged (SoD) |  |
 | Mage | Retail | Arcane | `rm.retail.mage.arcane` | Mage: Arcane (Retail, Blizzard Assisted) | Blizzard Assisted |  |
@@ -143,7 +143,7 @@ distinguishing word added; the four names worded by hand are marked.
 | Monk | Retail | Windwalker | `rm.retail.monk.windwalker` | Monk: Windwalker (Retail, Blizzard Assisted) | Blizzard Assisted |  |
 | Monk | Retail | Windwalker | `rm.retail.monk.windwalker.guide` | Monk: Windwalker reference (Retail, Icy Veins and SimulationCraft) | Reference (Icy Veins and SimulationCraft) |  |
 | Monk | Mists of Pandaria | Brewmaster | `rm.mop.monk.brewmaster` | Monk: Brewmaster (MoP) | Recommended |  |
-| Monk | Mists of Pandaria | Brewmaster | `rm.mop.monk.brewmaster.offensive` | Monk: Brewmaster, damage first (MoP, wowsims) | Damage first (wowsims) |  |
+| Monk | Mists of Pandaria | Brewmaster | `rm.mop.monk.brewmaster.offensive` | Monk: Brewmaster, damage first (MoP, simulator) | Damage first (simulator) |  |
 | Monk | Mists of Pandaria | Mistweaver | `rm.mop.monk.mistweaver` | Monk: Mistweaver (MoP) | Recommended |  |
 | Monk | Mists of Pandaria | not tied to one | `rm.mop.monk.unspecialized` | Monk: before a specialization (MoP) | Before a specialization |  |
 | Monk | Mists of Pandaria | Windwalker | `rm.mop.monk.windwalker` | Monk: Windwalker (MoP) | Recommended |  |
@@ -157,7 +157,7 @@ distinguishing word added; the four names worded by hand are marked.
 | Paladin | Retail | Retribution | `rm.retail.paladin.retribution.icyveins` | Paladin: Retribution (Retail, Icy Veins reference) | Reference (Icy Veins) |  |
 | Paladin | Mists of Pandaria | Holy | `rm.mop.paladin.holy` | Paladin: Holy healing (MoP) | Recommended | worded by hand |
 | Paladin | Mists of Pandaria | Protection | `rm.mop.paladin.protection` | Paladin: Protection (MoP) | Recommended |  |
-| Paladin | Mists of Pandaria | Protection | `rm.mop.paladin.protection.wowsims` | Paladin: Protection, pool Holy Power (MoP, wowsims) | Pool Holy Power (wowsims) |  |
+| Paladin | Mists of Pandaria | Protection | `rm.mop.paladin.protection.simulator` | Paladin: Protection, pool Holy Power (MoP, simulator) | Pool Holy Power (simulator) |  |
 | Paladin | Mists of Pandaria | Retribution | `rm.mop.paladin.retribution` | Paladin: Retribution (MoP) | Recommended |  |
 | Paladin | Mists of Pandaria | Retribution | `rm.mop.paladin.retribution.warcrafttavern` | Paladin: Retribution, Exorcism first (MoP, Warcraft Tavern) | Exorcism first (Warcraft Tavern) |  |
 | Paladin | Mists of Pandaria | not tied to one | `rm.mop.paladin.unspecialized` | Paladin: before a specialization (MoP) | Before a specialization |  |
@@ -169,10 +169,10 @@ distinguishing word added; the four names worded by hand are marked.
 | Paladin | TBC | not tied to one | `rm.tbc.paladin.holy` | Paladin: Holy (Icy Veins & Wowhead) | Holy (Icy Veins & Wowhead) |  |
 | Paladin | TBC | not tied to one | `rm.tbc.paladin.holy.wowhead` | Paladin: Holy (Wowhead tank healing) | Holy (Wowhead tank healing) |  |
 | Paladin | TBC | not tied to one | `rm.tbc.paladin.protection.icyveins` | Paladin: Protection (Icy Veins) | Protection (Icy Veins) |  |
-| Paladin | TBC | not tied to one | `rm.tbc.paladin.protection.wowhead` | Paladin: Protection (Wowhead & wowsims) | Protection (Wowhead & wowsims) |  |
+| Paladin | TBC | not tied to one | `rm.tbc.paladin.protection.wowhead` | Paladin: Protection (Wowhead & simulator) | Protection (Wowhead & simulator) |  |
 | Paladin | TBC | not tied to one | `rm.tbc.paladin.retribution.icyveins` | Paladin: Retribution (Icy Veins) | Retribution (Icy Veins) |  |
 | Paladin | TBC | not tied to one | `rm.tbc.paladin.retribution.twist` | Paladin: Retribution seal twisting | Retribution seal twisting |  |
-| Paladin | TBC | not tied to one | `rm.tbc.paladin.retribution.wowhead` | Paladin: Retribution (Wowhead & wowsims) | Retribution (Wowhead & wowsims) |  |
+| Paladin | TBC | not tied to one | `rm.tbc.paladin.retribution.wowhead` | Paladin: Retribution (Wowhead & simulator) | Retribution (Wowhead & simulator) |  |
 | Paladin | Classic Era | not tied to one | `rm.era.paladin.holy` | Paladin: Holy | Holy |  |
 | Paladin | Classic Era | not tied to one | `rm.era.paladin.protection` | Paladin: Protection | Protection |  |
 | Paladin | Classic Era | not tied to one | `rm.era.paladin.protection.icyveins` | Paladin: Protection, Seal of Wisdom (Icy Veins) | Protection, Seal of Wisdom (Icy Veins) |  |
@@ -181,12 +181,12 @@ distinguishing word added; the four names worded by hand are marked.
 | Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.holy` | Paladin: Holy (Season of Discovery) | Holy (SoD) |  |
 | Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.holy.wowhead` | Paladin: Holy, Holy Light first (Season of Discovery, Wowhead) | Holy, Holy Light first (SoD, Wowhead) |  |
 | Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.protection` | Paladin: Protection (Season of Discovery) | Protection (SoD) |  |
-| Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.protection.wowsims` | Paladin: Protection (Season of Discovery, wowsims) | Protection (SoD, wowsims) |  |
+| Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.protection.simulator` | Paladin: Protection (Season of Discovery, simulator) | Protection (SoD, simulator) |  |
 | Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.retribution` | Paladin: Retribution (Season of Discovery) | Retribution (SoD) |  |
 | Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.retribution.icyveins` | Paladin: Retribution (Season of Discovery, Icy Veins Phase 4) | Retribution (SoD, Icy Veins Phase 4) |  |
 | Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.retribution.stacking` | Paladin: Retribution, seal stacking (Season of Discovery) | Retribution, seal stacking (SoD) |  |
 | Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.retribution.twist` | Paladin: Retribution, seal twisting (Season of Discovery) | Retribution, seal twisting (SoD) |  |
-| Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.shockadin` | Paladin: Shockadin (Season of Discovery, wowsims) | Shockadin (SoD, wowsims) |  |
+| Paladin | Season of Discovery | not tied to one | `rm.sod.paladin.shockadin` | Paladin: Shockadin (Season of Discovery, simulator) | Shockadin (SoD, simulator) |  |
 | Priest | Retail | Discipline | `rm.retail.priest.discipline` | Priest: Discipline, Atonement (Retail, Icy Veins) | Atonement (Icy Veins) |  |
 | Priest | Retail | Discipline | `rm.retail.priest.discipline.wowhead` | Priest: Discipline, Death first (Retail, Wowhead reference) | Death first reference (Wowhead) |  |
 | Priest | Retail | Holy | `rm.retail.priest.holy` | Priest: Holy (Retail, Icy Veins) | Icy Veins |  |
@@ -208,7 +208,7 @@ distinguishing word added; the four names worded by hand are marked.
 | Priest | TBC | not tied to one | `rm.tbc.priest.healer.wowhead` | Priest: healer (Wowhead) | Healer (Wowhead) |  |
 | Priest | Classic Era | not tied to one | `rm.era.priest.dps` | Priest: Damage | Damage |  |
 | Priest | Classic Era | not tied to one | `rm.era.priest.dps.warcrafttavern` | Priest: Damage (Warcraft Tavern wand economy) | Damage (Warcraft Tavern wand economy) |  |
-| Priest | Classic Era | not tied to one | `rm.era.priest.dps.wowsims` | Priest: Damage (wowsims Undead raid) | Damage (wowsims Undead raid) |  |
+| Priest | Classic Era | not tied to one | `rm.era.priest.dps.simulator` | Priest: Damage (simulator Undead raid) | Damage (simulator Undead raid) |  |
 | Priest | Classic Era | not tied to one | `rm.era.priest.healer` | Priest: Healer | Healer |  |
 | Priest | Season of Discovery | not tied to one | `rm.sod.priest.dps` | Priest: Damage (Season of Discovery) | Damage (SoD) |  |
 | Priest | Season of Discovery | not tied to one | `rm.sod.priest.dps.wowhead` | Priest: Damage (Season of Discovery, Wowhead Mind Spike stacks) | Damage (SoD, Wowhead Mind Spike stacks) |  |
@@ -233,10 +233,10 @@ distinguishing word added; the four names worded by hand are marked.
 | Rogue | Forever | not tied to one | `rm.forever.rogue.subtlety.warcrafttavern` | Forever Rogue: Subtlety, Ambush build (Warcraft Tavern) | Subtlety, Ambush build (Warcraft Tavern) |  |
 | Rogue | Forever | not tied to one | `rm.forever.rogue.subtlety.wowhead` | Forever Rogue: Subtlety, Garrote build (Wowhead) | Subtlety, Garrote build (Wowhead) |  |
 | Rogue | TBC | not tied to one | `rm.tbc.rogue.dps.wowhead` | Rogue: melee DPS (Wowhead) | Melee DPS (Wowhead) |  |
-| Rogue | TBC | not tied to one | `rm.tbc.rogue.dps.wowsims` | Rogue: melee DPS (wowsims) | Melee DPS (wowsims) |  |
+| Rogue | TBC | not tied to one | `rm.tbc.rogue.dps.simulator` | Rogue: melee DPS (simulator) | Melee DPS (simulator) |  |
 | Rogue | Classic Era | not tied to one | `rm.era.rogue.dps` | Rogue: melee DPS | Melee DPS |  |
 | Rogue | Classic Era | not tied to one | `rm.era.rogue.dps.warcrafttavern` | Rogue: melee DPS, five-point finishers (Warcraft Tavern) | Melee DPS, five-point finishers (Warcraft Tavern) |  |
-| Rogue | Classic Era | not tied to one | `rm.era.rogue.dps.wowsims` | Rogue: Swords, swing-synced Sinister Strike (wowsims) | Swords, swing-synced Sinister Strike (wowsims) |  |
+| Rogue | Classic Era | not tied to one | `rm.era.rogue.dps.simulator` | Rogue: Swords, swing-synced Sinister Strike (simulator) | Swords, swing-synced Sinister Strike (simulator) |  |
 | Rogue | Season of Discovery | not tied to one | `rm.sod.rogue.dps` | SoD Rogue: melee DPS | Melee DPS (SoD) |  |
 | Rogue | Season of Discovery | not tied to one | `rm.sod.rogue.dps.icyveins` | SoD Rogue: melee DPS, Rupture for Carnage (Icy Veins) | Melee DPS, Rupture for Carnage (SoD, Icy Veins) |  |
 | Rogue | Season of Discovery | not tied to one | `rm.sod.rogue.dps.zockify` | SoD Rogue: melee DPS, lean Envenom (Zockify) | Melee DPS, lean Envenom (SoD, Zockify) |  |
@@ -251,7 +251,7 @@ distinguishing word added; the four names worded by hand are marked.
 | Shaman | Mists of Pandaria | Elemental | `rm.mop.shaman.elemental` | Shaman: Elemental (MoP) | Recommended |  |
 | Shaman | Mists of Pandaria | Enhancement | `rm.mop.shaman.enhancement` | Shaman: Enhancement (MoP) | Recommended |  |
 | Shaman | Mists of Pandaria | Enhancement | `rm.mop.shaman.enhancement.icyveins` | Shaman: Enhancement, Lava Lash first (MoP, Icy Veins) | Lava Lash first (Icy Veins) |  |
-| Shaman | Mists of Pandaria | Enhancement | `rm.mop.shaman.enhancement.wowsims` | Shaman: Enhancement, weave every stack (MoP, wowsims) | Weave every stack (wowsims) |  |
+| Shaman | Mists of Pandaria | Enhancement | `rm.mop.shaman.enhancement.simulator` | Shaman: Enhancement, weave every stack (MoP, simulator) | Weave every stack (simulator) |  |
 | Shaman | Mists of Pandaria | Restoration | `rm.mop.shaman.restoration` | Shaman: Restoration (MoP) | Recommended |  |
 | Shaman | Mists of Pandaria | Restoration | `rm.mop.shaman.restoration.hekili` | Shaman: Restoration, health ladder (MoP, Hekili) | Health ladder (Hekili) |  |
 | Shaman | Mists of Pandaria | not tied to one | `rm.mop.shaman.unspecialized` | Shaman: Unspecialized (MoP) | Unspecialized |  |
@@ -259,14 +259,14 @@ distinguishing word added; the four names worded by hand are marked.
 | Shaman | Forever | not tied to one | `rm.forever.shaman.enhancement` | Forever Shaman: Enhancement (Icy Veins) | Enhancement (Icy Veins) |  |
 | Shaman | Forever | not tied to one | `rm.forever.shaman.enhancement.wowhead` | Forever Shaman: Enhancement, mana-efficient (Wowhead) | Enhancement, mana-efficient (Wowhead) |  |
 | Shaman | Forever | not tied to one | `rm.forever.shaman.restoration` | Forever Shaman: Restoration | Restoration |  |
-| Shaman | TBC | not tied to one | `rm.tbc.shaman.elemental.icyveins` | Shaman: Elemental (Icy Veins & wowsims) | Elemental (Icy Veins & wowsims) |  |
+| Shaman | TBC | not tied to one | `rm.tbc.shaman.elemental.icyveins` | Shaman: Elemental (Icy Veins & simulator) | Elemental (Icy Veins & simulator) |  |
 | Shaman | TBC | not tied to one | `rm.tbc.shaman.elemental.nextaction` | Shaman: Elemental (NextActionTBC) | Elemental (NextActionTBC) |  |
 | Shaman | TBC | not tied to one | `rm.tbc.shaman.elemental.wowhead` | Shaman: Elemental (Wowhead) | Elemental (Wowhead) |  |
 | Shaman | TBC | not tied to one | `rm.tbc.shaman.enhancement.icyveins` | Shaman: Enhancement (Icy Veins) | Enhancement (Icy Veins) |  |
-| Shaman | TBC | not tied to one | `rm.tbc.shaman.enhancement.wowsims` | Shaman: Enhancement (Wowhead & wowsims) | Enhancement (Wowhead & wowsims) |  |
+| Shaman | TBC | not tied to one | `rm.tbc.shaman.enhancement.simulator` | Shaman: Enhancement (Wowhead & simulator) | Enhancement (Wowhead & simulator) |  |
 | Shaman | TBC | not tied to one | `rm.tbc.shaman.restoration` | Shaman: Restoration | Restoration |  |
 | Shaman | Classic Era | not tied to one | `rm.era.shaman.elemental` | Shaman: Elemental | Elemental |  |
-| Shaman | Classic Era | not tied to one | `rm.era.shaman.elemental.wowsims` | Shaman: Elemental, Chain Lightning on cooldown (wowsims) | Elemental, Chain Lightning on cooldown (wowsims) |  |
+| Shaman | Classic Era | not tied to one | `rm.era.shaman.elemental.simulator` | Shaman: Elemental, Chain Lightning on cooldown (simulator) | Elemental, Chain Lightning on cooldown (simulator) |  |
 | Shaman | Classic Era | not tied to one | `rm.era.shaman.enhancement` | Shaman: Enhancement | Enhancement |  |
 | Shaman | Classic Era | not tied to one | `rm.era.shaman.enhancement.warcrafttavern` | Shaman: Enhancement, Flame Shock first (Warcraft Tavern) | Enhancement, Flame Shock first (Warcraft Tavern) |  |
 | Shaman | Classic Era | not tied to one | `rm.era.shaman.restoration` | Shaman: Restoration | Restoration |  |
@@ -300,7 +300,7 @@ distinguishing word added; the four names worded by hand are marked.
 | Warlock | Season of Discovery | not tied to one | `rm.sod.warlock.fire` | SoD Warlock: Fire | Fire (SoD) |  |
 | Warlock | Season of Discovery | not tied to one | `rm.sod.warlock.fire.icyveins` | SoD Warlock: Fire, Conflagrate on cooldown (Icy Veins) | Fire, Conflagrate on cooldown (SoD, Icy Veins) |  |
 | Warlock | Season of Discovery | not tied to one | `rm.sod.warlock.shadow` | SoD Warlock: Shadow (Affliction, Felguard) | Shadow, Affliction and Felguard (SoD) | worded by hand |
-| Warlock | Season of Discovery | not tied to one | `rm.sod.warlock.shadow.wowsims` | SoD Warlock: Shadow, Drain Soul filler (wowsims) | Shadow, Drain Soul filler (SoD, wowsims) |  |
+| Warlock | Season of Discovery | not tied to one | `rm.sod.warlock.shadow.simulator` | SoD Warlock: Shadow, Drain Soul filler (simulator) | Shadow, Drain Soul filler (SoD, simulator) |  |
 | Warlock | Season of Discovery | not tied to one | `rm.sod.warlock.tank` | SoD Warlock: tank (Metamorphosis) | Tank (SoD, Metamorphosis) |  |
 | Warrior | Retail | Arms | `rm.retail.warrior.arms` | Warrior: Arms, Blizzard Assisted (Retail) | Blizzard Assisted |  |
 | Warrior | Retail | Arms | `rm.retail.warrior.arms.colossus` | Warrior: Arms, Colossus (Retail, SimulationCraft reference) | Colossus reference (SimulationCraft) |  |
@@ -322,7 +322,7 @@ distinguishing word added; the four names worded by hand are marked.
 | Warrior | Forever | not tied to one | `rm.forever.warrior.protection` | Forever Warrior: Protection (Icy Veins) | Protection (Icy Veins) |  |
 | Warrior | Forever | not tied to one | `rm.forever.warrior.protection.warcrafttavern` | Forever Warrior: Protection, debuff upkeep (Warcraft Tavern) | Protection, debuff upkeep (Warcraft Tavern) |  |
 | Warrior | TBC | not tied to one | `rm.tbc.warrior.dps.icyveins` | Warrior: melee DPS (Icy Veins) | Melee DPS (Icy Veins) |  |
-| Warrior | TBC | not tied to one | `rm.tbc.warrior.dps.wowsims` | Warrior: melee DPS (wowsims) | Melee DPS (wowsims) |  |
+| Warrior | TBC | not tied to one | `rm.tbc.warrior.dps.simulator` | Warrior: melee DPS (simulator) | Melee DPS (simulator) |  |
 | Warrior | TBC | not tied to one | `rm.tbc.warrior.protection.icyveins` | Warrior: tank (Icy Veins) | Tank (Icy Veins) |  |
 | Warrior | TBC | not tied to one | `rm.tbc.warrior.protection.wowhead` | Warrior: tank (Wowhead) | Tank (Wowhead) |  |
 | Warrior | Classic Era | not tied to one | `rm.era.warrior.dps` | Warrior: melee DPS | Melee DPS |  |

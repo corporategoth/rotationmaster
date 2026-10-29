@@ -16,7 +16,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-sfrost-'
--- Fingers of Frost: wowsims names the proc 400647, the client may show 400669/400670.
+-- Fingers of Frost: simulator names the proc 400647, the client may show 400669/400670.
 local fingers=any(buff(400647),buff(400669),buff(400670))
 local function fingersStacks(n)return any({type='BUFF_STACKS',unit='player',spell=400647,operator='GREATERTHANOREQUALS',value=n},
  {type='BUFF_STACKS',unit='player',spell=400669,operator='GREATERTHANOREQUALS',value=n},{type='BUFF_STACKS',unit='player',spell=400670,operator='GREATERTHANOREQUALS',value=n})end
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
  applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
  tags={'frost','raid','single-target','aoe','season-of-discovery'},
  sources={
-  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/mage/builds/p7_frost.build.json',title='wowsims/sod Phase 7 Frost build',reviewedAt='2026-10-23',revision='0e3f6ef'},
+  
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/mage/dps-talent-builds-runes',title='Wowhead: SoD Mage DPS runes (Phase 7)',reviewedAt='2026-10-23',revision='2025-02-07'},
   {url='https://www.icy-veins.com/wow-classic/frost-mage-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Frost Mage rotation (Phase 4)',reviewedAt='2026-10-23',revision='2025-04-08'},
  },

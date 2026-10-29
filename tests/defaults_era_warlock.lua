@@ -12,7 +12,7 @@ local TANK, FIRE, FIREIV, SHADOW, SHADOWWS =
     'rm.sod.warlock.fire',
     'rm.sod.warlock.fire.icyveins',
     'rm.sod.warlock.shadow',
-    'rm.sod.warlock.shadow.wowsims'
+    'rm.sod.warlock.shadow.simulator'
 
 local VANILLA, SEASON = { DPS, WT, IV }, { TANK, FIRE, FIREIV, SHADOW, SHADOWWS }
 
@@ -175,18 +175,18 @@ test('casts, channels, no target and another player\'s mob stop without melee; a
     s.channel = true
     s.channelSpell = 1120
     dots(s, 427717, 403677, 426320, 980, 172, 18265)
-    assert(stopped(f, s, SHADOWWS), 'wowsims: nothing due, keep draining')
+    assert(stopped(f, s, SHADOWWS), 'simulator: nothing due, keep draining')
     s.debuffs = {}
-    assert(first(f, s, SHADOWWS) == 427717, 'wowsims: clip the Drain Soul channel for a due DoT')
+    assert(first(f, s, SHADOWWS) == 427717, 'simulator: clip the Drain Soul channel for a due DoT')
 
     for _, id in ipairs({ 1949, 755, 689 }) do
         s.channelSpell = id
         local ok, r = stopped(f, s, SHADOWWS)
-        assert(ok and r.suppressAttack, 'wowsims: channel ' .. id .. ' (Hellfire, Health Funnel, Drain Life) is kept')
+        assert(ok and r.suppressAttack, 'simulator: channel ' .. id .. ' (Hellfire, Health Funnel, Drain Life) is kept')
     end
 
     s.channelSpell = nil
-    assert(stopped(f, s, SHADOWWS), 'wowsims: a channel it cannot name is kept')
+    assert(stopped(f, s, SHADOWWS), 'simulator: a channel it cannot name is kept')
 end)
 
 test(
@@ -420,7 +420,7 @@ test(
 )
 
 test(
-    'SoD Shadow: Unstable Affliction, Master Channeler, Shadowflame, Corruption, Haunt, Drain Soul execute; wowsims early refresh',
+    'SoD Shadow: Unstable Affliction, Master Channeler, Shadowflame, Corruption, Haunt, Drain Soul execute; simulator early refresh',
     function()
         local f, s = warlock(60, kit, { 427717, 403677, 426320, 403501 })
         s.season = 2
@@ -445,9 +445,9 @@ test(
         assert(first(f, s, SHADOW) == 1120, 'Drain Soul below 20% with Soul Siphon (a passive rune)')
         s.targetHealth = 100
         assert(first(f, s, SHADOW) == 686, 'Shadow Bolt filler')
-        assert(first(f, s, SHADOWWS) == 1120, 'wowsims: Drain Soul filler')
+        assert(first(f, s, SHADOWWS) == 1120, 'simulator: Drain Soul filler')
         s.debuffs[2].expires = 106
-        assert(first(f, s, SHADOWWS) == 427717 and first(f, s, SHADOW) == 686, 'wowsims renews with 7.5 seconds left')
+        assert(first(f, s, SHADOWWS) == 427717 and first(f, s, SHADOW) == 686, 'simulator renews with 7.5 seconds left')
         s.debuffs[2].expires = 105
         M.engrave(s, 426243)
         assert(first(f, s, SHADOW) == 427717, 'Invocation (a passive rune): Unstable Affliction renewed under 6 s')

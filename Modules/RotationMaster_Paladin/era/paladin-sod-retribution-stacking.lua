@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Season of Discovery Retribution seal stacking (Wowhead Phase 8, wowsims): keep both Seal of Command
+-- Season of Discovery Retribution seal stacking (Wowhead Phase 8, simulator): keep both Seal of Command
 -- and Seal of Martyrdom up (each recast below 1 s), Divine Storm at three Holy Power (or freely
 -- without the set), Crusader Strike, Exorcism, Holy Wrath on Undead and Demons (anything with the
 -- Purifying Power rune), Consecration, and
@@ -23,9 +23,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3},
  nameKey='Default.SoD.Paladin.Retribution.Stacking.Name',descriptionKey='Default.SoD.Paladin.Retribution.Stacking.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
- tags={'endgame','raid','retribution','melee','single-target','season-of-discovery','wowhead','wowsims'},
+ tags={'endgame','raid','retribution','melee','single-target','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin DPS rotation, seal stacking (Phase 8)',reviewedAt='2026-10-23',revision='2025-06-06'},
-  {url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/retribution_paladin',title='wowsims/sod Phase 8 seal stacking APL',reviewedAt='2026-10-23',revision='0e3f6ef'}},
+  },
  body={priority=103,disabled=true,switch=all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=20},known(20375),rune(407778),{type='PRIMARY_TALENT_TREE',tree=3}),
   cooldowns={block('sstack-upkeep','sod.paladin.ret-upkeep','sstack-'),block('sstack-safety','era.paladin.safety','sstack-')},
   rotation={

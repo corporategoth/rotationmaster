@@ -5,7 +5,7 @@
 -- knight (diseases, Blood Strike, Death Coil, Death Strike) and anyone Blood or Frost do not claim.
 -- Dark Transformation at five Shadow Infusion stacks, Scourge Strike, Death Coil on Sudden Doom or
 -- 40 runic power, Festering Strike, Soul Reaper under 35%. The rune-cap variant is
--- rm.mop.deathknight.unholy.wowsims.
+-- rm.mop.deathknight.unholy.simulator.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end

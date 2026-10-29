@@ -13,8 +13,8 @@
 bind.lua
 mop/blocks.lua
 mop/death-knight-blood.lua
-mop/death-knight-blood-wowsims.lua
+mop/death-knight-blood-simulator.lua
 mop/death-knight-frost-dualwield.lua
 mop/death-knight-frost.lua
 mop/death-knight-unholy.lua
-mop/death-knight-unholy-wowsims.lua
+mop/death-knight-unholy-simulator.lua

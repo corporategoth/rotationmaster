@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/tbc/guide/frost-aoe-mage-leveling-outland-farming-guide-burning-crusade-classic',title='Wowhead: Frost AoE grinding',reviewedAt='2026-10-23',revision='2026-01-08'},
   {url='https://www.warcrafttavern.com/tbc/guides/pve-frost-mage-rotation-cooldowns-abilities/',title='Warcraft Tavern: Frost Mage PvE rotation',reviewedAt='2026-10-23'},
   {url='https://github.com/kaminaris/MaxDps-Mage/tree/886c8e27f48e38e0f9b8c22cf56b5e625dfce3f0/Specialization/TBC',title='MaxDps-Mage TBC Frost module',reviewedAt='2026-10-23',revision='886c8e2'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/mage/rotations.go',title='wowsims TBC Mage rotations',reviewedAt='2026-10-23',revision='3301fca'},
+  
  },
  body={
   switch={type='SPELL_KNOWN',spell=133},

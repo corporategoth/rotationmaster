@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Elemental Shaman, levels 10-90: Wowhead's Phase 5 order (Icy Veins agrees once
--- its talent steps are removed), with wowsims' Flame Shock gate on Earth Shock and its Flame Shock refresh
+-- its talent steps are removed), with simulator' Flame Shock gate on Earth Shock and its Flame Shock refresh
 -- before Ascendance. Selected in the Elemental specialization (262)
 -- from level 10 (RM stores MoP rotations per talent group). Out of combat a Lightning Bolt (Lava Burst with Unleashed
 -- Fury) opens. Four or more engaged enemies: Magma in melee, free Lava Burst on Lava Surge, Lava Beam in
@@ -33,10 +33,10 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.shaman.manual-target']=2,['mop.shaman.lightning-shield']=1,['mop.shaman.group']=1,['mop.shaman.fire-totems']=1},
  nameKey='Default.MoP.Shaman.Elemental.Name',descriptionKey='Default.MoP.Shaman.Elemental.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='SHAMAN'},
- tags={'elemental','dps','caster','ranged','leveling','endgame','wowhead','icy-veins','wowsims'},
+ tags={'elemental','dps','caster','ranged','leveling','endgame','wowhead','icy-veins'},
  sources={{url='https://www.wowhead.com/mop-classic/guide/classes/shaman/elemental/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Elemental Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/elemental-shaman-pve-rotation-cooldowns-abilities',title='Icy Veins: Elemental Shaman rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-22'},
- {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/shaman/elemental/apls/p5.apl.json',title='wowsims/mop: Elemental Shaman P5 APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ 
  {url='https://www.warcrafttavern.com/mop/guides/pve-elemental-shaman-rotation-cooldowns/',title='Warcraft Tavern: Elemental Shaman rotation (MoP)',reviewedAt='2026-10-23'},
  {url='https://wowtbc.gg/mop/class-guides/elemental-shaman/',title='wowtbc.gg: Elemental Shaman (MoP Classic)',reviewedAt='2026-10-23'}},
  body={priority=30,specs={262},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

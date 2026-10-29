@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Balance Druid, levels 10–90, in the Balance specialization (102). Wowhead's Phase 5
--- list (close to wowsims): Moonfire and Sunfire kept up and refreshed inside the matching Eclipse,
+-- list (close to simulator): Moonfire and Sunfire kept up and refreshed inside the matching Eclipse,
 -- Starfall in Lunar, Starsurge on Shooting Stars and on cooldown, Hurricane or Astral Storm at five
 -- enemies, Starfire in and after Lunar, Wrath in and after Solar. RM cannot read Eclipse energy or
 -- its direction, so the filler follows the two Eclipse buffs and, between them, whether Starfire was
@@ -33,10 +33,10 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.druid.boundaries']=4,['mop.druid.target']=2,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Balance.Name',descriptionKey='Default.MoP.Druid.Balance.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID'},
- tags={'balance','leveling','single-target','aoe','wowhead','wowsims'},
+ tags={'balance','leveling','single-target','aoe','wowhead'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/druid/balance/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Balance Druid rotation',reviewedAt='2026-10-23',revision='2026-06-20'},
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/druid/balance/apls/standard.apl.json',title='wowsims/mop Balance standard APL',reviewedAt='2026-10-23',revision='ec2c6c2552'},
+  
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/balance-druid-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Balance Druid rotation',reviewedAt='2026-10-23',revision='2025-06-22',notes='Same list; Innervate at 70% mana.'},
   {url='https://www.warcrafttavern.com/mop/guides/pve-balance-druid-rotations-cooldowns/',title='Warcraft Tavern: MoP Classic Balance Druid',reviewedAt='2026-10-23',notes='Astral Storm in Lunar for AoE.'},
  },

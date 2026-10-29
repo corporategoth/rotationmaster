@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Warrior premades: Arms (wowsims, recommended) and its Icy Veins pooling variant, Fury
--- (wowsims) and its Icy Veins variant, Protection, and the Unspecialized catch-all. Real predicates, catalog,
+-- Mists of Pandaria Classic Warrior premades: Arms (simulator, recommended) and its Icy Veins pooling variant, Fury
+-- (simulator) and its Icy Veins variant, Protection, and the Unspecialized catch-all. Real predicates, catalog,
 -- composition, sequence and publisher on a modeled MoP Classic client (tests/fixtures/mop_premade_model_b.lua).
 local M = dofile('tests/fixtures/mop_premade_model_b.lua')
 local test, finish = M.F.suite()
@@ -98,7 +98,7 @@ test(
         assert(M.selected(f, s) == ARMSIV)
 
         for _, src in ipairs(a:GetDefaultRotation(ARMSIV).envelope.sources) do
-            assert(not src.url:find('wowsims'), src.url)
+            assert(not src.url:find('simulator'), src.url)
         end
     end
 )

@@ -225,7 +225,23 @@ function C.check(f, pack, strict)
         assert(type(value) == 'string' and value:find('%S'), tostring(pack.id) .. ' untranslated ' .. key)
     end
 
-    assert(type(pack.sources) == 'table' and #pack.sources > 0, tostring(pack.id) .. ' missing sources')
+    -- Some Built Ins retain a license notice without exposing source links.
+    local withoutSourceLinks = {
+        ['rm.sod.druid.tank.simulator'] = true,
+        ['rm.mop.deathknight.blood.simulator'] = true,
+        ['rm.sod.paladin.protection.simulator'] = true,
+        ['rm.sod.paladin.shockadin'] = true,
+        ['rm.mop.monk.brewmaster.offensive'] = true,
+        ['rm.era.shaman.elemental.simulator'] = true,
+        ['rm.era.hunter.ranged.simulator'] = true,
+        ['rm.era.priest.dps.simulator'] = true,
+        ['rm.sod.warlock.shadow.simulator'] = true,
+    }
+
+    assert(
+        type(pack.sources) == 'table' and (#pack.sources > 0 or withoutSourceLinks[pack.id]),
+        tostring(pack.id) .. ' missing sources'
+    )
 
     for index, source in ipairs(pack.sources) do
         assert(

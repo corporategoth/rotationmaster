@@ -1,8 +1,8 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Fury Warrior, levels 10-90 (the recommended variant): wowsims' Phase 5 order,
+-- Mists of Pandaria Classic Fury Warrior, levels 10-90 (the recommended variant): simulator' Phase 5 order,
 -- simplified. Selected in the Fury specialization (72). The off hand tells Titan's Grip (a two-hander) from
--- Single-Minded Fury (a one-hander) where wowsims plays them apart. Colossus Smash when two Raging Blow charges
+-- Single-Minded Fury (a one-hander) where simulator plays them apart. Colossus Smash when two Raging Blow charges
 -- are banked (one with Recklessness); Raging Blow to spend charges as the window closes; Bloodthirst; Colossus
 -- Smash; Storm Bolt with it; Dragon Roar outside it; Execute here with Single-Minded Fury; Bladestorm outside the
 -- window while Bloodthirst is cooling; with Titan's Grip one more Raging Blow outside the window and Recklessness;
@@ -35,8 +35,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Fury.Name',descriptionKey='Default.MoP.Warrior.Fury.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
- tags={'fury','dps','melee','leveling','endgame','wowsims'},
- sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warrior/fury/apls/default.apl.json',title='wowsims/mop: Fury Warrior APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ tags={'fury','dps','melee','leveling','endgame'},
+ sources={
  {url='https://wowtbc.gg/mop/class-guides/fury-warrior/',title='wowtbc.gg: Fury Warrior (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-fury-warrior-dps-rotation-cooldowns/',title='Warcraft Tavern: Fury Warrior rotation (MoP)',reviewedAt='2026-10-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/fury-warrior-leveling',title='Icy Veins: Fury Warrior leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'}},

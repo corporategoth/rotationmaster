@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Destruction Warlock, levels 10-90: the guide consensus order (Warcraft Tavern,
--- Method, wowtbc.gg, Wowhead; Hekili's single-target list matches) with wowsims' Backdraft and Immolate
+-- Method, wowtbc.gg, Wowhead; Hekili's single-target list matches) with simulator' Backdraft and Immolate
 -- refinements. Selected in the Destruction specialization (267)
 -- from level 10 (RM stores MoP rotations per talent group). Pre-cast Incinerate. Moving without Kil'jaeden's
 -- Cunning: Shadowburn, Conflagrate, Fel Flame. Shadowburn a target about to die. Three or more engaged
@@ -31,11 +31,11 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.warlock.boundaries']=4,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1},
  nameKey='Default.MoP.Warlock.Destruction.Name',descriptionKey='Default.MoP.Warlock.Destruction.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
- tags={'destruction','dps','caster','ranged','leveling','endgame','warcraft-tavern','method','wowtbc','wowsims'},
+ tags={'destruction','dps','caster','ranged','leveling','endgame','warcraft-tavern','method','wowtbc'},
  sources={{url='https://www.warcrafttavern.com/mop/guides/pve-destruction-warlock-rotations-cooldowns/',title='Warcraft Tavern: Destruction Warlock rotation (MoP)',reviewedAt='2026-10-23'},
  {url='https://www.method.gg/mop-classic/destruction-warlock-class-guide-mop-classic',title='Method: Destruction Warlock guide (MoP Classic)',reviewedAt='2026-10-23',revision='2025-07-23'},
  {url='https://wowtbc.gg/mop/class-guides/destruction-warlock/',title='wowtbc.gg: Destruction Warlock (MoP Classic)',reviewedAt='2026-10-23'},
- {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warlock/destruction/apls/default.apl.json',title='wowsims/mop: Destruction Warlock APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ 
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/WarlockDestruction.simc',title='Hekili (MoP fork): Destruction Warlock priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'}},
  body={priority=30,specs={267},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
  cooldowns={block('mop.warlock.upkeep','warlock-'),block('mop.warlock.pet-felhunter','warlock-'),

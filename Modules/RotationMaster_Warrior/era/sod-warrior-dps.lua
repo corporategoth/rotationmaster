@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Season of Discovery Warrior melee DPS, levels 1–60: two-hander, dual wield, Gladiator and
--- leveling (the SoD catch-all outside Defensive Stance). wowsims/sod Phase 6 with Wowhead Phase
+-- leveling (the SoD catch-all outside Defensive Stance). simulator/sod Phase 6 with Wowhead Phase
 -- 7/8: Charge; Victory Rush; Intercept; Whirlwind (Thunder Clap before it) on two engaged enemies;
 -- Slam at three Slammin' stacks (Phase 8 four-piece); Rend kept up; Slam on Blood Surge (on
 -- cooldown with the Precise Timing rune);
@@ -40,8 +40,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
  nameKey='Default.SoD.Warrior.DPS.Name',descriptionKey='Default.SoD.Warrior.DPS.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',rulesets={'season:2'}},
- tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead'},
- sources={{url='https://github.com/wowsims/sod/tree/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warrior/apls',title='wowsims/sod: Warrior APLs (Phase 1-6, two-hander and dual wield)',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
+ tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowhead'},
+ sources={
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Warrior DPS rotation (Phase 7/8)',reviewedAt='2026-10-23',revision='2025-04-12'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/dps-talent-builds-runes',title='Wowhead: SoD Warrior DPS talents and runes (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-08'}},
  body={priority=50,

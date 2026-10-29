@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Season of Discovery Druid bear tank: chosen when Lacerate is engraved. After Icy Veins, wowsims P6
+-- Season of Discovery Druid bear tank: chosen when Lacerate is engraved. After Icy Veins, simulator P6
 -- and Warcraft Tavern: Faerie Fire (Feral) or Sunfire (Bear) from range, Lacerate before it drops,
 -- Mangle (Bear) on cooldown, Lacerate, Swipe; on three or more, Mangle under Berserk and Swipe.
 -- Maul with 30 rage, Berserk, Survival Instincts, Frenzied Regeneration, Barkskin, Enrage and
@@ -15,10 +15,10 @@ assert(addon:RegisterDefaultRotation({
   ['era.druid.stealth-opener']=2,['era.druid.cat-builders']=1,['era.druid.powershift']=2,['sod.druid.tank-humanoid']=2},
  nameKey='Default.SoD.Druid.Tank.Name',descriptionKey='Default.SoD.Druid.Tank.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
- tags={'season-of-discovery','leveling','endgame','feral','tank','melee','single-target','aoe','icy-veins','wowsims','warcraft-tavern'},
+ tags={'season-of-discovery','leveling','endgame','feral','tank','melee','single-target','aoe','icy-veins','warcraft-tavern'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/feral-druid-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Feral Druid tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
-  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/feral_tank_druid/apls/phase_6.apl.json',title='wowsims/sod Feral tank Phase 6 APL',reviewedAt='2026-10-23',revision='0e3f6ef'},
+  
   {url='https://www.warcrafttavern.com/wow-classic-sod/guides/druid-tank/',title='Warcraft Tavern: SoD Druid tank (Phase 4)',reviewedAt='2026-10-23'},
  },
  body={priority=140,switch={type='RUNE_ENGRAVED',spell=414644},

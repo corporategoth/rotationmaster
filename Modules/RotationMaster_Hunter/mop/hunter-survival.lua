@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Survival Hunter, levels 10–90, in the Survival
--- specialization (255). Wowhead's Phase 5 order with wowsims' pack gates and Black Arrow
+-- specialization (255). Wowhead's Phase 5 order with simulator' pack gates and Black Arrow
 -- refresh: Explosive Shot on cooldown and on every Lock and Load, Kill Shot, Black Arrow on a target
 -- that lives 8 s, talents, Serpent Sting kept up by Cobra Shot, Arcane Shot as a focus dump that
 -- waits for Black Arrow, Cobra or Steady Shot. Two or more enemies: Multi-Shot on Lock and Load with
@@ -28,10 +28,10 @@ assert(addon:RegisterDefaultRotation({
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=2},
  nameKey='Default.MoP.Hunter.Survival.Name',descriptionKey='Default.MoP.Hunter.Survival.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
- tags={'survival','leveling','single-target','aoe','wowhead','wowsims'},
+ tags={'survival','leveling','single-target','aoe','wowhead'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/hunter/survival/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Survival Hunter rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/hunter/survival/apls/sv.apl.json',title='wowsims/mop Survival APL',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Multi-Shot on Lock and Load at 90 focus, Explosive Shot up to five targets, Black Arrow refresh.'},
+  
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/survival-hunter-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Survival Hunter rotation',reviewedAt='2026-10-23',revision='2026-05-29',notes='Explosive Shot opener while leveling.'},
  },
  body={priority=10,specs={255},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

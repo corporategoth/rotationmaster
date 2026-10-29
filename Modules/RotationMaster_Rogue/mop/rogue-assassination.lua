@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Assassination Rogue, levels 10-90 (the recommended variant): wowsims' Phase 5 APL, which
+-- Mists of Pandaria Classic Assassination Rogue, levels 10-90 (the recommended variant): simulator' Phase 5 APL, which
 -- Hekili mirrors and Wowhead's Phase 5 page describes, with Icy Veins' levelling additions. Selected in the Assassination
 -- specialization (259) from level 10 (RM stores MoP rotations per talent group). Stealth opens with Cheap Shot
 -- solo, else Dispatch on Blindside or Mutilate. Four or more engaged enemies: Slice and Dice, Crimson Tempest at
@@ -40,8 +40,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.rogue.boundaries']=3,['mop.rogue.assassination-opener']=3,['mop.rogue.out-of-combat']=3,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.Name',descriptionKey='Default.MoP.Rogue.Assassination.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE'},
- tags={'assassination','dps','melee','leveling','endgame','wowsims','wowhead','icy-veins'},
- sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/rogue/assassination/apls/assassination.apl.json',title='wowsims/mop: Assassination Rogue APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ tags={'assassination','dps','melee','leveling','endgame','wowhead','icy-veins'},
+ sources={
  {url='https://www.wowhead.com/mop-classic/guide/classes/rogue/assassination/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Assassination Rogue rotation (MoP Classic, Phase 5)',reviewedAt='2026-10-23',revision='2026-06-29'},
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/RogueAssassination.simc',title='Hekili MoP fork: Assassination Rogue priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/assassination-rogue-leveling',title='Icy Veins: Assassination Rogue leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-09-23'}},

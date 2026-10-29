@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Brewmaster Monk, damage-first, after wowsims' "Offensive" APL (Phase 5).
+-- Mists of Pandaria Classic Brewmaster Monk, damage-first, after simulator' "Offensive" APL (Phase 5).
 -- Same switch as rm.mop.monk.brewmaster, lower priority and off by default: no routine Purifying
 -- Brew or Guard (Purifying Brew only on the tier-15 Purifier proc), Rushing Jade Wind before Keg
 -- Smash, Chi spent on Blackout Kick for damage. Only for an overgeared tank or a damage race.
@@ -22,10 +22,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=2,['mop.monk.brewmaster-pull']=3},
  nameKey='Default.MoP.Monk.Brewmaster.Offensive.Name',descriptionKey='Default.MoP.Monk.Brewmaster.Offensive.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
- tags={'brewmaster','tank','single-target','wowsims'},
- sources={
-  {url='https://github.com/wowsims/mop/blob/master/ui/specs/monk/brewmaster/apls/offensive.apl.json',title='wowsims/mop: Brewmaster Offensive APL (Phase 5)',reviewedAt='2026-10-23',revision='ec2c6c2552'},
- },
+ tags={'brewmaster','tank','single-target'},
+ sources={},
  body={priority=20,disabled=true,specs={268},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
   cooldowns={
    block('brewo-upkeep','mop.monk.brewmaster-upkeep','brewo-'),

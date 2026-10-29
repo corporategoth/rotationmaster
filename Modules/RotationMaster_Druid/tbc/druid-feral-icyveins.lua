@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Feral cat and bear, Icy Veins with Warcraft Tavern and wowsims: Rip from four combo
+-- Feral cat and bear, Icy Veins with Warcraft Tavern and simulator: Rip from four combo
 -- points on a target that lives, Ferocious Bite between Rips at moderate energy without
 -- Clearcasting (bite-weave), Mangle kept up, Shred from behind (Mangle or Claw when the
 -- target is on you); bear keeps Mangle, five Lacerates and Swipe as filler, Maul dumps rage.
@@ -18,13 +18,13 @@ assert(addon:RegisterDefaultRotation({
   ['tbc.druid.cat-builders']=1,['tbc.druid.bear-core']=2,['tbc.druid.feral-humanoid']=2},
  nameKey='Default.TBC.Druid.Feral.IcyVeins.Name',descriptionKey='Default.TBC.Druid.Feral.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='DRUID'},
- tags={'leveling','endgame','feral','melee','tank','single-target','aoe','icy-veins','warcraft-tavern','wowsims'},
+ tags={'leveling','endgame','feral','melee','tank','single-target','aoe','icy-veins','warcraft-tavern'},
  sources={{url='https://www.icy-veins.com/tbc-classic/feral-druid-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/feral-druid-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Feral Druid tank rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/feral-druid-leveling-guide',title='Icy Veins: Feral Druid leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.warcrafttavern.com/tbc/guides/pve-feral-druid-dps-rotation-abilities/',title='Warcraft Tavern: Feral DPS rotation',reviewedAt='2026-10-23'},
   {url='https://www.warcrafttavern.com/tbc/guides/pve-feral-druid-tank-rotation-abilities/',title='Warcraft Tavern: Feral tank rotation',reviewedAt='2026-10-23'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/druid/feral/rotation.go',title='wowsims/tbc Feral cat and tank rotations',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'}},
+  },
  body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=2}}},
   cooldowns={
    {id='feral-icy-upkeep',type='block',block='tbc.druid.upkeep',prefix='feral-icy-'},

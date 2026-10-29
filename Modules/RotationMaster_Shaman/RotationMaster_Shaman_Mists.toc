@@ -16,6 +16,6 @@ mop/shaman-restoration.lua
 mop/shaman-restoration-hekili.lua
 mop/shaman-elemental.lua
 mop/shaman-enhancement.lua
-mop/shaman-enhancement-wowsims.lua
+mop/shaman-enhancement-simulator.lua
 mop/shaman-enhancement-icyveins.lua
 mop/shaman-unspecialized.lua

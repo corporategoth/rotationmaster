@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Shared Classic Era Hunter blocks (Built In composition; authoring-time only).
--- Consumers: rm.era.hunter.ranged, rm.era.hunter.ranged.icyveins, rm.era.hunter.ranged.wowsims,
+-- Consumers: rm.era.hunter.ranged, rm.era.hunter.ranged.icyveins, rm.era.hunter.ranged.simulator,
 -- rm.sod.hunter.ranged and rm.sod.hunter.melee (which use sod.hunter.upkeep). A content change needs a block revision bump, every
 -- consumer's pin and revision bumped, and both recorded in tests/fixtures/builtin_composition_ledger.lua.
 -- Policy and sources are the consumers'; see premade-research era/hunter.md.

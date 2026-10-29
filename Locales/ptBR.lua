@@ -2933,8 +2933,8 @@ addon.translation = {
 --     Elemental when solo. Fire Elemental is an optional step that starts off. Totem placement,
 --     Ghost Wolf and healing stay with you.
 [835] = "Aperfeiçoamento corpo a corpo do nível 1 ao 70, e o padrão para qualquer Xamã em que nenhuma outra rotação integrada se encaixe. Puxa com Raio à distância, interrompe com Choque Terreno, coloca Totem de Nova de Fogo e Totem de Magma contra três ou mais inimigos próximos, depois Ataque da Tempestade, Choque Terreno enquanto a penalidade do Ataque da Tempestade estiver ativa, Choque Flamejante em um alvo que vá sobreviver, Choque Terreno sempre que sair do tempo de recarga e Raio enquanto o alvo estiver fora de alcance. Lembretes separados: encantamentos de arma, Escudo de Água ou Escudo de Raios, Força da Terra, Fúria dos Ventos (em grupo) ou Graça do Ar (solo), Totem Calcinante em lutas longas, totens de água, Fúria Xamanística, Sede de Sangue/Heroísmo em chefes, Garra de Pedra e Elemental da Terra quando solo. Elemental do Fogo é um passo opcional que começa desativado. O posicionamento dos totens, Lobo Fantasma e as curas ficam com você.",
--- 7637d9eb English: Enhancement (Wowhead & wowsims)
-[836] = "Aperfeiçoamento (Wowhead & wowsims)",
+-- f2b68c6d English: Enhancement (Wowhead & simulator)
+[836] = "Aperfeiçoamento (Wowhead & simulador)",
 -- 1ec4e078 English: The level-70 raid model for totem twisting, an alternative to the recommended
 --     Icy Veins Enhancement premade, off by default: enable it and disable that one, or raise its
 --     priority. Stormstrike, a Fire Nova Totem weave, Flame Shock whenever it has fallen off, and
@@ -2942,8 +2942,8 @@ addon.translation = {
 --     Windfury and Grace of Air Totems, keep Searing down, use Shamanistic Rage when mana runs low,
 --     and share the Icy Veins variant's imbue, shield and totem upkeep.
 [837] = "O modelo de raide do nível 70 para alternar totens, uma alternativa à rotação integrada de Aperfeiçoamento da Icy Veins recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Ataque da Tempestade, intercalação do Totem de Nova de Fogo, Choque Flamejante sempre que tiver expirado e Choque Terreno como choque principal, com Raio só fora de alcance. Os lembretes alternam os Totens de Fúria dos Ventos e da Graça do Ar, mantêm o Totem Calcinante ativo, usam Fúria Xamanística quando a mana fica baixa e compartilham com a variante Icy Veins a manutenção de encantamentos de arma, escudo e totens.",
--- 3a3fe11d English: Elemental (Icy Veins & wowsims)
-[838] = "Elemental (Icy Veins & wowsims)",
+-- 0dc1ed9b English: Elemental (Icy Veins & simulator)
+[838] = "Elemental (Icy Veins & simulador)",
 -- c334526c English: Caster Elemental for the Elemental talent tree. Lightning Bolt is the filler;
 --     Chain Lightning goes out with Elemental Mastery, on Clearcasting while you have 40% mana, or
 --     freely above 80%; Flame Shock only while moving; Earth Shock interrupts; Fire Nova, Chain
@@ -4855,7 +4855,7 @@ addon.translation = {
 -- 7c2241f3 English: Fire (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
 --     Burning Crusade Classic (variant key: FireIcyVeins). Names in parentheses (guide or tool such
---     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
 --     proper names and stay unchanged.
 [1424] = "Fogo (Icy Veins)",
 -- 1e584220 English: Fire after Icy Veins, chosen when Fire is your main talent tree. Pyroblast
@@ -4867,14 +4867,14 @@ addon.translation = {
 -- c3a8c4ee English: Fire (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
 --     Burning Crusade Classic (variant key: FireWowhead). Names in parentheses (guide or tool such
---     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
 --     proper names and stay unchanged.
 [1426] = "Fogo (Wowhead)",
--- a335455e English: Fire after Wowhead and wowsims. Like the Icy Veins Fire premade, but it weaves
---     Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with
---     Fireball instead of Pyroblast. An alternative to the recommended Icy Veins Fire premade, off
---     by default: enable it and disable that one, or raise its priority.
-[1427] = "Fogo segundo a Wowhead e o wowsims. Igual à rotação integrada de Fogo da Icy Veins, mas intercala Impacto de Fogo sempre que estiver pronto enquanto você está parado (mais dano, mais mana) e abre com Bola de Fogo em vez de Ignimpacto. Uma alternativa à rotação integrada de Fogo da Icy Veins recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela.",
+-- 2caeb60c English: Fire after Wowhead and simulator. Like the Icy Veins Fire premade, but it
+--     weaves Fire Blast whenever it is ready while you stand still (more damage, more mana) and
+--     opens with Fireball instead of Pyroblast. An alternative to the recommended Icy Veins Fire
+--     premade, off by default: enable it and disable that one, or raise its priority.
+[1427] = "Fogo segundo a Wowhead e o simulador. Igual à rotação integrada de Fogo da Icy Veins, mas intercala Impacto de Fogo sempre que estiver pronto enquanto você está parado (mais dano, mais mana) e abre com Bola de Fogo em vez de Ignimpacto. Uma alternativa à rotação integrada de Fogo da Icy Veins recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela.",
 -- 93006d61 English: Arcane
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
 --     Burning Crusade Classic (variant key: Arcane).
@@ -5892,8 +5892,8 @@ addon.translation = {
 -- Context: Condition type title: true when the spell is set to auto-repeat (e.g. Auto Shot, wand).
 --     Also an icon name in the icon picker.
 [1740] = "Repetição automática de feitiço ativa",
--- 35f743e1 English: Retribution (Wowhead & wowsims)
-[1741] = "Retribuição (Wowhead & wowsims)",
+-- 01059048 English: Retribution (Wowhead & simulator)
+[1741] = "Retribuição (Wowhead & simulador)",
 -- 6fc82107 English: Melee Retribution from level 1 to 70, and the default for any Paladin no other
 --     premade fits. Opens each target with Judgement of Wisdom (low mana) or the Crusader, keeps
 --     your best seal up (Blood or Martyr, Command, then Righteousness), Crusader Strike, judges
@@ -5906,7 +5906,7 @@ addon.translation = {
 -- 89f00a09 English: Retribution (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     The Burning Crusade Classic (variant key: Retribution / IcyVeins). Names in parentheses
---     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
 --     Warcraft Tavern) are proper names and stay unchanged.
 [1743] = "Retribuição (Icy Veins)",
 -- c68e9ea0 English: Icy Veins' Retribution, an alternative to the recommended Wowhead Retribution
@@ -5927,8 +5927,8 @@ addon.translation = {
 --     fillers, and rolls Blood without twisting below 12% mana. Needs a reliable swing timer;
 --     latency is not accounted for.
 [1746] = "Desativada por padrão; ative-a se você alterna selos (nível 64+, Selo de Comando e Sangue ou Mártir). Abre com Julgamento do Cruzado; depois, a cada golpe, ativa Selo de Comando (grau 1) cedo e troca para Sangue ou Mártir nos últimos 0,4 segundos, Golpe do Cruzado entre as alternâncias, julga apenas Sangue ou Mártir, Exorcismo e Consagração só como preenchimento, e mantém Sangue sem alternar abaixo de 12% de mana. Exige um temporizador de golpes confiável; a latência não é levada em conta.",
--- 316a63c1 English: Protection (Wowhead & wowsims)
-[1747] = "Proteção (Wowhead & wowsims)",
+-- b9e3d93c English: Protection (Wowhead & simulator)
+[1747] = "Proteção (Wowhead & simulador)",
 -- c9c2efbf English: Tanking for the Protection tree or any Paladin with Righteous Fury on. Pulls
 --     with Holy Shield, Avenger's Shield and Judgement; against a crushing target (world boss or
 --     three or more levels above you) Holy Shield comes first; then Consecration, Exorcism on
@@ -5940,7 +5940,7 @@ addon.translation = {
 -- 80b938a1 English: Protection (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1749] = "Proteção (Icy Veins)",
 -- 3ae9045e English: Icy Veins' tanking, an alternative to the recommended Wowhead Protection
@@ -5965,12 +5965,12 @@ addon.translation = {
 --     your target is missing a tenth of their health, Flash of Light only for small deficits, with
 --     the same emergencies, cleansing, Judgement and reminders as the blended Holy premade.
 [1754] = "A cura de tanque em raide da Wowhead, uma alternativa à rotação integrada de Sagrado recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Luz Sagrada sempre que seu alvo tiver perdido um décimo da vida, Clarão de Luz só para pequenas perdas, com as mesmas emergências, purificações, Julgamento e lembretes da rotação integrada Sagrado combinada.",
--- 4396ff42 English: Ranged DPS (wowsims)
+-- ffb13c96 English: Ranged DPS (simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
---     The Burning Crusade Classic (variant key: Ranged / Wowsims). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     The Burning Crusade Classic (variant key: Ranged / simulator). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
-[1755] = "DPS à distância (wowsims)",
+[1755] = "DPS à distância (simulador)",
 -- 2b43c4a1 English: Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot,
 --     keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot
 --     it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you
@@ -5984,23 +5984,23 @@ addon.translation = {
 -- 825c84d1 English: Ranged DPS (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     The Burning Crusade Classic (variant key: Ranged / Wowhead). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1757] = "DPS à distância (Wowhead)",
--- fb9ad1ee English: Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee,
---     leveling shots, multi-target Multi-Shot and reminders as the wowsims version, but once Steady
---     Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no Arcane
---     Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper reminder. Pet
---     commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you. An
---     alternative to the recommended wowsims ranged premade, off by default: enable it and disable
---     that one, or raise its priority.
-[1758] = "Níveis 1–70, todas as especializações, seguindo os conselhos de raide da Wowhead. A mesma puxada, golpes corpo a corpo, tiros de evolução de nível, Tiro Múltiplo contra vários alvos e lembretes da versão wowsims, mas depois de aprender Tiro Firme só oferece Tiro Múltiplo e Tiro Firme após cada Tiro Automático: sem Tiro Arcano como preenchimento (exceto em movimento), sem Picada de Serpente e sem lembrete de Aspecto da Víbora. Comandos do ajudante, Redirecionar, armadilhas, Salva, intercalação corpo a corpo e Fingir de Morto ficam com você. Uma alternativa à rotação integrada de DPS à distância do wowsims recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela.",
--- 469b61e4 English: Melee DPS (wowsims)
+-- c4d18a35 English: Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee,
+--     leveling shots, multi-target Multi-Shot and reminders as the simulator version, but once
+--     Steady Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no
+--     Arcane Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper
+--     reminder. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with
+--     you. An alternative to the recommended simulator ranged premade, off by default: enable it
+--     and disable that one, or raise its priority.
+[1758] = "Níveis 1–70, todas as especializações, seguindo os conselhos de raide da Wowhead. A mesma puxada, golpes corpo a corpo, tiros de evolução de nível, Tiro Múltiplo contra vários alvos e lembretes da versão simulador, mas depois de aprender Tiro Firme só oferece Tiro Múltiplo e Tiro Firme após cada Tiro Automático: sem Tiro Arcano como preenchimento (exceto em movimento), sem Picada de Serpente e sem lembrete de Aspecto da Víbora. Comandos do ajudante, Redirecionar, armadilhas, Salva, intercalação corpo a corpo e Fingir de Morto ficam com você. Uma alternativa à rotação integrada de DPS à distância do simulador recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela.",
+-- 4f534fae English: Melee DPS (simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
---     Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     Burning Crusade Classic (variant key: DPS / simulator). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
-[1759] = "DPS corpo a corpo (wowsims)",
+[1759] = "DPS corpo a corpo (simulador)",
 -- a600e4ad English: Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or
 --     Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte,
 --     Slice and Dice from two combo points (renewed in its last two seconds), Eviscerate on a
@@ -6013,15 +6013,15 @@ addon.translation = {
 -- 5f9b3940 English: Melee DPS (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
 --     Burning Crusade Classic (variant key: DPS / Wowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1761] = "DPS corpo a corpo (Wowhead)",
--- 19e52877 English: Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and
---     reminders as the wowsims version, but Slice and Dice starts from one combo point and every
+-- d6b11787 English: Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and
+--     reminders as the simulator version, but Slice and Dice starts from one combo point and every
 --     five-point finisher is Eviscerate: no Rupture. Expose Armor, Kidney Shot, Feint, Vanish and
---     positioning stay with you. An alternative to the recommended wowsims melee DPS premade, off
+--     positioning stay with you. An alternative to the recommended simulator melee DPS premade, off
 --     by default: enable it and disable that one, or raise its priority.
-[1762] = "Níveis 1–70, todas as especializações, seguindo a Wowhead. As mesmas aberturas em furtividade, geradores e lembretes da versão wowsims, mas Retalhar começa a partir de um ponto de combo e todo finalizador de cinco pontos é Eviscerar: sem Ruptura. Expor Armadura, Golpe no Rim, Finta, Sumir e o posicionamento ficam com você. Uma alternativa à rotação integrada de DPS corpo a corpo do wowsims recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela.",
+[1762] = "Níveis 1–70, todas as especializações, seguindo a Wowhead. As mesmas aberturas em furtividade, geradores e lembretes da versão simulador, mas Retalhar começa a partir de um ponto de combo e todo finalizador de cinco pontos é Eviscerar: sem Ruptura. Expor Armadura, Golpe no Rim, Finta, Sumir e o posicionamento ficam com você. Uma alternativa à rotação integrada de DPS corpo a corpo do simulador recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela.",
 -- d05e07b7 English: Balance
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
 --     Burning Crusade Classic (variant key: Balance).
@@ -6034,8 +6034,8 @@ addon.translation = {
 --     Wild, Thorns while solo, Omen of Clarity, Moonkin Form, Force of Nature on a long fight,
 --     Innervate when low.
 [1764] = "Equilíbrio lançador do nível 1 ao 70, e o padrão para qualquer Druida em que nenhuma outra rotação integrada se encaixe. Puxa com Fogo Estelar (Ira antes do 20), Nuvem de Insetos e Fogo Lunar em movimento, Fogo Feérico em grupo, Furacão para três ou mais inimigos, Fogo Lunar quando tiver expirado e você tiver 30% de mana, Fogo Estelar com Graça da Natureza, Ira contra um alvo corpo a corpo e depois Fogo Estelar (Ira antes de aprendê-lo). Nenhuma sugestão nas formas de Felino, Urso ou de viagem. Lembretes: Marca do Indomado, Espinhos quando solo, Presságio de Clareza, Forma de Luniscante, Força da Natureza em uma luta longa, Avivar quando a mana estiver baixa.",
--- 9a2fa639 English: Feral (Icy Veins, Warcraft Tavern & wowsims)
-[1765] = "Combate Feral (Icy Veins, Warcraft Tavern & wowsims)",
+-- 9f5ae657 English: Feral (Icy Veins, Warcraft Tavern & simulator)
+[1765] = "Combate Feral (Icy Veins, Warcraft Tavern & simulador)",
 -- 43a0ca32 English: Cat and bear for the Feral tree, following your form. Cat: stealth opener
 --     (Pounce, Ravage or Shred), Faerie Fire (Feral), Rip at four combo points on a target that
 --     lives, Ferocious Bite between Rips without Clearcasting, Mangle kept up, Shred from behind or
@@ -6048,7 +6048,7 @@ addon.translation = {
 -- 4c55a525 English: Feral (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
 --     Burning Crusade Classic (variant key: Feral / Wowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1767] = "Combate Feral (Wowhead)",
 -- 9092413a English: Wowhead's Feral, an alternative to the recommended Icy Veins Feral premade, off
@@ -6068,12 +6068,12 @@ addon.translation = {
 --     Wrath for soloing. Reminders: Mark, Omen, Tree of Life, Nature's Swiftness, Tranquility,
 --     Innervate and Rebirth. Choosing whom to heal and downranking stay with you.
 [1770] = "Cura para a árvore Restauração no seu alvo amigável (ou em você mesmo): Toque de Cura após Rapidez da Natureza, Recomposição Rápida em um alvo morrendo que tenha seu Rejuvenescer ou Recrescimento, três Brotar da Vida renovados continuamente em combate, Rejuvenescer e Recrescimento quando ausentes, depois Recrescimento em Árvore da Vida ou Toque de Cura fora dela. Um alvo hostil recebe Fogo Lunar e Ira para jogar solo. Lembretes: Marca, Presságio, Árvore da Vida, Rapidez da Natureza, Tranquilidade, Avivar e Renascimento. A escolha de quem curar e o uso de graus inferiores ficam com você.",
--- 469b61e4 English: Melee DPS (wowsims)
+-- 4f534fae English: Melee DPS (simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
---     The Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
---     are proper names and stay unchanged.
-[1771] = "DPS corpo a corpo (wowsims)",
+--     The Burning Crusade Classic (variant key: DPS / simulator). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
+[1771] = "DPS corpo a corpo (simulador)",
 -- e30bf8c3 English: Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept,
 --     Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is
 --     learned). With Bloodthirst or Mortal Strike: that strike, Whirlwind with rage to spare,
@@ -6084,17 +6084,17 @@ addon.translation = {
 [1772] = "Níveis 1–70, Armas ou Fúria. Puxa com Investida, depois Ímpeto da Vitória, Interceptar, Desordem e Redemoinho quando dois ou mais inimigos lutam com você (Trovoada antes de aprendê-lo). Com Sede de Sangue ou Golpe Mortal: esse golpe, Redemoinho com raiva de sobra, Executar, Subjugar. Antes deles: Redemoinho, Executar, Subjugar, Dilacerar. A raiva de sobra vai para Devastar ou Fender Armadura, depois Cortar Tendão. Lembra você de Brado de Batalha, Fúria Sanguinária, Golpe Heroico ou Cutilada para gastar raiva, Golpes a Esmo, Desejo de Matar, Temeridade e interrupções. O momento da Batida, a troca de posturas e Raiva Incontrolada ficam com você.",
 -- 6d10d944 English: Melee DPS (Icy Veins)
 [1773] = "DPS corpo a corpo (Icy Veins)",
--- c50ff4f3 English: Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and
---     leveling steps as the wowsims version, but with Mortal Strike Execute comes first, with
+-- b57d248a English: Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and
+--     leveling steps as the simulator version, but with Mortal Strike Execute comes first, with
 --     Bloodthirst Execute comes right after it, Whirlwind follows without holding rage, and
 --     Hamstring only near full rage. Slam timing, stance dancing and Berserker Rage stay with you.
---     An alternative to the recommended wowsims melee DPS premade, off by default: enable it and
+--     An alternative to the recommended simulator melee DPS premade, off by default: enable it and
 --     disable that one, or raise its priority.
-[1774] = "Níveis 1–70, Armas ou Fúria, seguindo a Icy Veins. A mesma puxada, lembretes e passos de evolução de nível da versão wowsims, mas com Golpe Mortal o Executar vem primeiro, com Sede de Sangue o Executar vem logo depois dela, Redemoinho segue sem guardar raiva e Cortar Tendão só com a raiva quase cheia. O momento da Batida, a troca de posturas e Raiva Incontrolada ficam com você. Uma alternativa à rotação integrada de DPS corpo a corpo do wowsims recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela.",
+[1774] = "Níveis 1–70, Armas ou Fúria, seguindo a Icy Veins. A mesma puxada, lembretes e passos de evolução de nível da versão simulador, mas com Golpe Mortal o Executar vem primeiro, com Sede de Sangue o Executar vem logo depois dela, Redemoinho segue sem guardar raiva e Cortar Tendão só com a raiva quase cheia. O momento da Batida, a troca de posturas e Raiva Incontrolada ficam com você. Uma alternativa à rotação integrada de DPS corpo a corpo do simulador recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela.",
 -- 871d5911 English: Tank (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     The Burning Crusade Classic (variant key: Protection / Wowhead). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1775] = "Tanque (Wowhead)",
 -- 91dfa1ce English: Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge,
@@ -6107,7 +6107,7 @@ addon.translation = {
 -- ea76d926 English: Tank (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1777] = "Tanque (Icy Veins)",
 -- aa141592 English: Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins.
@@ -6120,7 +6120,7 @@ addon.translation = {
 -- 3adec7ba English: Damage (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: DpsIcyVeins). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1779] = "Dano (Icy Veins)",
 -- 9b0711bb English: Damage from level 1 to 70, used whenever the healer premade does not apply.
@@ -6134,7 +6134,7 @@ addon.translation = {
 -- ce79d246 English: Damage (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1781] = "Dano (Wowhead)",
 -- fe006eaa English: Damage after Wowhead's guides, an alternative to the recommended Icy Veins
@@ -6146,7 +6146,7 @@ addon.translation = {
 -- d0f0e9e6 English: Healer (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: HealerWowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1783] = "Curador (Wowhead)",
 -- d31781e0 English: Healing in a group when Holy or Discipline is your main talent tree. It advises
@@ -6158,7 +6158,7 @@ addon.translation = {
 -- 45321807 English: Healer (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: HealerIcyVeins). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1785] = "Curador (Icy Veins)",
 -- e31d4277 English: Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash
@@ -6178,7 +6178,7 @@ addon.translation = {
 -- e3790b25 English: Drain-tank (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1789] = "Tanque de dreno (Wowhead)",
 -- 522ed69f English: Warlock after Wowhead's guides, an alternative to the recommended Icy Veins
@@ -6705,7 +6705,7 @@ addon.translation = {
 -- d580a703 English: Enhancement (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     WoW Forever (variant key: Enhancement). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [1947] = "Aperfeiçoamento (Icy Veins)",
 -- 339ec7e4 English: Melee Enhancement from level 1 to 60, and the default for any Shaman before
@@ -6723,8 +6723,8 @@ addon.translation = {
 -- eb2363b2 English: Enhancement, mana-efficient (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     WoW Forever (variant key: Enhancement / Wowhead). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1949] = "Aperfeiçoamento, econômico em mana (Wowhead)",
 -- abc72f43 English: Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work,
 --     Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in
@@ -6766,7 +6766,7 @@ addon.translation = {
 -- b9f016be English: All trees (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     WoW Forever (variant key: DPS / Wowhead). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [1955] = "Todas as árvores (Wowhead)",
 -- 02cc5c3e English: Wowhead's level-30 Warlock: Affliction and Demonology drain-tank with the
@@ -6782,8 +6782,8 @@ addon.translation = {
 -- 80b938a1 English: Protection (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1957] = "Proteção (Icy Veins)",
 -- 95bdeac5 English: Tanking whenever you are in Defensive Stance, from level 10 to 60. Charges to
 --     pull (in Defensive Stance once you have Vanguard), Victory Rush, and on two or more enemies
@@ -6893,8 +6893,8 @@ addon.translation = {
 -- 8335d07b English: Ranged (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     WoW Forever (variant key: Ranged). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1975] = "À distância (Wowhead)",
 -- 5c5cdd9b English: Every ranged Hunter from level 1 to 60 (Beast Mastery, Marksmanship, and
 --     Survival until Strider Kick), and the Forever Hunter default. Pull: Hunter's Mark, Sniper
@@ -6912,7 +6912,7 @@ addon.translation = {
 -- a82fce4f English: Ranged, mana-saving (Mobalytics)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     WoW Forever (variant key: RangedMobalytics). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [1977] = "À distância, econômico em mana (Mobalytics)",
 -- 530b5b4d English: Mobalytics' mana-saving leveling style, an alternative to the recommended
@@ -6925,8 +6925,8 @@ addon.translation = {
 -- 5f8e7ecc English: Survival melee (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     WoW Forever (variant key: Survival). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1979] = "Sobrevivência corpo a corpo (Wowhead)",
 -- 8da10e55 English: Dual-wield melee Survival once Survival is your main talent tree with 21
 --     points, Strider Kick's tier (until then the ranged premade levels you, as the guides advise).
@@ -7019,8 +7019,8 @@ addon.translation = {
 -- 2ba64aad English: Protection (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1993] = "Proteção (Wowhead)",
 -- 65aad40e English: Tanking, once Protection is your main talent tree or you turn on Righteous
 --     Fury. When the target is fighting someone else: Judgement with Seal of Fury (the taunt),
@@ -7128,7 +7128,7 @@ addon.translation = {
 -- 2b5ecbd1 English: Deathbringer reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Retail (current expansion) (variant key: BloodSimc). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2011] = "Referência de Mortífero (SimulationCraft)",
 -- 8ed0754d English: Reference only, off by default: SimulationCraft's Deathbringer list, which
@@ -7167,7 +7167,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Retail (current expansion) (variant key: FrostWowhead). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2017] = "Referência (Wowhead)",
 -- 6899840b English: Reference only, off by default: Wowhead's Frost order, which puts its cooldowns
@@ -7206,7 +7206,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Retail (current expansion) (variant key: UnholySimc). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2023] = "Referência (SimulationCraft)",
 -- 100d5361 English: Reference only, off by default: SimulationCraft's Unholy list, which spends
@@ -7287,7 +7287,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
 --     Hunter, Retail (current expansion) (variant key: VengeanceSimc). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2035] = "Referência (SimulationCraft)",
 -- d4f52cf1 English: Reference only, off by default: SimulationCraft's Vengeance lists. Hidden
@@ -7317,7 +7317,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
 --     Hunter, Retail (current expansion) (variant key: DevourerGuide). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2039] = "Referência (Icy Veins)",
 -- 5da6da74 English: Reference only, off by default: Icy Veins' Annihilator priority. Most of your
@@ -7333,7 +7333,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
 --     Hunter, Retail (current expansion) (variant key: DevourerSimc). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2041] = "Referência (SimulationCraft)",
 -- 0228846e English: Reference only, off by default: SimulationCraft's Annihilator list, which
@@ -7437,7 +7437,7 @@ addon.translation = {
 -- beb78fe5 English: Defensive reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Retail (current expansion) (variant key: GuardianSimc). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2057] = "Referência defensiva (SimulationCraft)",
 -- f0f6bfc8 English: Reference only, off by default: SimulationCraft's Guardian list, which spends
@@ -7532,7 +7532,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
 --     Retail (current expansion) (variant key: Preservation). A reference-only rotation built from
 --     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2071] = "Referência (Icy Veins)",
 -- 21ab41c4 English: Reference only, off by default. Ally health, Echo, Reversion, Essence Burst and
@@ -7627,7 +7627,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     Retail (current expansion) (variant key: SurvivalGuide). A reference-only rotation built from
 --     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2085] = "Referência (SimulationCraft)",
 -- 1b766914 English: Reference only, off by default: SimulationCraft's Survival priority, where Kill
@@ -7765,7 +7765,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
 --     Retail (current expansion) (variant key: BrewmasterGuide). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2105] = "Referência (Icy Veins)",
 -- a07ba74a English: Reference only, off by default: Icy Veins' Brewmaster priority (SimulationCraft
@@ -7809,7 +7809,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
 --     Retail (current expansion) (variant key: Mistweaver). A reference-only rotation built from
 --     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2111] = "Referência (Icy Veins)",
 -- 671bd99c English: Reference only, off by default. Blizzard offers no Assisted Combat list for
@@ -7848,7 +7848,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Retail (current expansion) (variant key: Retribution / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2117] = "Referência (Icy Veins)",
 -- 66c84fb8 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
@@ -7877,7 +7877,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2121] = "Referência (Icy Veins)",
 -- f169797b English: Reference only, off by default: the Icy Veins and SimulationCraft order needs
@@ -7942,7 +7942,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Retail (current expansion) (variant key: Shadow / IcyVeins). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2131] = "Referência (Icy Veins)",
 -- 1cbf9308 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
@@ -7958,7 +7958,7 @@ addon.translation = {
 -- 6a76d2e3 English: Atonement (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Retail (current expansion) (variant key: Discipline). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2133] = "Expiação (Icy Veins)",
 -- c8fa3896 English: Discipline in Midnight, for reference: Blizzard's Assisted Combat does not
@@ -8022,7 +8022,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Retail (current expansion) (variant key: Assassination / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2143] = "Referência (Icy Veins)",
 -- 04026a9b English: Reference only, off by default: the Icy Veins and SimulationCraft order keeps
@@ -8050,7 +8050,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Retail (current expansion) (variant key: Outlaw / IcyVeins). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2147] = "Referência (Icy Veins)",
 -- 3a3eecef English: Reference only, off by default: the Icy Veins, SimulationCraft and Wowhead
@@ -8077,7 +8077,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Retail (current expansion) (variant key: Subtlety / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2151] = "Referência (Icy Veins)",
 -- 5fff6443 English: Reference only, off by default: the Icy Veins and SimulationCraft order holds
@@ -8120,7 +8120,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Retail (current expansion) (variant key: Elemental / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2157] = "Referência (Icy Veins)",
 -- 8fc57d38 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
@@ -8150,7 +8150,7 @@ addon.translation = {
 -- 5c90fed4 English: Stormbringer reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Retail (current expansion) (variant key: Enhancement / Stormbringer). Names in parentheses
---     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
 --     Warcraft Tavern) are proper names and stay unchanged.
 [2161] = "Referência de Traztormenta (SimulationCraft)",
 -- 4890c5e6 English: Reference only, off by default: SimulationCraft's Stormbringer list (Icy Veins
@@ -8167,7 +8167,7 @@ addon.translation = {
 -- 33731fb7 English: Totemic reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Retail (current expansion) (variant key: Enhancement / Totemic). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2163] = "Referência de Totêmico (SimulationCraft)",
 -- 4485ad39 English: Reference only, off by default: SimulationCraft's Totemic list reads Flame
@@ -8224,7 +8224,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Retail (current expansion) (variant key: Affliction / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2171] = "Referência (Icy Veins)",
 -- d01f383a English: Reference only, off by default: the Icy Veins and SimulationCraft (Soul
@@ -8252,7 +8252,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Retail (current expansion) (variant key: Demonology / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2175] = "Referência (Icy Veins)",
 -- 631224a9 English: Reference only, off by default: the Icy Veins and SimulationCraft (Diabolist)
@@ -8278,7 +8278,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Retail (current expansion) (variant key: Destruction / Simc). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2179] = "Referência (SimulationCraft)",
 -- ad764c7b English: Reference only, off by default: SimulationCraft's order reads Immolate,
@@ -8324,7 +8324,7 @@ addon.translation = {
 -- b82b4f60 English: Slayer reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Arms / Slayer). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2187] = "Referência de Matador (SimulationCraft)",
 -- 4c91f0b4 English: Reference only, off by default: the Slayer order from SimulationCraft, Icy
@@ -8339,7 +8339,7 @@ addon.translation = {
 -- 8a86f34e English: Colossus reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Arms / Colossus). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2189] = "Referência de Colosso (SimulationCraft)",
 -- 5b252489 English: Reference only, off by default: the Colossus order from SimulationCraft and Icy
@@ -8364,7 +8364,7 @@ addon.translation = {
 -- b82b4f60 English: Slayer reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Fury / Slayer). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2193] = "Referência de Matador (SimulationCraft)",
 -- 082fcea6 English: Reference only, off by default: SimulationCraft's Slayer order reads Enrage,
@@ -8403,7 +8403,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2199] = "Referência (Icy Veins)",
 -- b8b51708 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
@@ -8442,8 +8442,8 @@ addon.translation = {
 -- 3c5a26cc English: Balance (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Classic Era (variant key: Balance / IcyVeins). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2205] = "Equilíbrio (Icy Veins)",
 -- 72e2ae3e English: Icy Veins' raid list for realms with the 16-debuff limit, an alternative to the
 --     recommended Balance premade, off by default: enable it and disable that one, or raise its
@@ -8503,7 +8503,7 @@ addon.translation = {
 -- b765b6c7 English: Restoration (Warcraft Tavern)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Classic Era (variant key: Restoration / WarcraftTavern). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2217] = "Restauração (Warcraft Tavern)",
 -- 8cdc97b9 English: Warcraft Tavern's damage tiers, an alternative to the recommended Restoration
@@ -8515,7 +8515,7 @@ addon.translation = {
 -- d6247adc English: Balance (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Balance). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2219] = "Equilíbrio (SoD)",
 -- 5bcfabec English: Season of Discovery Balance from level 1 to 60, and the default for any Druid
@@ -8538,7 +8538,7 @@ addon.translation = {
 -- c4d16f19 English: Balance (SoD, Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Balance / Wowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2223] = "Equilíbrio (SoD, Wowhead)",
 -- 75dabca6 English: Wowhead's Phase 8 list, an alternative to the recommended Season of Discovery
@@ -8551,7 +8551,7 @@ addon.translation = {
 -- 3e1ff241 English: Feral cat (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Feral). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2225] = "Combate Feral, felino (SoD)",
 -- e7b0a6ca English: Season of Discovery cat, chosen when Savage Roar is engraved (or Feral is your
@@ -8565,7 +8565,7 @@ addon.translation = {
 -- 3c52079f English: Bear tank (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2227] = "Tanque urso (SoD)",
 -- 6ae09c71 English: Season of Discovery bear tank, chosen when Lacerate is engraved. Faerie Fire
@@ -8575,18 +8575,18 @@ addon.translation = {
 --     rage, Berserk, Survival Instincts, Frenzied Regeneration and Barkskin when low, Enrage
 --     between pulls, Demoralizing Roar on elites. Taunting and target choice stay with you.
 [2228] = "Tanque urso da Temporada da Descoberta, escolhida quando Lacerar está gravado. Fogo Feérico (Feral) ou Fogo Solar (Urso) para puxar à distância, Lacerar antes de expirar, Destroçar assim que sair do tempo de recarga, Lacerar, Patada; contra três ou mais inimigos, Destroçar sob Berserk e Patada. Na Forma de Felino, segue a lista do felino para tanque secundário; na forma de lançador, troca para Urso. Lembretes: Malho com 30 de raiva, Berserk, Instintos de Sobrevivência, Regeneração Frenética e Pele de Árvore com pouca vida, Enfurecer entre as puxadas, Rugido Desmoralizante em elites. Provocar e a escolha de alvo ficam com você.",
--- 017c4426 English: Bear tank (SoD, wowsims cat weave)
-[2229] = "Tanque urso (SoD, intercalação de felino do wowsims)",
--- 83e89d4a English: Off by default; for experts whose gear also grants Savage Roar. The wowsims
+-- 89c7b6e8 English: Bear tank (SoD, simulator cat weave)
+[2229] = "Tanque urso (SoD, intercalação de felino do simulador)",
+-- a83b9a00 English: Off by default; for experts whose gear also grants Savage Roar. The simulator
 --     Phase 7 cat weave: leave Bear for Cat when your Rake is down, keep Savage Roar and Rake up
 --     (Tiger's Fury, Mangle to build), then return to Dire Bear and play the tank list. Reminders
 --     as the recommended tank premade.
-[2230] = "Desativada por padrão; para especialistas cujo equipamento também concede Rugido Selvagem. A intercalação de felino da Fase 7 do wowsims: sai do Urso para o Felino quando seu Estraçalhar expirar, mantém Rugido Selvagem e Estraçalhar ativos (Fúria do Tigre, Destroçar para acumular), depois volta para Urso Hediondo e segue a lista de tanque. Lembretes como na rotação integrada recomendada de tanque.",
+[2230] = "Desativada por padrão; para especialistas cujo equipamento também concede Rugido Selvagem. A intercalação de felino da Fase 7 do simulador: sai do Urso para o Felino quando seu Estraçalhar expirar, mantém Rugido Selvagem e Estraçalhar ativos (Fúria do Tigre, Destroçar para acumular), depois volta para Urso Hediondo e segue a lista de tanque. Lembretes como na rotação integrada recomendada de tanque.",
 -- 24f21f83 English: Restoration (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2231] = "Restauração (SoD)",
 -- ba307284 English: Season of Discovery Restoration, chosen when Lifebloom is engraved (or
 --     Restoration is your main tree without another legs rune). Heals your current friendly target:
@@ -8618,8 +8618,8 @@ addon.translation = {
 --     even if that delays an Auto Shot, Serpent Sting is never used, and Rapid Fire, Bestial Wrath
 --     and racials are used on every pull.
 [2236] = "Desativada por padrão; ative-a para uma arma de longo alcance mais rápida que 3,0 segundos. Como Caçador: à distância, mas em grupo Tiro Certo e Tiro Múltiplo saem assim que ficam prontos, mesmo que isso atrase um Tiro Automático, Picada de Serpente nunca é usada, e Tiro Rápido, Ira Bestial e habilidades raciais são usados em toda puxada.",
--- 23771115 English: Ranged, raid Serpent Sting (wowsims)
-[2237] = "À distância, Picada de Serpente em raide (wowsims)",
+-- f0c76c87 English: Ranged, raid Serpent Sting (simulator)
+[2237] = "À distância, Picada de Serpente em raide (simulador)",
 -- afe0ee0b English: Off by default; enable it where the raid has debuff room for your sting. Like
 --     Hunter: Ranged, but in a group Serpent Sting is kept up everywhere, raids included, refreshed
 --     under 5 seconds while Aimed Shot and Multi-Shot are both cooling, and Arcane Shot is never
@@ -8628,7 +8628,7 @@ addon.translation = {
 -- 1fa5802f English: Ranged (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     Season of Discovery (variant key: Ranged). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2239] = "À distância (SoD)",
 -- 09b14a5d English: Every ranged Hunter on a Season of Discovery realm, level 1 to 60; runes are
@@ -8647,7 +8647,7 @@ addon.translation = {
 -- fb035172 English: Melee (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     Season of Discovery (variant key: Melee). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2241] = "Corpo a corpo (SoD)",
 -- 4c275cc2 English: Chosen on a Season of Discovery realm once you engrave Flanking Strike, Wyvern
@@ -8699,8 +8699,8 @@ addon.translation = {
 -- 76354bcf English: Fire (Warcraft Tavern)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Classic Era (variant key: Fire / WarcraftTavern). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2249] = "Fogo (Warcraft Tavern)",
 -- 83ffa7ee English: Fire after Warcraft Tavern, an alternative to the recommended Fire premade, off
 --     by default: enable it and disable that one, or raise its priority. Combustion is spent at the
@@ -8712,7 +8712,7 @@ addon.translation = {
 -- 91d3c82e English: Fire (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2251] = "Fogo (SoD)",
 -- 67a08e15 English: Season of Discovery Fire from level 1 to 60, and the Mage default there. Uses
@@ -8729,7 +8729,7 @@ addon.translation = {
 -- 0f6cec9f English: Frost (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Frost). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2253] = "Gélido (SoD)",
 -- b6fc82b9 English: Season of Discovery Frost from level 10, chosen when Frost is your main tree.
@@ -8754,7 +8754,7 @@ addon.translation = {
 -- 3a7614c3 English: Arcane (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Arcane). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2257] = "Arcano (SoD)",
 -- a0acdff9 English: Season of Discovery Arcane damage, chosen when Arcane is your main tree and
@@ -8767,7 +8767,7 @@ addon.translation = {
 -- a23552e6 English: Healer (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2259] = "Curador (SoD)",
 -- 83b2fb47 English: Season of Discovery Mage healing, chosen when Regeneration or Mass Regeneration
@@ -8840,8 +8840,8 @@ addon.translation = {
 -- 8094efdd English: Retribution (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Retribution). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2271] = "Retribuição (SoD)",
 -- 0cc623b4 English: Season of Discovery melee from level 1 to 60, and the default for any Paladin
 --     there. Keeps Seal of Martyrdom up (Righteousness until you have it), opens with Exorcism,
@@ -8879,12 +8879,12 @@ addon.translation = {
 --     Wrath on Undead and Demons (on anything with Purifying Power engraved), Consecration, and
 --     Judgement while both seals are up.
 [2278] = "Desativada por padrão; ative-a com a runa Alma do Porta-selos ou com o conjunto de seis peças que faz os selos persistirem (o Rotation Master não consegue ver nenhum dos dois). Mantém Selo de Comando e Selo do Martírio ativos, Tempestade Divina com três de Poder Sagrado, Golpe do Cruzado, Exorcismo, Ira Sagrada em Mortos-vivos e Demônios (em qualquer alvo com Poder Purificador gravado), Consagração, e Julgamento enquanto os dois selos estiverem ativos.",
--- 68461fe5 English: Shockadin (SoD, wowsims)
+-- 0fb3c120 English: Shockadin (SoD, simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Shockadin). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
-[2279] = "Shockadin (SoD, wowsims)",
+[2279] = "Shockadin (SoD, simulador)",
 -- 9a1756b6 English: Off by default; enable it if you deal damage with the Holy tree. It applies
 --     with Holy as your main tree and Shock and Awe engraved. Seal of Martyrdom (else
 --     Righteousness), judged as it runs out, Holy Shock to keep Sunlight up or at three Holy Power,
@@ -8893,8 +8893,8 @@ addon.translation = {
 -- 924f353b English: Protection (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Protection). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2281] = "Proteção (SoD)",
 -- 58619700 English: Season of Discovery tanking, chosen by Righteous Fury, an engraved Hammer of
 --     the Righteous or Shield of Righteousness, or the Protection tree. Seal of Martyrdom, a pull
@@ -8905,22 +8905,22 @@ addon.translation = {
 --     before a pull, Devotion Aura, Sanctuary or Kings, Avenging Wrath, Divine Protection below
 --     40%, Lay on Hands, Hand of Reckoning in a group when your target attacks someone else.
 [2282] = "Tanque da Temporada da Descoberta, escolhida por Fúria Íntegra, por Martelo do Íntegro ou Escudo de Retidão gravados, ou pela árvore Proteção. Selo do Martírio, uma puxada com Escudo Sagrado, Escudo do Vingador e Exorcismo, Escudo Sagrado mantido; contra um alvo, Martelo do Íntegro, Escudo de Retidão, Exorcismo, Escudo do Vingador, Julgamento, Tempestade Divina, Consagração; com três ou mais inimigos em você, Martelo do Íntegro, Escudo do Vingador, Consagração, Escudo de Retidão, Exorcismo. Lembretes: Fúria Íntegra, Escudo Sagrado antes de puxar, Aura de Devoção, Santuário ou Reis, Ira Vingativa, Proteção Divina abaixo de 40%, Impor as Mãos, Ato de Bravura em grupo quando seu alvo ataca outra pessoa.",
--- 29a17682 English: Protection (SoD, wowsims)
+-- c138082a English: Protection (SoD, simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
---     Season of Discovery (variant key: Protection / Wowsims). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
---     are proper names and stay unchanged.
-[2283] = "Proteção (SoD, wowsims)",
--- f2677084 English: The wowsims tank list, an alternative to the recommended Season of Discovery
+--     Season of Discovery (variant key: Protection / simulator). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
+[2283] = "Proteção (SoD, simulador)",
+-- cfa4b56e English: The simulator tank list, an alternative to the recommended Season of Discovery
 --     Protection premade, off by default: enable it and disable that one, or raise its priority.
 --     Judgement whenever a seal is up, the seal renewed just before it runs out, Holy Shield,
 --     Avenger's Shield, Hammer of the Righteous, Exorcism, Shield of Righteousness last. Same
 --     reminders as the recommended premade.
-[2284] = "A lista de tanque do wowsims, uma alternativa à rotação integrada de Proteção da Temporada da Descoberta recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Julgamento sempre que um selo estiver ativo, o selo renovado pouco antes de acabar, Escudo Sagrado, Escudo do Vingador, Martelo do Íntegro, Exorcismo, Escudo de Retidão por último. Os mesmos lembretes da rotação integrada recomendada.",
+[2284] = "A lista de tanque do simulador, uma alternativa à rotação integrada de Proteção da Temporada da Descoberta recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Julgamento sempre que um selo estiver ativo, o selo renovado pouco antes de acabar, Escudo Sagrado, Escudo do Vingador, Martelo do Íntegro, Exorcismo, Escudo de Retidão por último. Os mesmos lembretes da rotação integrada recomendada.",
 -- e757b87a English: Holy (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Holy). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2285] = "Sagrado (SoD)",
 -- 45b566d4 English: Season of Discovery healing in a group, chosen by an engraved Beacon of Light,
@@ -8963,14 +8963,14 @@ addon.translation = {
 --     automatic shield before pulls. In a group: Shadow Word: Pain, Mind Blast, Mind Flay. Same
 --     reminders as the recommended premade.
 [2292] = "O estilo de evolução de nível com pouco tempo parado da Warcraft Tavern, uma alternativa à rotação integrada de dano recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Solo: Impacto Mental para puxar, Palavra Sombria: Dor uma vez, Impacto Mental de novo só enquanto o alvo estiver acima de 30%, e sua varinha entre os Impactos Mentais em vez de Punição ou Açoite Mental. Nenhum escudo automático antes das puxadas. Em grupo: Palavra Sombria: Dor, Impacto Mental, Açoite Mental. Os mesmos lembretes da rotação integrada recomendada.",
--- 73068ffe English: Damage (wowsims Undead raid)
-[2293] = "Dano (raide de Morto-vivo do wowsims)",
--- f3ea634f English: The recommended damage priority with wowsims' raid choice for Undead priests:
+-- 545a097f English: Damage (simulator Undead raid)
+[2293] = "Dano (raide de Morto-vivo do simulador)",
+-- 589927b7 English: The recommended damage priority with simulator' raid choice for Undead priests:
 --     Inner Focus is spent on Devouring Plague instead of Mind Blast, and Devouring Plague is cast
 --     in raids too, so use it only where your raid has debuff slots to spare. No Vampiric Embrace.
 --     An alternative to the recommended damage premade, off by default: enable it and disable that
 --     one, or raise its priority.
-[2294] = "A prioridade de dano recomendada com a escolha de raide do wowsims para sacerdotes Mortos-vivos: Concentração Interior é gasta em Peste Devoradora em vez de Impacto Mental, e Peste Devoradora é lançada também em raides, então use-a só onde sua raide tiver espaços de penalidade sobrando. Sem Abraço Vampírico. Uma alternativa à rotação integrada de dano recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela.",
+[2294] = "A prioridade de dano recomendada com a escolha de raide do simulador para sacerdotes Mortos-vivos: Concentração Interior é gasta em Peste Devoradora em vez de Impacto Mental, e Peste Devoradora é lançada também em raides, então use-a só onde sua raide tiver espaços de penalidade sobrando. Sem Abraço Vampírico. Uma alternativa à rotação integrada de dano recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela.",
 -- a491a33c English: Healer
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Classic Era (variant key: Healer).
@@ -8987,7 +8987,7 @@ addon.translation = {
 -- 999e9eba English: Damage (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Season of Discovery (variant key: Dps). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2297] = "Dano (SoD)",
 -- 63f3ee22 English: Damage on Season of Discovery realms, from level 1 to 60, using the runes you
@@ -9011,7 +9011,7 @@ addon.translation = {
 -- a23552e6 English: Healer (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2301] = "Curador (SoD)",
 -- 37b39f3b English: Chosen on Season of Discovery realms in a group when Holy or Discipline is your
@@ -9037,8 +9037,8 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Classic Era (variant key: DPS).
 [2305] = "DPS corpo a corpo",
--- b5cd3c00 English: Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from
---     wowsims, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the
+-- 5fc6d26a English: Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from
+--     simulator, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the
 --     target is not facing you, Cheap Shot solo, Garrote outside raids. In combat: Riposte, Slice
 --     and Dice from one combo point when it is missing on an elite or a healthy target (renewed at
 --     five points in its last three seconds), Expose Armor at five points in a group when you have
@@ -9050,7 +9050,7 @@ addon.translation = {
 --     or two enemies with Slice and Dice up, Cold Blood at five, Evasion solo when hurt. Vanish,
 --     Gouge, Preparation, Kidney Shot and racials are listed off; Feint, Sprint, Blind, Sap and
 --     positioning stay with you.
-[2306] = "Níveis 1–60, todas as especializações, também em reinos Hardcore e Autossuficientes; montada a partir do wowsims, Icy Veins e Wowhead. Em Furtividade: Premeditação, Emboscar com uma adaga quando o alvo não está de frente para você, Golpe Baixo quando solo, Garrote fora de raides. Em combate: Ripostar, Retalhar a partir de um ponto de combo quando estiver ausente em um elite ou em um alvo com bastante vida (renovado com cinco pontos nos seus três últimos segundos), Expor Armadura com cinco pontos em grupo quando você tem Expor Armadura Aprimorado 2/2 e ninguém usa Fender Armadura, um Eviscerar de dois pontos em um alvo prestes a morrer, senão Eviscerar com cinco e nenhum gerador além de cinco. O gerador segue o que você conhece: Golpe Fantasmagórico e Hemorragia fora de raides, Punhalada pelas Costas com uma adaga quando o alvo não está de frente para você, senão Golpe Sinistro. Lembretes: venenos em cada arma (Veneno Mortal em uma arma de mão secundária, quando você a carregar), Chute, Chá de Cardo, Rajada de Lâminas e Adrenalina em elites ou contra dois inimigos com Retalhar ativo, Sangue Frio com cinco, Evasão quando solo e ferido. Sumir, Esfaquear, Preparação, Golpe no Rim e habilidades raciais vêm listados como desativados; Finta, Disparada, Cegar, Aturdir e o posicionamento ficam com você.",
+[2306] = "Níveis 1–60, todas as especializações, também em reinos Hardcore e Autossuficientes; montada a partir do simulador, Icy Veins e Wowhead. Em Furtividade: Premeditação, Emboscar com uma adaga quando o alvo não está de frente para você, Golpe Baixo quando solo, Garrote fora de raides. Em combate: Ripostar, Retalhar a partir de um ponto de combo quando estiver ausente em um elite ou em um alvo com bastante vida (renovado com cinco pontos nos seus três últimos segundos), Expor Armadura com cinco pontos em grupo quando você tem Expor Armadura Aprimorado 2/2 e ninguém usa Fender Armadura, um Eviscerar de dois pontos em um alvo prestes a morrer, senão Eviscerar com cinco e nenhum gerador além de cinco. O gerador segue o que você conhece: Golpe Fantasmagórico e Hemorragia fora de raides, Punhalada pelas Costas com uma adaga quando o alvo não está de frente para você, senão Golpe Sinistro. Lembretes: venenos em cada arma (Veneno Mortal em uma arma de mão secundária, quando você a carregar), Chute, Chá de Cardo, Rajada de Lâminas e Adrenalina em elites ou contra dois inimigos com Retalhar ativo, Sangue Frio com cinco, Evasão quando solo e ferido. Sumir, Esfaquear, Preparação, Golpe no Rim e habilidades raciais vêm listados como desativados; Finta, Disparada, Cegar, Aturdir e o posicionamento ficam com você.",
 -- 64659ecb English: Melee DPS, five-point finishers (Warcraft Tavern)
 [2307] = "DPS corpo a corpo, finalizadores de cinco pontos (Warcraft Tavern)",
 -- 6e2089d2 English: Warcraft Tavern's way, an alternative to the recommended melee DPS premade, off
@@ -9060,24 +9060,24 @@ addon.translation = {
 --     near-death Eviscerate and no Expose Armor (a warrior's Sunder covers it). Same openers,
 --     builders and reminders as the recommended premade.
 [2308] = "O método da Warcraft Tavern, uma alternativa à rotação integrada de DPS corpo a corpo recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Todo finalizador espera cinco pontos de combo para que Golpes Implacáveis o reembolse. Retalhar é usado a partir do seu segundo grau (nível 42) quando ausente ou acabando, senão Eviscerar; nada de Retalhar com poucos pontos, nada de Eviscerar em alvo quase morto e nada de Expor Armadura (o Fender Armadura de um guerreiro cobre isso). As mesmas aberturas, geradores e lembretes da rotação integrada recomendada.",
--- bd2e9cba English: Swords, swing-synced Sinister Strike (wowsims)
-[2309] = "Espadas, Golpe Sinistro sincronizado com o ataque automático (wowsims)",
--- 29c60f99 English: The wowsims "sweaty" Combat order for Sword Specialization, an alternative to
+-- 1bddd98c English: Swords, swing-synced Sinister Strike (simulator)
+[2309] = "Espadas, Golpe Sinistro sincronizado com o ataque automático (simulador)",
+-- a0a38e03 English: The simulator "sweaty" Combat order for Sword Specialization, an alternative to
 --     the recommended melee DPS premade, off by default: enable it and disable that one, or raise
 --     its priority. Sinister Strike only right after a main-hand swing (2.0 seconds or more to the
 --     next one, set for a 2.6–2.8 speed sword; change it in a clone), unless energy is near full or
 --     the target is about to die, so the extra sword attack does not delay your swing. Eviscerate
 --     at five also waits for Slice and Dice, full energy or a dying target. Otherwise as the
 --     recommended premade.
-[2310] = "A ordem de Combate “suada” do wowsims para Especialização em Espada, uma alternativa à rotação integrada de DPS corpo a corpo recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Golpe Sinistro só logo após um golpe da mão principal (2,0 segundos ou mais até o próximo, ajustado para uma espada de velocidade 2,6–2,8; altere isso duplicando a rotação), a menos que a energia esteja quase cheia ou o alvo prestes a morrer, para que o ataque extra da espada não atrase seu golpe. Eviscerar com cinco também espera por Retalhar, energia cheia ou um alvo morrendo. No resto, como a rotação integrada recomendada.",
+[2310] = "A ordem de Combate “suada” do simulador para Especialização em Espada, uma alternativa à rotação integrada de DPS corpo a corpo recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Golpe Sinistro só logo após um golpe da mão principal (2,0 segundos ou mais até o próximo, ajustado para uma espada de velocidade 2,6–2,8; altere isso duplicando a rotação), a menos que a energia esteja quase cheia ou o alvo prestes a morrer, para que o ataque extra da espada não atrase seu golpe. Eviscerar com cinco também espera por Retalhar, energia cheia ou um alvo morrendo. No resto, como a rotação integrada recomendada.",
 -- b33d1254 English: Melee DPS (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2311] = "DPS corpo a corpo (SoD)",
--- d3dc0f9a English: Season of Discovery, levels 1–60 with runes as you engrave them; built from
---     wowsims Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a
+-- 1b2af050 English: Season of Discovery, levels 1–60 with runes as you engrave them; built from
+--     simulator Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a
 --     group, Ambush for a Backstab build with a dagger, Cheap Shot solo. On three or more enemies
 --     fighting you: Blunderbuss, Crimson Tempest, Fan of Knives first. Then Ambush on a Cutthroat
 --     proc (with a dagger), Saber Slash kept at three stacks, Poisoned Knife at four poison stacks,
@@ -9088,7 +9088,7 @@ addon.translation = {
 --     dagger), else Sinister Strike. Reminders: a temporary enchant on each weapon, Kick, Thistle
 --     Tea, Blade Flurry, Adrenaline Rush, Cold Blood and Evasion, and with Master of Subtlety
 --     engraved Vanish to renew it and Preparation.
-[2312] = "Temporada da Descoberta, níveis 1–60 com as runas conforme você as grava; montada a partir do wowsims Fase 6, Icy Veins e Zockify Fase 8. Em Furtividade: Golpe Sombrio, Garrote em grupo, Emboscar para uma build de Punhalada pelas Costas com uma adaga, Golpe Baixo quando solo. Contra três ou mais inimigos lutando com você: Bacamarte, Tempestade Carmesim, Leque de Facas primeiro. Depois Emboscar com uma ativação de Perfídia (com uma adaga), Talho de Sabre mantido em três acúmulos, Faca Envenenada com quatro acúmulos de veneno, Retalhar a partir de dois pontos (renovado a partir de quatro, a menos que Direto ao Ponto esteja gravado), a tarefa de Expor Armadura quando ninguém usa Fender Armadura nem mantém Veneno Sebáceo, com Chacina gravada um sangramento (Tempestade Carmesim, senão Ruptura; nenhum com Talho de Sabre), Envenenar com cinco (Eviscerar até você gravá-lo) e um gerador conforme a runa de luvas: Mutilar, Talho de Sabre, Punhalada pelas Costas (com uma adaga), senão Golpe Sinistro. Lembretes: um encantamento temporário em cada arma, Chute, Chá de Cardo, Rajada de Lâminas, Adrenalina, Sangue Frio e Evasão, e, com Mestre do Subterfúgio gravado, Sumir para renová-lo e Preparação.",
+[2312] = "Temporada da Descoberta, níveis 1–60 com as runas conforme você as grava; montada a partir do simulador Fase 6, Icy Veins e Zockify Fase 8. Em Furtividade: Golpe Sombrio, Garrote em grupo, Emboscar para uma build de Punhalada pelas Costas com uma adaga, Golpe Baixo quando solo. Contra três ou mais inimigos lutando com você: Bacamarte, Tempestade Carmesim, Leque de Facas primeiro. Depois Emboscar com uma ativação de Perfídia (com uma adaga), Talho de Sabre mantido em três acúmulos, Faca Envenenada com quatro acúmulos de veneno, Retalhar a partir de dois pontos (renovado a partir de quatro, a menos que Direto ao Ponto esteja gravado), a tarefa de Expor Armadura quando ninguém usa Fender Armadura nem mantém Veneno Sebáceo, com Chacina gravada um sangramento (Tempestade Carmesim, senão Ruptura; nenhum com Talho de Sabre), Envenenar com cinco (Eviscerar até você gravá-lo) e um gerador conforme a runa de luvas: Mutilar, Talho de Sabre, Punhalada pelas Costas (com uma adaga), senão Golpe Sinistro. Lembretes: um encantamento temporário em cada arma, Chute, Chá de Cardo, Rajada de Lâminas, Adrenalina, Sangue Frio e Evasão, e, com Mestre do Subterfúgio gravado, Sumir para renová-lo e Preparação.",
 -- e2dafa09 English: Melee DPS, Rupture for Carnage (SoD, Icy Veins)
 [2313] = "DPS corpo a corpo, Ruptura para Chacina (SoD, Icy Veins)",
 -- 9aaebdaf English: Icy Veins' Season of Discovery order, an alternative to the recommended Season
@@ -9109,11 +9109,11 @@ addon.translation = {
 -- ebb8b9e3 English: Tank (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2317] = "Tanque (SoD)",
--- d50349d8 English: Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built
---     from wowsims Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on
+-- a76bbe4d English: Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built
+--     from simulator Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on
 --     cooldown, Blade Dance from one combo point (renewed from three), Slice and Dice from three
 --     (renewed from four), Fan of Knives, Crimson Tempest and Blunderbuss on three or more enemies,
 --     Blunderbuss while Blade Dance is up, Eviscerate at five with both buffs up, Poisoned Knife at
@@ -9121,22 +9121,22 @@ addon.translation = {
 --     your target attacks someone else, Kick, Evasion below half health, Blade Flurry, Adrenaline
 --     Rush, Thistle Tea and weapon poisons (the off-hand one only with an off-hand weapon).
 --     Shadowstep and Sebacious Poison duty stay with you.
-[2318] = "Tanque da Temporada da Descoberta, escolhida quando Só Um Arranhão está gravado; montada a partir do wowsims Fase 6, Icy Veins, Zockify e Warcraft Tavern. Ripostar, Adaga de Bloqueio assim que sair do tempo de recarga, Dança de Lâminas a partir de um ponto de combo (renovada a partir de três), Retalhar a partir de três (renovado a partir de quatro), Leque de Facas, Tempestade Carmesim e Bacamarte contra três ou mais inimigos, Bacamarte enquanto Dança de Lâminas estiver ativa, Eviscerar com cinco com os dois bônus ativos, Faca Envenenada com pouca energia, depois Talho de Sabre, Mutilar ou Golpe Sinistro. Lembretes: Caçoar em grupo quando seu alvo ataca outra pessoa, Chute, Evasão abaixo de metade da vida, Rajada de Lâminas, Adrenalina, Chá de Cardo e venenos de arma (o da mão secundária só com uma arma na mão secundária). Passo Furtivo e a tarefa de Veneno Sebáceo ficam com você.",
+[2318] = "Tanque da Temporada da Descoberta, escolhida quando Só Um Arranhão está gravado; montada a partir do simulador Fase 6, Icy Veins, Zockify e Warcraft Tavern. Ripostar, Adaga de Bloqueio assim que sair do tempo de recarga, Dança de Lâminas a partir de um ponto de combo (renovada a partir de três), Retalhar a partir de três (renovado a partir de quatro), Leque de Facas, Tempestade Carmesim e Bacamarte contra três ou mais inimigos, Bacamarte enquanto Dança de Lâminas estiver ativa, Eviscerar com cinco com os dois bônus ativos, Faca Envenenada com pouca energia, depois Talho de Sabre, Mutilar ou Golpe Sinistro. Lembretes: Caçoar em grupo quando seu alvo ataca outra pessoa, Chute, Evasão abaixo de metade da vida, Rajada de Lâminas, Adrenalina, Chá de Cardo e venenos de arma (o da mão secundária só com uma arma na mão secundária). Passo Furtivo e a tarefa de Veneno Sebáceo ficam com você.",
 -- b12b36cf English: Enhancement
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Classic Era (variant key: Enhancement).
 [2319] = "Aperfeiçoamento",
--- 5faeab70 English: Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a
---     talent majority; built from Icy Veins, Wowhead and wowsims. Lightning Bolt pulls from range;
---     Earth Shock interrupts. In raids only Stormstrike and Frost Shock (debuff slots). On three or
---     more enemies fighting you, Fire Nova and Magma totems. Then Stormstrike, Earth Shock into the
---     Stormstrike debuff or to finish, Flame Shock when it will run its course, Earth Shock while
---     you have half your mana, and Lightning Bolt while out of reach. Reminders: Rockbiter solo and
---     Windfury Weapon in dungeons, Lightning Shield, Strength of Earth, Searing, Windfury or Grace
---     of Air, Mana Spring or Healing Stream, healing after a pull and in emergencies. Stoneclaw,
---     Earthbind, totem twisting and racials are listed off; dispels, purges and cleansing totems
---     stay with you.
-[2320] = "Níveis 1–60, também em reinos Hardcore e Autossuficientes, e todo Xamã sem maioria de talentos; montada a partir da Icy Veins, Wowhead e wowsims. Raio puxa à distância; Choque Terreno interrompe. Em raides, só Ataque da Tempestade e Choque Gélido (espaços de penalidade). Contra três ou mais inimigos lutando com você, Totem de Nova de Fogo e Totem de Magma. Depois Ataque da Tempestade, Choque Terreno na penalidade do Ataque da Tempestade ou para finalizar, Choque Flamejante quando ele for durar até o fim, Choque Terreno enquanto você tiver metade da sua mana, e Raio enquanto estiver fora de alcance. Lembretes: Trinca-pedra solo e Arma de Fúria dos Ventos em masmorras, Escudo de Raios, Força da Terra, Calcinante, Fúria dos Ventos ou Graça do Ar, Fonte de Mana ou Torrente Curativa, cura depois de uma puxada e em emergências. Garra de Pedra, Prisão Terrena, alternância de totens e habilidades raciais vêm listados como desativados; dissipações, expurgos e totens purificadores ficam com você.",
+-- e9357a95 English: Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a
+--     talent majority; built from Icy Veins, Wowhead and simulator. Lightning Bolt pulls from
+--     range; Earth Shock interrupts. In raids only Stormstrike and Frost Shock (debuff slots). On
+--     three or more enemies fighting you, Fire Nova and Magma totems. Then Stormstrike, Earth Shock
+--     into the Stormstrike debuff or to finish, Flame Shock when it will run its course, Earth
+--     Shock while you have half your mana, and Lightning Bolt while out of reach. Reminders:
+--     Rockbiter solo and Windfury Weapon in dungeons, Lightning Shield, Strength of Earth, Searing,
+--     Windfury or Grace of Air, Mana Spring or Healing Stream, healing after a pull and in
+--     emergencies. Stoneclaw, Earthbind, totem twisting and racials are listed off; dispels, purges
+--     and cleansing totems stay with you.
+[2320] = "Níveis 1–60, também em reinos Hardcore e Autossuficientes, e todo Xamã sem maioria de talentos; montada a partir da Icy Veins, Wowhead e simulador. Raio puxa à distância; Choque Terreno interrompe. Em raides, só Ataque da Tempestade e Choque Gélido (espaços de penalidade). Contra três ou mais inimigos lutando com você, Totem de Nova de Fogo e Totem de Magma. Depois Ataque da Tempestade, Choque Terreno na penalidade do Ataque da Tempestade ou para finalizar, Choque Flamejante quando ele for durar até o fim, Choque Terreno enquanto você tiver metade da sua mana, e Raio enquanto estiver fora de alcance. Lembretes: Trinca-pedra solo e Arma de Fúria dos Ventos em masmorras, Escudo de Raios, Força da Terra, Calcinante, Fúria dos Ventos ou Graça do Ar, Fonte de Mana ou Torrente Curativa, cura depois de uma puxada e em emergências. Garra de Pedra, Prisão Terrena, alternância de totens e habilidades raciais vêm listados como desativados; dissipações, expurgos e totens purificadores ficam com você.",
 -- 327189d1 English: Enhancement, Flame Shock first (Warcraft Tavern)
 [2321] = "Aperfeiçoamento, Choque Flamejante primeiro (Warcraft Tavern)",
 -- bc01445d English: Warcraft Tavern's Enhancement, an alternative to the recommended Enhancement
@@ -9158,14 +9158,14 @@ addon.translation = {
 --     Healing Stream, Elemental Mastery with Chain Lightning ready, Nature's Swiftness and Healing
 --     Wave below 30%, healing after a pull. Dispels, purges and downranking stay with you.
 [2324] = "Elemental a partir do nível 10 (a maioria dos pontos em Elemental); montada a partir da Icy Veins e Wowhead. Choque Terreno interrompe e finaliza um alvo prestes a morrer. Em movimento: Choque Flamejante, senão Choque Gélido. Solo com o alvo corpo a corpo: Choque Terreno acima de 30% de vida, depois corpo a corpo. Contra três ou mais inimigos: Totem de Nova de Fogo e Totem de Magma quando você estiver corpo a corpo, e Cadeia de Raios. Cadeia de Raios sob Mestre dos Elementos ou Abstração, senão Raio. Lembretes: Escudo de Raios, Trinca-pedra fora de raides, Calcinante ou Magma, Fonte de Mana ou Torrente Curativa, Mestre dos Elementos com Cadeia de Raios pronta, Rapidez da Natureza e Onda Curativa abaixo de 30%, cura depois de uma puxada. Dissipações, expurgos e o uso de graus inferiores ficam com você.",
--- 7f93a27b English: Elemental, Chain Lightning on cooldown (wowsims)
-[2325] = "Elemental, Cadeia de Raios assim que sair da recarga (wowsims)",
--- d02c941a English: The wowsims Elemental list, an alternative to the recommended Elemental
+-- f652ee1c English: Elemental, Chain Lightning on cooldown (simulator)
+[2325] = "Elemental, Cadeia de Raios assim que sair da recarga (simulador)",
+-- a3ba0441 English: The simulator Elemental list, an alternative to the recommended Elemental
 --     premade, off by default: enable it and disable that one, or raise its priority. Chain
 --     Lightning on cooldown even on one target, Earth Shock while Elemental Mastery is up,
 --     otherwise Lightning Bolt. Faster but much hungrier for mana than the recommended premade;
 --     same interrupt, totems and reminders.
-[2326] = "A lista Elemental do wowsims, uma alternativa à rotação integrada de Elemental recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Cadeia de Raios assim que sair do tempo de recarga, mesmo contra um alvo, Choque Terreno enquanto Mestre dos Elementos estiver ativo, senão Raio. Mais rápida, mas muito mais faminta por mana que a rotação integrada recomendada; a mesma interrupção, os mesmos totens e lembretes.",
+[2326] = "A lista Elemental do simulador, uma alternativa à rotação integrada de Elemental recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Cadeia de Raios assim que sair do tempo de recarga, mesmo contra um alvo, Choque Terreno enquanto Mestre dos Elementos estiver ativo, senão Raio. Mais rápida, mas muito mais faminta por mana que a rotação integrada recomendada; a mesma interrupção, os mesmos totens e lembretes.",
 -- 6a3c6c77 English: Restoration
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Classic Era (variant key: Restoration).
@@ -9190,28 +9190,28 @@ addon.translation = {
 -- 37e5b161 English: Enhancement (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Season of Discovery (variant key: Enhancement). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2331] = "Aperfeiçoamento (SoD)",
--- 929796a6 English: Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or
---     two-hander, and every SoD Shaman no other premade fits; built from wowsims Phase 6, Icy Veins
---     and Wowhead. Flame Shock pulls; Earth Shock interrupts. On three or more enemies: Magma, Fire
---     Nova from a fire totem, Chain Lightning at four Maelstrom stacks, Flame Shock. Then Lava
---     Burst at five Maelstrom stacks, Stormstrike, Lava Lash, Lightning Bolt at five stacks, Flame
---     Shock when it will run, Earth Shock, Molten Blast, Lightning Bolt from range. Reminders:
---     Windfury Weapon (Rockbiter before), Flametongue on an off-hand weapon with Lava Lash (else
---     Windfury; never on a shield; an Icy Veins Windfury-both line is listed off), Water or
---     Lightning Shield, Spirit of the Alpha, Feral Spirit, Shamanistic Rage below 65% mana, totems,
---     Ancestral Guidance. Totemic Projection, dispels and purges stay with you.
-[2332] = "Temporada da Descoberta, níveis 1–60 com as runas conforme você as grava, duas armas ou arma de duas mãos, e todo Xamã da Temporada da Descoberta em que nenhuma outra rotação integrada se encaixe; montada a partir do wowsims Fase 6, Icy Veins e Wowhead. Choque Flamejante puxa; Choque Terreno interrompe. Contra três ou mais inimigos: Magma, Nova de Fogo a partir de um totem de fogo, Cadeia de Raios com quatro acúmulos de Arma da Voragem, Choque Flamejante. Depois Estouro de Lava com cinco acúmulos de Arma da Voragem, Ataque da Tempestade, Açoite de Lava, Raio com cinco acúmulos, Choque Flamejante quando ele for durar, Choque Terreno, Impacto Derretido, Raio à distância. Lembretes: Arma de Fúria dos Ventos (Trinca-pedra antes), Labaredas em uma arma de mão secundária com Açoite de Lava (senão Fúria dos Ventos; nunca em um escudo; uma linha da Icy Veins com Fúria dos Ventos nas duas armas vem listada como desativada), Escudo de Água ou Escudo de Raios, Espírito do Alfa, Espírito Feral, Fúria Xamanística abaixo de 65% de mana, totens, Conselho dos Ancestrais. Projeção Totêmica, dissipações e expurgos ficam com você.",
+-- 64d2c56f English: Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or
+--     two-hander, and every SoD Shaman no other premade fits; built from simulator Phase 6, Icy
+--     Veins and Wowhead. Flame Shock pulls; Earth Shock interrupts. On three or more enemies:
+--     Magma, Fire Nova from a fire totem, Chain Lightning at four Maelstrom stacks, Flame Shock.
+--     Then Lava Burst at five Maelstrom stacks, Stormstrike, Lava Lash, Lightning Bolt at five
+--     stacks, Flame Shock when it will run, Earth Shock, Molten Blast, Lightning Bolt from range.
+--     Reminders: Windfury Weapon (Rockbiter before), Flametongue on an off-hand weapon with Lava
+--     Lash (else Windfury; never on a shield; an Icy Veins Windfury-both line is listed off), Water
+--     or Lightning Shield, Spirit of the Alpha, Feral Spirit, Shamanistic Rage below 65% mana,
+--     totems, Ancestral Guidance. Totemic Projection, dispels and purges stay with you.
+[2332] = "Temporada da Descoberta, níveis 1–60 com as runas conforme você as grava, duas armas ou arma de duas mãos, e todo Xamã da Temporada da Descoberta em que nenhuma outra rotação integrada se encaixe; montada a partir do simulador Fase 6, Icy Veins e Wowhead. Choque Flamejante puxa; Choque Terreno interrompe. Contra três ou mais inimigos: Magma, Nova de Fogo a partir de um totem de fogo, Cadeia de Raios com quatro acúmulos de Arma da Voragem, Choque Flamejante. Depois Estouro de Lava com cinco acúmulos de Arma da Voragem, Ataque da Tempestade, Açoite de Lava, Raio com cinco acúmulos, Choque Flamejante quando ele for durar, Choque Terreno, Impacto Derretido, Raio à distância. Lembretes: Arma de Fúria dos Ventos (Trinca-pedra antes), Labaredas em uma arma de mão secundária com Açoite de Lava (senão Fúria dos Ventos; nunca em um escudo; uma linha da Icy Veins com Fúria dos Ventos nas duas armas vem listada como desativada), Escudo de Água ou Escudo de Raios, Espírito do Alfa, Espírito Feral, Fúria Xamanística abaixo de 65% de mana, totens, Conselho dos Ancestrais. Projeção Totêmica, dissipações e expurgos ficam com você.",
 -- 0fb65642 English: Elemental (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Season of Discovery (variant key: Elemental). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2333] = "Elemental (SoD)",
--- f9d25821 English: Season of Discovery Elemental from level 10 (most points in Elemental); built
---     from wowsims Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame
+-- 90cd327e English: Season of Discovery Elemental from level 10 (most points in Elemental); built
+--     from simulator Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame
 --     Shock, Earth Shock at eight Lightning Shield charges, Lava Burst or Chain Lightning on a
 --     Power Surge proc. On three or more enemies: Flame Shock, Chain Lightning, Fire Nova, Lava
 --     Burst, Earth Shock at eight charges, Magma. Then Lava Burst on Power Surge, Flame Shock kept
@@ -9219,12 +9219,12 @@ addon.translation = {
 --     two enemies, Lightning Bolt. Reminders: Flametongue for Burn, Lightning Shield, Earth Shield
 --     on yourself, Spirit of the Alpha, Feral Spirit, Shamanistic Rage, Elemental Mastery, totems.
 --     Trinkets, Totemic Projection, dispels and purges stay with you.
-[2334] = "Elemental da Temporada da Descoberta a partir do nível 10 (a maioria dos pontos em Elemental); montada a partir do wowsims Fase 6, Wowhead e Icy Veins. Choque Terreno interrompe. Em movimento: Choque Flamejante, Choque Terreno com oito cargas de Escudo de Raios, Estouro de Lava ou Cadeia de Raios com uma ativação de Surto de Poder. Contra três ou mais inimigos: Choque Flamejante, Cadeia de Raios, Nova de Fogo, Estouro de Lava, Choque Terreno com oito cargas, Magma. Depois Estouro de Lava com Surto de Poder, Choque Flamejante mantido, Estouro de Lava enquanto seu Choque Flamejante durar, Choque Terreno com oito cargas, Cadeia de Raios contra dois inimigos, Raio. Lembretes: Labaredas para Queimadura, Escudo de Raios, Escudo da Terra em você mesmo, Espírito do Alfa, Espírito Feral, Fúria Xamanística, Mestre dos Elementos, totens. Berloques, Projeção Totêmica, dissipações e expurgos ficam com você.",
+[2334] = "Elemental da Temporada da Descoberta a partir do nível 10 (a maioria dos pontos em Elemental); montada a partir do simulador Fase 6, Wowhead e Icy Veins. Choque Terreno interrompe. Em movimento: Choque Flamejante, Choque Terreno com oito cargas de Escudo de Raios, Estouro de Lava ou Cadeia de Raios com uma ativação de Surto de Poder. Contra três ou mais inimigos: Choque Flamejante, Cadeia de Raios, Nova de Fogo, Estouro de Lava, Choque Terreno com oito cargas, Magma. Depois Estouro de Lava com Surto de Poder, Choque Flamejante mantido, Estouro de Lava enquanto seu Choque Flamejante durar, Choque Terreno com oito cargas, Cadeia de Raios contra dois inimigos, Raio. Lembretes: Labaredas para Queimadura, Escudo de Raios, Escudo da Terra em você mesmo, Espírito do Alfa, Espírito Feral, Fúria Xamanística, Mestre dos Elementos, totens. Berloques, Projeção Totêmica, dissipações e expurgos ficam com você.",
 -- 24f21f83 English: Restoration (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2335] = "Restauração (SoD)",
 -- ff16512c English: Season of Discovery Restoration from level 10 (most points in Restoration);
 --     built from Icy Veins and Wowhead. On your friendly target: Riptide then Lesser Healing Wave
@@ -9237,21 +9237,21 @@ addon.translation = {
 [2336] = "Restauração da Temporada da Descoberta a partir do nível 10 (a maioria dos pontos em Restauração); montada a partir da Icy Veins e Wowhead. No seu alvo amigável: Contracorrente e depois Onda Curativa Menor abaixo de 40%, Curar Veneno ou Curar Doença, Chuva Curativa quando três membros do grupo perto de você estiverem abaixo de 85%, Cura Encadeada quando dois estiverem (na hora com uma ativação de Surto de Poder), Contracorrente abaixo de 95% para Mar Revolto, Onda Curativa abaixo de 90%. Em um inimigo, ataca. Lembretes: Escudo de Água (Escudo de Raios antes), Escudo da Terra no seu alvo amigável ou em você mesmo, Fúria Xamanística, Vagalhão de Mana, Fonte de Mana e Força da Terra. A escolha de quem curar e os totens Sísmico ou purificadores ficam com você.",
 -- 007cf117 English: Tank (SoD, Way of Earth)
 [2337] = "Tanque (SoD, Caminho Telúrico)",
--- 8ecde7ce English: Season of Discovery tank, chosen once Way of Earth is engraved; built from Icy
---     Veins, Wowhead, wowsims and Warcraft Tavern. Flame Shock pulls. Earth Shock taunts a target
+-- 3332db10 English: Season of Discovery tank, chosen once Way of Earth is engraved; built from Icy
+--     Veins, Wowhead, simulator and Warcraft Tavern. Flame Shock pulls. Earth Shock taunts a target
 --     in melee that is not attacking you, and interrupts. On two or more enemies: Molten Blast,
 --     Flame Shock, Chain Lightning at five Maelstrom stacks or on Power Surge, Fire Nova at five
 --     stacks. Then Flame Shock kept up, Lava Burst on Power Surge or while Flame Shock lasts,
 --     Stormstrike, Earth Shock, Lightning Bolt at five stacks, Molten Blast, Frost Shock.
 --     Reminders: Rockbiter, Lightning Shield, Spirit of the Alpha on yourself, Feral Spirit,
 --     Shamanistic Rage, Searing or Magma, and group totems.
-[2338] = "Tanque da Temporada da Descoberta, escolhida quando Caminho Telúrico está gravado; montada a partir da Icy Veins, Wowhead, wowsims e Warcraft Tavern. Choque Flamejante puxa. Choque Terreno provoca um alvo corpo a corpo que não está atacando você, e interrompe. Contra dois ou mais inimigos: Impacto Derretido, Choque Flamejante, Cadeia de Raios com cinco acúmulos de Arma da Voragem ou com Surto de Poder, Nova de Fogo com cinco acúmulos. Depois Choque Flamejante mantido, Estouro de Lava com Surto de Poder ou enquanto Choque Flamejante durar, Ataque da Tempestade, Choque Terreno, Raio com cinco acúmulos, Impacto Derretido, Choque Gélido. Lembretes: Trinca-pedra, Escudo de Raios, Espírito do Alfa em você mesmo, Espírito Feral, Fúria Xamanística, Calcinante ou Magma, e totens de grupo.",
+[2338] = "Tanque da Temporada da Descoberta, escolhida quando Caminho Telúrico está gravado; montada a partir da Icy Veins, Wowhead, simulador e Warcraft Tavern. Choque Flamejante puxa. Choque Terreno provoca um alvo corpo a corpo que não está atacando você, e interrompe. Contra dois ou mais inimigos: Impacto Derretido, Choque Flamejante, Cadeia de Raios com cinco acúmulos de Arma da Voragem ou com Surto de Poder, Nova de Fogo com cinco acúmulos. Depois Choque Flamejante mantido, Estouro de Lava com Surto de Poder ou enquanto Choque Flamejante durar, Ataque da Tempestade, Choque Terreno, Raio com cinco acúmulos, Impacto Derretido, Choque Gélido. Lembretes: Trinca-pedra, Escudo de Raios, Espírito do Alfa em você mesmo, Espírito Feral, Fúria Xamanística, Calcinante ou Magma, e totens de grupo.",
 -- 2628a00c English: Every tree
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Classic Era (variant key: DPS).
 [2339] = "Todas as árvores",
--- 67b0af4c English: Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built
---     from Wowhead, Icy Veins, Warcraft Tavern and wowsims. Stops while you cast or channel and
+-- cd5cc4e5 English: Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built
+--     from Wowhead, Icy Veins, Warcraft Tavern and simulator. Stops while you cast or channel and
 --     never tags a mob someone else is fighting while you are solo. Nightfall's Shadow Trance
 --     first; Shadowburn and Searing Pain to finish a group target; a solo target about to die gets
 --     Drain Soul (for a shard, or with Improved Drain Soul), Shadowburn or Conflagrate, then the
@@ -9265,7 +9265,7 @@ addon.translation = {
 --     Sacrifice, Amplify Curse, Voidwalker Sacrifice and a Healthstone when low, Health Funnel.
 --     Curse assignments, Curse of Recklessness on a fleeing mob, Fear, Banish, Soulstones and
 --     creating Healthstones stay with you.
-[2340] = "Níveis 1–60, todas as árvores de talentos, também em reinos Hardcore e Autossuficientes; montada a partir da Wowhead, Icy Veins, Warcraft Tavern e wowsims. Para enquanto você lança ou canaliza e nunca marca um monstro que outra pessoa está combatendo enquanto você está solo. Transe Sombrio do Martelo do Ocaso primeiro; Sombra Ardente e Dor Lancinante para finalizar um alvo em grupo; um alvo solo prestes a morrer recebe Drenar Alma (por um fragmento, ou com Drenar Alma Aprimorado), Sombra Ardente ou Conflagrar, depois a varinha, nunca novos DoTs. Em movimento, só instantâneos. Contra três ou mais inimigos: Fogo do Inferno quando estiverem em você e você tiver metade da vida, senão Chuva de Fogo. Uma maldição: em raides, Maldição da Sombra ou dos Elementos quando ninguém a tiver, Ruína em lutas longas contra elites, senão Agonia. Imolação quando compensa (Destruição, raides ou com 40% de mana), Corrupção, Sifão de Vida (em raides só com Vulnerabilidade à Sombra). Solo: Pacto Sombrio, Conversão de Vida quando estiver com bastante vida, Drenar Vida quando ferido, a varinha. Senão, Seta Sombria. Lembretes: Armadura Demoníaca ou Pele de Demônio, seu ajudante (Emissário do Caos solo, Diabrete em grupo, Súcubo para Sacrifício Demoníaco), Dominância Vil, Sacrifício Demoníaco, Amplificar Maldição, Sacrificar do Emissário do Caos e uma Pedra de Vida quando estiver com pouca vida, Funil de Vida. A divisão de maldições, Maldição da Temeridade em um monstro em fuga, Medo, Banir, Pedras da Alma e criar Pedras de Vida ficam com você.",
+[2340] = "Níveis 1–60, todas as árvores de talentos, também em reinos Hardcore e Autossuficientes; montada a partir da Wowhead, Icy Veins, Warcraft Tavern e simulador. Para enquanto você lança ou canaliza e nunca marca um monstro que outra pessoa está combatendo enquanto você está solo. Transe Sombrio do Martelo do Ocaso primeiro; Sombra Ardente e Dor Lancinante para finalizar um alvo em grupo; um alvo solo prestes a morrer recebe Drenar Alma (por um fragmento, ou com Drenar Alma Aprimorado), Sombra Ardente ou Conflagrar, depois a varinha, nunca novos DoTs. Em movimento, só instantâneos. Contra três ou mais inimigos: Fogo do Inferno quando estiverem em você e você tiver metade da vida, senão Chuva de Fogo. Uma maldição: em raides, Maldição da Sombra ou dos Elementos quando ninguém a tiver, Ruína em lutas longas contra elites, senão Agonia. Imolação quando compensa (Destruição, raides ou com 40% de mana), Corrupção, Sifão de Vida (em raides só com Vulnerabilidade à Sombra). Solo: Pacto Sombrio, Conversão de Vida quando estiver com bastante vida, Drenar Vida quando ferido, a varinha. Senão, Seta Sombria. Lembretes: Armadura Demoníaca ou Pele de Demônio, seu ajudante (Emissário do Caos solo, Diabrete em grupo, Súcubo para Sacrifício Demoníaco), Dominância Vil, Sacrifício Demoníaco, Amplificar Maldição, Sacrificar do Emissário do Caos e uma Pedra de Vida quando estiver com pouca vida, Funil de Vida. A divisão de maldições, Maldição da Temeridade em um monstro em fuga, Medo, Banir, Pedras da Alma e criar Pedras de Vida ficam com você.",
 -- 2a4e91fe English: Drain tank (Warcraft Tavern)
 [2341] = "Tanque de dreno (Warcraft Tavern)",
 -- f3fb6b8f English: Warcraft Tavern's leveling style, an alternative to the recommended Warlock
@@ -9286,12 +9286,12 @@ addon.translation = {
 -- 4f0bc39e English: Tank (SoD, Metamorphosis)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2345] = "Tanque (SoD, Metamorfose)",
--- 1e24cbef English: Season of Discovery tank, chosen once Metamorphosis is engraved; built from
---     wowsims, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is
---     missing or ending, a Soul Fire! proc, Incinerate to keep its fire buff; on three or more
+-- 4026dce5 English: Season of Discovery tank, chosen once Metamorphosis is engraved; built from
+--     simulator, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve
+--     is missing or ending, a Soul Fire! proc, Incinerate to keep its fire buff; on three or more
 --     enemies Shadow Cleave, Lake of Fire, Shadowflame and Hellfire. Then a curse (Agony, else
 --     Recklessness when nobody has it), Shadowflame (Immolate before you engrave it), Master
 --     Channeler Drain Life, Corruption, Siphon Life, Conflagrate for Backdraft, Soul Fire under
@@ -9299,22 +9299,22 @@ addon.translation = {
 --     Armor, your pet, Immolation Aura, Demonic Grace, Vengeance when low, Menace when the target
 --     attacks someone else, Demonic Howl on packs, Amplify Curse, Life Tap for a pet low on mana.
 --     Infernal Armor stays with you.
-[2346] = "Tanque da Temporada da Descoberta, escolhida depois que Metamorfose é gravada; montada a partir do wowsims, Icy Veins, Wowhead e Warcraft Tavern. Cutilada Sombria sempre que Determinação do Defensor estiver ausente ou acabando, uma ativação de Fogo d'Alma!, Incinerar para manter seu bônus de fogo; contra três ou mais inimigos, Cutilada Sombria, Lago de Fogo, Chama Sombria e Fogo do Inferno. Depois uma maldição (Agonia, senão Temeridade quando ninguém a tiver), Chama Sombria (Imolação antes de você gravá-la), Drenar Vida com Mestre Canalizador, Corrupção, Sifão de Vida, Conflagrar para Cortina de Fogo, Fogo d'Alma sob Dizimação abaixo de 35%, e Dor Lancinante como preenchimento de ameaça. Lembretes: Metamorfose, Armadura Vil, seu ajudante, Aura de Imolação, Graça Demoníaca, Vingança quando estiver com pouca vida, Ameaça quando o alvo ataca outra pessoa, Uivo Demoníaco em grupos de inimigos, Amplificar Maldição, Conversão de Vida para um ajudante com pouca mana. Armadura Infernal fica com você.",
+[2346] = "Tanque da Temporada da Descoberta, escolhida depois que Metamorfose é gravada; montada a partir do simulador, Icy Veins, Wowhead e Warcraft Tavern. Cutilada Sombria sempre que Determinação do Defensor estiver ausente ou acabando, uma ativação de Fogo d'Alma!, Incinerar para manter seu bônus de fogo; contra três ou mais inimigos, Cutilada Sombria, Lago de Fogo, Chama Sombria e Fogo do Inferno. Depois uma maldição (Agonia, senão Temeridade quando ninguém a tiver), Chama Sombria (Imolação antes de você gravá-la), Drenar Vida com Mestre Canalizador, Corrupção, Sifão de Vida, Conflagrar para Cortina de Fogo, Fogo d'Alma sob Dizimação abaixo de 35%, e Dor Lancinante como preenchimento de ameaça. Lembretes: Metamorfose, Armadura Vil, seu ajudante, Aura de Imolação, Graça Demoníaca, Vingança quando estiver com pouca vida, Ameaça quando o alvo ataca outra pessoa, Uivo Demoníaco em grupos de inimigos, Amplificar Maldição, Conversão de Vida para um ajudante com pouca mana. Armadura Infernal fica com você.",
 -- 91d3c82e English: Fire (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2347] = "Fogo (SoD)",
--- b3afd0ce English: Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is
---     engraved; built from wowsims Phase 6 and Wowhead. Shadowburn and Searing Pain to finish;
+-- 8e9ea310 English: Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is
+--     engraved; built from simulator Phase 6 and Wowhead. Shadowburn and Searing Pain to finish;
 --     instants while moving; Incinerate's buff, Lake of Fire and Hellfire on packs; a curse
 --     (Recklessness in a group when nobody has it, Doom on long elite fights, else Agony);
 --     Conflagrate only to keep Backdraft; Immolate and Incinerate's buff kept up; below 35% Soul
 --     Fire under Decimation instead of Chaos Bolt; Soul Fire! procs; Chaos Bolt; solo Master
 --     Channeler Drain Life and Life Tap; Incinerate (Shadow Bolt before you engrave it). Reminders:
 --     Fel Armor, the Imp, Amplify Curse and the safety reminders.
-[2348] = "Destruição da Temporada da Descoberta, escolhida depois que Seta do Caos ou Incinerar é gravado; montada a partir do wowsims Fase 6 e Wowhead. Sombra Ardente e Dor Lancinante para finalizar; instantâneos em movimento; o bônus de Incinerar, Lago de Fogo e Fogo do Inferno em grupos de inimigos; uma maldição (Temeridade em grupo quando ninguém a tiver, Ruína em lutas longas contra elites, senão Agonia); Conflagrar só para manter Cortina de Fogo; Imolação e o bônus de Incinerar mantidos; abaixo de 35%, Fogo d'Alma sob Dizimação em vez de Seta do Caos; ativações de Fogo d'Alma!; Seta do Caos; solo, Drenar Vida com Mestre Canalizador e Conversão de Vida; Incinerar (Seta Sombria antes de você gravá-lo). Lembretes: Armadura Vil, o Diabrete, Amplificar Maldição e os lembretes de segurança.",
+[2348] = "Destruição da Temporada da Descoberta, escolhida depois que Seta do Caos ou Incinerar é gravado; montada a partir do simulador Fase 6 e Wowhead. Sombra Ardente e Dor Lancinante para finalizar; instantâneos em movimento; o bônus de Incinerar, Lago de Fogo e Fogo do Inferno em grupos de inimigos; uma maldição (Temeridade em grupo quando ninguém a tiver, Ruína em lutas longas contra elites, senão Agonia); Conflagrar só para manter Cortina de Fogo; Imolação e o bônus de Incinerar mantidos; abaixo de 35%, Fogo d'Alma sob Dizimação em vez de Seta do Caos; ativações de Fogo d'Alma!; Seta do Caos; solo, Drenar Vida com Mestre Canalizador e Conversão de Vida; Incinerar (Seta Sombria antes de você gravá-lo). Lembretes: Armadura Vil, o Diabrete, Amplificar Maldição e os lembretes de segurança.",
 -- c007c49e English: Fire, Conflagrate on cooldown (SoD, Icy Veins)
 [2349] = "Fogo, Conflagrar assim que sair da recarga (SoD, Icy Veins)",
 -- 11cdbaf7 English: Icy Veins' and Warcraft Tavern's Season of Discovery Destruction, an
@@ -9326,8 +9326,8 @@ addon.translation = {
 [2350] = "A Destruição da Temporada da Descoberta da Icy Veins e da Warcraft Tavern, uma alternativa à rotação integrada de Fogo da Temporada da Descoberta recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Imolação mantida, Conflagrar e Seta do Caos assim que saírem do tempo de recarga (Seta do Caos também abaixo de 35%), o bônus de Incinerar, Fogo d'Alma sob Dizimação abaixo de 35%, Incinerar como preenchimento; a maldição de dano só em movimento, com Temeridade em grupo quando ninguém a tiver.",
 -- 998799fe English: Shadow, Affliction and Felguard (SoD)
 [2351] = "Sombra (SoD, Suplício e Guarda Vil)",
--- 7646e9f2 English: Season of Discovery Affliction and Felguard builds, and every SoD Warlock no
---     other premade fits; built from wowsims Phase 6, Wowhead and Icy Veins. Nightfall procs;
+-- c8da1636 English: Season of Discovery Affliction and Felguard builds, and every SoD Warlock no
+--     other premade fits; built from simulator Phase 6, Wowhead and Icy Veins. Nightfall procs;
 --     Shadowburn or Drain Soul to finish a group target; a dying solo target gets Drain Soul, not
 --     DoTs; instants while moving; Lake of Fire and Hellfire on packs; a curse (Recklessness in a
 --     group when nobody has it, else Agony); Unstable Affliction, Master Channeler Drain Life,
@@ -9336,23 +9336,23 @@ addon.translation = {
 --     sustain and the wand; Shadow Bolt. Reminders: Fel Armor, your pet (a Felguard once engraved),
 --     Life Tap for a pet low on mana, Amplify Curse and the safety reminders. Curse assignments and
 --     Shadow Bolt Volley packs stay with you.
-[2352] = "Builds de Suplício e de Guarda Vil da Temporada da Descoberta, e todo Bruxo da Temporada da Descoberta em que nenhuma outra rotação integrada se encaixe; montada a partir do wowsims Fase 6, Wowhead e Icy Veins. Ativações de Martelo do Ocaso; Sombra Ardente ou Drenar Alma para finalizar um alvo em grupo; um alvo solo morrendo recebe Drenar Alma, não DoTs; instantâneos em movimento; Lago de Fogo e Fogo do Inferno em grupos de inimigos; uma maldição (Temeridade em grupo quando ninguém a tiver, senão Agonia); Agonia Instável, Drenar Vida com Mestre Canalizador, Chama Sombria (Imolação antes dela), Corrupção, Assombrar, Sifão de Vida (cada um renovado com menos de 6 segundos com Invocação gravada); Drenar Alma abaixo de 20% com Sifão da Alma gravado; sustentação solo e a varinha; Seta Sombria. Lembretes: Armadura Vil, seu ajudante (um Guarda Vil depois de gravado), Conversão de Vida para um ajudante com pouca mana, Amplificar Maldição e os lembretes de segurança. A divisão de maldições e Salva de Setas Sombrias em grupos de inimigos ficam com você.",
--- 9b2b374b English: Shadow, Drain Soul filler (SoD, wowsims)
-[2353] = "Sombra, Drenar Alma como preenchimento (SoD, wowsims)",
--- aff32cb7 English: The wowsims Phase 6 Affliction list for a Soul Siphon build, an alternative to
---     the recommended Season of Discovery Shadow premade, off by default: enable it and disable
+[2352] = "Builds de Suplício e de Guarda Vil da Temporada da Descoberta, e todo Bruxo da Temporada da Descoberta em que nenhuma outra rotação integrada se encaixe; montada a partir do simulador Fase 6, Wowhead e Icy Veins. Ativações de Martelo do Ocaso; Sombra Ardente ou Drenar Alma para finalizar um alvo em grupo; um alvo solo morrendo recebe Drenar Alma, não DoTs; instantâneos em movimento; Lago de Fogo e Fogo do Inferno em grupos de inimigos; uma maldição (Temeridade em grupo quando ninguém a tiver, senão Agonia); Agonia Instável, Drenar Vida com Mestre Canalizador, Chama Sombria (Imolação antes dela), Corrupção, Assombrar, Sifão de Vida (cada um renovado com menos de 6 segundos com Invocação gravada); Drenar Alma abaixo de 20% com Sifão da Alma gravado; sustentação solo e a varinha; Seta Sombria. Lembretes: Armadura Vil, seu ajudante (um Guarda Vil depois de gravado), Conversão de Vida para um ajudante com pouca mana, Amplificar Maldição e os lembretes de segurança. A divisão de maldições e Salva de Setas Sombrias em grupos de inimigos ficam com você.",
+-- 9fe0ee40 English: Shadow, Drain Soul filler (SoD, simulator)
+[2353] = "Sombra, Drenar Alma como preenchimento (SoD, simulador)",
+-- 8e9b4067 English: The simulator Phase 6 Affliction list for a Soul Siphon build, an alternative
+--     to the recommended Season of Discovery Shadow premade, off by default: enable it and disable
 --     that one, or raise its priority. Drain Soul is the filler at any health, and the next step
 --     shows as soon as it is due so you can clip the channel for it; any other channel is left to
 --     finish. Unstable Affliction and Shadowflame renewed with 7.5 seconds left, Agony and
 --     Corruption with 6, Master Channeler Drain Life, Haunt, Shadow Bolt only on a Shadow Trance
 --     proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade.
-[2354] = "A lista de Suplício da Fase 6 do wowsims para uma build de Sifão da Alma, uma alternativa à rotação integrada de Sombra da Temporada da Descoberta recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Drenar Alma é o preenchimento com qualquer vida, e o próximo passo aparece assim que fica devido, para que você possa cortar a canalização por ele; qualquer outra canalização é deixada terminar. Agonia Instável e Chama Sombria renovadas com 7,5 segundos restantes, Agonia e Corrupção com 6, Drenar Vida com Mestre Canalizador, Assombrar, Seta Sombria só com uma ativação de Transe Sombrio, Sifão de Vida, Conversão de Vida abaixo de 10% de mana. Os mesmos lembretes da rotação integrada recomendada.",
+[2354] = "A lista de Suplício da Fase 6 do simulador para uma build de Sifão da Alma, uma alternativa à rotação integrada de Sombra da Temporada da Descoberta recomendada, desativada por padrão: ative-a e desative aquela, ou aumente a prioridade dela. Drenar Alma é o preenchimento com qualquer vida, e o próximo passo aparece assim que fica devido, para que você possa cortar a canalização por ele; qualquer outra canalização é deixada terminar. Agonia Instável e Chama Sombria renovadas com 7,5 segundos restantes, Agonia e Corrupção com 6, Drenar Vida com Mestre Canalizador, Assombrar, Seta Sombria só com uma ativação de Transe Sombrio, Sifão de Vida, Conversão de Vida abaixo de 10% de mana. Os mesmos lembretes da rotação integrada recomendada.",
 -- e5b321d7 English: Melee DPS
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Classic Era (variant key: DPS).
 [2355] = "DPS corpo a corpo",
--- c080d284 English: Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on
---     Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. Charge to pull,
+-- b97180f8 English: Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on
+--     Hardcore and Self-Found realms; built from simulator, Icy Veins and Wowhead. Charge to pull,
 --     Intercept a distant target, Whirlwind (Thunder Clap before you learn it) on three or more
 --     enemies fighting you, then Execute first below 20%, Sunder Armor to five on bosses without
 --     Expose Armor, Bloodthirst, Mortal Strike, Slam right after a swing with Improved Slam (set
@@ -9362,7 +9362,7 @@ addon.translation = {
 --     leveling), Cleave on packs, Bloodrage, Sweeping Strikes, Death Wish (bosses: their last 30
 --     seconds), Recklessness with Death Wish, Pummel or Shield Bash. Intimidating Shout and
 --     Retaliation are listed off for Hardcore emergencies; stance dancing stays with you.
-[2356] = "Níveis 1–60, Armas e Fúria, e todo guerreiro fora da Postura de Defesa, também em reinos Hardcore e Autossuficientes; montada a partir do wowsims, Icy Veins e Wowhead. Investida para puxar, Interceptar um alvo distante, Redemoinho (Trovoada antes de aprendê-lo) contra três ou mais inimigos lutando com você, depois Executar primeiro abaixo de 20%, Fender Armadura até cinco em chefes sem Expor Armadura, Sede de Sangue, Golpe Mortal, Batida logo após um golpe com Batida Aprimorada (ajustada para uma arma de duas mãos; altere isso duplicando a rotação), Redemoinho guardando raiva para seu golpe principal, Subjugar, Dilacerar até aprender seu golpe principal, Fender Armadura em alvos com bastante vida e Cortar Tendão perto do limite de raiva. Lembretes: Brado de Batalha, Golpe Heroico a partir de 40 de raiva (20 durante a evolução de nível), Cutilada em grupos de inimigos, Fúria Sanguinária, Golpes a Esmo, Desejo de Matar (chefes: nos seus últimos 30 segundos), Temeridade com Desejo de Matar, Murro ou Trombada com Escudo. Brado Intimidador e Retaliação vêm listados como desativados para emergências no Hardcore; a troca de posturas fica com você.",
+[2356] = "Níveis 1–60, Armas e Fúria, e todo guerreiro fora da Postura de Defesa, também em reinos Hardcore e Autossuficientes; montada a partir do simulador, Icy Veins e Wowhead. Investida para puxar, Interceptar um alvo distante, Redemoinho (Trovoada antes de aprendê-lo) contra três ou mais inimigos lutando com você, depois Executar primeiro abaixo de 20%, Fender Armadura até cinco em chefes sem Expor Armadura, Sede de Sangue, Golpe Mortal, Batida logo após um golpe com Batida Aprimorada (ajustada para uma arma de duas mãos; altere isso duplicando a rotação), Redemoinho guardando raiva para seu golpe principal, Subjugar, Dilacerar até aprender seu golpe principal, Fender Armadura em alvos com bastante vida e Cortar Tendão perto do limite de raiva. Lembretes: Brado de Batalha, Golpe Heroico a partir de 40 de raiva (20 durante a evolução de nível), Cutilada em grupos de inimigos, Fúria Sanguinária, Golpes a Esmo, Desejo de Matar (chefes: nos seus últimos 30 segundos), Temeridade com Desejo de Matar, Murro ou Trombada com Escudo. Brado Intimidador e Retaliação vêm listados como desativados para emergências no Hardcore; a troca de posturas fica com você.",
 -- c0b21fb1 English: Tank
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Classic Era (variant key: Protection).
@@ -9388,12 +9388,12 @@ addon.translation = {
 -- b33d1254 English: Melee DPS (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2361] = "DPS corpo a corpo (SoD)",
--- dbdfa29c English: Season of Discovery, levels 1–60 with runes as you engrave them: two-hander,
+-- 8778ee5f English: Season of Discovery, levels 1–60 with runes as you engrave them: two-hander,
 --     dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built
---     from wowsims Phase 6 and Wowhead Phase 7/8. Charge, Victory Rush, Intercept, Whirlwind
+--     from simulator Phase 6 and Wowhead Phase 7/8. Charge, Victory Rush, Intercept, Whirlwind
 --     (Thunder Clap before it) on two or more enemies, Slam at three Slammin' stacks, Rend kept up,
 --     Slam on Blood Surge (on cooldown with Precise Timing engraved), Bloodthirst, Mortal Strike,
 --     Shield Slam (with a shield), Overpower; then Quick Strike when it is engraved (two-hander),
@@ -9402,7 +9402,7 @@ addon.translation = {
 --     Strike from 50 rage (always while Consumed by Rage enrages you), Cleave, Bloodrage, Rampage,
 --     Death Wish, Recklessness, Sweeping Strikes, interrupts. Berserker Rage and the Taste for
 --     Blood Battle Stance dip are listed off.
-[2362] = "Temporada da Descoberta, níveis 1–60 com as runas conforme você as grava: arma de duas mãos, duas armas, Gladiador e evolução de nível, e todo guerreiro da Temporada da Descoberta fora da Postura de Defesa; montada a partir do wowsims Fase 6 e Wowhead Fase 7/8. Investida, Ímpeto da Vitória, Interceptar, Redemoinho (Trovoada antes dele) contra dois ou mais inimigos, Batida com três acúmulos de Batidão, Dilacerar mantido, Batida com Rebentação de Sangue (assim que sair do tempo de recarga com Tempo Preciso gravado), Sede de Sangue, Golpe Mortal, Escudada (com um escudo), Subjugar; depois Golpe Rápido quando estiver gravado (arma de duas mãos), senão Redemoinho, Golpe Furioso e Devastar (Fender Armadura antes dele); Executar com 30 de raiva ou com Morte Súbita; Cortar Tendão perto do limite de raiva. Lembretes: Brado de Batalha e Brado de Comando, Golpe Heroico a partir de 50 de raiva (sempre enquanto Consumido pela Raiva enfurecer você), Cutilada, Fúria Sanguinária, Alvoroço, Desejo de Matar, Temeridade, Golpes a Esmo, interrupções. Raiva Incontrolada e a passagem rápida pela Postura de Batalha para Apetite por Sangue vêm listadas como desativadas.",
+[2362] = "Temporada da Descoberta, níveis 1–60 com as runas conforme você as grava: arma de duas mãos, duas armas, Gladiador e evolução de nível, e todo guerreiro da Temporada da Descoberta fora da Postura de Defesa; montada a partir do simulador Fase 6 e Wowhead Fase 7/8. Investida, Ímpeto da Vitória, Interceptar, Redemoinho (Trovoada antes dele) contra dois ou mais inimigos, Batida com três acúmulos de Batidão, Dilacerar mantido, Batida com Rebentação de Sangue (assim que sair do tempo de recarga com Tempo Preciso gravado), Sede de Sangue, Golpe Mortal, Escudada (com um escudo), Subjugar; depois Golpe Rápido quando estiver gravado (arma de duas mãos), senão Redemoinho, Golpe Furioso e Devastar (Fender Armadura antes dele); Executar com 30 de raiva ou com Morte Súbita; Cortar Tendão perto do limite de raiva. Lembretes: Brado de Batalha e Brado de Comando, Golpe Heroico a partir de 50 de raiva (sempre enquanto Consumido pela Raiva enfurecer você), Cutilada, Fúria Sanguinária, Alvoroço, Desejo de Matar, Temeridade, Golpes a Esmo, interrupções. Raiva Incontrolada e a passagem rápida pela Postura de Batalha para Apetite por Sangue vêm listadas como desativadas.",
 -- c5bed192 English: Battle Forecaster stance dance (SoD, Wowhead)
 [2363] = "Troca de posturas com Preditor de Batalhas (SoD, Wowhead)",
 -- ef07220e English: Wowhead's Phase 7/8 rotation for Soul of the Battle Forecaster or the Tier 1
@@ -9424,19 +9424,19 @@ addon.translation = {
 -- ebb8b9e3 English: Tank (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2367] = "Tanque (SoD)",
--- 93f460da English: Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase
---     8 and wowsims. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge,
---     Whirlwind and Devastate; then Shield Slam whenever Defender's Resolve is missing or ending,
---     Revenge, Shield Slam, Shockwave, Execute, Whirlwind at five Gladiator's Cunning stacks,
---     Devastate (Sunder before it), Demoralizing Shout and Thunder Clap on elites, Rend before
---     Shield Slam; Shield Slam and Shield Block only with a shield on. Reminders: Battle and
+-- 5f490610 English: Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase
+--     8 and simulator. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam,
+--     Revenge, Whirlwind and Devastate; then Shield Slam whenever Defender's Resolve is missing or
+--     ending, Revenge, Shield Slam, Shockwave, Execute, Whirlwind at five Gladiator's Cunning
+--     stacks, Devastate (Sunder before it), Demoralizing Shout and Thunder Clap on elites, Rend
+--     before Shield Slam; Shield Slam and Shield Block only with a shield on. Reminders: Battle and
 --     Commanding Shout, Shield Block, Heroic Strike from 50 rage, Cleave from 55, Bloodrage,
 --     Rampage, Last Stand, interrupts. Taunt, Shield Wall, Death Wish, Recklessness and Retaliation
 --     are listed off; the Gladiator swap for Execute stays with you.
-[2368] = "Tanque da Temporada da Descoberta, escolhida na Postura de Defesa; montada a partir da Wowhead Fase 8 e do wowsims. Investida; contra dois ou mais inimigos, Trovoada, Onda de Choque, Escudada, Revanche, Redemoinho e Devastar; depois Escudada sempre que Determinação do Defensor estiver ausente ou acabando, Revanche, Escudada, Onda de Choque, Executar, Redemoinho com cinco acúmulos de Astúcia do Gladiador, Devastar (Fender Armadura antes dele), Brado Desmoralizador e Trovoada em elites, Dilacerar antes de Escudada; Escudada e Levantar Escudo só com um escudo equipado. Lembretes: Brado de Batalha e Brado de Comando, Levantar Escudo, Golpe Heroico a partir de 50 de raiva, Cutilada a partir de 55, Fúria Sanguinária, Alvoroço, Último Recurso, interrupções. Provocar, Muralha de Escudos, Desejo de Matar, Temeridade e Retaliação vêm listados como desativados; a troca para Gladiador para Executar fica com você.",
+[2368] = "Tanque da Temporada da Descoberta, escolhida na Postura de Defesa; montada a partir da Wowhead Fase 8 e do simulador. Investida; contra dois ou mais inimigos, Trovoada, Onda de Choque, Escudada, Revanche, Redemoinho e Devastar; depois Escudada sempre que Determinação do Defensor estiver ausente ou acabando, Revanche, Escudada, Onda de Choque, Executar, Redemoinho com cinco acúmulos de Astúcia do Gladiador, Devastar (Fender Armadura antes dele), Brado Desmoralizador e Trovoada em elites, Dilacerar antes de Escudada; Escudada e Levantar Escudo só com um escudo equipado. Lembretes: Brado de Batalha e Brado de Comando, Levantar Escudo, Golpe Heroico a partir de 50 de raiva, Cutilada a partir de 55, Fúria Sanguinária, Alvoroço, Último Recurso, interrupções. Provocar, Muralha de Escudos, Desejo de Matar, Temeridade e Retaliação vêm listados como desativados; a troca para Gladiador para Executar fica com você.",
 -- d70604e8 English: Recommended
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Mists of Pandaria Classic (variant key: Blood). The standard recommended rotation for
@@ -9456,12 +9456,12 @@ addon.translation = {
 --     Weapon on elites, Army of the Dead before a group boss. It cannot see incoming damage, so
 --     Anti-Magic Shell (off) and big defensives are yours.
 [2370] = "Recomendada para tanques de Sangue, escolhida na especialização Sangue. Puxa à distância com Eclosão, Toque Gélido ou Garra da Morte. Golpe da Morte abaixo de metade da vida, sempre que Escudo de Sangue estiver ausente (a partir do nível 80) e antes que as quatro runas de Gelo e Profanas fiquem cheias; Golpe Rúnico perto de 90 de poder rúnico (Espiral da Morte com 80 antes de aprendê-lo); Eclosão, senão Toque Gélido e Golpe da Peste, para as doenças, e Sangue Fervente para renová-las a partir do nível 68; Ceifador de Almas abaixo de 35%; Golpe no Coração (Golpe Sangrento antes do nível 60) com duas runas de Sangue; Flagelo Vermelho em Morte e Decomposição enquanto as doenças durarem, senão Sangue Fervente; Transfusão de Sangue com onze cargas; depois Golpe da Morte, Golpe no Coração, Golpe Rúnico e Berrante do Inverno. Três inimigos em você: Morte e Decomposição, um espalhamento de doenças (Sangue Fervente com Sangue Enervante, senão Pestilência) e Sangue Fervente. Lembretes: Presença Sanguínea quando você não tiver nenhuma, Escudo Ósseo, Berrante do Inverno, Congelar Mente, Transfusão Rúnica, Sangue Vampírico, Fortitude Congélida, Energizar Arma Rúnica e Pacto da Morte conforme sua vida, Arma Rúnica Dançante em elites, Exército dos Mortos antes de um chefe em grupo. Ela não consegue ver o dano que está chegando, então Carapaça Antimagia (desativada) e as grandes defesas ficam com você.",
--- a7eb3532 English: Health-reactive (wowsims)
+-- 45f2a617 English: Health-reactive (simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
---     Knight, Mists of Pandaria Classic (variant key: Blood / Wowsims). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
---     Tavern) are proper names and stay unchanged.
-[2371] = "Reativa à vida (wowsims)",
+--     Knight, Mists of Pandaria Classic (variant key: Blood / simulator). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
+[2371] = "Reativa à vida (simulador)",
 -- a92e9e2e English: An alternative to the recommended Blood premade for raid tanks with healers,
 --     off by default: enable it and disable that one, or raise its priority. Death Strike only
 --     below 70% health, when Blood Shield is missing or about to fade, or before the Frost and
@@ -9514,8 +9514,8 @@ addon.translation = {
 --     of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a
 --     group boss; Anti-Magic Shell is off.
 [2378] = "Recomendada para Profano, e a rotação integrada para qualquer Cavaleiro da Morte que Sangue e Gelo não reivindiquem, inclusive um sem especialização. Puxa à distância com Eclosão ou Toque Gélido (Garra da Morte quando solo). Golpe da Morte com Socorro Negro ou abaixo de 35% de vida, doenças (Devastação Profana, Eclosão, Golpe da Peste, Toque Gélido), Transfusão de Sangue com onze cargas, Ceifador de Almas abaixo de 35%, Transformação Negra com cinco acúmulos de Infusão Sombria, Espiral da Morte perto do limite de poder rúnico, Morte e Decomposição em um alvo que vá sobreviver, Golpe do Flagelo, Espiral da Morte com Ruína Súbita ou com 40, Eclosão enquanto Força Profana estiver ativa, Ataque Supurante (Golpe Sangrento antes de aprendê-lo), Sugar Peste, Berrante do Inverno. Três inimigos em você: um espalhamento de doenças, Morte e Decomposição, Sangue Fervente e Toque Gélido com uma runa de Gelo. Lembretes: Presença Profana, seu carniçal, Evocar Gárgula sob Sede de Sangue ou em uma luta longa contra elite, Frenesi Profano, Energizar Arma Rúnica, Berrante do Inverno, Congelar Mente, Fortitude Congélida e Pacto da Morte com pouca vida, Exército dos Mortos antes de um chefe em grupo; Carapaça Antimagia vem desativada.",
--- 56eecd5b English: Unholy, rune-cap pooling (wowsims)
-[2379] = "Profano, acúmulo até o limite de runas (wowsims)",
+-- dd1a3e1e English: Unholy, rune-cap pooling (simulator)
+[2379] = "Profano, acúmulo até o limite de runas (simulador)",
 -- 457f3061 English: An alternative to the recommended Unholy premade, as the simulator, wowtbc.gg,
 --     Method and MaxDps play it; off by default: enable it and disable that one, or raise its
 --     priority. While Dark Transformation is down Death Coil goes to rebuilding Shadow Infusion,
@@ -9541,26 +9541,26 @@ addon.translation = {
 --     Mists of Pandaria Classic (variant key: Balance). The standard recommended rotation for the
 --     specialization.
 [2383] = "Recomendada",
--- 625c32c1 English: Recommended for Balance from level 10, after Wowhead's Phase 5 list and
---     wowsims. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts
---     Starfall in Lunar Eclipse, Starsurge on Shooting Stars and on cooldown, Hurricane in Solar or
---     Astral Storm in Lunar at five enemies, Starfire in and after Lunar and Wrath in and after
---     Solar. Rotation Master cannot read Eclipse energy, so between Eclipses it keeps casting
+-- 8e274530 English: Recommended for Balance from level 10, after Wowhead's Phase 5 list and
+--     simulator. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse,
+--     casts Starfall in Lunar Eclipse, Starsurge on Shooting Stars and on cooldown, Hurricane in
+--     Solar or Astral Storm in Lunar at five enemies, Starfire in and after Lunar and Wrath in and
+--     after Solar. Rotation Master cannot read Eclipse energy, so between Eclipses it keeps casting
 --     Starfire if Starfire was one of your last three casts, otherwise Wrath. Reminders: Mark of
 --     the Wild, Moonkin Form, Incarnation as an Eclipse starts and Celestial Alignment as one ends
 --     (on elites or long fights), Nature's Vigil, Force of Nature, Nature's Swiftness for Dream of
 --     Cenarius, Innervate, Solar Beam, Barkskin and Renewal when low. Wild Mushroom placement stays
 --     manual; the Detonate reminder is off by default. It stops while you cast, travel, are in Cat
 --     or Bear Form, or have no enemy targeted.
-[2384] = "Recomendada para Equilíbrio a partir do nível 10, segundo a lista da Fase 5 da Wowhead e o wowsims. Mantém Fogo Lunar e Fogo Solar ativos e os renova dentro do Eclipse correspondente, lança Chuva Estelar no Eclipse (Lunar), Surto Estelar com Estrelas Cadentes e assim que sair do tempo de recarga, Furacão no Solar ou Tempestade Astral no Lunar contra cinco inimigos, Fogo Estelar durante e depois do Lunar e Ira durante e depois do Solar. O Rotation Master não consegue ler a energia do Eclipse, então entre os Eclipses continua lançando Fogo Estelar se Fogo Estelar foi um dos seus três últimos lançamentos, senão Ira. Lembretes: Marca do Indomado, Forma de Luniscante, Encarnação quando um Eclipse começa e Alinhamento Celestial quando um termina (em elites ou lutas longas), Vigília da Natureza, Força da Natureza, Rapidez da Natureza para Sonho de Cenarius, Avivar, Raio Solar, Pele de Árvore e Renovação com pouca vida. O posicionamento de Cogumelo Selvagem continua manual; o lembrete de Detonar vem desativado por padrão. Para enquanto você lança, viaja, está na Forma de Felino ou na Forma de Urso, ou não tem um inimigo selecionado.",
+[2384] = "Recomendada para Equilíbrio a partir do nível 10, segundo a lista da Fase 5 da Wowhead e o simulador. Mantém Fogo Lunar e Fogo Solar ativos e os renova dentro do Eclipse correspondente, lança Chuva Estelar no Eclipse (Lunar), Surto Estelar com Estrelas Cadentes e assim que sair do tempo de recarga, Furacão no Solar ou Tempestade Astral no Lunar contra cinco inimigos, Fogo Estelar durante e depois do Lunar e Ira durante e depois do Solar. O Rotation Master não consegue ler a energia do Eclipse, então entre os Eclipses continua lançando Fogo Estelar se Fogo Estelar foi um dos seus três últimos lançamentos, senão Ira. Lembretes: Marca do Indomado, Forma de Luniscante, Encarnação quando um Eclipse começa e Alinhamento Celestial quando um termina (em elites ou lutas longas), Vigília da Natureza, Força da Natureza, Rapidez da Natureza para Sonho de Cenarius, Avivar, Raio Solar, Pele de Árvore e Renovação com pouca vida. O posicionamento de Cogumelo Selvagem continua manual; o lembrete de Detonar vem desativado por padrão. Para enquanto você lança, viaja, está na Forma de Felino ou na Forma de Urso, ou não tem um inimigo selecionado.",
 -- d70604e8 English: Recommended
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Mists of Pandaria Classic (variant key: Feral). The standard recommended rotation for the
 --     specialization.
 [2385] = "Recomendada",
--- 008c4d0b English: Recommended for Feral from level 10, after wowsims and Wowhead's Phase 5 list.
---     Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up,
---     uses Predatory Swiftness for a Healing Touch at four or five combo points with Dream of
+-- 30101468 English: Recommended for Feral from level 10, after simulator and Wowhead's Phase 5
+--     list. Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar
+--     up, uses Predatory Swiftness for a Healing Touch at four or five combo points with Dream of
 --     Cenarius, Rip at five points (Ferocious Bite refreshes it below 25% health), Ferocious Bite
 --     at five points while Rip and Savage Roar both have six seconds left, Rake, Thrash on
 --     Clearcasting, Shred on Clearcasting or Berserk when the target is not attacking you (Rotation
@@ -9569,7 +9569,7 @@ addon.translation = {
 --     with it on elites or long fights, Incarnation, Force of Nature, Nature's Vigil, Skull Bash,
 --     Survival Instincts and Barkskin when low, Mark of the Wild. Bear- and Wrath-weaving, and
 --     Heart of the Wild, stay manual.
-[2386] = "Recomendada para Feral a partir do nível 10, segundo o wowsims e a lista da Fase 5 da Wowhead. Coloca você na Forma de Felino, abre a partir de Espreitar com Rugido Selvagem e Assolar, mantém Rugido Selvagem ativo, usa Velocidade Predatória para um Toque de Cura com quatro ou cinco pontos de combo com Sonho de Cenarius, Rasgar com cinco pontos (Mordida Feroz o renova abaixo de 25% de vida), Mordida Feroz com cinco pontos enquanto Rasgar e Rugido Selvagem tiverem ambos seis segundos restantes, Estraçalhar, Surra com Abstração, Despedaçar com Abstração ou Berserk quando o alvo não está atacando você (o Rotation Master não consegue saber se você está atrás dele) e Destroçar; Surra e Patada contra quatro inimigos. Na Forma de Urso, dá uma lista curta de tanque. Lembretes: Fúria do Tigre com menos de 35 de energia, Berserk junto com ela em elites ou lutas longas, Encarnação, Força da Natureza, Vigília da Natureza, Esmagar Crânio, Instintos de Sobrevivência e Pele de Árvore com pouca vida, Marca do Indomado. Intercalar Urso e Ira, e Coração das Selvas, continuam manuais.",
+[2386] = "Recomendada para Feral a partir do nível 10, segundo o simulador e a lista da Fase 5 da Wowhead. Coloca você na Forma de Felino, abre a partir de Espreitar com Rugido Selvagem e Assolar, mantém Rugido Selvagem ativo, usa Velocidade Predatória para um Toque de Cura com quatro ou cinco pontos de combo com Sonho de Cenarius, Rasgar com cinco pontos (Mordida Feroz o renova abaixo de 25% de vida), Mordida Feroz com cinco pontos enquanto Rasgar e Rugido Selvagem tiverem ambos seis segundos restantes, Estraçalhar, Surra com Abstração, Despedaçar com Abstração ou Berserk quando o alvo não está atacando você (o Rotation Master não consegue saber se você está atrás dele) e Destroçar; Surra e Patada contra quatro inimigos. Na Forma de Urso, dá uma lista curta de tanque. Lembretes: Fúria do Tigre com menos de 35 de energia, Berserk junto com ela em elites ou lutas longas, Encarnação, Força da Natureza, Vigília da Natureza, Esmagar Crânio, Instintos de Sobrevivência e Pele de Árvore com pouca vida, Marca do Indomado. Intercalar Urso e Ira, e Coração das Selvas, continuam manuais.",
 -- 450e41c9 English: Bite only in execute (Icy Veins)
 [2387] = "Mordida só na faixa de execução (Icy Veins)",
 -- 34b2bf98 English: Icy Veins' Feral order (Wowhead's Bite rule agrees), an alternative to the
@@ -9584,17 +9584,17 @@ addon.translation = {
 --     Mists of Pandaria Classic (variant key: Guardian). The standard recommended rotation for the
 --     specialization.
 [2389] = "Recomendada",
--- b19b167d English: Recommended for Guardian tanks from level 10, after wowsims and Wowhead's Phase
---     5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened
---     Blows up with Thrash and Weakened Armor with Faerie Fire on elites, uses a Dream of Cenarius
---     Healing Touch when hurt, Mangle on cooldown, Thrash and Swipe at three enemies, then
+-- fb9929bb English: Recommended for Guardian tanks from level 10, after simulator and Wowhead's
+--     Phase 5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps
+--     Weakened Blows up with Thrash and Weakened Armor with Faerie Fire on elites, uses a Dream of
+--     Cenarius Healing Touch when hurt, Mangle on cooldown, Thrash and Swipe at three enemies, then
 --     Lacerate, Thrash and Faerie Fire. In Cat Form (Heart of the Wild) it gives a short damage
 --     list. Reminders: Savage Defense whenever it is down, Enrage for rage, Frenzied Regeneration
 --     when low or rage-capped, Maul above 90 rage or on Tooth and Claw, Barkskin while the target
 --     attacks you, Survival Instincts when low, Berserk and Incarnation on two enemies or a boss,
 --     Force of Nature, Nature's Vigil, Cenarion Ward, Skull Bash, Mark of the Wild. Taunting and
 --     Might of Ursoc stay manual (both reminders are off by default).
-[2390] = "Recomendada para tanques Guardiões a partir do nível 10, segundo o wowsims e a lista da Fase 5 da Wowhead. Coloca você na Forma de Urso, puxa com Fogo Feérico à distância ou Destroçar, mantém Golpes Enfraquecidos com Surra e Armadura Enfraquecida com Fogo Feérico em elites, usa um Toque de Cura de Sonho de Cenarius quando ferido, Destroçar assim que sair do tempo de recarga, Surra e Patada contra três inimigos, depois Lacerar, Surra e Fogo Feérico. Na Forma de Felino (Coração das Selvas), dá uma lista curta de dano. Lembretes: Defesa Selvagem sempre que estiver inativa, Enfurecer para gerar raiva, Regeneração Frenética com pouca vida ou no limite de raiva, Malho acima de 90 de raiva ou com Unhas e Dentes, Pele de Árvore enquanto o alvo ataca você, Instintos de Sobrevivência com pouca vida, Berserk e Encarnação contra dois inimigos ou um chefe, Força da Natureza, Vigília da Natureza, Proteção Cenariana, Esmagar Crânio, Marca do Indomado. Provocar e Poder de Ursoc continuam manuais (os dois lembretes vêm desativados por padrão).",
+[2390] = "Recomendada para tanques Guardiões a partir do nível 10, segundo o simulador e a lista da Fase 5 da Wowhead. Coloca você na Forma de Urso, puxa com Fogo Feérico à distância ou Destroçar, mantém Golpes Enfraquecidos com Surra e Armadura Enfraquecida com Fogo Feérico em elites, usa um Toque de Cura de Sonho de Cenarius quando ferido, Destroçar assim que sair do tempo de recarga, Surra e Patada contra três inimigos, depois Lacerar, Surra e Fogo Feérico. Na Forma de Felino (Coração das Selvas), dá uma lista curta de dano. Lembretes: Defesa Selvagem sempre que estiver inativa, Enfurecer para gerar raiva, Regeneração Frenética com pouca vida ou no limite de raiva, Malho acima de 90 de raiva ou com Unhas e Dentes, Pele de Árvore enquanto o alvo ataca você, Instintos de Sobrevivência com pouca vida, Berserk e Encarnação contra dois inimigos ou um chefe, Força da Natureza, Vigília da Natureza, Proteção Cenariana, Esmagar Crânio, Marca do Indomado. Provocar e Poder de Ursoc continuam manuais (os dois lembretes vêm desativados por padrão).",
 -- d70604e8 English: Recommended
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
@@ -9614,7 +9614,7 @@ addon.translation = {
 -- f3d02e30 English: Tank healing (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Mists of Pandaria Classic (variant key: Restoration / Wowhead). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2393] = "Cura de tanque (Wowhead)",
 -- 28164e24 English: Wowhead's single-target tank-healing order, an alternative to the recommended
@@ -9783,12 +9783,12 @@ addon.translation = {
 --     Harm or Diffuse Magic when low, Spear Hand Strike. The Black Ox Statue reminder is off; Avert
 --     Harm, Zen Meditation and Provoke stay with you.
 [2418] = "Escolhida automaticamente na especialização Mestre Cervejeiro. Mantém Evasiva ativa com Chute Blecaute, usa Pancada de Barril sempre que o Chi dela couber, Expelir o Mal quando você estiver ferido (na hora abaixo de 35%), Jabe para gastar energia, Palma do Tigre para Poder do Tigre e como preenchimento gratuito (Jabe gera Chi antes do nível 34), e Toque da Morte quando estiver utilizável. À distância, fora de combate: Onda de Chi, Névoa Estonteante, Colisão ou Pancada de Barril. Contra três ou mais inimigos: Vento Impetuoso de Jade, Bafo de Onça e Chute Giratório da Garça só enquanto Evasiva tiver tempo restante. Lembretes: Boi Resistente, Legado do Imperador, Cerveja Purificante com Cambalear Intenso (Cambalear Moderado quando Evasiva tiver bastante tempo acumulado), Cerveja Elusiva a partir de seis acúmulos, Guarda com Guarda Poderosa, Cerveja de Chi, Xuen, Cerveja Fortificante, Atenuar Ferimento ou Magia Difusa com pouca vida, Golpe Mão de Lança. O lembrete da Estátua do Boi Negro vem desativado; Evitar Ameaça, Meditação Zen e Provocar ficam com você.",
--- fbb1d180 English: Damage first (wowsims)
+-- bd502f1d English: Damage first (simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
 --     Mists of Pandaria Classic (variant key: Brewmaster / Offensive). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
-[2419] = "Dano primeiro (wowsims)",
+[2419] = "Dano primeiro (simulador)",
 -- e83b14c9 English: An alternative to the Brewmaster premade, off by default: enable it and disable
 --     that one, or raise its priority. Follows the simulator's damage-first list for a tank who
 --     outgears the content: Rushing Jade Wind before Keg Smash, Chi spent on Blackout Kick for
@@ -9895,8 +9895,8 @@ addon.translation = {
 --     Defender, Divine Protection and Lay on Hands by your health. It cannot see incoming damage,
 --     so plan big defensives yourself.
 [2434] = "Recomendada para Proteção, a partir do nível 10 na especialização Proteção. Puxa com Escudo do Vingador, depois Escudo do Vingador com uma ativação de Grande Cruzado, Escudo do Vingador, Martelo da Ira, Golpe do Cruzado, Julgamento, seu talento de nível 90, Consagração, Ira Sagrada e Escudo Sagrado. Três ou mais inimigos em você trocam para Escudo do Vingador, Consagração, Martelo do Íntegro, Julgamento e Ira Sagrada. Escudo do Íntegro, Chama Eterna e Palavra de Glória estão fora do tempo de recarga global, então acendem ao lado da rotação: Escudo do Íntegro sempre que você puder pagá-lo, Chama Eterna em você mesmo quando estiver acabando, com 3 de Poder Sagrado e três acúmulos de Bastião de Glória, Palavra de Glória abaixo de metade da vida sem esse talento. Outros lembretes: Fúria Íntegra, Selo da Intuição quando outro selo (exceto Retidão) ou nenhum estiver ativo, bênçãos, Repreensão, Escudo Sagrado, Ira Vingativa e Vingador Sagrado enquanto você tanqueia, e Guardião dos Reis Antigos, Defensor Ardente, Proteção Divina e Impor as Mãos conforme sua vida. Ela não consegue ver o dano que está chegando, então planeje você mesmo as grandes defesas.",
--- 4816b24b English: Pool Holy Power (wowsims)
-[2435] = "Acumular Poder Sagrado (wowsims)",
+-- e3cb6b71 English: Pool Holy Power (simulator)
+[2435] = "Acumular Poder Sagrado (simulador)",
 -- 0709f739 English: An alternative to the recommended Protection premade, off by default: enable it
 --     and disable that one, or raise its priority. Follows the simulator's tank lists: Shield of
 --     the Righteous waits for full Holy Power unless you fall below 40% health or Divine Purpose
@@ -10024,7 +10024,7 @@ addon.translation = {
 --     Mists of Pandaria Classic (variant key: Assassination). The standard recommended rotation for
 --     the specialization.
 [2453] = "Recomendada",
--- be1774f6 English: Recommended for Assassination, from level 10 to 90 (wowsims and Wowhead for
+-- a78d028d English: Recommended for Assassination, from level 10 to 90 (simulator and Wowhead for
 --     Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo,
 --     otherwise Mutilate (Dispatch on Blindside, with a dagger). Keeps Slice and Dice up (Envenom
 --     refreshes it from level 60) and Rupture on the target, spends five points on Envenom while
@@ -10036,7 +10036,7 @@ addon.translation = {
 --     poisons, Kick, Vendetta on long fights, Shadow Blades with Vendetta, Vanish and Preparation
 --     inside Vendetta, Shadowstep from range, Evasion solo. Left to you: Tricks of the Trade and
 --     Expose Armor (listed but off), Feint, Sprint and positioning.
-[2454] = "Recomendada para Assassinato, do nível 10 ao 90 (wowsims e Wowhead para a Fase 5, com os passos de evolução de nível da Icy Veins). Abre a partir da Furtividade com Golpe Baixo quando solo, senão Mutilar (Liquidar com Ponto Cego, com uma adaga). Mantém Retalhar ativo (Envenenar o renova a partir do nível 60) e Ruptura no alvo, gasta cinco pontos em Envenenar enquanto Ruptura durar e quatro pontos para manter o bônus de Envenenar ativo quando você não tem Antecipação, depois Marcado para Morrer, Liquidar abaixo de 35% ou com Ponto Cego (exige uma adaga na mão principal), e Mutilar. Contra quatro ou mais inimigos lutando com você: Retalhar, Tempestade Carmesim com sete inimigos, Ruptura, Envenenar e Leque de Facas; aplicar Ruptura em outros alvos fica por sua conta. Solo, acrescenta Recobrar e um Golpe no Rim quando você está com pouca vida. Lembretes: venenos, Chute, Vendeta em lutas longas, Lâminas Sombrias com Vendeta, Sumir e Preparação durante Vendeta, Passo Furtivo à distância, Evasão quando solo. Fica com você: Truques do Ofício e Expor Armadura (listados, mas desativados), Finta, Disparada e o posicionamento.",
+[2454] = "Recomendada para Assassinato, do nível 10 ao 90 (simulador e Wowhead para a Fase 5, com os passos de evolução de nível da Icy Veins). Abre a partir da Furtividade com Golpe Baixo quando solo, senão Mutilar (Liquidar com Ponto Cego, com uma adaga). Mantém Retalhar ativo (Envenenar o renova a partir do nível 60) e Ruptura no alvo, gasta cinco pontos em Envenenar enquanto Ruptura durar e quatro pontos para manter o bônus de Envenenar ativo quando você não tem Antecipação, depois Marcado para Morrer, Liquidar abaixo de 35% ou com Ponto Cego (exige uma adaga na mão principal), e Mutilar. Contra quatro ou mais inimigos lutando com você: Retalhar, Tempestade Carmesim com sete inimigos, Ruptura, Envenenar e Leque de Facas; aplicar Ruptura em outros alvos fica por sua conta. Solo, acrescenta Recobrar e um Golpe no Rim quando você está com pouca vida. Lembretes: venenos, Chute, Vendeta em lutas longas, Lâminas Sombrias com Vendeta, Sumir e Preparação durante Vendeta, Passo Furtivo à distância, Evasão quando solo. Fica com você: Truques do Ofício e Expor Armadura (listados, mas desativados), Finta, Disparada e o posicionamento.",
 -- 446abf99 English: Envenom at five (Icy Veins)
 [2455] = "Envenenar com cinco (Icy Veins)",
 -- 584543ab English: Off by default. The Icy Veins and Method order: Vanish on cooldown for a
@@ -10051,19 +10051,19 @@ addon.translation = {
 --     Mists of Pandaria Classic (variant key: Combat). The standard recommended rotation for the
 --     specialization.
 [2457] = "Recomendada",
--- 43003559 English: Recommended for Combat, from level 10 to 90 (Wowhead and wowsims for Phase 5).
---     Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike is
---     the builder and Sinister Strike is used only under Bloodlust or Heroism with Adrenaline Rush
---     (and before level 20). Opens with Cheap Shot solo, otherwise Ambush. Keeps Slice and Dice up
---     from two points and Revealing Strike on the target, spends five points only while Revealing
---     Strike is up (Slice and Dice, Rupture on a long single-target fight without Blade Flurry,
---     Eviscerate) and waits for energy at five. Against eight or more enemies: Slice and Dice,
---     Crimson Tempest and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders:
+-- e298e91f English: Recommended for Combat, from level 10 to 90 (Wowhead and simulator for Phase
+--     5). Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike
+--     is the builder and Sinister Strike is used only under Bloodlust or Heroism with Adrenaline
+--     Rush (and before level 20). Opens with Cheap Shot solo, otherwise Ambush. Keeps Slice and
+--     Dice up from two points and Revealing Strike on the target, spends five points only while
+--     Revealing Strike is up (Slice and Dice, Rupture on a long single-target fight without Blade
+--     Flurry, Eviscerate) and waits for energy at five. Against eight or more enemies: Slice and
+--     Dice, Crimson Tempest and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders:
 --     poisons, Kick, Blade Flurry on against two or more enemies and off again, Adrenaline Rush at
 --     low energy with Shadow Blades, Killing Spree, Vanish and Preparation for Ambush in Deep
 --     Insight, Shadowstep, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed
 --     but off), Feint and positioning behind the target for Ambush.
-[2458] = "Recomendada para Combate, do nível 10 ao 90 (Wowhead e wowsims para a Fase 5). Desde o patch do Cerco a Orgrimmar, Golpe Sinistro custa 50 de energia, então Golpe Revelador é o gerador e Golpe Sinistro só é usado sob Sede de Sangue ou Heroísmo com Adrenalina (e antes do nível 20). Abre com Golpe Baixo quando solo, senão Emboscar. Mantém Retalhar ativo a partir de dois pontos e Golpe Revelador no alvo, gasta cinco pontos só enquanto Golpe Revelador estiver ativo (Retalhar, Ruptura em uma luta longa de alvo único sem Rajada de Lâminas, Eviscerar) e espera energia com cinco. Contra oito ou mais inimigos: Retalhar, Tempestade Carmesim e Leque de Facas. Solo, acrescenta Recobrar e Golpe no Rim. Lembretes: venenos, Chute, ativar Rajada de Lâminas contra dois ou mais inimigos e desativá-la depois, Adrenalina com pouca energia junto com Lâminas Sombrias, Matança, Sumir e Preparação para Emboscar durante Percepção Aguçada, Passo Furtivo, Evasão quando solo. Fica com você: Truques do Ofício e Expor Armadura (listados, mas desativados), Finta e o posicionamento atrás do alvo para Emboscar.",
+[2458] = "Recomendada para Combate, do nível 10 ao 90 (Wowhead e simulador para a Fase 5). Desde o patch do Cerco a Orgrimmar, Golpe Sinistro custa 50 de energia, então Golpe Revelador é o gerador e Golpe Sinistro só é usado sob Sede de Sangue ou Heroísmo com Adrenalina (e antes do nível 20). Abre com Golpe Baixo quando solo, senão Emboscar. Mantém Retalhar ativo a partir de dois pontos e Golpe Revelador no alvo, gasta cinco pontos só enquanto Golpe Revelador estiver ativo (Retalhar, Ruptura em uma luta longa de alvo único sem Rajada de Lâminas, Eviscerar) e espera energia com cinco. Contra oito ou mais inimigos: Retalhar, Tempestade Carmesim e Leque de Facas. Solo, acrescenta Recobrar e Golpe no Rim. Lembretes: venenos, Chute, ativar Rajada de Lâminas contra dois ou mais inimigos e desativá-la depois, Adrenalina com pouca energia junto com Lâminas Sombrias, Matança, Sumir e Preparação para Emboscar durante Percepção Aguçada, Passo Furtivo, Evasão quando solo. Fica com você: Truques do Ofício e Expor Armadura (listados, mas desativados), Finta e o posicionamento atrás do alvo para Emboscar.",
 -- 44b84c55 English: Sinister Strike builder (Icy Veins)
 [2459] = "Golpe Sinistro como gerador (Icy Veins)",
 -- 610b2100 English: Off by default, and superseded for Phase 5. The Icy Veins, Warcraft Tavern,
@@ -10076,7 +10076,7 @@ addon.translation = {
 -- 972be132 English: Anticipation (Hekili)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Mists of Pandaria Classic (variant key: Combat / Hekili). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2461] = "Antecipação (Hekili)",
 -- a677df00 English: Off by default. The Hekili MoP order for Combat with Anticipation: Revealing
@@ -10091,7 +10091,7 @@ addon.translation = {
 --     Mists of Pandaria Classic (variant key: Subtlety). The standard recommended rotation for the
 --     specialization.
 [2463] = "Recomendada",
--- 53ec1c4b English: Recommended for Subtlety with Shadow Focus, from level 10 to 90 (wowsims and
+-- c2f73eb9 English: Recommended for Subtlety with Shadow Focus, from level 10 to 90 (simulator and
 --     Wowhead for Phase 5). In Stealth or Shadow Dance: Premeditation, Slice and Dice before the
 --     pull, finishers at five points, Ambush, Garrote. Outside: Slice and Dice; at five points
 --     Slice and Dice and Rupture when they are about to drop, Eviscerate while both last; Marked
@@ -10102,11 +10102,11 @@ addon.translation = {
 --     Weakness is ending, Preparation, Shadow Blades outside Dance and Stealth, Shadowstep, Evasion
 --     solo. Left to you: standing behind the target (RM cannot see facing), Tricks of the Trade and
 --     Expose Armor (listed but off).
-[2464] = "Recomendada para Subterfúgio com Concentração Sombria, do nível 10 ao 90 (wowsims e Wowhead para a Fase 5). Em Furtividade ou Dança das Sombras: Premeditação, Retalhar antes da puxada, finalizadores com cinco pontos, Emboscar, Garrote. Fora delas: Retalhar; com cinco pontos, Retalhar e Ruptura quando estiverem prestes a expirar, Eviscerar enquanto ambos durarem; Marcado para Morrer; Hemorragia para manter seu sangramento; Punhalada pelas Costas (com uma adaga) quando o alvo não está atacando você, senão Hemorragia. Contra três ou mais inimigos: Retalhar, Tempestade Carmesim, Eviscerar e Leque de Facas. Solo, acrescenta Recobrar e Golpe no Rim. Lembretes: venenos, Chute, Dança das Sombras com 75 de energia com Retalhar e Ruptura ativos, Sumir quando Achar Ponto Fraco estiver acabando, Preparação, Lâminas Sombrias fora de Dança e Furtividade, Passo Furtivo, Evasão quando solo. Fica com você: ficar atrás do alvo (o RM não consegue ver a orientação), Truques do Ofício e Expor Armadura (listados, mas desativados).",
+[2464] = "Recomendada para Subterfúgio com Concentração Sombria, do nível 10 ao 90 (simulador e Wowhead para a Fase 5). Em Furtividade ou Dança das Sombras: Premeditação, Retalhar antes da puxada, finalizadores com cinco pontos, Emboscar, Garrote. Fora delas: Retalhar; com cinco pontos, Retalhar e Ruptura quando estiverem prestes a expirar, Eviscerar enquanto ambos durarem; Marcado para Morrer; Hemorragia para manter seu sangramento; Punhalada pelas Costas (com uma adaga) quando o alvo não está atacando você, senão Hemorragia. Contra três ou mais inimigos: Retalhar, Tempestade Carmesim, Eviscerar e Leque de Facas. Solo, acrescenta Recobrar e Golpe no Rim. Lembretes: venenos, Chute, Dança das Sombras com 75 de energia com Retalhar e Ruptura ativos, Sumir quando Achar Ponto Fraco estiver acabando, Preparação, Lâminas Sombrias fora de Dança e Furtividade, Passo Furtivo, Evasão quando solo. Fica com você: ficar atrás do alvo (o RM não consegue ver a orientação), Truques do Ofício e Expor Armadura (listados, mas desativados).",
 -- a7cbb172 English: Subterfuge (Warcraft Tavern)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Mists of Pandaria Classic (variant key: Subtlety / WarcraftTavern). Names in parentheses
---     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
 --     Warcraft Tavern) are proper names and stay unchanged.
 [2465] = "Subterfúgio (Warcraft Tavern)",
 -- 01394d1f English: Chosen automatically instead of the Shadow Focus premade when your tier-1
@@ -10165,8 +10165,8 @@ addon.translation = {
 --     and Bloodlust in a group, Wind Shear, Shamanistic Rage and Astral Shift when low. Earth
 --     Elemental is listed but off.
 [2472] = "Recomendada para Aperfeiçoamento a partir do nível 10, escolhida na especialização Aperfeiçoamento. A ordem da Wowhead: Liberar Elementos enquanto corre até o alvo, depois Liberar Elementos com Fúria Liberada, Impacto Elemental e Raio com cinco acúmulos de Arma da Voragem (ou intercalados com três quando seu próximo golpe estiver a mais de um segundo), Explosão Tormentosa durante Ascendência, Ataque da Tempestade (Golpe Primevo antes do nível 26), Açoite de Lava, Choque Flamejante sob Liberar Chama, Liberar Elementos, Choque Terreno. Dois ou mais inimigos em você: Cadeia de Raios em vez de Raio, Açoite de Lava para espalhar Choque Flamejante, Nova de Fogo a partir de quatro, Magma a partir de seis. Lembretes: Escudo de Raios, Fúria dos Ventos na mão principal e Labaredas na mão secundária, Totem Calcinante, Elemental do Fogo, Espírito Feral, Ascendência depois de Ataque da Tempestade, Mestre dos Elementos, Rapidez Ancestral, Açoite Trovejante e Sede de Sangue em grupo, Rajada de Vento, Fúria Xamanística e Transição Astral com pouca vida. Elemental da Terra vem listado, mas desativado.",
--- e3f2e167 English: Weave every stack (wowsims)
-[2473] = "Intercalar a cada acúmulo (wowsims)",
+-- ada73161 English: Weave every stack (simulator)
+[2473] = "Intercalar a cada acúmulo (simulador)",
 -- ab469690 English: Off by default; same switch as the recommended Enhancement premade, so enable
 --     it and disable that one to use it. The simulator's list for players who time casts between
 --     swings: Lightning Bolt, Elemental Blast or Chain Lightning on any number of Maelstrom Weapon
@@ -10204,7 +10204,7 @@ addon.translation = {
 -- 98ae06d3 English: Health ladder (Hekili)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Mists of Pandaria Classic (variant key: Restoration / Hekili). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2479] = "Faixas de vida (Hekili)",
 -- db083550 English: Off by default; same switch as the recommended Restoration premade, so enable

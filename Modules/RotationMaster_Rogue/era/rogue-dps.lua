@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Classic Era Rogue melee DPS, levels 1–60, every spec (the recommended vanilla premade; also
--- Hardcore and Self-Found). wowsims/classic order with Icy Veins and Wowhead: Slice and Dice from
+-- Hardcore and Self-Found). simulator/classic order with Icy Veins and Wowhead: Slice and Dice from
 -- one point when missing on a target worth it, refreshed at five in its last three seconds;
 -- Improved Expose Armor duty in groups when nobody Sunders; a two-point Eviscerate on a dying
 -- target; Eviscerate at five and no builder past five. The builder follows what is known:
@@ -25,8 +25,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.rogue.boundaries']=3,['era.rogue.opener']=3,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=2},
  nameKey='Default.Era.Rogue.DPS.Name',descriptionKey='Default.Era.Rogue.DPS.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE'},
- tags={'dps','melee','leveling','endgame','wowsims','icy-veins','wowhead'},
- sources={{url='https://github.com/wowsims/classic/tree/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/rogue',title='wowsims/classic: Rogue APLs and presets',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'},
+ tags={'dps','melee','leveling','endgame','icy-veins','wowhead'},
+ sources={
  {url='https://www.icy-veins.com/wow-classic/rogue-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Rogue DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2024-11-17'},
  {url='https://www.icy-veins.com/wow-classic/classic-rogue-leveling-guide',title='Icy Veins: Classic Rogue leveling guide',reviewedAt='2026-10-23',revision='2024-11-16'},
  {url='https://www.icy-veins.com/wow-classic/sword-rogue-leveling-talent-build-from-1-to-60',title='Icy Veins: Classic Sword Rogue leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},

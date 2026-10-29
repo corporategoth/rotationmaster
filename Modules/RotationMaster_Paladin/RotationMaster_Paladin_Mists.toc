@@ -15,6 +15,6 @@ mop/blocks.lua
 mop/paladin-retribution.lua
 mop/paladin-retribution-warcrafttavern.lua
 mop/paladin-protection.lua
-mop/paladin-protection-wowsims.lua
+mop/paladin-protection-simulator.lua
 mop/paladin-holy.lua
 mop/paladin-unspecialized.lua

@@ -1,11 +1,11 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- TBC Hunter premades: ranged DPS (wowsims recommended, Wowhead). Real predicates, catalog,
+-- TBC Hunter premades: ranged DPS (simulator recommended, Wowhead). Real predicates, catalog,
 -- composition, sequence and publisher; WoW observations are modeled in
 -- tests/fixtures/tbc_physical_premades.lua.
 local M = dofile('tests/fixtures/tbc_physical_premades.lua')
 local test, finish = M.F.suite()
-local HS, HW = 'rm.tbc.hunter.ranged.wowsims', 'rm.tbc.hunter.ranged.wowhead'
+local HS, HW = 'rm.tbc.hunter.ranged.simulator', 'rm.tbc.hunter.ranged.wowhead'
 local mid = { 13165, 883, 982, 136, 2643, 3045, 1130, 1495 }
 local late = { 34120, 34074, 34026 }
 
@@ -39,7 +39,7 @@ local function both(f, s, g, t, a, b)
         want = nil
     end
 
-    assert(x == a and y == want, 'wowsims ' .. tostring(x) .. ' wowhead ' .. tostring(y))
+    assert(x == a and y == want, 'simulator ' .. tostring(x) .. ' wowhead ' .. tostring(y))
 end
 
 local function each(s, t, fn)
@@ -52,7 +52,7 @@ local function cd(s, id)
 end
 
 test(
-    'both premades register valid 1–70, share the switch, the wowsims premade auto-selects and the Wowhead one ships disabled',
+    'both premades register valid 1–70, share the switch, the simulator premade auto-selects and the Wowhead one ships disabled',
     function()
         local f, s = hunter(1)
         local a = f.addon
@@ -199,7 +199,7 @@ test(
     end
 )
 
-test('moving: instant shots only; wowsims keeps Serpent Sting, Wowhead does not', function()
+test('moving: instant shots only; simulator keeps Serpent Sting, Wowhead does not', function()
     local f, s = hunter(40, mid)
     local g, t = hunter(40, mid)
 
@@ -223,7 +223,7 @@ test('moving: instant shots only; wowsims keeps Serpent Sting, Wowhead does not'
 end)
 
 test(
-    'from Steady Shot: Multi-Shot, Steady after Auto Shot; the gap is Arcane and solo Sting for wowsims, waiting for Wowhead',
+    'from Steady Shot: Multi-Shot, Steady after Auto Shot; the gap is Arcane and solo Sting for simulator, waiting for Wowhead',
     function()
         local f, s = hunter(70, mid, late)
         local g, t = hunter(70, mid, late)
@@ -260,7 +260,7 @@ test(
 )
 
 test(
-    'aspects: wowsims Viper below 20% in combat and Hawk again at 50%; Wowhead Hawk only; travel aspects respected out of combat',
+    'aspects: simulator Viper below 20% in combat and Hawk again at 50%; Wowhead Hawk only; travel aspects respected out of combat',
     function()
         local f, s = hunter(70, mid, late)
         local g, t = hunter(70, mid, late)

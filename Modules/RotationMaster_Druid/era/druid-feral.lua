@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Classic Era Druid Feral, cat and bear, from level 10 when Feral is the primary talent tree. After
--- Icy Veins, Wowhead, Warcraft Tavern and wowsims: the form decides cat or bear. Cat keeps Faerie
+-- Icy Veins, Wowhead, Warcraft Tavern and simulator: the form decides cat or bear. Cat keeps Faerie
 -- Fire (Feral) up, spends Clearcasting on Shred, finishes from four combo points (Rip outside raids,
 -- Ferocious Bite under 63 energy), Rakes outside raids, Shreds from behind and Claws from the front,
 -- and powershifts with Furor 5/5. Bear Mauls every swing, Swipes packs and spare rage.
@@ -15,7 +15,7 @@ assert(addon:RegisterDefaultRotation({
   ['era.druid.cat-builders']=1,['era.druid.powershift']=2,['era.druid.bear']=2,['era.druid.bear-pull']=3,['era.druid.feral-humanoid']=2},
  nameKey='Default.Era.Druid.Feral.Name',descriptionKey='Default.Era.Druid.Feral.Description',
  applicability={families={'era'},actionContext='player',class='DRUID'},
- tags={'leveling','endgame','feral','melee','tank','single-target','aoe','icy-veins','wowhead','warcraft-tavern','wowsims'},
+ tags={'leveling','endgame','feral','melee','tank','single-target','aoe','icy-veins','wowhead','warcraft-tavern'},
  sources={
   {url='https://www.icy-veins.com/wow-classic/feral-druid-melee-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
   {url='https://www.icy-veins.com/wow-classic/feral-druid-tank-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Feral Druid tank rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
@@ -23,7 +23,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/classic/guide/classes/druid/feral/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Feral DPS rotation',reviewedAt='2026-10-23',revision='2023-11-21'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/pve-feral-druid-tank-rotations-cooldowns/',title='Warcraft Tavern: Classic Feral tank',reviewedAt='2026-10-23'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/druid-leveling-guide/',title='Warcraft Tavern: Druid leveling',reviewedAt='2026-10-23'},
-  {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/feral_druid/apls/feral.apl.json',title='wowsims/classic Feral APL',reviewedAt='2026-10-23',revision='7779ebb'},
+  
  },
  body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=2}}},
   cooldowns={ref('era-feral-upkeep','era.druid.upkeep','era-feral-'),ref('era-feral-cooldowns','era.druid.feral-cooldowns','era-feral-')},

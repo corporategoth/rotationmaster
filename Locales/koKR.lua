@@ -2933,8 +2933,8 @@ addon.translation = {
 --     Elemental when solo. Fire Elemental is an optional step that starts off. Totem placement,
 --     Ghost Wolf and healing stay with you.
 [835] = "1레벨부터 70레벨까지의 근접 고양 로테이션이며, 다른 기본 제공 로테이션이 맞지 않는 모든 주술사의 기본값입니다. 원거리에서 번개 화살로 끌어오고, 대지 충격으로 차단하며, 근처에 적이 셋 이상이면 불꽃 회오리 토템과 용암 토템을 세운 뒤 폭풍의 일격, 폭풍의 일격 약화 효과가 있는 동안 대지 충격, 오래 살아남을 대상에게 화염 충격, 재사용 대기시간마다 대지 충격을 사용하고, 대상이 사거리 밖에 있는 동안에는 번개 화살을 사용합니다. 별도 알림: 무기 강화, 물의 보호막 또는 번개 보호막, 대지력 토템, 질풍의 토템(그룹) 또는 은총의 토템(혼자), 긴 전투의 불타는 토템, 물 토템, 주술의 분노, 우두머리 상대 피의 욕망/영웅심, 혼자일 때 돌발톱 토템과 대지의 정령 토템. 불의 정령 토템은 꺼진 상태로 시작하는 선택 단계입니다. 토템 배치, 늑대 정령, 치유는 직접 판단합니다.",
--- 7637d9eb English: Enhancement (Wowhead & wowsims)
-[836] = "고양 (Wowhead & wowsims)",
+-- f2b68c6d English: Enhancement (Wowhead & simulator)
+[836] = "고양 (Wowhead & 시뮬레이터)",
 -- 1ec4e078 English: The level-70 raid model for totem twisting, an alternative to the recommended
 --     Icy Veins Enhancement premade, off by default: enable it and disable that one, or raise its
 --     priority. Stormstrike, a Fire Nova Totem weave, Flame Shock whenever it has fallen off, and
@@ -2942,8 +2942,8 @@ addon.translation = {
 --     Windfury and Grace of Air Totems, keep Searing down, use Shamanistic Rage when mana runs low,
 --     and share the Icy Veins variant's imbue, shield and totem upkeep.
 [837] = "70레벨 공격대용 토템 교체(트위스팅) 모델로, 추천 Icy Veins 고양 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 폭풍의 일격, 불꽃 회오리 토템 끼워 넣기, 화염 충격이 사라질 때마다 다시 걸기, 주력 충격으로 대지 충격을 사용하며, 번개 화살은 사거리 밖에서만 사용합니다. 알림은 질풍의 토템과 은총의 토템을 교체(트위스팅)하고, 불타는 토템을 유지하며, 마나가 부족하면 주술의 분노를 사용하고, 무기 강화·보호막·토템 유지 관리는 Icy Veins 변형과 공유합니다.",
--- 3a3fe11d English: Elemental (Icy Veins & wowsims)
-[838] = "정기 (Icy Veins & wowsims)",
+-- 0dc1ed9b English: Elemental (Icy Veins & simulator)
+[838] = "정기 (Icy Veins & 시뮬레이터)",
 -- c334526c English: Caster Elemental for the Elemental talent tree. Lightning Bolt is the filler;
 --     Chain Lightning goes out with Elemental Mastery, on Clearcasting while you have 40% mana, or
 --     freely above 80%; Flame Shock only while moving; Earth Shock interrupts; Fire Nova, Chain
@@ -4855,7 +4855,7 @@ addon.translation = {
 -- 7c2241f3 English: Fire (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
 --     Burning Crusade Classic (variant key: FireIcyVeins). Names in parentheses (guide or tool such
---     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
 --     proper names and stay unchanged.
 [1424] = "화염 (Icy Veins)",
 -- 1e584220 English: Fire after Icy Veins, chosen when Fire is your main talent tree. Pyroblast
@@ -4867,14 +4867,14 @@ addon.translation = {
 -- c3a8c4ee English: Fire (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
 --     Burning Crusade Classic (variant key: FireWowhead). Names in parentheses (guide or tool such
---     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
 --     proper names and stay unchanged.
 [1426] = "화염 (Wowhead)",
--- a335455e English: Fire after Wowhead and wowsims. Like the Icy Veins Fire premade, but it weaves
---     Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with
---     Fireball instead of Pyroblast. An alternative to the recommended Icy Veins Fire premade, off
---     by default: enable it and disable that one, or raise its priority.
-[1427] = "Wowhead와 wowsims 기준 화염 로테이션입니다. Icy Veins 화염 기본 제공 로테이션과 같지만, 가만히 서 있을 때 화염 작렬이 준비되면 언제든 끼워 넣고(피해 증가, 마나 소모 증가) 불덩이 작렬 대신 화염구로 시작합니다. 추천 Icy Veins 화염 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
+-- 2caeb60c English: Fire after Wowhead and simulator. Like the Icy Veins Fire premade, but it
+--     weaves Fire Blast whenever it is ready while you stand still (more damage, more mana) and
+--     opens with Fireball instead of Pyroblast. An alternative to the recommended Icy Veins Fire
+--     premade, off by default: enable it and disable that one, or raise its priority.
+[1427] = "Wowhead와 시뮬레이터 기준 화염 로테이션입니다. Icy Veins 화염 기본 제공 로테이션과 같지만, 가만히 서 있을 때 화염 작렬이 준비되면 언제든 끼워 넣고(피해 증가, 마나 소모 증가) 불덩이 작렬 대신 화염구로 시작합니다. 추천 Icy Veins 화염 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- 93006d61 English: Arcane
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
 --     Burning Crusade Classic (variant key: Arcane).
@@ -5892,8 +5892,8 @@ addon.translation = {
 -- Context: Condition type title: true when the spell is set to auto-repeat (e.g. Auto Shot, wand).
 --     Also an icon name in the icon picker.
 [1740] = "주문 자동 반복 활성",
--- 35f743e1 English: Retribution (Wowhead & wowsims)
-[1741] = "징벌 (Wowhead & wowsims)",
+-- 01059048 English: Retribution (Wowhead & simulator)
+[1741] = "징벌 (Wowhead & 시뮬레이터)",
 -- 6fc82107 English: Melee Retribution from level 1 to 70, and the default for any Paladin no other
 --     premade fits. Opens each target with Judgement of Wisdom (low mana) or the Crusader, keeps
 --     your best seal up (Blood or Martyr, Command, then Righteousness), Crusader Strike, judges
@@ -5906,7 +5906,7 @@ addon.translation = {
 -- 89f00a09 English: Retribution (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     The Burning Crusade Classic (variant key: Retribution / IcyVeins). Names in parentheses
---     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
 --     Warcraft Tavern) are proper names and stay unchanged.
 [1743] = "징벌 (Icy Veins)",
 -- c68e9ea0 English: Icy Veins' Retribution, an alternative to the recommended Wowhead Retribution
@@ -5927,8 +5927,8 @@ addon.translation = {
 --     fillers, and rolls Blood without twisting below 12% mana. Needs a reliable swing timer;
 --     latency is not accounted for.
 [1746] = "기본적으로 꺼져 있습니다. 문장 교체(트위스팅)를 한다면 켜세요(64레벨 이상, 지휘의 문장과 피의 문장 또는 순교자의 문장 필요). 성전사의 심판으로 시작한 뒤, 매 자동 공격마다 초반에 지휘의 문장(1등급)을 걸고 마지막 0.4초에 피의 문장 또는 순교자의 문장으로 바꿉니다. 교체 사이에 성전사의 일격을 쓰고, 피의 문장 또는 순교자의 문장만 심판하며, 퇴마술과 신성화는 빈틈 채우기로만 사용하고, 마나가 12% 미만이면 교체 없이 피의 문장을 유지합니다. 신뢰할 수 있는 자동 공격 타이머가 필요하며, 지연 시간은 고려하지 않습니다.",
--- 316a63c1 English: Protection (Wowhead & wowsims)
-[1747] = "보호 (Wowhead & wowsims)",
+-- b9e3d93c English: Protection (Wowhead & simulator)
+[1747] = "보호 (Wowhead & 시뮬레이터)",
 -- c9c2efbf English: Tanking for the Protection tree or any Paladin with Righteous Fury on. Pulls
 --     with Holy Shield, Avenger's Shield and Judgement; against a crushing target (world boss or
 --     three or more levels above you) Holy Shield comes first; then Consecration, Exorcism on
@@ -5940,7 +5940,7 @@ addon.translation = {
 -- 80b938a1 English: Protection (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1749] = "보호 (Icy Veins)",
 -- 3ae9045e English: Icy Veins' tanking, an alternative to the recommended Wowhead Protection
@@ -5965,12 +5965,12 @@ addon.translation = {
 --     your target is missing a tenth of their health, Flash of Light only for small deficits, with
 --     the same emergencies, cleansing, Judgement and reminders as the blended Holy premade.
 [1754] = "Wowhead의 공격대 방어 전담 치유로, 추천 신성 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 대상의 생명력이 10분의 1 이상 줄어들 때마다 성스러운 빛, 적게 줄었을 때만 빛의 섬광을 사용하며, 위급 상황, 정화, 심판, 알림은 통합 신성 기본 제공 로테이션과 같습니다.",
--- 4396ff42 English: Ranged DPS (wowsims)
+-- ffb13c96 English: Ranged DPS (simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
---     The Burning Crusade Classic (variant key: Ranged / Wowsims). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     The Burning Crusade Classic (variant key: Ranged / simulator). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
-[1755] = "원거리 공격 전담 (wowsims)",
+[1755] = "원거리 공격 전담 (시뮬레이터)",
 -- 2b43c4a1 English: Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot,
 --     keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot
 --     it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you
@@ -5984,23 +5984,23 @@ addon.translation = {
 -- 825c84d1 English: Ranged DPS (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     The Burning Crusade Classic (variant key: Ranged / Wowhead). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1757] = "원거리 공격 전담 (Wowhead)",
--- fb9ad1ee English: Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee,
---     leveling shots, multi-target Multi-Shot and reminders as the wowsims version, but once Steady
---     Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no Arcane
---     Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper reminder. Pet
---     commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you. An
---     alternative to the recommended wowsims ranged premade, off by default: enable it and disable
---     that one, or raise its priority.
-[1758] = "1–70레벨, 모든 전문화용이며 Wowhead의 공격대 조언을 따릅니다. 끌어오기, 근접 공격, 레벨업 사격, 다수 대상 일제 사격, 알림은 wowsims 버전과 같지만, 고정 사격을 배운 뒤에는 자동 사격 후마다 일제 사격과 고정 사격만 제안합니다: 신비한 사격으로 빈틈 채우기 없음(이동 중 제외), 독사 쐐기 없음, 독사의 상 알림 없음. 소환수 명령, 눈속임, 덫, 연발 사격, 근접 공격 섞기, 죽은척하기는 직접 판단합니다. 추천 wowsims 원거리 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
--- 469b61e4 English: Melee DPS (wowsims)
+-- c4d18a35 English: Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee,
+--     leveling shots, multi-target Multi-Shot and reminders as the simulator version, but once
+--     Steady Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no
+--     Arcane Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper
+--     reminder. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with
+--     you. An alternative to the recommended simulator ranged premade, off by default: enable it
+--     and disable that one, or raise its priority.
+[1758] = "1–70레벨, 모든 전문화용이며 Wowhead의 공격대 조언을 따릅니다. 끌어오기, 근접 공격, 레벨업 사격, 다수 대상 일제 사격, 알림은 시뮬레이터 버전과 같지만, 고정 사격을 배운 뒤에는 자동 사격 후마다 일제 사격과 고정 사격만 제안합니다: 신비한 사격으로 빈틈 채우기 없음(이동 중 제외), 독사 쐐기 없음, 독사의 상 알림 없음. 소환수 명령, 눈속임, 덫, 연발 사격, 근접 공격 섞기, 죽은척하기는 직접 판단합니다. 추천 시뮬레이터 원거리 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
+-- 4f534fae English: Melee DPS (simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
---     Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     Burning Crusade Classic (variant key: DPS / simulator). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
-[1759] = "근접 공격 전담 (wowsims)",
+[1759] = "근접 공격 전담 (시뮬레이터)",
 -- a600e4ad English: Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or
 --     Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte,
 --     Slice and Dice from two combo points (renewed in its last two seconds), Eviscerate on a
@@ -6013,15 +6013,15 @@ addon.translation = {
 -- 5f9b3940 English: Melee DPS (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
 --     Burning Crusade Classic (variant key: DPS / Wowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1761] = "근접 공격 전담 (Wowhead)",
--- 19e52877 English: Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and
---     reminders as the wowsims version, but Slice and Dice starts from one combo point and every
+-- d6b11787 English: Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and
+--     reminders as the simulator version, but Slice and Dice starts from one combo point and every
 --     five-point finisher is Eviscerate: no Rupture. Expose Armor, Kidney Shot, Feint, Vanish and
---     positioning stay with you. An alternative to the recommended wowsims melee DPS premade, off
+--     positioning stay with you. An alternative to the recommended simulator melee DPS premade, off
 --     by default: enable it and disable that one, or raise its priority.
-[1762] = "1–70레벨, 모든 전문화용이며 Wowhead를 따릅니다. 은신 시작 기술, 연계 점수 생성 기술, 알림은 wowsims 버전과 같지만, 난도질은 연계 점수 1점부터 시작하고 5점 마무리 기술은 모두 절개입니다: 파열은 없습니다. 약점 노출, 급소 가격, 교란, 소멸, 위치 선정은 직접 판단합니다. 추천 wowsims 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
+[1762] = "1–70레벨, 모든 전문화용이며 Wowhead를 따릅니다. 은신 시작 기술, 연계 점수 생성 기술, 알림은 시뮬레이터 버전과 같지만, 난도질은 연계 점수 1점부터 시작하고 5점 마무리 기술은 모두 절개입니다: 파열은 없습니다. 약점 노출, 급소 가격, 교란, 소멸, 위치 선정은 직접 판단합니다. 추천 시뮬레이터 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- d05e07b7 English: Balance
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
 --     Burning Crusade Classic (variant key: Balance).
@@ -6034,8 +6034,8 @@ addon.translation = {
 --     Wild, Thorns while solo, Omen of Clarity, Moonkin Form, Force of Nature on a long fight,
 --     Innervate when low.
 [1764] = "1레벨부터 70레벨까지의 시전형 조화 로테이션이며, 다른 기본 제공 로테이션이 맞지 않는 모든 드루이드의 기본값입니다. 별빛 섬광(20레벨 전에는 천벌)으로 끌어오고, 이동 중에는 곤충 떼와 달빛 섬광, 그룹에서는 요정의 불꽃, 적이 셋 이상이면 허리케인, 달빛 섬광이 끝났고 마나가 30% 있으면 달빛 섬광, 자연의 은혜 발동 시 별빛 섬광, 근접 거리의 대상에게 천벌, 그다음 별빛 섬광(배우기 전에는 천벌)을 사용합니다. 표범, 곰, 이동 변신 상태에서는 제안하지 않습니다. 알림: 야생의 징표, 혼자일 때 가시, 청명의 전조, 달빛야수 변신, 긴 전투에서 자연의 군대, 마나가 부족할 때 정신 자극.",
--- 9a2fa639 English: Feral (Icy Veins, Warcraft Tavern & wowsims)
-[1765] = "야성 (Icy Veins, Warcraft Tavern & wowsims)",
+-- 9f5ae657 English: Feral (Icy Veins, Warcraft Tavern & simulator)
+[1765] = "야성 (Icy Veins, Warcraft Tavern & 시뮬레이터)",
 -- 43a0ca32 English: Cat and bear for the Feral tree, following your form. Cat: stealth opener
 --     (Pounce, Ravage or Shred), Faerie Fire (Feral), Rip at four combo points on a target that
 --     lives, Ferocious Bite between Rips without Clearcasting, Mangle kept up, Shred from behind or
@@ -6048,7 +6048,7 @@ addon.translation = {
 -- 4c55a525 English: Feral (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
 --     Burning Crusade Classic (variant key: Feral / Wowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1767] = "야성 (Wowhead)",
 -- 9092413a English: Wowhead's Feral, an alternative to the recommended Icy Veins Feral premade, off
@@ -6068,12 +6068,12 @@ addon.translation = {
 --     Wrath for soloing. Reminders: Mark, Omen, Tree of Life, Nature's Swiftness, Tranquility,
 --     Innervate and Rebirth. Choosing whom to heal and downranking stay with you.
 [1770] = "회복 특성 트리를 위한 치유 로테이션으로, 우호적 대상(또는 자신)에게 사용합니다: 자연의 신속함 후 치유의 손길, 내 회복이나 재생이 걸린 죽어 가는 대상에게 신속한 치유, 전투 중 피어나는 생명 3중첩 유지, 회복과 재생이 없으면 사용, 그다음 생명의 나무 상태에서는 재생, 그 밖에서는 치유의 손길. 적대적 대상에게는 혼자 사냥을 위해 달빛 섬광과 천벌을 사용합니다. 알림: 야생의 징표, 청명의 전조, 생명의 나무, 자연의 신속함, 평온, 정신 자극, 환생. 누구를 치유할지와 하위 등급 사용은 직접 판단합니다.",
--- 469b61e4 English: Melee DPS (wowsims)
+-- 4f534fae English: Melee DPS (simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
---     The Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
---     are proper names and stay unchanged.
-[1771] = "근접 공격 전담 (wowsims)",
+--     The Burning Crusade Classic (variant key: DPS / simulator). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
+[1771] = "근접 공격 전담 (시뮬레이터)",
 -- e30bf8c3 English: Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept,
 --     Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is
 --     learned). With Bloodthirst or Mortal Strike: that strike, Whirlwind with rage to spare,
@@ -6084,17 +6084,17 @@ addon.translation = {
 [1772] = "1–70레벨, 무기 또는 분노용입니다. 돌진으로 끌어온 뒤 승리의 돌진, 봉쇄, 광란, 둘 이상의 적과 싸우면 소용돌이(배우기 전에는 천둥벼락)를 사용합니다. 피의 갈증이나 죽음의 일격이 있으면: 그 일격, 분노가 남을 때 소용돌이, 마무리 일격, 제압. 배우기 전에는: 소용돌이, 마무리 일격, 제압, 분쇄. 남는 분노는 압도 또는 방어구 가르기, 그다음 무력화에 씁니다. 전투의 외침, 피의 분노, 분노 소모용 영웅의 일격 또는 회전베기, 휩쓸기 일격, 죽음의 소원, 무모한 희생, 차단을 알려 줍니다. 격돌 타이밍, 태세 전환, 광전사의 격노는 직접 판단합니다.",
 -- 6d10d944 English: Melee DPS (Icy Veins)
 [1773] = "근접 공격 전담 (Icy Veins)",
--- c50ff4f3 English: Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and
---     leveling steps as the wowsims version, but with Mortal Strike Execute comes first, with
+-- b57d248a English: Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and
+--     leveling steps as the simulator version, but with Mortal Strike Execute comes first, with
 --     Bloodthirst Execute comes right after it, Whirlwind follows without holding rage, and
 --     Hamstring only near full rage. Slam timing, stance dancing and Berserker Rage stay with you.
---     An alternative to the recommended wowsims melee DPS premade, off by default: enable it and
+--     An alternative to the recommended simulator melee DPS premade, off by default: enable it and
 --     disable that one, or raise its priority.
-[1774] = "1–70레벨, 무기 또는 분노용이며 Icy Veins를 따릅니다. 끌어오기, 알림, 레벨업 단계는 wowsims 버전과 같지만, 죽음의 일격이 있으면 마무리 일격을 먼저, 피의 갈증이 있으면 그 바로 다음에 마무리 일격을 사용하고, 소용돌이는 분노를 아끼지 않고 이어서 쓰며, 무력화는 분노가 거의 가득 찼을 때만 사용합니다. 격돌 타이밍, 태세 전환, 광전사의 격노는 직접 판단합니다. 추천 wowsims 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
+[1774] = "1–70레벨, 무기 또는 분노용이며 Icy Veins를 따릅니다. 끌어오기, 알림, 레벨업 단계는 시뮬레이터 버전과 같지만, 죽음의 일격이 있으면 마무리 일격을 먼저, 피의 갈증이 있으면 그 바로 다음에 마무리 일격을 사용하고, 소용돌이는 분노를 아끼지 않고 이어서 쓰며, 무력화는 분노가 거의 가득 찼을 때만 사용합니다. 격돌 타이밍, 태세 전환, 광전사의 격노는 직접 판단합니다. 추천 시뮬레이터 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- 871d5911 English: Tank (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     The Burning Crusade Classic (variant key: Protection / Wowhead). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1775] = "방어 전담 (Wowhead)",
 -- 91dfa1ce English: Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge,
@@ -6107,7 +6107,7 @@ addon.translation = {
 -- ea76d926 English: Tank (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1777] = "방어 전담 (Icy Veins)",
 -- aa141592 English: Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins.
@@ -6120,7 +6120,7 @@ addon.translation = {
 -- 3adec7ba English: Damage (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: DpsIcyVeins). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1779] = "공격 전담 (Icy Veins)",
 -- 9b0711bb English: Damage from level 1 to 70, used whenever the healer premade does not apply.
@@ -6134,7 +6134,7 @@ addon.translation = {
 -- ce79d246 English: Damage (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1781] = "공격 전담 (Wowhead)",
 -- fe006eaa English: Damage after Wowhead's guides, an alternative to the recommended Icy Veins
@@ -6146,7 +6146,7 @@ addon.translation = {
 -- d0f0e9e6 English: Healer (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: HealerWowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1783] = "치유 전담 (Wowhead)",
 -- d31781e0 English: Healing in a group when Holy or Discipline is your main talent tree. It advises
@@ -6158,7 +6158,7 @@ addon.translation = {
 -- 45321807 English: Healer (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: HealerIcyVeins). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1785] = "치유 전담 (Icy Veins)",
 -- e31d4277 English: Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash
@@ -6178,7 +6178,7 @@ addon.translation = {
 -- e3790b25 English: Drain-tank (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1789] = "흡수 탱킹 (Wowhead)",
 -- 522ed69f English: Warlock after Wowhead's guides, an alternative to the recommended Icy Veins
@@ -6705,7 +6705,7 @@ addon.translation = {
 -- d580a703 English: Enhancement (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     WoW Forever (variant key: Enhancement). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [1947] = "고양 (Icy Veins)",
 -- 339ec7e4 English: Melee Enhancement from level 1 to 60, and the default for any Shaman before
@@ -6723,8 +6723,8 @@ addon.translation = {
 -- eb2363b2 English: Enhancement, mana-efficient (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     WoW Forever (variant key: Enhancement / Wowhead). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1949] = "고양, 마나 효율 (Wowhead)",
 -- abc72f43 English: Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work,
 --     Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in
@@ -6766,7 +6766,7 @@ addon.translation = {
 -- b9f016be English: All trees (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     WoW Forever (variant key: DPS / Wowhead). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [1955] = "모든 특성 트리 (Wowhead)",
 -- 02cc5c3e English: Wowhead's level-30 Warlock: Affliction and Demonology drain-tank with the
@@ -6782,8 +6782,8 @@ addon.translation = {
 -- 80b938a1 English: Protection (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1957] = "보호 (Icy Veins)",
 -- 95bdeac5 English: Tanking whenever you are in Defensive Stance, from level 10 to 60. Charges to
 --     pull (in Defensive Stance once you have Vanguard), Victory Rush, and on two or more enemies
@@ -6893,8 +6893,8 @@ addon.translation = {
 -- 8335d07b English: Ranged (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     WoW Forever (variant key: Ranged). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1975] = "원거리 (Wowhead)",
 -- 5c5cdd9b English: Every ranged Hunter from level 1 to 60 (Beast Mastery, Marksmanship, and
 --     Survival until Strider Kick), and the Forever Hunter default. Pull: Hunter's Mark, Sniper
@@ -6912,7 +6912,7 @@ addon.translation = {
 -- a82fce4f English: Ranged, mana-saving (Mobalytics)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     WoW Forever (variant key: RangedMobalytics). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [1977] = "원거리, 마나 절약 (Mobalytics)",
 -- 530b5b4d English: Mobalytics' mana-saving leveling style, an alternative to the recommended
@@ -6925,8 +6925,8 @@ addon.translation = {
 -- 5f8e7ecc English: Survival melee (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     WoW Forever (variant key: Survival). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1979] = "생존 근접 (Wowhead)",
 -- 8da10e55 English: Dual-wield melee Survival once Survival is your main talent tree with 21
 --     points, Strider Kick's tier (until then the ranged premade levels you, as the guides advise).
@@ -7019,8 +7019,8 @@ addon.translation = {
 -- 2ba64aad English: Protection (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1993] = "보호 (Wowhead)",
 -- 65aad40e English: Tanking, once Protection is your main talent tree or you turn on Righteous
 --     Fury. When the target is fighting someone else: Judgement with Seal of Fury (the taunt),
@@ -7128,7 +7128,7 @@ addon.translation = {
 -- 2b5ecbd1 English: Deathbringer reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Retail (current expansion) (variant key: BloodSimc). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2011] = "죽음의 인도자 참고용 (SimulationCraft)",
 -- 8ed0754d English: Reference only, off by default: SimulationCraft's Deathbringer list, which
@@ -7167,7 +7167,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Retail (current expansion) (variant key: FrostWowhead). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2017] = "참고용 (Wowhead)",
 -- 6899840b English: Reference only, off by default: Wowhead's Frost order, which puts its cooldowns
@@ -7206,7 +7206,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Retail (current expansion) (variant key: UnholySimc). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2023] = "참고용 (SimulationCraft)",
 -- 100d5361 English: Reference only, off by default: SimulationCraft's Unholy list, which spends
@@ -7287,7 +7287,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
 --     Hunter, Retail (current expansion) (variant key: VengeanceSimc). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2035] = "참고용 (SimulationCraft)",
 -- d4f52cf1 English: Reference only, off by default: SimulationCraft's Vengeance lists. Hidden
@@ -7317,7 +7317,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
 --     Hunter, Retail (current expansion) (variant key: DevourerGuide). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2039] = "참고용 (Icy Veins)",
 -- 5da6da74 English: Reference only, off by default: Icy Veins' Annihilator priority. Most of your
@@ -7333,7 +7333,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
 --     Hunter, Retail (current expansion) (variant key: DevourerSimc). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2041] = "참고용 (SimulationCraft)",
 -- 0228846e English: Reference only, off by default: SimulationCraft's Annihilator list, which
@@ -7437,7 +7437,7 @@ addon.translation = {
 -- beb78fe5 English: Defensive reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Retail (current expansion) (variant key: GuardianSimc). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2057] = "방어 중심 참고용 (SimulationCraft)",
 -- f0f6bfc8 English: Reference only, off by default: SimulationCraft's Guardian list, which spends
@@ -7532,7 +7532,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
 --     Retail (current expansion) (variant key: Preservation). A reference-only rotation built from
 --     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2071] = "참고용 (Icy Veins)",
 -- 21ab41c4 English: Reference only, off by default. Ally health, Echo, Reversion, Essence Burst and
@@ -7627,7 +7627,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     Retail (current expansion) (variant key: SurvivalGuide). A reference-only rotation built from
 --     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2085] = "참고용 (SimulationCraft)",
 -- 1b766914 English: Reference only, off by default: SimulationCraft's Survival priority, where Kill
@@ -7765,7 +7765,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
 --     Retail (current expansion) (variant key: BrewmasterGuide). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2105] = "참고용 (Icy Veins)",
 -- a07ba74a English: Reference only, off by default: Icy Veins' Brewmaster priority (SimulationCraft
@@ -7809,7 +7809,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
 --     Retail (current expansion) (variant key: Mistweaver). A reference-only rotation built from
 --     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2111] = "참고용 (Icy Veins)",
 -- 671bd99c English: Reference only, off by default. Blizzard offers no Assisted Combat list for
@@ -7848,7 +7848,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Retail (current expansion) (variant key: Retribution / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2117] = "참고용 (Icy Veins)",
 -- 66c84fb8 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
@@ -7877,7 +7877,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2121] = "참고용 (Icy Veins)",
 -- f169797b English: Reference only, off by default: the Icy Veins and SimulationCraft order needs
@@ -7942,7 +7942,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Retail (current expansion) (variant key: Shadow / IcyVeins). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2131] = "참고용 (Icy Veins)",
 -- 1cbf9308 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
@@ -7958,7 +7958,7 @@ addon.translation = {
 -- 6a76d2e3 English: Atonement (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Retail (current expansion) (variant key: Discipline). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2133] = "속죄 (Icy Veins)",
 -- c8fa3896 English: Discipline in Midnight, for reference: Blizzard's Assisted Combat does not
@@ -8022,7 +8022,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Retail (current expansion) (variant key: Assassination / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2143] = "참고용 (Icy Veins)",
 -- 04026a9b English: Reference only, off by default: the Icy Veins and SimulationCraft order keeps
@@ -8050,7 +8050,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Retail (current expansion) (variant key: Outlaw / IcyVeins). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2147] = "참고용 (Icy Veins)",
 -- 3a3eecef English: Reference only, off by default: the Icy Veins, SimulationCraft and Wowhead
@@ -8077,7 +8077,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Retail (current expansion) (variant key: Subtlety / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2151] = "참고용 (Icy Veins)",
 -- 5fff6443 English: Reference only, off by default: the Icy Veins and SimulationCraft order holds
@@ -8120,7 +8120,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Retail (current expansion) (variant key: Elemental / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2157] = "참고용 (Icy Veins)",
 -- 8fc57d38 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
@@ -8150,7 +8150,7 @@ addon.translation = {
 -- 5c90fed4 English: Stormbringer reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Retail (current expansion) (variant key: Enhancement / Stormbringer). Names in parentheses
---     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
 --     Warcraft Tavern) are proper names and stay unchanged.
 [2161] = "폭풍인도자 참고용 (SimulationCraft)",
 -- 4890c5e6 English: Reference only, off by default: SimulationCraft's Stormbringer list (Icy Veins
@@ -8167,7 +8167,7 @@ addon.translation = {
 -- 33731fb7 English: Totemic reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Retail (current expansion) (variant key: Enhancement / Totemic). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2163] = "토템술사 참고용 (SimulationCraft)",
 -- 4485ad39 English: Reference only, off by default: SimulationCraft's Totemic list reads Flame
@@ -8224,7 +8224,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Retail (current expansion) (variant key: Affliction / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2171] = "참고용 (Icy Veins)",
 -- d01f383a English: Reference only, off by default: the Icy Veins and SimulationCraft (Soul
@@ -8252,7 +8252,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Retail (current expansion) (variant key: Demonology / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2175] = "참고용 (Icy Veins)",
 -- 631224a9 English: Reference only, off by default: the Icy Veins and SimulationCraft (Diabolist)
@@ -8278,7 +8278,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Retail (current expansion) (variant key: Destruction / Simc). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2179] = "참고용 (SimulationCraft)",
 -- ad764c7b English: Reference only, off by default: SimulationCraft's order reads Immolate,
@@ -8324,7 +8324,7 @@ addon.translation = {
 -- b82b4f60 English: Slayer reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Arms / Slayer). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2187] = "학살자 참고용 (SimulationCraft)",
 -- 4c91f0b4 English: Reference only, off by default: the Slayer order from SimulationCraft, Icy
@@ -8339,7 +8339,7 @@ addon.translation = {
 -- 8a86f34e English: Colossus reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Arms / Colossus). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2189] = "거신 참고용 (SimulationCraft)",
 -- 5b252489 English: Reference only, off by default: the Colossus order from SimulationCraft and Icy
@@ -8364,7 +8364,7 @@ addon.translation = {
 -- b82b4f60 English: Slayer reference (SimulationCraft)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Fury / Slayer). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2193] = "학살자 참고용 (SimulationCraft)",
 -- 082fcea6 English: Reference only, off by default: SimulationCraft's Slayer order reads Enrage,
@@ -8403,7 +8403,7 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2199] = "참고용 (Icy Veins)",
 -- b8b51708 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
@@ -8442,8 +8442,8 @@ addon.translation = {
 -- 3c5a26cc English: Balance (Icy Veins)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Classic Era (variant key: Balance / IcyVeins). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2205] = "조화 (Icy Veins)",
 -- 72e2ae3e English: Icy Veins' raid list for realms with the 16-debuff limit, an alternative to the
 --     recommended Balance premade, off by default: enable it and disable that one, or raise its
@@ -8503,7 +8503,7 @@ addon.translation = {
 -- b765b6c7 English: Restoration (Warcraft Tavern)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Classic Era (variant key: Restoration / WarcraftTavern). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2217] = "회복 (Warcraft Tavern)",
 -- 8cdc97b9 English: Warcraft Tavern's damage tiers, an alternative to the recommended Restoration
@@ -8515,7 +8515,7 @@ addon.translation = {
 -- d6247adc English: Balance (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Balance). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2219] = "조화 (SoD)",
 -- 5bcfabec English: Season of Discovery Balance from level 1 to 60, and the default for any Druid
@@ -8538,7 +8538,7 @@ addon.translation = {
 -- c4d16f19 English: Balance (SoD, Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Balance / Wowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2223] = "조화 (SoD, Wowhead)",
 -- 75dabca6 English: Wowhead's Phase 8 list, an alternative to the recommended Season of Discovery
@@ -8551,7 +8551,7 @@ addon.translation = {
 -- 3e1ff241 English: Feral cat (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Feral). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2225] = "야성 표범 (SoD)",
 -- e7b0a6ca English: Season of Discovery cat, chosen when Savage Roar is engraved (or Feral is your
@@ -8565,7 +8565,7 @@ addon.translation = {
 -- 3c52079f English: Bear tank (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2227] = "곰 방어 전담 (SoD)",
 -- 6ae09c71 English: Season of Discovery bear tank, chosen when Lacerate is engraved. Faerie Fire
@@ -8575,18 +8575,18 @@ addon.translation = {
 --     rage, Berserk, Survival Instincts, Frenzied Regeneration and Barkskin when low, Enrage
 --     between pulls, Demoralizing Roar on elites. Taunting and target choice stay with you.
 [2228] = "디스커버리 시즌 곰 방어 전담 로테이션으로, 가르기를 새겼을 때 선택됩니다. 원거리에서 요정의 불꽃 (야성) 또는 태양섬광 (곰)으로 끌어오고, 가르기가 사라지기 전에 가르기, 재사용 대기시간마다 짓이기기, 가르기, 휘둘러치기를 사용하며, 적이 셋 이상이면 광폭화 중 짓이기기와 휘둘러치기를 사용합니다. 표범 변신 상태에서는 보조 방어를 위해 표범 목록을 사용하고, 시전 형태에서는 곰으로 변신합니다. 알림: 분노 30에서 후려치기, 광폭화, 생명력이 낮으면 생존 본능, 광포한 재생력, 나무 껍질, 전투 사이에 분노, 정예에게 위협의 포효. 도발과 대상 선택은 직접 판단합니다.",
--- 017c4426 English: Bear tank (SoD, wowsims cat weave)
-[2229] = "곰 방어 전담 (SoD, wowsims 표범 섞기)",
--- 83e89d4a English: Off by default; for experts whose gear also grants Savage Roar. The wowsims
+-- 89c7b6e8 English: Bear tank (SoD, simulator cat weave)
+[2229] = "곰 방어 전담 (SoD, 시뮬레이터 표범 섞기)",
+-- a83b9a00 English: Off by default; for experts whose gear also grants Savage Roar. The simulator
 --     Phase 7 cat weave: leave Bear for Cat when your Rake is down, keep Savage Roar and Rake up
 --     (Tiger's Fury, Mangle to build), then return to Dire Bear and play the tank list. Reminders
 --     as the recommended tank premade.
-[2230] = "기본적으로 꺼져 있습니다. 장비로 야생의 포효도 얻는 숙련자용입니다. wowsims 7단계 표범 섞기: 내 갈퀴 발톱이 없으면 곰에서 표범으로 바꿔 야생의 포효와 갈퀴 발톱을 유지하고(맹공격, 연계 점수 생성은 짓이기기), 그다음 광포한 곰으로 돌아가 방어 전담 목록을 사용합니다. 알림은 권장 방어 전담 기본 제공 로테이션과 같습니다.",
+[2230] = "기본적으로 꺼져 있습니다. 장비로 야생의 포효도 얻는 숙련자용입니다. 시뮬레이터 7단계 표범 섞기: 내 갈퀴 발톱이 없으면 곰에서 표범으로 바꿔 야생의 포효와 갈퀴 발톱을 유지하고(맹공격, 연계 점수 생성은 짓이기기), 그다음 광포한 곰으로 돌아가 방어 전담 목록을 사용합니다. 알림은 권장 방어 전담 기본 제공 로테이션과 같습니다.",
 -- 24f21f83 English: Restoration (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2231] = "회복 (SoD)",
 -- ba307284 English: Season of Discovery Restoration, chosen when Lifebloom is engraved (or
 --     Restoration is your main tree without another legs rune). Heals your current friendly target:
@@ -8618,8 +8618,8 @@ addon.translation = {
 --     even if that delays an Auto Shot, Serpent Sting is never used, and Rapid Fire, Bestial Wrath
 --     and racials are used on every pull.
 [2236] = "기본적으로 꺼져 있습니다. 공격 속도가 3.0초보다 빠른 원거리 무기라면 켜세요. 사냥꾼: 원거리와 같지만, 그룹에서는 자동 사격이 늦어지더라도 조준 사격과 일제 사격을 준비되는 즉시 사용하고, 독사 쐐기는 쓰지 않으며, 속사, 야수의 격노, 종족 특성은 전투마다 사용합니다.",
--- 23771115 English: Ranged, raid Serpent Sting (wowsims)
-[2237] = "원거리, 공격대 독사 쐐기 (wowsims)",
+-- f0c76c87 English: Ranged, raid Serpent Sting (simulator)
+[2237] = "원거리, 공격대 독사 쐐기 (시뮬레이터)",
 -- afe0ee0b English: Off by default; enable it where the raid has debuff room for your sting. Like
 --     Hunter: Ranged, but in a group Serpent Sting is kept up everywhere, raids included, refreshed
 --     under 5 seconds while Aimed Shot and Multi-Shot are both cooling, and Arcane Shot is never
@@ -8628,7 +8628,7 @@ addon.translation = {
 -- 1fa5802f English: Ranged (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     Season of Discovery (variant key: Ranged). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2239] = "원거리 (SoD)",
 -- 09b14a5d English: Every ranged Hunter on a Season of Discovery realm, level 1 to 60; runes are
@@ -8647,7 +8647,7 @@ addon.translation = {
 -- fb035172 English: Melee (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     Season of Discovery (variant key: Melee). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2241] = "근접 (SoD)",
 -- 4c275cc2 English: Chosen on a Season of Discovery realm once you engrave Flanking Strike, Wyvern
@@ -8699,8 +8699,8 @@ addon.translation = {
 -- 76354bcf English: Fire (Warcraft Tavern)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Classic Era (variant key: Fire / WarcraftTavern). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2249] = "화염 (Warcraft Tavern)",
 -- 83ffa7ee English: Fire after Warcraft Tavern, an alternative to the recommended Fire premade, off
 --     by default: enable it and disable that one, or raise its priority. Combustion is spent at the
@@ -8712,7 +8712,7 @@ addon.translation = {
 -- 91d3c82e English: Fire (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2251] = "화염 (SoD)",
 -- 67a08e15 English: Season of Discovery Fire from level 1 to 60, and the Mage default there. Uses
@@ -8729,7 +8729,7 @@ addon.translation = {
 -- 0f6cec9f English: Frost (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Frost). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2253] = "냉기 (SoD)",
 -- b6fc82b9 English: Season of Discovery Frost from level 10, chosen when Frost is your main tree.
@@ -8754,7 +8754,7 @@ addon.translation = {
 -- 3a7614c3 English: Arcane (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Arcane). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2257] = "비전 (SoD)",
 -- a0acdff9 English: Season of Discovery Arcane damage, chosen when Arcane is your main tree and
@@ -8767,7 +8767,7 @@ addon.translation = {
 -- a23552e6 English: Healer (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2259] = "치유 전담 (SoD)",
 -- 83b2fb47 English: Season of Discovery Mage healing, chosen when Regeneration or Mass Regeneration
@@ -8840,8 +8840,8 @@ addon.translation = {
 -- 8094efdd English: Retribution (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Retribution). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2271] = "징벌 (SoD)",
 -- 0cc623b4 English: Season of Discovery melee from level 1 to 60, and the default for any Paladin
 --     there. Keeps Seal of Martyrdom up (Righteousness until you have it), opens with Exorcism,
@@ -8879,12 +8879,12 @@ addon.translation = {
 --     Wrath on Undead and Demons (on anything with Purifying Power engraved), Consecration, and
 --     Judgement while both seals are up.
 [2278] = "기본적으로 꺼져 있습니다. 문장이 남아 있게 하는 봉인을 짊어진 자의 영혼 룬이나 6세트 효과가 있다면 켜세요(Rotation Master는 둘 다 볼 수 없습니다). 지휘의 문장과 헌신의 문장을 모두 유지하고, 신성한 힘 3에서 천상의 폭풍, 성전사의 일격, 퇴마술, 언데드와 악마에게 신의 격노(정화의 힘을 새겼다면 모든 적에게), 신성화, 두 문장이 모두 걸려 있는 동안 심판을 사용합니다.",
--- 68461fe5 English: Shockadin (SoD, wowsims)
+-- 0fb3c120 English: Shockadin (SoD, simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Shockadin). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
-[2279] = "신성 충격 공격형 (SoD, wowsims)",
+[2279] = "신성 충격 공격형 (SoD, 시뮬레이터)",
 -- 9a1756b6 English: Off by default; enable it if you deal damage with the Holy tree. It applies
 --     with Holy as your main tree and Shock and Awe engraved. Seal of Martyrdom (else
 --     Righteousness), judged as it runs out, Holy Shock to keep Sunlight up or at three Holy Power,
@@ -8893,8 +8893,8 @@ addon.translation = {
 -- 924f353b English: Protection (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Protection). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2281] = "보호 (SoD)",
 -- 58619700 English: Season of Discovery tanking, chosen by Righteous Fury, an engraved Hammer of
 --     the Righteous or Shield of Righteousness, or the Protection tree. Seal of Martyrdom, a pull
@@ -8905,22 +8905,22 @@ addon.translation = {
 --     before a pull, Devotion Aura, Sanctuary or Kings, Avenging Wrath, Divine Protection below
 --     40%, Lay on Hands, Hand of Reckoning in a group when your target attacks someone else.
 [2282] = "디스커버리 시즌 방어 로테이션으로, 정의의 격노, 새긴 정의의 망치나 정의의 방패, 또는 보호 특성 트리로 선택됩니다. 헌신의 문장, 신성한 방패, 응징의 방패, 퇴마술로 끌어오고, 신성한 방패를 유지합니다. 단일 대상에게는 정의의 망치, 정의의 방패, 퇴마술, 응징의 방패, 심판, 천상의 폭풍, 신성화; 적이 셋 이상 나를 공격하면 정의의 망치, 응징의 방패, 신성화, 정의의 방패, 퇴마술. 알림: 정의의 격노, 전투 전 신성한 방패, 기원의 오라, 성역의 축복 또는 왕의 축복, 응징의 격노, 40% 미만에서 신의 가호, 신의 축복, 그룹에서 내 대상이 다른 사람을 공격하면 심판의 손길.",
--- 29a17682 English: Protection (SoD, wowsims)
+-- c138082a English: Protection (SoD, simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
---     Season of Discovery (variant key: Protection / Wowsims). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
---     are proper names and stay unchanged.
-[2283] = "보호 (SoD, wowsims)",
--- f2677084 English: The wowsims tank list, an alternative to the recommended Season of Discovery
+--     Season of Discovery (variant key: Protection / simulator). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
+[2283] = "보호 (SoD, 시뮬레이터)",
+-- cfa4b56e English: The simulator tank list, an alternative to the recommended Season of Discovery
 --     Protection premade, off by default: enable it and disable that one, or raise its priority.
 --     Judgement whenever a seal is up, the seal renewed just before it runs out, Holy Shield,
 --     Avenger's Shield, Hammer of the Righteous, Exorcism, Shield of Righteousness last. Same
 --     reminders as the recommended premade.
-[2284] = "wowsims의 방어 전담 목록으로, 추천 디스커버리 시즌 보호 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 문장이 걸려 있으면 언제든 심판, 끝나기 직전에 문장 갱신, 신성한 방패, 응징의 방패, 정의의 망치, 퇴마술, 마지막으로 정의의 방패. 알림은 추천 기본 제공 로테이션과 같습니다.",
+[2284] = "시뮬레이터의 방어 전담 목록으로, 추천 디스커버리 시즌 보호 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 문장이 걸려 있으면 언제든 심판, 끝나기 직전에 문장 갱신, 신성한 방패, 응징의 방패, 정의의 망치, 퇴마술, 마지막으로 정의의 방패. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- e757b87a English: Holy (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Holy). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2285] = "신성 (SoD)",
 -- 45b566d4 English: Season of Discovery healing in a group, chosen by an engraved Beacon of Light,
@@ -8963,14 +8963,14 @@ addon.translation = {
 --     automatic shield before pulls. In a group: Shadow Word: Pain, Mind Blast, Mind Flay. Same
 --     reminders as the recommended premade.
 [2292] = "쉬는 시간을 줄이는 Warcraft Tavern의 레벨업 방식으로, 추천 공격 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 혼자일 때: 정신 분열로 끌어오고, 어둠의 권능: 고통 한 번, 대상이 30%를 넘는 동안에만 다시 정신 분열, 정신 분열 사이에는 성스러운 일격이나 정신의 채찍 대신 마법봉을 사용합니다. 전투 전 자동 보호막은 없습니다. 그룹에서는: 어둠의 권능: 고통, 정신 분열, 정신의 채찍. 알림은 추천 기본 제공 로테이션과 같습니다.",
--- 73068ffe English: Damage (wowsims Undead raid)
-[2293] = "공격 전담 (wowsims 언데드 공격대)",
--- f3ea634f English: The recommended damage priority with wowsims' raid choice for Undead priests:
+-- 545a097f English: Damage (simulator Undead raid)
+[2293] = "공격 전담 (시뮬레이터 언데드 공격대)",
+-- 589927b7 English: The recommended damage priority with simulator' raid choice for Undead priests:
 --     Inner Focus is spent on Devouring Plague instead of Mind Blast, and Devouring Plague is cast
 --     in raids too, so use it only where your raid has debuff slots to spare. No Vampiric Embrace.
 --     An alternative to the recommended damage premade, off by default: enable it and disable that
 --     one, or raise its priority.
-[2294] = "추천 공격 우선순위에 언데드 사제를 위한 wowsims의 공격대 선택을 더한 것입니다: 내면의 집중력을 정신 분열 대신 파멸의 역병에 사용하고 공격대에서도 파멸의 역병을 시전하므로, 공격대에 약화 효과 자리가 남는 곳에서만 사용하세요. 흡혈의 선물은 없습니다. 추천 공격 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
+[2294] = "추천 공격 우선순위에 언데드 사제를 위한 시뮬레이터의 공격대 선택을 더한 것입니다: 내면의 집중력을 정신 분열 대신 파멸의 역병에 사용하고 공격대에서도 파멸의 역병을 시전하므로, 공격대에 약화 효과 자리가 남는 곳에서만 사용하세요. 흡혈의 선물은 없습니다. 추천 공격 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- a491a33c English: Healer
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Classic Era (variant key: Healer).
@@ -8987,7 +8987,7 @@ addon.translation = {
 -- 999e9eba English: Damage (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Season of Discovery (variant key: Dps). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2297] = "공격 전담 (SoD)",
 -- 63f3ee22 English: Damage on Season of Discovery realms, from level 1 to 60, using the runes you
@@ -9011,7 +9011,7 @@ addon.translation = {
 -- a23552e6 English: Healer (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2301] = "치유 전담 (SoD)",
 -- 37b39f3b English: Chosen on Season of Discovery realms in a group when Holy or Discipline is your
@@ -9037,8 +9037,8 @@ addon.translation = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Classic Era (variant key: DPS).
 [2305] = "근접 공격 전담",
--- b5cd3c00 English: Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from
---     wowsims, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the
+-- 5fc6d26a English: Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from
+--     simulator, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the
 --     target is not facing you, Cheap Shot solo, Garrote outside raids. In combat: Riposte, Slice
 --     and Dice from one combo point when it is missing on an elite or a healthy target (renewed at
 --     five points in its last three seconds), Expose Armor at five points in a group when you have
@@ -9050,7 +9050,7 @@ addon.translation = {
 --     or two enemies with Slice and Dice up, Cold Blood at five, Evasion solo when hurt. Vanish,
 --     Gouge, Preparation, Kidney Shot and racials are listed off; Feint, Sprint, Blind, Sap and
 --     positioning stay with you.
-[2306] = "1–60레벨, 모든 전문 분야용이며 하드코어와 자수성가 서버에서도 쓰입니다. wowsims, Icy Veins, Wowhead를 바탕으로 만들었습니다. 은신 상태에서: 사전계획, 대상이 나를 바라보지 않으면 단검으로 매복, 혼자일 때 비열한 습격, 공격대 밖에서 목조르기. 전투 중: 반격, 정예나 생명력이 많은 대상에게 난도질이 없으면 연계 점수 1점부터 난도질(마지막 3초에 5점으로 갱신), 그룹에서 약점 노출 연마 2/2가 있고 아무도 방어구 가르기를 하지 않으면 5점에서 약점 노출, 곧 죽을 대상에게 2점 절개, 그 외에는 5점에서 절개, 5점을 넘으면 연계 점수 생성 기술 없음. 연계 점수 생성 기술은 배운 것을 따릅니다: 공격대 밖에서 그림자 일격과 과다출혈, 대상이 나를 바라보지 않으면 단검으로 기습, 그 외에는 사악한 일격. 알림: 무기마다 독(보조 무기가 있으면 보조 무기에 맹독), 발차기, 엉겅퀴 차, 난도질이 걸려 있을 때 정예나 적 둘에게 폭풍의 칼날과 아드레날린 촉진, 5점에서 냉혈, 혼자일 때 다치면 회피. 소멸, 후려치기, 마음가짐, 급소 가격, 종족 특성은 꺼진 상태로 나열되며, 교란, 전력 질주, 실명, 기절시키기, 위치 선정은 직접 판단합니다.",
+[2306] = "1–60레벨, 모든 전문 분야용이며 하드코어와 자수성가 서버에서도 쓰입니다. 시뮬레이터, Icy Veins, Wowhead를 바탕으로 만들었습니다. 은신 상태에서: 사전계획, 대상이 나를 바라보지 않으면 단검으로 매복, 혼자일 때 비열한 습격, 공격대 밖에서 목조르기. 전투 중: 반격, 정예나 생명력이 많은 대상에게 난도질이 없으면 연계 점수 1점부터 난도질(마지막 3초에 5점으로 갱신), 그룹에서 약점 노출 연마 2/2가 있고 아무도 방어구 가르기를 하지 않으면 5점에서 약점 노출, 곧 죽을 대상에게 2점 절개, 그 외에는 5점에서 절개, 5점을 넘으면 연계 점수 생성 기술 없음. 연계 점수 생성 기술은 배운 것을 따릅니다: 공격대 밖에서 그림자 일격과 과다출혈, 대상이 나를 바라보지 않으면 단검으로 기습, 그 외에는 사악한 일격. 알림: 무기마다 독(보조 무기가 있으면 보조 무기에 맹독), 발차기, 엉겅퀴 차, 난도질이 걸려 있을 때 정예나 적 둘에게 폭풍의 칼날과 아드레날린 촉진, 5점에서 냉혈, 혼자일 때 다치면 회피. 소멸, 후려치기, 마음가짐, 급소 가격, 종족 특성은 꺼진 상태로 나열되며, 교란, 전력 질주, 실명, 기절시키기, 위치 선정은 직접 판단합니다.",
 -- 64659ecb English: Melee DPS, five-point finishers (Warcraft Tavern)
 [2307] = "근접 공격 전담, 5점 마무리 (Warcraft Tavern)",
 -- 6e2089d2 English: Warcraft Tavern's way, an alternative to the recommended melee DPS premade, off
@@ -9060,24 +9060,24 @@ addon.translation = {
 --     near-death Eviscerate and no Expose Armor (a warrior's Sunder covers it). Same openers,
 --     builders and reminders as the recommended premade.
 [2308] = "Warcraft Tavern 방식으로, 추천 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 가혹한 일격이 되돌려 주도록 모든 마무리 기술은 연계 점수 5점을 기다립니다. 난도질은 2등급(42레벨)부터 없거나 끝나 갈 때 사용하고, 그 외에는 절개를 사용합니다. 낮은 점수의 난도질, 죽기 직전 대상의 절개, 약점 노출(전사의 방어구 가르기가 대신함)은 없습니다. 시작 기술, 연계 점수 생성 기술, 알림은 추천 기본 제공 로테이션과 같습니다.",
--- bd2e9cba English: Swords, swing-synced Sinister Strike (wowsims)
-[2309] = "도검, 자동 공격에 맞춘 사악한 일격 (wowsims)",
--- 29c60f99 English: The wowsims "sweaty" Combat order for Sword Specialization, an alternative to
+-- 1bddd98c English: Swords, swing-synced Sinister Strike (simulator)
+[2309] = "도검, 자동 공격에 맞춘 사악한 일격 (시뮬레이터)",
+-- a0a38e03 English: The simulator "sweaty" Combat order for Sword Specialization, an alternative to
 --     the recommended melee DPS premade, off by default: enable it and disable that one, or raise
 --     its priority. Sinister Strike only right after a main-hand swing (2.0 seconds or more to the
 --     next one, set for a 2.6–2.8 speed sword; change it in a clone), unless energy is near full or
 --     the target is about to die, so the extra sword attack does not delay your swing. Eviscerate
 --     at five also waits for Slice and Dice, full energy or a dying target. Otherwise as the
 --     recommended premade.
-[2310] = "도검류 전문화를 위한 wowsims의 \"빡빡한\" 전투 순서로, 추천 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 추가 도검 공격이 자동 공격을 늦추지 않도록, 기력이 거의 가득 찼거나 대상이 곧 죽는 경우가 아니면 사악한 일격은 주 무기 자동 공격 직후에만 사용합니다(다음 공격까지 2.0초 이상, 공격 속도 2.6–2.8 도검 기준이며 복제본에서 바꾸세요). 5점 절개도 난도질, 가득 찬 기력 또는 죽어 가는 대상을 기다립니다. 그 외에는 추천 기본 제공 로테이션과 같습니다.",
+[2310] = "도검류 전문화를 위한 시뮬레이터의 \"빡빡한\" 전투 순서로, 추천 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 추가 도검 공격이 자동 공격을 늦추지 않도록, 기력이 거의 가득 찼거나 대상이 곧 죽는 경우가 아니면 사악한 일격은 주 무기 자동 공격 직후에만 사용합니다(다음 공격까지 2.0초 이상, 공격 속도 2.6–2.8 도검 기준이며 복제본에서 바꾸세요). 5점 절개도 난도질, 가득 찬 기력 또는 죽어 가는 대상을 기다립니다. 그 외에는 추천 기본 제공 로테이션과 같습니다.",
 -- b33d1254 English: Melee DPS (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2311] = "근접 공격 전담 (SoD)",
--- d3dc0f9a English: Season of Discovery, levels 1–60 with runes as you engrave them; built from
---     wowsims Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a
+-- 1b2af050 English: Season of Discovery, levels 1–60 with runes as you engrave them; built from
+--     simulator Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a
 --     group, Ambush for a Backstab build with a dagger, Cheap Shot solo. On three or more enemies
 --     fighting you: Blunderbuss, Crimson Tempest, Fan of Knives first. Then Ambush on a Cutthroat
 --     proc (with a dagger), Saber Slash kept at three stacks, Poisoned Knife at four poison stacks,
@@ -9088,7 +9088,7 @@ addon.translation = {
 --     dagger), else Sinister Strike. Reminders: a temporary enchant on each weapon, Kick, Thistle
 --     Tea, Blade Flurry, Adrenaline Rush, Cold Blood and Evasion, and with Master of Subtlety
 --     engraved Vanish to renew it and Preparation.
-[2312] = "디스커버리 시즌 1–60레벨용이며 룬은 새긴 대로 사용합니다. wowsims 6단계, Icy Veins, Zockify 8단계를 바탕으로 만들었습니다. 은신 상태에서: 그림자 일격, 그룹에서 목조르기, 단검을 든 기습 빌드라면 매복, 혼자일 때 비열한 습격. 적이 셋 이상 나와 싸우면: 나팔총, 혈폭풍, 칼날 부채를 먼저. 그다음 극악무도 발동 시 매복(단검을 든 경우), 사브르 베기 3중첩 유지, 독 4중첩에서 독 칼, 2점부터 난도질(단도직입을 새기지 않았다면 4점부터 갱신), 아무도 방어구 가르기를 하지 않거나 피부 독을 유지하지 않으면 약점 노출 담당, 살육자를 새겼다면 출혈(혈폭풍, 없으면 파열; 사브르 베기가 있으면 없음), 5점에서 독살(새기기 전에는 절개), 그리고 장갑 룬에 따른 연계 점수 생성 기술: 절단, 사브르 베기, 기습(단검을 든 경우), 그 외에는 사악한 일격. 알림: 무기마다 임시 마법부여, 발차기, 엉겅퀴 차, 폭풍의 칼날, 아드레날린 촉진, 냉혈, 회피, 그리고 잠행의 대가를 새겼다면 갱신용 소멸과 마음가짐.",
+[2312] = "디스커버리 시즌 1–60레벨용이며 룬은 새긴 대로 사용합니다. 시뮬레이터 6단계, Icy Veins, Zockify 8단계를 바탕으로 만들었습니다. 은신 상태에서: 그림자 일격, 그룹에서 목조르기, 단검을 든 기습 빌드라면 매복, 혼자일 때 비열한 습격. 적이 셋 이상 나와 싸우면: 나팔총, 혈폭풍, 칼날 부채를 먼저. 그다음 극악무도 발동 시 매복(단검을 든 경우), 사브르 베기 3중첩 유지, 독 4중첩에서 독 칼, 2점부터 난도질(단도직입을 새기지 않았다면 4점부터 갱신), 아무도 방어구 가르기를 하지 않거나 피부 독을 유지하지 않으면 약점 노출 담당, 살육자를 새겼다면 출혈(혈폭풍, 없으면 파열; 사브르 베기가 있으면 없음), 5점에서 독살(새기기 전에는 절개), 그리고 장갑 룬에 따른 연계 점수 생성 기술: 절단, 사브르 베기, 기습(단검을 든 경우), 그 외에는 사악한 일격. 알림: 무기마다 임시 마법부여, 발차기, 엉겅퀴 차, 폭풍의 칼날, 아드레날린 촉진, 냉혈, 회피, 그리고 잠행의 대가를 새겼다면 갱신용 소멸과 마음가짐.",
 -- e2dafa09 English: Melee DPS, Rupture for Carnage (SoD, Icy Veins)
 [2313] = "근접 공격 전담, 살육자용 파열 (SoD, Icy Veins)",
 -- 9aaebdaf English: Icy Veins' Season of Discovery order, an alternative to the recommended Season
@@ -9109,11 +9109,11 @@ addon.translation = {
 -- ebb8b9e3 English: Tank (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2317] = "방어 전담 (SoD)",
--- d50349d8 English: Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built
---     from wowsims Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on
+-- a76bbe4d English: Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built
+--     from simulator Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on
 --     cooldown, Blade Dance from one combo point (renewed from three), Slice and Dice from three
 --     (renewed from four), Fan of Knives, Crimson Tempest and Blunderbuss on three or more enemies,
 --     Blunderbuss while Blade Dance is up, Eviscerate at five with both buffs up, Poisoned Knife at
@@ -9121,22 +9121,22 @@ addon.translation = {
 --     your target attacks someone else, Kick, Evasion below half health, Blade Flurry, Adrenaline
 --     Rush, Thistle Tea and weapon poisons (the off-hand one only with an off-hand weapon).
 --     Shadowstep and Sebacious Poison duty stay with you.
-[2318] = "디스커버리 시즌 방어 전담 로테이션으로, 얕은 상처일 뿐을 새겼을 때 선택됩니다. wowsims 6단계, Icy Veins, Zockify, Warcraft Tavern을 바탕으로 만들었습니다. 반격, 재사용 대기시간마다 맹고쉬, 연계 점수 1점부터 칼춤(3점부터 갱신), 3점부터 난도질(4점부터 갱신), 적이 셋 이상이면 칼날 부채, 혈폭풍, 나팔총, 칼춤이 걸려 있는 동안 나팔총, 두 강화 효과가 모두 있으면 5점에서 절개, 기력이 낮으면 독 칼, 그다음 사브르 베기, 절단 또는 사악한 일격. 알림: 그룹에서 내 대상이 다른 사람을 공격하면 놀리기, 발차기, 생명력 절반 미만에서 회피, 폭풍의 칼날, 아드레날린 촉진, 엉겅퀴 차, 무기 독(보조 무기 독은 보조 무기가 있을 때만). 그림자 밟기와 피부 독 담당은 직접 판단합니다.",
+[2318] = "디스커버리 시즌 방어 전담 로테이션으로, 얕은 상처일 뿐을 새겼을 때 선택됩니다. 시뮬레이터 6단계, Icy Veins, Zockify, Warcraft Tavern을 바탕으로 만들었습니다. 반격, 재사용 대기시간마다 맹고쉬, 연계 점수 1점부터 칼춤(3점부터 갱신), 3점부터 난도질(4점부터 갱신), 적이 셋 이상이면 칼날 부채, 혈폭풍, 나팔총, 칼춤이 걸려 있는 동안 나팔총, 두 강화 효과가 모두 있으면 5점에서 절개, 기력이 낮으면 독 칼, 그다음 사브르 베기, 절단 또는 사악한 일격. 알림: 그룹에서 내 대상이 다른 사람을 공격하면 놀리기, 발차기, 생명력 절반 미만에서 회피, 폭풍의 칼날, 아드레날린 촉진, 엉겅퀴 차, 무기 독(보조 무기 독은 보조 무기가 있을 때만). 그림자 밟기와 피부 독 담당은 직접 판단합니다.",
 -- b12b36cf English: Enhancement
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Classic Era (variant key: Enhancement).
 [2319] = "고양",
--- 5faeab70 English: Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a
---     talent majority; built from Icy Veins, Wowhead and wowsims. Lightning Bolt pulls from range;
---     Earth Shock interrupts. In raids only Stormstrike and Frost Shock (debuff slots). On three or
---     more enemies fighting you, Fire Nova and Magma totems. Then Stormstrike, Earth Shock into the
---     Stormstrike debuff or to finish, Flame Shock when it will run its course, Earth Shock while
---     you have half your mana, and Lightning Bolt while out of reach. Reminders: Rockbiter solo and
---     Windfury Weapon in dungeons, Lightning Shield, Strength of Earth, Searing, Windfury or Grace
---     of Air, Mana Spring or Healing Stream, healing after a pull and in emergencies. Stoneclaw,
---     Earthbind, totem twisting and racials are listed off; dispels, purges and cleansing totems
---     stay with you.
-[2320] = "1–60레벨용이며 하드코어와 자수성가 서버에서도 쓰이고, 특성 점수가 한쪽에 몰리지 않은 모든 주술사용입니다. Icy Veins, Wowhead, wowsims를 바탕으로 만들었습니다. 원거리에서 번개 화살로 끌어오고, 대지 충격으로 차단합니다. 공격대에서는 폭풍의 일격과 냉기 충격만 사용합니다(약화 효과 자리). 적이 셋 이상 나와 싸우면 불꽃 회오리 토템과 용암 토템. 그다음 폭풍의 일격, 폭풍의 일격 약화 효과에 맞추거나 마무리용으로 대지 충격, 끝까지 지속될 때 화염 충격, 마나가 절반 있는 동안 대지 충격, 닿지 않는 동안 번개 화살. 알림: 혼자일 때 대지의 무기, 던전에서 질풍의 무기, 번개 보호막, 대지력 토템, 불타는 토템, 질풍의 토템 또는 은총의 토템, 마나샘 토템 또는 치유의 토템, 전투 후와 위급할 때 치유. 돌발톱 토템, 속박의 토템, 토템 교체(트위스팅), 종족 특성은 꺼진 상태로 나열되며, 해제, 정화, 정화 토템은 직접 판단합니다.",
+-- e9357a95 English: Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a
+--     talent majority; built from Icy Veins, Wowhead and simulator. Lightning Bolt pulls from
+--     range; Earth Shock interrupts. In raids only Stormstrike and Frost Shock (debuff slots). On
+--     three or more enemies fighting you, Fire Nova and Magma totems. Then Stormstrike, Earth Shock
+--     into the Stormstrike debuff or to finish, Flame Shock when it will run its course, Earth
+--     Shock while you have half your mana, and Lightning Bolt while out of reach. Reminders:
+--     Rockbiter solo and Windfury Weapon in dungeons, Lightning Shield, Strength of Earth, Searing,
+--     Windfury or Grace of Air, Mana Spring or Healing Stream, healing after a pull and in
+--     emergencies. Stoneclaw, Earthbind, totem twisting and racials are listed off; dispels, purges
+--     and cleansing totems stay with you.
+[2320] = "1–60레벨용이며 하드코어와 자수성가 서버에서도 쓰이고, 특성 점수가 한쪽에 몰리지 않은 모든 주술사용입니다. Icy Veins, Wowhead, 시뮬레이터를 바탕으로 만들었습니다. 원거리에서 번개 화살로 끌어오고, 대지 충격으로 차단합니다. 공격대에서는 폭풍의 일격과 냉기 충격만 사용합니다(약화 효과 자리). 적이 셋 이상 나와 싸우면 불꽃 회오리 토템과 용암 토템. 그다음 폭풍의 일격, 폭풍의 일격 약화 효과에 맞추거나 마무리용으로 대지 충격, 끝까지 지속될 때 화염 충격, 마나가 절반 있는 동안 대지 충격, 닿지 않는 동안 번개 화살. 알림: 혼자일 때 대지의 무기, 던전에서 질풍의 무기, 번개 보호막, 대지력 토템, 불타는 토템, 질풍의 토템 또는 은총의 토템, 마나샘 토템 또는 치유의 토템, 전투 후와 위급할 때 치유. 돌발톱 토템, 속박의 토템, 토템 교체(트위스팅), 종족 특성은 꺼진 상태로 나열되며, 해제, 정화, 정화 토템은 직접 판단합니다.",
 -- 327189d1 English: Enhancement, Flame Shock first (Warcraft Tavern)
 [2321] = "고양, 화염 충격 우선 (Warcraft Tavern)",
 -- bc01445d English: Warcraft Tavern's Enhancement, an alternative to the recommended Enhancement
@@ -9158,14 +9158,14 @@ addon.translation = {
 --     Healing Stream, Elemental Mastery with Chain Lightning ready, Nature's Swiftness and Healing
 --     Wave below 30%, healing after a pull. Dispels, purges and downranking stay with you.
 [2324] = "10레벨부터의 정기 로테이션(정기에 특성 점수가 가장 많을 때)으로, Icy Veins와 Wowhead를 바탕으로 만들었습니다. 대지 충격으로 차단하고 곧 죽을 대상을 마무리합니다. 이동 중에는: 화염 충격, 없으면 냉기 충격. 혼자일 때 대상이 근접 거리에 있으면: 생명력 30% 이상에서 대지 충격, 그다음 근접 공격. 적이 셋 이상이면: 근접 거리에 있을 때 불꽃 회오리 토템과 용암 토템, 그리고 연쇄 번개. 정기의 깨달음이나 정신 집중 중에는 연쇄 번개, 그 외에는 번개 화살. 알림: 번개 보호막, 공격대 밖에서 대지의 무기, 불타는 토템 또는 용암 토템, 마나샘 토템 또는 치유의 토템, 연쇄 번개가 준비되었을 때 정기의 깨달음, 30% 미만에서 자연의 신속함과 치유의 물결, 전투 후 치유. 해제, 정화, 하위 등급 사용은 직접 판단합니다.",
--- 7f93a27b English: Elemental, Chain Lightning on cooldown (wowsims)
-[2325] = "정기, 재사용 대기시간마다 연쇄 번개 (wowsims)",
--- d02c941a English: The wowsims Elemental list, an alternative to the recommended Elemental
+-- f652ee1c English: Elemental, Chain Lightning on cooldown (simulator)
+[2325] = "정기, 재사용 대기시간마다 연쇄 번개 (시뮬레이터)",
+-- a3ba0441 English: The simulator Elemental list, an alternative to the recommended Elemental
 --     premade, off by default: enable it and disable that one, or raise its priority. Chain
 --     Lightning on cooldown even on one target, Earth Shock while Elemental Mastery is up,
 --     otherwise Lightning Bolt. Faster but much hungrier for mana than the recommended premade;
 --     same interrupt, totems and reminders.
-[2326] = "wowsims의 정기 목록으로, 추천 정기 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 단일 대상에게도 재사용 대기시간마다 연쇄 번개, 정기의 깨달음이 걸려 있는 동안 대지 충격, 그 외에는 번개 화살. 추천 기본 제공 로테이션보다 빠르지만 마나를 훨씬 많이 쓰며, 차단, 토템, 알림은 같습니다.",
+[2326] = "시뮬레이터의 정기 목록으로, 추천 정기 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 단일 대상에게도 재사용 대기시간마다 연쇄 번개, 정기의 깨달음이 걸려 있는 동안 대지 충격, 그 외에는 번개 화살. 추천 기본 제공 로테이션보다 빠르지만 마나를 훨씬 많이 쓰며, 차단, 토템, 알림은 같습니다.",
 -- 6a3c6c77 English: Restoration
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Classic Era (variant key: Restoration).
@@ -9190,28 +9190,28 @@ addon.translation = {
 -- 37e5b161 English: Enhancement (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Season of Discovery (variant key: Enhancement). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2331] = "고양 (SoD)",
--- 929796a6 English: Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or
---     two-hander, and every SoD Shaman no other premade fits; built from wowsims Phase 6, Icy Veins
---     and Wowhead. Flame Shock pulls; Earth Shock interrupts. On three or more enemies: Magma, Fire
---     Nova from a fire totem, Chain Lightning at four Maelstrom stacks, Flame Shock. Then Lava
---     Burst at five Maelstrom stacks, Stormstrike, Lava Lash, Lightning Bolt at five stacks, Flame
---     Shock when it will run, Earth Shock, Molten Blast, Lightning Bolt from range. Reminders:
---     Windfury Weapon (Rockbiter before), Flametongue on an off-hand weapon with Lava Lash (else
---     Windfury; never on a shield; an Icy Veins Windfury-both line is listed off), Water or
---     Lightning Shield, Spirit of the Alpha, Feral Spirit, Shamanistic Rage below 65% mana, totems,
---     Ancestral Guidance. Totemic Projection, dispels and purges stay with you.
-[2332] = "디스커버리 시즌 1–60레벨용이며 룬은 새긴 대로 사용하고, 쌍수든 양손 무기든 상관없으며, 다른 기본 제공 로테이션이 맞지 않는 모든 디스커버리 시즌 주술사용입니다. wowsims 6단계, Icy Veins, Wowhead를 바탕으로 만들었습니다. 화염 충격으로 끌어오고, 대지 충격으로 차단합니다. 적이 셋 이상이면: 용암 토템, 화염 토템에서 불꽃 회오리, 소용돌이치는 무기 4중첩에서 연쇄 번개, 화염 충격. 그다음 소용돌이치는 무기 5중첩에서 용암 폭발, 폭풍의 일격, 용암 채찍, 5중첩에서 번개 화살, 지속될 때 화염 충격, 대지 충격, 용암 작열, 원거리에서 번개 화살. 알림: 질풍의 무기(그 전에는 대지의 무기), 용암 채찍이 있으면 보조 무기에 불꽃의 무기(없으면 질풍의 무기; 방패에는 절대 걸지 않음; 양손 모두 질풍의 무기를 쓰는 Icy Veins 줄은 꺼진 상태로 나열), 물의 보호막 또는 번개 보호막, 우두머리의 영혼, 야수 정령, 마나 65% 미만에서 주술의 분노, 토템, 고대의 인도. 토템 재배치, 해제, 정화는 직접 판단합니다.",
+-- 64d2c56f English: Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or
+--     two-hander, and every SoD Shaman no other premade fits; built from simulator Phase 6, Icy
+--     Veins and Wowhead. Flame Shock pulls; Earth Shock interrupts. On three or more enemies:
+--     Magma, Fire Nova from a fire totem, Chain Lightning at four Maelstrom stacks, Flame Shock.
+--     Then Lava Burst at five Maelstrom stacks, Stormstrike, Lava Lash, Lightning Bolt at five
+--     stacks, Flame Shock when it will run, Earth Shock, Molten Blast, Lightning Bolt from range.
+--     Reminders: Windfury Weapon (Rockbiter before), Flametongue on an off-hand weapon with Lava
+--     Lash (else Windfury; never on a shield; an Icy Veins Windfury-both line is listed off), Water
+--     or Lightning Shield, Spirit of the Alpha, Feral Spirit, Shamanistic Rage below 65% mana,
+--     totems, Ancestral Guidance. Totemic Projection, dispels and purges stay with you.
+[2332] = "디스커버리 시즌 1–60레벨용이며 룬은 새긴 대로 사용하고, 쌍수든 양손 무기든 상관없으며, 다른 기본 제공 로테이션이 맞지 않는 모든 디스커버리 시즌 주술사용입니다. 시뮬레이터 6단계, Icy Veins, Wowhead를 바탕으로 만들었습니다. 화염 충격으로 끌어오고, 대지 충격으로 차단합니다. 적이 셋 이상이면: 용암 토템, 화염 토템에서 불꽃 회오리, 소용돌이치는 무기 4중첩에서 연쇄 번개, 화염 충격. 그다음 소용돌이치는 무기 5중첩에서 용암 폭발, 폭풍의 일격, 용암 채찍, 5중첩에서 번개 화살, 지속될 때 화염 충격, 대지 충격, 용암 작열, 원거리에서 번개 화살. 알림: 질풍의 무기(그 전에는 대지의 무기), 용암 채찍이 있으면 보조 무기에 불꽃의 무기(없으면 질풍의 무기; 방패에는 절대 걸지 않음; 양손 모두 질풍의 무기를 쓰는 Icy Veins 줄은 꺼진 상태로 나열), 물의 보호막 또는 번개 보호막, 우두머리의 영혼, 야수 정령, 마나 65% 미만에서 주술의 분노, 토템, 고대의 인도. 토템 재배치, 해제, 정화는 직접 판단합니다.",
 -- 0fb65642 English: Elemental (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Season of Discovery (variant key: Elemental). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2333] = "정기 (SoD)",
--- f9d25821 English: Season of Discovery Elemental from level 10 (most points in Elemental); built
---     from wowsims Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame
+-- 90cd327e English: Season of Discovery Elemental from level 10 (most points in Elemental); built
+--     from simulator Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame
 --     Shock, Earth Shock at eight Lightning Shield charges, Lava Burst or Chain Lightning on a
 --     Power Surge proc. On three or more enemies: Flame Shock, Chain Lightning, Fire Nova, Lava
 --     Burst, Earth Shock at eight charges, Magma. Then Lava Burst on Power Surge, Flame Shock kept
@@ -9219,12 +9219,12 @@ addon.translation = {
 --     two enemies, Lightning Bolt. Reminders: Flametongue for Burn, Lightning Shield, Earth Shield
 --     on yourself, Spirit of the Alpha, Feral Spirit, Shamanistic Rage, Elemental Mastery, totems.
 --     Trinkets, Totemic Projection, dispels and purges stay with you.
-[2334] = "10레벨부터의 디스커버리 시즌 정기 로테이션(정기에 특성 점수가 가장 많을 때)으로, wowsims 6단계, Wowhead, Icy Veins를 바탕으로 만들었습니다. 대지 충격으로 차단합니다. 이동 중에는: 화염 충격, 번개 보호막 충전 8회에서 대지 충격, 마력의 쇄도 발동 시 용암 폭발 또는 연쇄 번개. 적이 셋 이상이면: 화염 충격, 연쇄 번개, 불꽃 회오리, 용암 폭발, 충전 8회에서 대지 충격, 용암 토템. 그다음 마력의 쇄도에 용암 폭발, 화염 충격 유지, 내 화염 충격이 지속되는 동안 용암 폭발, 충전 8회에서 대지 충격, 적이 둘이면 연쇄 번개, 번개 화살. 알림: 태우기를 위한 불꽃의 무기, 번개 보호막, 자신에게 대지의 보호막, 우두머리의 영혼, 야수 정령, 주술의 분노, 정기의 깨달음, 토템. 장신구, 토템 재배치, 해제, 정화는 직접 판단합니다.",
+[2334] = "10레벨부터의 디스커버리 시즌 정기 로테이션(정기에 특성 점수가 가장 많을 때)으로, 시뮬레이터 6단계, Wowhead, Icy Veins를 바탕으로 만들었습니다. 대지 충격으로 차단합니다. 이동 중에는: 화염 충격, 번개 보호막 충전 8회에서 대지 충격, 마력의 쇄도 발동 시 용암 폭발 또는 연쇄 번개. 적이 셋 이상이면: 화염 충격, 연쇄 번개, 불꽃 회오리, 용암 폭발, 충전 8회에서 대지 충격, 용암 토템. 그다음 마력의 쇄도에 용암 폭발, 화염 충격 유지, 내 화염 충격이 지속되는 동안 용암 폭발, 충전 8회에서 대지 충격, 적이 둘이면 연쇄 번개, 번개 화살. 알림: 태우기를 위한 불꽃의 무기, 번개 보호막, 자신에게 대지의 보호막, 우두머리의 영혼, 야수 정령, 주술의 분노, 정기의 깨달음, 토템. 장신구, 토템 재배치, 해제, 정화는 직접 판단합니다.",
 -- 24f21f83 English: Restoration (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2335] = "회복 (SoD)",
 -- ff16512c English: Season of Discovery Restoration from level 10 (most points in Restoration);
 --     built from Icy Veins and Wowhead. On your friendly target: Riptide then Lesser Healing Wave
@@ -9237,21 +9237,21 @@ addon.translation = {
 [2336] = "10레벨부터의 디스커버리 시즌 복원 로테이션(복원에 특성 점수가 가장 많을 때)으로, Icy Veins와 Wowhead를 바탕으로 만들었습니다. 우호적 대상에게: 40% 미만이면 성난 해일 후 하급 치유의 물결, 해독 또는 질병 치료, 근처 그룹원 셋이 85% 미만이면 치유의 비, 둘이면 연쇄 치유(마력의 쇄도 발동 시 즉시), 굽이치는 물결을 위해 95% 미만에서 성난 해일, 90% 미만이면 치유의 물결. 싸우는 적에게도 작동합니다. 알림: 물의 보호막(그 전에는 번개 보호막), 우호적 대상이나 자신에게 대지의 보호막, 주술의 분노, 마나 해일 토템, 마나샘 토템, 대지력 토템. 누구를 치유할지와 진동의 토템이나 정화 토템은 직접 판단합니다.",
 -- 007cf117 English: Tank (SoD, Way of Earth)
 [2337] = "방어 전담 (SoD, 대지의 길)",
--- 8ecde7ce English: Season of Discovery tank, chosen once Way of Earth is engraved; built from Icy
---     Veins, Wowhead, wowsims and Warcraft Tavern. Flame Shock pulls. Earth Shock taunts a target
+-- 3332db10 English: Season of Discovery tank, chosen once Way of Earth is engraved; built from Icy
+--     Veins, Wowhead, simulator and Warcraft Tavern. Flame Shock pulls. Earth Shock taunts a target
 --     in melee that is not attacking you, and interrupts. On two or more enemies: Molten Blast,
 --     Flame Shock, Chain Lightning at five Maelstrom stacks or on Power Surge, Fire Nova at five
 --     stacks. Then Flame Shock kept up, Lava Burst on Power Surge or while Flame Shock lasts,
 --     Stormstrike, Earth Shock, Lightning Bolt at five stacks, Molten Blast, Frost Shock.
 --     Reminders: Rockbiter, Lightning Shield, Spirit of the Alpha on yourself, Feral Spirit,
 --     Shamanistic Rage, Searing or Magma, and group totems.
-[2338] = "디스커버리 시즌 방어 전담 로테이션으로, 대지의 길을 새겼을 때 선택됩니다. Icy Veins, Wowhead, wowsims, Warcraft Tavern을 바탕으로 만들었습니다. 화염 충격으로 끌어옵니다. 대지 충격으로 나를 공격하지 않는 근접 거리의 대상을 도발하고, 차단합니다. 적이 둘 이상이면: 용암 작열, 화염 충격, 소용돌이치는 무기 5중첩이나 마력의 쇄도에 연쇄 번개, 5중첩에서 불꽃 회오리. 그다음 화염 충격 유지, 마력의 쇄도에 또는 화염 충격이 지속되는 동안 용암 폭발, 폭풍의 일격, 대지 충격, 5중첩에서 번개 화살, 용암 작열, 냉기 충격. 알림: 대지의 무기, 번개 보호막, 자신에게 우두머리의 영혼, 야수 정령, 주술의 분노, 불타는 토템 또는 용암 토템, 그룹 토템.",
+[2338] = "디스커버리 시즌 방어 전담 로테이션으로, 대지의 길을 새겼을 때 선택됩니다. Icy Veins, Wowhead, 시뮬레이터, Warcraft Tavern을 바탕으로 만들었습니다. 화염 충격으로 끌어옵니다. 대지 충격으로 나를 공격하지 않는 근접 거리의 대상을 도발하고, 차단합니다. 적이 둘 이상이면: 용암 작열, 화염 충격, 소용돌이치는 무기 5중첩이나 마력의 쇄도에 연쇄 번개, 5중첩에서 불꽃 회오리. 그다음 화염 충격 유지, 마력의 쇄도에 또는 화염 충격이 지속되는 동안 용암 폭발, 폭풍의 일격, 대지 충격, 5중첩에서 번개 화살, 용암 작열, 냉기 충격. 알림: 대지의 무기, 번개 보호막, 자신에게 우두머리의 영혼, 야수 정령, 주술의 분노, 불타는 토템 또는 용암 토템, 그룹 토템.",
 -- 2628a00c English: Every tree
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Classic Era (variant key: DPS).
 [2339] = "모든 특성 트리",
--- 67b0af4c English: Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built
---     from Wowhead, Icy Veins, Warcraft Tavern and wowsims. Stops while you cast or channel and
+-- cd5cc4e5 English: Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built
+--     from Wowhead, Icy Veins, Warcraft Tavern and simulator. Stops while you cast or channel and
 --     never tags a mob someone else is fighting while you are solo. Nightfall's Shadow Trance
 --     first; Shadowburn and Searing Pain to finish a group target; a solo target about to die gets
 --     Drain Soul (for a shard, or with Improved Drain Soul), Shadowburn or Conflagrate, then the
@@ -9265,7 +9265,7 @@ addon.translation = {
 --     Sacrifice, Amplify Curse, Voidwalker Sacrifice and a Healthstone when low, Health Funnel.
 --     Curse assignments, Curse of Recklessness on a fleeing mob, Fear, Banish, Soulstones and
 --     creating Healthstones stay with you.
-[2340] = "1–60레벨, 모든 특성 트리용이며 하드코어와 자수성가 서버에서도 쓰입니다. Wowhead, Icy Veins, Warcraft Tavern, wowsims를 바탕으로 만들었습니다. 시전하거나 정신 집중하는 동안에는 멈추며, 혼자일 때 다른 사람이 싸우는 몹은 절대 선점하지 않습니다. 일몰의 어둠의 무아지경이 먼저; 그룹 대상 마무리는 어둠의 연소와 불타는 고통; 혼자일 때 곧 죽을 대상에게는 영혼 흡수(조각을 얻거나 영혼 흡수 연마가 있을 때), 어둠의 연소 또는 점화, 그다음 마법봉을 쓰고, 새 지속 피해는 걸지 않습니다. 이동 중에는 즉시 시전 주문만. 적이 셋 이상이면: 적이 나를 공격하고 생명력이 절반 있으면 지옥의 불길, 그 외에는 불의 비. 저주는 하나: 공격대에서는 아무도 걸지 않았으면 어둠의 저주 또는 원소의 저주, 긴 정예 전투에서는 파멸의 저주, 그 외에는 고통의 저주. 효과가 있을 때 제물(파괴, 공격대, 또는 마나 40% 이상), 부패, 생명력 착취(공격대에서는 암흑 저항력 약화가 있을 때만). 혼자일 때: 암흑의 계약, 생명력이 충분하면 생명력 전환, 다쳤으면 생명력 흡수, 마법봉. 그 외에는 어둠의 화살. 알림: 악마의 갑옷 또는 악마의 피부, 소환수(혼자일 때 보이드워커, 그룹에서 임프, 악의 제물용 서큐버스), 마의 지배, 악의 제물, 저주 증폭, 생명력이 낮으면 보이드워커 희생과 생명석, 생명력 집중. 저주 분담, 도망치는 몹에게 무모함의 저주, 공포, 추방, 영혼석, 생명석 만들기는 직접 판단합니다.",
+[2340] = "1–60레벨, 모든 특성 트리용이며 하드코어와 자수성가 서버에서도 쓰입니다. Wowhead, Icy Veins, Warcraft Tavern, 시뮬레이터를 바탕으로 만들었습니다. 시전하거나 정신 집중하는 동안에는 멈추며, 혼자일 때 다른 사람이 싸우는 몹은 절대 선점하지 않습니다. 일몰의 어둠의 무아지경이 먼저; 그룹 대상 마무리는 어둠의 연소와 불타는 고통; 혼자일 때 곧 죽을 대상에게는 영혼 흡수(조각을 얻거나 영혼 흡수 연마가 있을 때), 어둠의 연소 또는 점화, 그다음 마법봉을 쓰고, 새 지속 피해는 걸지 않습니다. 이동 중에는 즉시 시전 주문만. 적이 셋 이상이면: 적이 나를 공격하고 생명력이 절반 있으면 지옥의 불길, 그 외에는 불의 비. 저주는 하나: 공격대에서는 아무도 걸지 않았으면 어둠의 저주 또는 원소의 저주, 긴 정예 전투에서는 파멸의 저주, 그 외에는 고통의 저주. 효과가 있을 때 제물(파괴, 공격대, 또는 마나 40% 이상), 부패, 생명력 착취(공격대에서는 암흑 저항력 약화가 있을 때만). 혼자일 때: 암흑의 계약, 생명력이 충분하면 생명력 전환, 다쳤으면 생명력 흡수, 마법봉. 그 외에는 어둠의 화살. 알림: 악마의 갑옷 또는 악마의 피부, 소환수(혼자일 때 보이드워커, 그룹에서 임프, 악의 제물용 서큐버스), 마의 지배, 악의 제물, 저주 증폭, 생명력이 낮으면 보이드워커 희생과 생명석, 생명력 집중. 저주 분담, 도망치는 몹에게 무모함의 저주, 공포, 추방, 영혼석, 생명석 만들기는 직접 판단합니다.",
 -- 2a4e91fe English: Drain tank (Warcraft Tavern)
 [2341] = "흡수 탱킹 (Warcraft Tavern)",
 -- f3fb6b8f English: Warcraft Tavern's leveling style, an alternative to the recommended Warlock
@@ -9286,12 +9286,12 @@ addon.translation = {
 -- 4f0bc39e English: Tank (SoD, Metamorphosis)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2345] = "방어 전담 (SoD, 탈태)",
--- 1e24cbef English: Season of Discovery tank, chosen once Metamorphosis is engraved; built from
---     wowsims, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is
---     missing or ending, a Soul Fire! proc, Incinerate to keep its fire buff; on three or more
+-- 4026dce5 English: Season of Discovery tank, chosen once Metamorphosis is engraved; built from
+--     simulator, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve
+--     is missing or ending, a Soul Fire! proc, Incinerate to keep its fire buff; on three or more
 --     enemies Shadow Cleave, Lake of Fire, Shadowflame and Hellfire. Then a curse (Agony, else
 --     Recklessness when nobody has it), Shadowflame (Immolate before you engrave it), Master
 --     Channeler Drain Life, Corruption, Siphon Life, Conflagrate for Backdraft, Soul Fire under
@@ -9299,22 +9299,22 @@ addon.translation = {
 --     Armor, your pet, Immolation Aura, Demonic Grace, Vengeance when low, Menace when the target
 --     attacks someone else, Demonic Howl on packs, Amplify Curse, Life Tap for a pet low on mana.
 --     Infernal Armor stays with you.
-[2346] = "디스커버리 시즌 방어 전담 로테이션으로, 탈태를 새기면 선택됩니다. wowsims, Icy Veins, Wowhead, Warcraft Tavern을 바탕으로 만들었습니다. 수호병의 결의가 없거나 끝나 가면 언제든 어둠의 회전베기, 영혼의 불꽃! 발동, 화염 강화 효과를 유지하기 위한 소각; 적이 셋 이상이면 어둠의 회전베기, 불꽃의 호수, 암흑불길, 지옥의 불길. 그다음 저주(고통의 저주, 아무도 걸지 않았으면 무모함의 저주), 암흑불길(새기기 전에는 제물), 역술의 대가 생명력 흡수, 부패, 생명력 착취, 역류를 위한 점화, 35% 미만에서 죽음의 예언 중 영혼의 불꽃, 위협 수준용 빈틈 채우기로 불타는 고통. 알림: 탈태, 마의 갑옷, 소환수, 제물의 오라, 악마의 은총, 생명력이 낮으면 복수, 대상이 다른 사람을 공격하면 위협, 무리에 악마의 포효, 저주 증폭, 마나가 부족한 소환수를 위한 생명력 전환. 지옥불 갑옷은 직접 판단합니다.",
+[2346] = "디스커버리 시즌 방어 전담 로테이션으로, 탈태를 새기면 선택됩니다. 시뮬레이터, Icy Veins, Wowhead, Warcraft Tavern을 바탕으로 만들었습니다. 수호병의 결의가 없거나 끝나 가면 언제든 어둠의 회전베기, 영혼의 불꽃! 발동, 화염 강화 효과를 유지하기 위한 소각; 적이 셋 이상이면 어둠의 회전베기, 불꽃의 호수, 암흑불길, 지옥의 불길. 그다음 저주(고통의 저주, 아무도 걸지 않았으면 무모함의 저주), 암흑불길(새기기 전에는 제물), 역술의 대가 생명력 흡수, 부패, 생명력 착취, 역류를 위한 점화, 35% 미만에서 죽음의 예언 중 영혼의 불꽃, 위협 수준용 빈틈 채우기로 불타는 고통. 알림: 탈태, 마의 갑옷, 소환수, 제물의 오라, 악마의 은총, 생명력이 낮으면 복수, 대상이 다른 사람을 공격하면 위협, 무리에 악마의 포효, 저주 증폭, 마나가 부족한 소환수를 위한 생명력 전환. 지옥불 갑옷은 직접 판단합니다.",
 -- 91d3c82e English: Fire (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2347] = "화염 (SoD)",
--- b3afd0ce English: Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is
---     engraved; built from wowsims Phase 6 and Wowhead. Shadowburn and Searing Pain to finish;
+-- 8e9ea310 English: Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is
+--     engraved; built from simulator Phase 6 and Wowhead. Shadowburn and Searing Pain to finish;
 --     instants while moving; Incinerate's buff, Lake of Fire and Hellfire on packs; a curse
 --     (Recklessness in a group when nobody has it, Doom on long elite fights, else Agony);
 --     Conflagrate only to keep Backdraft; Immolate and Incinerate's buff kept up; below 35% Soul
 --     Fire under Decimation instead of Chaos Bolt; Soul Fire! procs; Chaos Bolt; solo Master
 --     Channeler Drain Life and Life Tap; Incinerate (Shadow Bolt before you engrave it). Reminders:
 --     Fel Armor, the Imp, Amplify Curse and the safety reminders.
-[2348] = "디스커버리 시즌 파괴 로테이션으로, 혼돈의 화살이나 소각을 새기면 선택됩니다. wowsims 6단계와 Wowhead를 바탕으로 만들었습니다. 마무리는 어둠의 연소와 불타는 고통; 이동 중에는 즉시 시전 주문; 무리에는 소각의 강화 효과, 불꽃의 호수, 지옥의 불길; 저주(그룹에서 아무도 걸지 않았으면 무모함의 저주, 긴 정예 전투에서는 파멸의 저주, 그 외에는 고통의 저주); 점화는 역류를 유지할 때만; 제물과 소각의 강화 효과 유지; 35% 미만에서는 혼돈의 화살 대신 죽음의 예언 중 영혼의 불꽃; 영혼의 불꽃! 발동; 혼돈의 화살; 혼자일 때 역술의 대가 생명력 흡수와 생명력 전환; 소각(새기기 전에는 어둠의 화살). 알림: 마의 갑옷, 임프, 저주 증폭과 안전 알림.",
+[2348] = "디스커버리 시즌 파괴 로테이션으로, 혼돈의 화살이나 소각을 새기면 선택됩니다. 시뮬레이터 6단계와 Wowhead를 바탕으로 만들었습니다. 마무리는 어둠의 연소와 불타는 고통; 이동 중에는 즉시 시전 주문; 무리에는 소각의 강화 효과, 불꽃의 호수, 지옥의 불길; 저주(그룹에서 아무도 걸지 않았으면 무모함의 저주, 긴 정예 전투에서는 파멸의 저주, 그 외에는 고통의 저주); 점화는 역류를 유지할 때만; 제물과 소각의 강화 효과 유지; 35% 미만에서는 혼돈의 화살 대신 죽음의 예언 중 영혼의 불꽃; 영혼의 불꽃! 발동; 혼돈의 화살; 혼자일 때 역술의 대가 생명력 흡수와 생명력 전환; 소각(새기기 전에는 어둠의 화살). 알림: 마의 갑옷, 임프, 저주 증폭과 안전 알림.",
 -- c007c49e English: Fire, Conflagrate on cooldown (SoD, Icy Veins)
 [2349] = "화염, 재사용 대기시간마다 점화 (SoD, Icy Veins)",
 -- 11cdbaf7 English: Icy Veins' and Warcraft Tavern's Season of Discovery Destruction, an
@@ -9326,8 +9326,8 @@ addon.translation = {
 [2350] = "Icy Veins와 Warcraft Tavern의 디스커버리 시즌 파괴 로테이션으로, 추천 디스커버리 시즌 화염 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 제물 유지, 재사용 대기시간마다 점화와 혼돈의 화살(35% 미만에서도 혼돈의 화살), 소각의 강화 효과, 35% 미만에서 죽음의 예언 중 영혼의 불꽃, 빈틈은 소각; 피해 저주는 이동 중에만 걸고, 그룹에서 아무도 걸지 않았으면 무모함의 저주.",
 -- 998799fe English: Shadow, Affliction and Felguard (SoD)
 [2351] = "암흑, 고통과 지옥수호병 (SoD)",
--- 7646e9f2 English: Season of Discovery Affliction and Felguard builds, and every SoD Warlock no
---     other premade fits; built from wowsims Phase 6, Wowhead and Icy Veins. Nightfall procs;
+-- c8da1636 English: Season of Discovery Affliction and Felguard builds, and every SoD Warlock no
+--     other premade fits; built from simulator Phase 6, Wowhead and Icy Veins. Nightfall procs;
 --     Shadowburn or Drain Soul to finish a group target; a dying solo target gets Drain Soul, not
 --     DoTs; instants while moving; Lake of Fire and Hellfire on packs; a curse (Recklessness in a
 --     group when nobody has it, else Agony); Unstable Affliction, Master Channeler Drain Life,
@@ -9336,23 +9336,23 @@ addon.translation = {
 --     sustain and the wand; Shadow Bolt. Reminders: Fel Armor, your pet (a Felguard once engraved),
 --     Life Tap for a pet low on mana, Amplify Curse and the safety reminders. Curse assignments and
 --     Shadow Bolt Volley packs stay with you.
-[2352] = "디스커버리 시즌 고통 빌드와 지옥수호병 빌드용이며, 다른 기본 제공 로테이션이 맞지 않는 모든 디스커버리 시즌 흑마법사용입니다. wowsims 6단계, Wowhead, Icy Veins를 바탕으로 만들었습니다. 일몰 발동; 그룹 대상 마무리는 어둠의 연소나 영혼 흡수; 혼자일 때 죽어 가는 대상에게는 지속 피해가 아니라 영혼 흡수; 이동 중에는 즉시 시전 주문; 무리에는 불꽃의 호수와 지옥의 불길; 저주(그룹에서 아무도 걸지 않았으면 무모함의 저주, 그 외에는 고통의 저주); 불안정한 고통, 역술의 대가 생명력 흡수, 암흑불길(그 전에는 제물), 부패, 유령 출몰, 생명력 착취(기원을 새겼다면 각각 6초 미만 남았을 때 갱신); 영혼 착취를 새겼다면 20% 미만에서 영혼 흡수; 혼자일 때 생존 유지와 마법봉; 어둠의 화살. 알림: 마의 갑옷, 소환수(새긴 뒤에는 지옥수호병), 마나가 부족한 소환수를 위한 생명력 전환, 저주 증폭과 안전 알림. 저주 분담과 무리에 연발 어둠의 화살은 직접 판단합니다.",
--- 9b2b374b English: Shadow, Drain Soul filler (SoD, wowsims)
-[2353] = "암흑, 영혼 흡수 빈틈 채우기 (SoD, wowsims)",
--- aff32cb7 English: The wowsims Phase 6 Affliction list for a Soul Siphon build, an alternative to
---     the recommended Season of Discovery Shadow premade, off by default: enable it and disable
+[2352] = "디스커버리 시즌 고통 빌드와 지옥수호병 빌드용이며, 다른 기본 제공 로테이션이 맞지 않는 모든 디스커버리 시즌 흑마법사용입니다. 시뮬레이터 6단계, Wowhead, Icy Veins를 바탕으로 만들었습니다. 일몰 발동; 그룹 대상 마무리는 어둠의 연소나 영혼 흡수; 혼자일 때 죽어 가는 대상에게는 지속 피해가 아니라 영혼 흡수; 이동 중에는 즉시 시전 주문; 무리에는 불꽃의 호수와 지옥의 불길; 저주(그룹에서 아무도 걸지 않았으면 무모함의 저주, 그 외에는 고통의 저주); 불안정한 고통, 역술의 대가 생명력 흡수, 암흑불길(그 전에는 제물), 부패, 유령 출몰, 생명력 착취(기원을 새겼다면 각각 6초 미만 남았을 때 갱신); 영혼 착취를 새겼다면 20% 미만에서 영혼 흡수; 혼자일 때 생존 유지와 마법봉; 어둠의 화살. 알림: 마의 갑옷, 소환수(새긴 뒤에는 지옥수호병), 마나가 부족한 소환수를 위한 생명력 전환, 저주 증폭과 안전 알림. 저주 분담과 무리에 연발 어둠의 화살은 직접 판단합니다.",
+-- 9fe0ee40 English: Shadow, Drain Soul filler (SoD, simulator)
+[2353] = "암흑, 영혼 흡수 빈틈 채우기 (SoD, 시뮬레이터)",
+-- 8e9b4067 English: The simulator Phase 6 Affliction list for a Soul Siphon build, an alternative
+--     to the recommended Season of Discovery Shadow premade, off by default: enable it and disable
 --     that one, or raise its priority. Drain Soul is the filler at any health, and the next step
 --     shows as soon as it is due so you can clip the channel for it; any other channel is left to
 --     finish. Unstable Affliction and Shadowflame renewed with 7.5 seconds left, Agony and
 --     Corruption with 6, Master Channeler Drain Life, Haunt, Shadow Bolt only on a Shadow Trance
 --     proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade.
-[2354] = "영혼 착취 빌드를 위한 wowsims 6단계 고통 목록으로, 추천 디스커버리 시즌 암흑 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 생명력과 관계없이 영혼 흡수가 빈틈 채우기이며, 다음 단계가 필요해지는 즉시 표시되므로 정신 집중을 끊고 사용할 수 있습니다. 그 외의 정신 집중은 끝까지 진행됩니다. 불안정한 고통과 암흑불길은 7.5초 남았을 때, 고통의 저주와 부패는 6초 남았을 때 갱신, 역술의 대가 생명력 흡수, 유령 출몰, 어둠의 화살은 어둠의 무아지경 발동 시에만, 생명력 착취, 마나 10% 미만에서 생명력 전환. 알림은 추천 기본 제공 로테이션과 같습니다.",
+[2354] = "영혼 착취 빌드를 위한 시뮬레이터 6단계 고통 목록으로, 추천 디스커버리 시즌 암흑 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 생명력과 관계없이 영혼 흡수가 빈틈 채우기이며, 다음 단계가 필요해지는 즉시 표시되므로 정신 집중을 끊고 사용할 수 있습니다. 그 외의 정신 집중은 끝까지 진행됩니다. 불안정한 고통과 암흑불길은 7.5초 남았을 때, 고통의 저주와 부패는 6초 남았을 때 갱신, 역술의 대가 생명력 흡수, 유령 출몰, 어둠의 화살은 어둠의 무아지경 발동 시에만, 생명력 착취, 마나 10% 미만에서 생명력 전환. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- e5b321d7 English: Melee DPS
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Classic Era (variant key: DPS).
 [2355] = "근접 공격 전담",
--- c080d284 English: Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on
---     Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. Charge to pull,
+-- b97180f8 English: Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on
+--     Hardcore and Self-Found realms; built from simulator, Icy Veins and Wowhead. Charge to pull,
 --     Intercept a distant target, Whirlwind (Thunder Clap before you learn it) on three or more
 --     enemies fighting you, then Execute first below 20%, Sunder Armor to five on bosses without
 --     Expose Armor, Bloodthirst, Mortal Strike, Slam right after a swing with Improved Slam (set
@@ -9362,7 +9362,7 @@ addon.translation = {
 --     leveling), Cleave on packs, Bloodrage, Sweeping Strikes, Death Wish (bosses: their last 30
 --     seconds), Recklessness with Death Wish, Pummel or Shield Bash. Intimidating Shout and
 --     Retaliation are listed off for Hardcore emergencies; stance dancing stays with you.
-[2356] = "1–60레벨, 무기와 분노, 방어 태세가 아닌 모든 전사용이며 하드코어와 자수성가 서버에서도 쓰입니다. wowsims, Icy Veins, Wowhead를 바탕으로 만들었습니다. 돌진으로 끌어오고, 멀리 있는 대상에게 봉쇄, 적이 셋 이상 나와 싸우면 소용돌이(배우기 전에는 천둥벼락), 그다음 20% 미만에서 마무리 일격 먼저, 약점 노출이 없는 우두머리에게 방어구 가르기 5중첩, 피의 갈증, 죽음의 일격, 격돌 연마가 있으면 자동 공격 직후 격돌(양손 무기 기준이며 복제본에서 바꾸세요), 주력 공격용 분노를 남기면서 소용돌이, 제압, 주력 공격을 배우기 전까지 분쇄, 생명력이 많은 대상에게 방어구 가르기, 분노가 최대치에 가까우면 무력화. 알림: 전투의 외침, 분노 40부터 영웅의 일격(레벨업 중에는 20), 무리에 회전베기, 피의 분노, 휩쓸기 일격, 죽음의 소원(우두머리는 마지막 30초), 죽음의 소원과 함께 무모한 희생, 자루 공격 또는 방패 가격. 위협의 외침과 보복은 하드코어 위급 상황용으로 꺼진 상태로 나열되며, 태세 전환은 직접 판단합니다.",
+[2356] = "1–60레벨, 무기와 분노, 방어 태세가 아닌 모든 전사용이며 하드코어와 자수성가 서버에서도 쓰입니다. 시뮬레이터, Icy Veins, Wowhead를 바탕으로 만들었습니다. 돌진으로 끌어오고, 멀리 있는 대상에게 봉쇄, 적이 셋 이상 나와 싸우면 소용돌이(배우기 전에는 천둥벼락), 그다음 20% 미만에서 마무리 일격 먼저, 약점 노출이 없는 우두머리에게 방어구 가르기 5중첩, 피의 갈증, 죽음의 일격, 격돌 연마가 있으면 자동 공격 직후 격돌(양손 무기 기준이며 복제본에서 바꾸세요), 주력 공격용 분노를 남기면서 소용돌이, 제압, 주력 공격을 배우기 전까지 분쇄, 생명력이 많은 대상에게 방어구 가르기, 분노가 최대치에 가까우면 무력화. 알림: 전투의 외침, 분노 40부터 영웅의 일격(레벨업 중에는 20), 무리에 회전베기, 피의 분노, 휩쓸기 일격, 죽음의 소원(우두머리는 마지막 30초), 죽음의 소원과 함께 무모한 희생, 자루 공격 또는 방패 가격. 위협의 외침과 보복은 하드코어 위급 상황용으로 꺼진 상태로 나열되며, 태세 전환은 직접 판단합니다.",
 -- c0b21fb1 English: Tank
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Classic Era (variant key: Protection).
@@ -9388,12 +9388,12 @@ addon.translation = {
 -- b33d1254 English: Melee DPS (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2361] = "근접 공격 전담 (SoD)",
--- dbdfa29c English: Season of Discovery, levels 1–60 with runes as you engrave them: two-hander,
+-- 8778ee5f English: Season of Discovery, levels 1–60 with runes as you engrave them: two-hander,
 --     dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built
---     from wowsims Phase 6 and Wowhead Phase 7/8. Charge, Victory Rush, Intercept, Whirlwind
+--     from simulator Phase 6 and Wowhead Phase 7/8. Charge, Victory Rush, Intercept, Whirlwind
 --     (Thunder Clap before it) on two or more enemies, Slam at three Slammin' stacks, Rend kept up,
 --     Slam on Blood Surge (on cooldown with Precise Timing engraved), Bloodthirst, Mortal Strike,
 --     Shield Slam (with a shield), Overpower; then Quick Strike when it is engraved (two-hander),
@@ -9402,7 +9402,7 @@ addon.translation = {
 --     Strike from 50 rage (always while Consumed by Rage enrages you), Cleave, Bloodrage, Rampage,
 --     Death Wish, Recklessness, Sweeping Strikes, interrupts. Berserker Rage and the Taste for
 --     Blood Battle Stance dip are listed off.
-[2362] = "디스커버리 시즌 1–60레벨용이며 룬은 새긴 대로 사용합니다: 양손 무기, 쌍수, 검투사, 레벨업, 그리고 방어 태세가 아닌 모든 디스커버리 시즌 전사용입니다. wowsims 6단계와 Wowhead 7/8단계를 바탕으로 만들었습니다. 돌진, 승리의 돌진, 봉쇄, 적이 둘 이상이면 소용돌이(그 전에는 천둥벼락), 강력한 격돌 3중첩에서 격돌, 분쇄 유지, 피 분출에 격돌(정확한 타이밍을 새겼다면 재사용 대기시간마다), 피의 갈증, 죽음의 일격, 방패 밀쳐내기(방패를 장착한 경우), 제압; 그다음 새겼다면 속전속결(양손 무기), 그 외에는 소용돌이, 분노의 강타, 압도(그 전에는 방어구 가르기); 분노 30이 있거나 급살 시 마무리 일격; 분노가 최대치에 가까우면 무력화. 알림: 전투의 외침과 지휘의 외침, 분노 50부터 영웅의 일격(분노 잠식으로 격노한 동안에는 항상), 회전베기, 피의 분노, 광란, 죽음의 소원, 무모한 희생, 휩쓸기 일격, 차단. 광전사의 격노와 피의 맛을 위한 짧은 전투 태세 전환은 꺼진 상태로 나열됩니다.",
+[2362] = "디스커버리 시즌 1–60레벨용이며 룬은 새긴 대로 사용합니다: 양손 무기, 쌍수, 검투사, 레벨업, 그리고 방어 태세가 아닌 모든 디스커버리 시즌 전사용입니다. 시뮬레이터 6단계와 Wowhead 7/8단계를 바탕으로 만들었습니다. 돌진, 승리의 돌진, 봉쇄, 적이 둘 이상이면 소용돌이(그 전에는 천둥벼락), 강력한 격돌 3중첩에서 격돌, 분쇄 유지, 피 분출에 격돌(정확한 타이밍을 새겼다면 재사용 대기시간마다), 피의 갈증, 죽음의 일격, 방패 밀쳐내기(방패를 장착한 경우), 제압; 그다음 새겼다면 속전속결(양손 무기), 그 외에는 소용돌이, 분노의 강타, 압도(그 전에는 방어구 가르기); 분노 30이 있거나 급살 시 마무리 일격; 분노가 최대치에 가까우면 무력화. 알림: 전투의 외침과 지휘의 외침, 분노 50부터 영웅의 일격(분노 잠식으로 격노한 동안에는 항상), 회전베기, 피의 분노, 광란, 죽음의 소원, 무모한 희생, 휩쓸기 일격, 차단. 광전사의 격노와 피의 맛을 위한 짧은 전투 태세 전환은 꺼진 상태로 나열됩니다.",
 -- c5bed192 English: Battle Forecaster stance dance (SoD, Wowhead)
 [2363] = "전투 예견자 태세 전환 (SoD, Wowhead)",
 -- ef07220e English: Wowhead's Phase 7/8 rotation for Soul of the Battle Forecaster or the Tier 1
@@ -9424,19 +9424,19 @@ addon.translation = {
 -- ebb8b9e3 English: Tank (SoD)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2367] = "방어 전담 (SoD)",
--- 93f460da English: Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase
---     8 and wowsims. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge,
---     Whirlwind and Devastate; then Shield Slam whenever Defender's Resolve is missing or ending,
---     Revenge, Shield Slam, Shockwave, Execute, Whirlwind at five Gladiator's Cunning stacks,
---     Devastate (Sunder before it), Demoralizing Shout and Thunder Clap on elites, Rend before
---     Shield Slam; Shield Slam and Shield Block only with a shield on. Reminders: Battle and
+-- 5f490610 English: Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase
+--     8 and simulator. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam,
+--     Revenge, Whirlwind and Devastate; then Shield Slam whenever Defender's Resolve is missing or
+--     ending, Revenge, Shield Slam, Shockwave, Execute, Whirlwind at five Gladiator's Cunning
+--     stacks, Devastate (Sunder before it), Demoralizing Shout and Thunder Clap on elites, Rend
+--     before Shield Slam; Shield Slam and Shield Block only with a shield on. Reminders: Battle and
 --     Commanding Shout, Shield Block, Heroic Strike from 50 rage, Cleave from 55, Bloodrage,
 --     Rampage, Last Stand, interrupts. Taunt, Shield Wall, Death Wish, Recklessness and Retaliation
 --     are listed off; the Gladiator swap for Execute stays with you.
-[2368] = "디스커버리 시즌 방어 전담 로테이션으로, 방어 태세에서 선택됩니다. Wowhead 8단계와 wowsims를 바탕으로 만들었습니다. 돌진; 적이 둘 이상이면 천둥벼락, 충격파, 방패 밀쳐내기, 복수, 소용돌이, 압도; 그다음 수호병의 결의가 없거나 끝나 가면 언제든 방패 밀쳐내기, 복수, 방패 밀쳐내기, 충격파, 마무리 일격, 검투사의 교활함 5중첩에서 소용돌이, 압도(그 전에는 방어구 가르기), 정예에게 사기의 외침과 천둥벼락, 방패 밀쳐내기 전에 분쇄; 방패 밀쳐내기와 방패 막기는 방패를 장착했을 때만 사용합니다. 알림: 전투의 외침과 지휘의 외침, 방패 막기, 분노 50부터 영웅의 일격, 55부터 회전베기, 피의 분노, 광란, 최후의 저항, 차단. 도발, 방패의 벽, 죽음의 소원, 무모한 희생, 보복은 꺼진 상태로 나열되며, 마무리 일격을 위한 검투사 태세 전환은 직접 판단합니다.",
+[2368] = "디스커버리 시즌 방어 전담 로테이션으로, 방어 태세에서 선택됩니다. Wowhead 8단계와 시뮬레이터를 바탕으로 만들었습니다. 돌진; 적이 둘 이상이면 천둥벼락, 충격파, 방패 밀쳐내기, 복수, 소용돌이, 압도; 그다음 수호병의 결의가 없거나 끝나 가면 언제든 방패 밀쳐내기, 복수, 방패 밀쳐내기, 충격파, 마무리 일격, 검투사의 교활함 5중첩에서 소용돌이, 압도(그 전에는 방어구 가르기), 정예에게 사기의 외침과 천둥벼락, 방패 밀쳐내기 전에 분쇄; 방패 밀쳐내기와 방패 막기는 방패를 장착했을 때만 사용합니다. 알림: 전투의 외침과 지휘의 외침, 방패 막기, 분노 50부터 영웅의 일격, 55부터 회전베기, 피의 분노, 광란, 최후의 저항, 차단. 도발, 방패의 벽, 죽음의 소원, 무모한 희생, 보복은 꺼진 상태로 나열되며, 마무리 일격을 위한 검투사 태세 전환은 직접 판단합니다.",
 -- d70604e8 English: Recommended
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Mists of Pandaria Classic (variant key: Blood). The standard recommended rotation for
@@ -9456,12 +9456,12 @@ addon.translation = {
 --     Weapon on elites, Army of the Dead before a group boss. It cannot see incoming damage, so
 --     Anti-Magic Shell (off) and big defensives are yours.
 [2370] = "혈기 방어 전담에게 권장하며, 혈기 전문화에서 선택됩니다. 원거리에서 돌발 열병, 얼음 손길 또는 죽음의 손아귀로 끌어옵니다. 생명력 절반 미만일 때, 피의 보호막이 없을 때마다(80레벨부터), 냉기 룬과 부정 룬 네 개가 모두 가득 차기 전에 죽음의 일격; 룬 마력 90 근처에서 룬의 일격(배우기 전에는 80에서 죽음의 고리); 질병은 돌발 열병, 없으면 얼음 손길과 역병의 일격으로 걸고, 68레벨부터 피의 소용돌이로 갱신; 35% 미만에서 영혼 쐐기; 혈기 룬 두 개로 심장 강타(60레벨 전에는 피의 일격); 질병이 지속되는 동안 진홍빛 스컬지 발동 시 죽음과 부패, 그 외에는 피의 소용돌이; 충전 11회에서 혈기 전환; 그다음 죽음의 일격, 심장 강타, 룬의 일격, 겨울의 뿔피리. 적 셋이 나를 공격하면: 죽음과 부패, 질병 퍼뜨리기(끓는 피가 있으면 피의 소용돌이, 그 외에는 전염병), 피의 소용돌이. 알림: 형상이 없으면 혈기의 형상, 뼈의 보호막, 겨울의 뿔피리, 정신 얼리기, 생명력에 따라 룬 전환, 흡혈, 얼음같은 인내력, 룬 무기 강화, 죽음의 서약, 정예에게 춤추는 룬 무기, 그룹 우두머리 전에 사자의 군대. 받는 피해를 볼 수 없으므로 대마법 보호막(꺼짐)과 큰 방어 기술은 직접 판단합니다.",
--- a7eb3532 English: Health-reactive (wowsims)
+-- 45f2a617 English: Health-reactive (simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
---     Knight, Mists of Pandaria Classic (variant key: Blood / Wowsims). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
---     Tavern) are proper names and stay unchanged.
-[2371] = "생명력 반응형 (wowsims)",
+--     Knight, Mists of Pandaria Classic (variant key: Blood / simulator). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
+[2371] = "생명력 반응형 (시뮬레이터)",
 -- a92e9e2e English: An alternative to the recommended Blood premade for raid tanks with healers,
 --     off by default: enable it and disable that one, or raise its priority. Death Strike only
 --     below 70% health, when Blood Shield is missing or about to fade, or before the Frost and
@@ -9514,8 +9514,8 @@ addon.translation = {
 --     of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a
 --     group boss; Anti-Magic Shell is off.
 [2378] = "부정에게 권장하며, 전문화가 없는 경우를 포함해 혈기와 냉기가 맡지 않는 모든 죽음의 기사의 기본 제공 로테이션입니다. 원거리에서 돌발 열병이나 얼음 손길로 끌어옵니다(혼자일 때 죽음의 손아귀). 어둠의 원조 시나 생명력 35% 미만에서 죽음의 일격, 질병(부정의 파멸충, 돌발 열병, 역병의 일격, 얼음 손길), 충전 11회에서 혈기 전환, 35% 미만에서 영혼 쐐기, 암흑 주입 5중첩에서 어둠의 변신, 룬 마력이 최대치에 가까우면 죽음의 고리, 오래 살아남을 대상에게 죽음과 부패, 스컬지의 일격, 불시의 파멸 시나 40에서 죽음의 고리, 부정의 힘이 걸려 있는 동안 돌발 열병, 고름 일격(배우기 전에는 피의 일격), 역병 착취, 겨울의 뿔피리. 적 셋이 나를 공격하면: 질병 퍼뜨리기, 죽음과 부패, 피의 소용돌이, 냉기 룬으로 얼음 손길. 알림: 부정의 형상, 구울, 피의 욕망 중이나 긴 정예 전투에서 가고일 부르기, 부정의 광기, 룬 무기 강화, 겨울의 뿔피리, 정신 얼리기, 생명력이 낮으면 얼음같은 인내력과 죽음의 서약, 그룹 우두머리 전에 사자의 군대. 대마법 보호막은 꺼져 있습니다.",
--- 56eecd5b English: Unholy, rune-cap pooling (wowsims)
-[2379] = "부정, 룬 최대치 모으기 (wowsims)",
+-- dd1a3e1e English: Unholy, rune-cap pooling (simulator)
+[2379] = "부정, 룬 최대치 모으기 (시뮬레이터)",
 -- 457f3061 English: An alternative to the recommended Unholy premade, as the simulator, wowtbc.gg,
 --     Method and MaxDps play it; off by default: enable it and disable that one, or raise its
 --     priority. While Dark Transformation is down Death Coil goes to rebuilding Shadow Infusion,
@@ -9541,26 +9541,26 @@ addon.translation = {
 --     Mists of Pandaria Classic (variant key: Balance). The standard recommended rotation for the
 --     specialization.
 [2383] = "추천",
--- 625c32c1 English: Recommended for Balance from level 10, after Wowhead's Phase 5 list and
---     wowsims. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts
---     Starfall in Lunar Eclipse, Starsurge on Shooting Stars and on cooldown, Hurricane in Solar or
---     Astral Storm in Lunar at five enemies, Starfire in and after Lunar and Wrath in and after
---     Solar. Rotation Master cannot read Eclipse energy, so between Eclipses it keeps casting
+-- 8e274530 English: Recommended for Balance from level 10, after Wowhead's Phase 5 list and
+--     simulator. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse,
+--     casts Starfall in Lunar Eclipse, Starsurge on Shooting Stars and on cooldown, Hurricane in
+--     Solar or Astral Storm in Lunar at five enemies, Starfire in and after Lunar and Wrath in and
+--     after Solar. Rotation Master cannot read Eclipse energy, so between Eclipses it keeps casting
 --     Starfire if Starfire was one of your last three casts, otherwise Wrath. Reminders: Mark of
 --     the Wild, Moonkin Form, Incarnation as an Eclipse starts and Celestial Alignment as one ends
 --     (on elites or long fights), Nature's Vigil, Force of Nature, Nature's Swiftness for Dream of
 --     Cenarius, Innervate, Solar Beam, Barkskin and Renewal when low. Wild Mushroom placement stays
 --     manual; the Detonate reminder is off by default. It stops while you cast, travel, are in Cat
 --     or Bear Form, or have no enemy targeted.
-[2384] = "10레벨부터 조화에게 권장하며, Wowhead의 5단계 목록과 wowsims를 따릅니다. 달빛 섬광과 태양불꽃을 유지하고 맞는 일월식 안에서 갱신하며, 월식 중 별똥별, 유성 시와 재사용 대기시간마다 별폭풍, 적이 다섯이면 일식 중 싹쓸바람 또는 월식 중 천공의 폭풍, 월식 중과 그 이후에는 별빛 섬광, 일식 중과 그 이후에는 천벌을 시전합니다. Rotation Master는 일월식 에너지를 읽을 수 없으므로, 일월식 사이에는 최근 세 번의 시전 중 별빛 섬광이 있었으면 계속 별빛 섬광, 그 외에는 천벌을 시전합니다. 알림: 야생의 징표, 달빛야수 변신, 일월식이 시작될 때 화신, 끝날 때 천공의 정렬(정예나 긴 전투에서), 자연의 경계, 자연의 군대, 세나리우스의 꿈을 위한 자연의 신속함, 정신 자극, 태양 광선, 생명력이 낮으면 나무 껍질과 소생. 야생 버섯 배치는 직접 하며, 폭발 알림은 기본적으로 꺼져 있습니다. 시전 중이거나, 이동 변신 중이거나, 표범이나 곰 변신 상태이거나, 적을 대상으로 지정하지 않으면 멈춥니다.",
+[2384] = "10레벨부터 조화에게 권장하며, Wowhead의 5단계 목록과 시뮬레이터를 따릅니다. 달빛 섬광과 태양불꽃을 유지하고 맞는 일월식 안에서 갱신하며, 월식 중 별똥별, 유성 시와 재사용 대기시간마다 별폭풍, 적이 다섯이면 일식 중 싹쓸바람 또는 월식 중 천공의 폭풍, 월식 중과 그 이후에는 별빛 섬광, 일식 중과 그 이후에는 천벌을 시전합니다. Rotation Master는 일월식 에너지를 읽을 수 없으므로, 일월식 사이에는 최근 세 번의 시전 중 별빛 섬광이 있었으면 계속 별빛 섬광, 그 외에는 천벌을 시전합니다. 알림: 야생의 징표, 달빛야수 변신, 일월식이 시작될 때 화신, 끝날 때 천공의 정렬(정예나 긴 전투에서), 자연의 경계, 자연의 군대, 세나리우스의 꿈을 위한 자연의 신속함, 정신 자극, 태양 광선, 생명력이 낮으면 나무 껍질과 소생. 야생 버섯 배치는 직접 하며, 폭발 알림은 기본적으로 꺼져 있습니다. 시전 중이거나, 이동 변신 중이거나, 표범이나 곰 변신 상태이거나, 적을 대상으로 지정하지 않으면 멈춥니다.",
 -- d70604e8 English: Recommended
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Mists of Pandaria Classic (variant key: Feral). The standard recommended rotation for the
 --     specialization.
 [2385] = "추천",
--- 008c4d0b English: Recommended for Feral from level 10, after wowsims and Wowhead's Phase 5 list.
---     Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up,
---     uses Predatory Swiftness for a Healing Touch at four or five combo points with Dream of
+-- 30101468 English: Recommended for Feral from level 10, after simulator and Wowhead's Phase 5
+--     list. Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar
+--     up, uses Predatory Swiftness for a Healing Touch at four or five combo points with Dream of
 --     Cenarius, Rip at five points (Ferocious Bite refreshes it below 25% health), Ferocious Bite
 --     at five points while Rip and Savage Roar both have six seconds left, Rake, Thrash on
 --     Clearcasting, Shred on Clearcasting or Berserk when the target is not attacking you (Rotation
@@ -9569,7 +9569,7 @@ addon.translation = {
 --     with it on elites or long fights, Incarnation, Force of Nature, Nature's Vigil, Skull Bash,
 --     Survival Instincts and Barkskin when low, Mark of the Wild. Bear- and Wrath-weaving, and
 --     Heart of the Wild, stay manual.
-[2386] = "10레벨부터 야성에게 권장하며, wowsims와 Wowhead의 5단계 목록을 따릅니다. 표범 변신을 하고, 숨기 상태에서 야생의 포효와 찢어발기기로 시작하며, 야생의 포효를 유지하고, 세나리우스의 꿈이 있으면 연계 점수 4~5점에서 야생의 신속함으로 치유의 손길, 5점에서 도려내기(생명력 25% 미만에서는 흉포한 이빨로 갱신), 도려내기와 야생의 포효가 모두 6초 남아 있는 동안 5점에서 흉포한 이빨, 갈퀴 발톱, 번뜩임 시 난타, 대상이 나를 공격하지 않을 때 번뜩임이나 광폭화 중 칼날 발톱(Rotation Master는 내가 대상 뒤에 있는지 알 수 없음), 짓이기기를 사용합니다. 적이 넷이면 난타와 휘둘러치기. 곰 변신 상태에서는 짧은 방어 목록을 제공합니다. 알림: 기력 35 미만에서 호랑이의 분노, 정예나 긴 전투에서 그와 함께 광폭화, 화신, 자연의 군대, 자연의 경계, 두개골 강타, 생명력이 낮으면 생존 본능과 나무 껍질, 야생의 징표. 곰 섞기와 천벌 섞기, 야생의 정수는 직접 판단합니다.",
+[2386] = "10레벨부터 야성에게 권장하며, 시뮬레이터와 Wowhead의 5단계 목록을 따릅니다. 표범 변신을 하고, 숨기 상태에서 야생의 포효와 찢어발기기로 시작하며, 야생의 포효를 유지하고, 세나리우스의 꿈이 있으면 연계 점수 4~5점에서 야생의 신속함으로 치유의 손길, 5점에서 도려내기(생명력 25% 미만에서는 흉포한 이빨로 갱신), 도려내기와 야생의 포효가 모두 6초 남아 있는 동안 5점에서 흉포한 이빨, 갈퀴 발톱, 번뜩임 시 난타, 대상이 나를 공격하지 않을 때 번뜩임이나 광폭화 중 칼날 발톱(Rotation Master는 내가 대상 뒤에 있는지 알 수 없음), 짓이기기를 사용합니다. 적이 넷이면 난타와 휘둘러치기. 곰 변신 상태에서는 짧은 방어 목록을 제공합니다. 알림: 기력 35 미만에서 호랑이의 분노, 정예나 긴 전투에서 그와 함께 광폭화, 화신, 자연의 군대, 자연의 경계, 두개골 강타, 생명력이 낮으면 생존 본능과 나무 껍질, 야생의 징표. 곰 섞기와 천벌 섞기, 야생의 정수는 직접 판단합니다.",
 -- 450e41c9 English: Bite only in execute (Icy Veins)
 [2387] = "마무리 구간에서만 흉포한 이빨 (Icy Veins)",
 -- 34b2bf98 English: Icy Veins' Feral order (Wowhead's Bite rule agrees), an alternative to the
@@ -9584,17 +9584,17 @@ addon.translation = {
 --     Mists of Pandaria Classic (variant key: Guardian). The standard recommended rotation for the
 --     specialization.
 [2389] = "추천",
--- b19b167d English: Recommended for Guardian tanks from level 10, after wowsims and Wowhead's Phase
---     5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened
---     Blows up with Thrash and Weakened Armor with Faerie Fire on elites, uses a Dream of Cenarius
---     Healing Touch when hurt, Mangle on cooldown, Thrash and Swipe at three enemies, then
+-- fb9929bb English: Recommended for Guardian tanks from level 10, after simulator and Wowhead's
+--     Phase 5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps
+--     Weakened Blows up with Thrash and Weakened Armor with Faerie Fire on elites, uses a Dream of
+--     Cenarius Healing Touch when hurt, Mangle on cooldown, Thrash and Swipe at three enemies, then
 --     Lacerate, Thrash and Faerie Fire. In Cat Form (Heart of the Wild) it gives a short damage
 --     list. Reminders: Savage Defense whenever it is down, Enrage for rage, Frenzied Regeneration
 --     when low or rage-capped, Maul above 90 rage or on Tooth and Claw, Barkskin while the target
 --     attacks you, Survival Instincts when low, Berserk and Incarnation on two enemies or a boss,
 --     Force of Nature, Nature's Vigil, Cenarion Ward, Skull Bash, Mark of the Wild. Taunting and
 --     Might of Ursoc stay manual (both reminders are off by default).
-[2390] = "10레벨부터 수호 방어 전담에게 권장하며, wowsims와 Wowhead의 5단계 목록을 따릅니다. 곰 변신을 하고, 원거리에서 요정의 불꽃이나 짓이기기로 끌어오며, 난타로 약화된 공격을, 정예에게는 요정의 불꽃으로 약화된 방어를 유지하고, 다쳤으면 세나리우스의 꿈 치유의 손길, 재사용 대기시간마다 짓이기기, 적이 셋이면 난타와 휘둘러치기, 그다음 가르기, 난타, 요정의 불꽃을 사용합니다. 표범 변신 상태(야생의 정수)에서는 짧은 공격 목록을 제공합니다. 알림: 꺼져 있으면 언제든 야생의 방어, 분노를 위한 격노, 생명력이 낮거나 분노가 가득 차면 광포한 재생력, 분노 90 초과나 맹위 시 후려갈기기, 대상이 나를 공격하는 동안 나무 껍질, 생명력이 낮으면 생존 본능, 적 둘이나 우두머리에게 광폭화와 화신, 자연의 군대, 자연의 경계, 세나리온의 보호, 두개골 강타, 야생의 징표. 도발과 우르속의 힘은 직접 판단합니다(두 알림 모두 기본적으로 꺼져 있음).",
+[2390] = "10레벨부터 수호 방어 전담에게 권장하며, 시뮬레이터와 Wowhead의 5단계 목록을 따릅니다. 곰 변신을 하고, 원거리에서 요정의 불꽃이나 짓이기기로 끌어오며, 난타로 약화된 공격을, 정예에게는 요정의 불꽃으로 약화된 방어를 유지하고, 다쳤으면 세나리우스의 꿈 치유의 손길, 재사용 대기시간마다 짓이기기, 적이 셋이면 난타와 휘둘러치기, 그다음 가르기, 난타, 요정의 불꽃을 사용합니다. 표범 변신 상태(야생의 정수)에서는 짧은 공격 목록을 제공합니다. 알림: 꺼져 있으면 언제든 야생의 방어, 분노를 위한 격노, 생명력이 낮거나 분노가 가득 차면 광포한 재생력, 분노 90 초과나 맹위 시 후려갈기기, 대상이 나를 공격하는 동안 나무 껍질, 생명력이 낮으면 생존 본능, 적 둘이나 우두머리에게 광폭화와 화신, 자연의 군대, 자연의 경계, 세나리온의 보호, 두개골 강타, 야생의 징표. 도발과 우르속의 힘은 직접 판단합니다(두 알림 모두 기본적으로 꺼져 있음).",
 -- d70604e8 English: Recommended
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
@@ -9614,7 +9614,7 @@ addon.translation = {
 -- f3d02e30 English: Tank healing (Wowhead)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Mists of Pandaria Classic (variant key: Restoration / Wowhead). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2393] = "방어 전담 치유 (Wowhead)",
 -- 28164e24 English: Wowhead's single-target tank-healing order, an alternative to the recommended
@@ -9783,12 +9783,12 @@ addon.translation = {
 --     Harm or Diffuse Magic when low, Spear Hand Strike. The Black Ox Statue reminder is off; Avert
 --     Harm, Zen Meditation and Provoke stay with you.
 [2418] = "양조 전문화에서 자동으로 선택됩니다. 후려차기로 건들건들을 유지하고, 기가 맞을 때마다 맥주통 휘두르기, 다쳤을 때 해악 축출(35% 미만이면 즉시), 기력 소모용으로 타, 범의 힘과 무료 빈틈 채우기로 범의 장풍(34레벨 전에는 타로 기를 생성), 사용할 수 있을 때 절명의 손길을 사용합니다. 전투 밖 원거리에서는: 기의 물결, 술안개, 충돌 또는 맥주통 휘두르기. 적이 셋 이상이면: 비취 돌풍, 불의 숨결, 그리고 건들건들이 남아 있는 동안에만 회전 학다리차기. 알림: 건우지세, 황제의 유산, 큰 시간차에 정화주(건들건들이 넉넉하면 중간 시간차에도), 6중첩부터 묘주, 막강한 방어와 함께 방어 자세, 원기주, 쉬엔, 생명력이 낮으면 강화주, 해악 감퇴 또는 마법 해소, 손날 찌르기. 흑우 조각상 알림은 꺼져 있으며, 해악 방지, 명상, 조롱은 직접 판단합니다.",
--- fbb1d180 English: Damage first (wowsims)
+-- bd502f1d English: Damage first (simulator)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
 --     Mists of Pandaria Classic (variant key: Brewmaster / Offensive). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
-[2419] = "공격 우선 (wowsims)",
+[2419] = "공격 우선 (시뮬레이터)",
 -- e83b14c9 English: An alternative to the Brewmaster premade, off by default: enable it and disable
 --     that one, or raise its priority. Follows the simulator's damage-first list for a tank who
 --     outgears the content: Rushing Jade Wind before Keg Smash, Chi spent on Blackout Kick for
@@ -9895,8 +9895,8 @@ addon.translation = {
 --     Defender, Divine Protection and Lay on Hands by your health. It cannot see incoming damage,
 --     so plan big defensives yourself.
 [2434] = "보호에게 권장하며, 10레벨부터 보호 전문화에서 적용됩니다. 응징의 방패로 끌어온 뒤, 위대한 성전사 발동 시 응징의 방패, 응징의 방패, 천벌의 망치, 성전사의 일격, 심판, 90레벨 특성, 신성화, 신의 격노, 성스러운 보호막. 적이 셋 이상 나를 공격하면 응징의 방패, 신성화, 정의의 망치, 심판, 신의 격노로 바꿉니다. 정의의 방패, 영원의 불꽃, 영광의 서약은 전역 재사용 대기시간을 쓰지 않으므로 로테이션 옆에 표시됩니다: 감당할 수 있을 때마다 정의의 방패, 신성한 힘 3과 영광의 수호자 3중첩에서 끝나 가면 자신에게 영원의 불꽃, 그 특성이 없으면 생명력 절반 미만에서 영광의 서약. 기타 알림: 정의의 격노, 문장이 없거나 다른 문장(정의의 문장 제외)이 활성화되어 있으면 통찰의 문장, 축복, 비난, 성스러운 보호막, 방어 중 응징의 격노와 신성한 복수자, 생명력에 따라 고대 왕의 수호자, 헌신적인 수호자, 신의 가호, 신의 축복. 받는 피해를 볼 수 없으므로 큰 방어 기술은 직접 계획하세요.",
--- 4816b24b English: Pool Holy Power (wowsims)
-[2435] = "신성한 힘 모으기 (wowsims)",
+-- e3cb6b71 English: Pool Holy Power (simulator)
+[2435] = "신성한 힘 모으기 (시뮬레이터)",
 -- 0709f739 English: An alternative to the recommended Protection premade, off by default: enable it
 --     and disable that one, or raise its priority. Follows the simulator's tank lists: Shield of
 --     the Righteous waits for full Holy Power unless you fall below 40% health or Divine Purpose
@@ -10024,7 +10024,7 @@ addon.translation = {
 --     Mists of Pandaria Classic (variant key: Assassination). The standard recommended rotation for
 --     the specialization.
 [2453] = "추천",
--- be1774f6 English: Recommended for Assassination, from level 10 to 90 (wowsims and Wowhead for
+-- a78d028d English: Recommended for Assassination, from level 10 to 90 (simulator and Wowhead for
 --     Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo,
 --     otherwise Mutilate (Dispatch on Blindside, with a dagger). Keeps Slice and Dice up (Envenom
 --     refreshes it from level 60) and Rupture on the target, spends five points on Envenom while
@@ -10036,7 +10036,7 @@ addon.translation = {
 --     poisons, Kick, Vendetta on long fights, Shadow Blades with Vendetta, Vanish and Preparation
 --     inside Vendetta, Shadowstep from range, Evasion solo. Left to you: Tricks of the Trade and
 --     Expose Armor (listed but off), Feint, Sprint and positioning.
-[2454] = "10레벨부터 90레벨까지 암살에게 권장합니다(5단계용 wowsims와 Wowhead, Icy Veins의 레벨업 단계). 은신 상태에서 혼자일 때는 비열한 습격, 그 외에는 절단(사각 지대 시 속결, 단검 필요)으로 시작합니다. 난도질을 유지하고(60레벨부터 독살로 갱신) 대상에 파열을 유지하며, 파열이 지속되는 동안 5점을 독살에 쓰고, 선견지명이 없으면 독살 강화 효과를 계속 유지하기 위해 4점을 쓴 뒤, 죽음의 표적, 35% 미만이거나 사각 지대 시 속결(주무기가 단검이어야 함), 절단을 사용합니다. 적이 넷 이상 나와 싸우면: 난도질, 적이 일곱이면 혈폭풍, 파열, 독살, 칼날 부채; 다른 대상에 파열을 거는 것은 직접 판단합니다. 혼자일 때는 생명력이 낮으면 만회와 급소 가격을 추가합니다. 알림: 독, 발차기, 긴 전투에서 원한, 원한과 함께 어둠의 칼날, 원한 중 소멸과 마음가짐, 원거리에서 그림자 밟기, 혼자일 때 회피. 직접 판단할 것: 속임수 거래와 약점 노출(나열되지만 꺼짐), 교란, 전력 질주, 위치 선정.",
+[2454] = "10레벨부터 90레벨까지 암살에게 권장합니다(5단계용 시뮬레이터와 Wowhead, Icy Veins의 레벨업 단계). 은신 상태에서 혼자일 때는 비열한 습격, 그 외에는 절단(사각 지대 시 속결, 단검 필요)으로 시작합니다. 난도질을 유지하고(60레벨부터 독살로 갱신) 대상에 파열을 유지하며, 파열이 지속되는 동안 5점을 독살에 쓰고, 선견지명이 없으면 독살 강화 효과를 계속 유지하기 위해 4점을 쓴 뒤, 죽음의 표적, 35% 미만이거나 사각 지대 시 속결(주무기가 단검이어야 함), 절단을 사용합니다. 적이 넷 이상 나와 싸우면: 난도질, 적이 일곱이면 혈폭풍, 파열, 독살, 칼날 부채; 다른 대상에 파열을 거는 것은 직접 판단합니다. 혼자일 때는 생명력이 낮으면 만회와 급소 가격을 추가합니다. 알림: 독, 발차기, 긴 전투에서 원한, 원한과 함께 어둠의 칼날, 원한 중 소멸과 마음가짐, 원거리에서 그림자 밟기, 혼자일 때 회피. 직접 판단할 것: 속임수 거래와 약점 노출(나열되지만 꺼짐), 교란, 전력 질주, 위치 선정.",
 -- 446abf99 English: Envenom at five (Icy Veins)
 [2455] = "5점 독살 (Icy Veins)",
 -- 584543ab English: Off by default. The Icy Veins and Method order: Vanish on cooldown for a
@@ -10051,19 +10051,19 @@ addon.translation = {
 --     Mists of Pandaria Classic (variant key: Combat). The standard recommended rotation for the
 --     specialization.
 [2457] = "추천",
--- 43003559 English: Recommended for Combat, from level 10 to 90 (Wowhead and wowsims for Phase 5).
---     Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike is
---     the builder and Sinister Strike is used only under Bloodlust or Heroism with Adrenaline Rush
---     (and before level 20). Opens with Cheap Shot solo, otherwise Ambush. Keeps Slice and Dice up
---     from two points and Revealing Strike on the target, spends five points only while Revealing
---     Strike is up (Slice and Dice, Rupture on a long single-target fight without Blade Flurry,
---     Eviscerate) and waits for energy at five. Against eight or more enemies: Slice and Dice,
---     Crimson Tempest and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders:
+-- e298e91f English: Recommended for Combat, from level 10 to 90 (Wowhead and simulator for Phase
+--     5). Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike
+--     is the builder and Sinister Strike is used only under Bloodlust or Heroism with Adrenaline
+--     Rush (and before level 20). Opens with Cheap Shot solo, otherwise Ambush. Keeps Slice and
+--     Dice up from two points and Revealing Strike on the target, spends five points only while
+--     Revealing Strike is up (Slice and Dice, Rupture on a long single-target fight without Blade
+--     Flurry, Eviscerate) and waits for energy at five. Against eight or more enemies: Slice and
+--     Dice, Crimson Tempest and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders:
 --     poisons, Kick, Blade Flurry on against two or more enemies and off again, Adrenaline Rush at
 --     low energy with Shadow Blades, Killing Spree, Vanish and Preparation for Ambush in Deep
 --     Insight, Shadowstep, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed
 --     but off), Feint and positioning behind the target for Ambush.
-[2458] = "10레벨부터 90레벨까지 전투에게 권장합니다(5단계용 Wowhead와 wowsims). 오그리마 공성전 패치 이후 사악한 일격의 기력 소모가 50이므로, 약점 공격이 연계 점수 생성 기술이며 사악한 일격은 아드레날린 촉진과 함께 피의 욕망이나 영웅심 중일 때만(그리고 20레벨 전에) 사용합니다. 혼자일 때 비열한 습격, 그 외에는 매복으로 시작합니다. 2점부터 난도질과 대상의 약점 공격을 유지하고, 약점 공격이 걸려 있는 동안에만 5점을 쓰며(난도질, 폭풍의 칼날 없이 긴 단일 대상 전투에서 파열, 절개), 5점에서는 기력을 기다립니다. 적이 여덟 이상이면: 난도질, 혈폭풍, 칼날 부채. 혼자일 때는 만회와 급소 가격을 추가합니다. 알림: 독, 발차기, 적이 둘 이상이면 폭풍의 칼날 켜기와 다시 끄기, 기력이 낮을 때 어둠의 칼날과 함께 아드레날린 촉진, 광기의 학살자, 깊은 통찰 중 매복을 위한 소멸과 마음가짐, 그림자 밟기, 혼자일 때 회피. 직접 판단할 것: 속임수 거래와 약점 노출(나열되지만 꺼짐), 교란, 매복을 위해 대상 뒤에 서기.",
+[2458] = "10레벨부터 90레벨까지 전투에게 권장합니다(5단계용 Wowhead와 시뮬레이터). 오그리마 공성전 패치 이후 사악한 일격의 기력 소모가 50이므로, 약점 공격이 연계 점수 생성 기술이며 사악한 일격은 아드레날린 촉진과 함께 피의 욕망이나 영웅심 중일 때만(그리고 20레벨 전에) 사용합니다. 혼자일 때 비열한 습격, 그 외에는 매복으로 시작합니다. 2점부터 난도질과 대상의 약점 공격을 유지하고, 약점 공격이 걸려 있는 동안에만 5점을 쓰며(난도질, 폭풍의 칼날 없이 긴 단일 대상 전투에서 파열, 절개), 5점에서는 기력을 기다립니다. 적이 여덟 이상이면: 난도질, 혈폭풍, 칼날 부채. 혼자일 때는 만회와 급소 가격을 추가합니다. 알림: 독, 발차기, 적이 둘 이상이면 폭풍의 칼날 켜기와 다시 끄기, 기력이 낮을 때 어둠의 칼날과 함께 아드레날린 촉진, 광기의 학살자, 깊은 통찰 중 매복을 위한 소멸과 마음가짐, 그림자 밟기, 혼자일 때 회피. 직접 판단할 것: 속임수 거래와 약점 노출(나열되지만 꺼짐), 교란, 매복을 위해 대상 뒤에 서기.",
 -- 44b84c55 English: Sinister Strike builder (Icy Veins)
 [2459] = "사악한 일격 생성 (Icy Veins)",
 -- 610b2100 English: Off by default, and superseded for Phase 5. The Icy Veins, Warcraft Tavern,
@@ -10076,7 +10076,7 @@ addon.translation = {
 -- 972be132 English: Anticipation (Hekili)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Mists of Pandaria Classic (variant key: Combat / Hekili). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2461] = "선견지명 (Hekili)",
 -- a677df00 English: Off by default. The Hekili MoP order for Combat with Anticipation: Revealing
@@ -10091,7 +10091,7 @@ addon.translation = {
 --     Mists of Pandaria Classic (variant key: Subtlety). The standard recommended rotation for the
 --     specialization.
 [2463] = "추천",
--- 53ec1c4b English: Recommended for Subtlety with Shadow Focus, from level 10 to 90 (wowsims and
+-- c2f73eb9 English: Recommended for Subtlety with Shadow Focus, from level 10 to 90 (simulator and
 --     Wowhead for Phase 5). In Stealth or Shadow Dance: Premeditation, Slice and Dice before the
 --     pull, finishers at five points, Ambush, Garrote. Outside: Slice and Dice; at five points
 --     Slice and Dice and Rupture when they are about to drop, Eviscerate while both last; Marked
@@ -10102,11 +10102,11 @@ addon.translation = {
 --     Weakness is ending, Preparation, Shadow Blades outside Dance and Stealth, Shadowstep, Evasion
 --     solo. Left to you: standing behind the target (RM cannot see facing), Tricks of the Trade and
 --     Expose Armor (listed but off).
-[2464] = "10레벨부터 90레벨까지 어둠의 집중을 쓰는 잠행에게 권장합니다(5단계용 wowsims와 Wowhead). 은신이나 어둠의 춤 중에는: 사전계획, 전투 전 난도질, 5점에서 마무리 기술, 매복, 목조르기. 그 밖에서는: 난도질; 5점에서 난도질과 파열이 곧 끝나면 갱신하고, 둘 다 지속되는 동안 절개; 죽음의 표적; 출혈을 유지하기 위한 과다출혈; 대상이 나를 공격하지 않으면 기습(단검을 든 경우), 그 외에는 과다출혈. 적이 셋 이상이면: 난도질, 혈폭풍, 절개, 칼날 부채. 혼자일 때는 만회와 급소 가격을 추가합니다. 알림: 독, 발차기, 난도질과 파열이 걸려 있을 때 기력 75에서 어둠의 춤, 약점 포착이 끝나 갈 때 소멸, 마음가짐, 어둠의 춤과 은신 밖에서 어둠의 칼날, 그림자 밟기, 혼자일 때 회피. 직접 판단할 것: 대상 뒤에 서기(RM은 방향을 볼 수 없음), 속임수 거래와 약점 노출(나열되지만 꺼짐).",
+[2464] = "10레벨부터 90레벨까지 어둠의 집중을 쓰는 잠행에게 권장합니다(5단계용 시뮬레이터와 Wowhead). 은신이나 어둠의 춤 중에는: 사전계획, 전투 전 난도질, 5점에서 마무리 기술, 매복, 목조르기. 그 밖에서는: 난도질; 5점에서 난도질과 파열이 곧 끝나면 갱신하고, 둘 다 지속되는 동안 절개; 죽음의 표적; 출혈을 유지하기 위한 과다출혈; 대상이 나를 공격하지 않으면 기습(단검을 든 경우), 그 외에는 과다출혈. 적이 셋 이상이면: 난도질, 혈폭풍, 절개, 칼날 부채. 혼자일 때는 만회와 급소 가격을 추가합니다. 알림: 독, 발차기, 난도질과 파열이 걸려 있을 때 기력 75에서 어둠의 춤, 약점 포착이 끝나 갈 때 소멸, 마음가짐, 어둠의 춤과 은신 밖에서 어둠의 칼날, 그림자 밟기, 혼자일 때 회피. 직접 판단할 것: 대상 뒤에 서기(RM은 방향을 볼 수 없음), 속임수 거래와 약점 노출(나열되지만 꺼짐).",
 -- a7cbb172 English: Subterfuge (Warcraft Tavern)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Mists of Pandaria Classic (variant key: Subtlety / WarcraftTavern). Names in parentheses
---     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
 --     Warcraft Tavern) are proper names and stay unchanged.
 [2465] = "기만 (Warcraft Tavern)",
 -- 01394d1f English: Chosen automatically instead of the Shadow Focus premade when your tier-1
@@ -10165,8 +10165,8 @@ addon.translation = {
 --     and Bloodlust in a group, Wind Shear, Shamanistic Rage and Astral Shift when low. Earth
 --     Elemental is listed but off.
 [2472] = "10레벨부터 고양에게 권장하며, 고양 전문화에서 언제나 선택됩니다. Wowhead의 순서입니다: 달려가는 동안 정기 폭발, 그다음 격노 폭발이 있으면 정기 폭발, 소용돌이치는 무기 5중첩에서 정기 작렬과 번개 화살(또는 다음 자동 공격까지 1초 넘게 남았으면 3중첩에서 끼워 넣기), 지배력 중 번개폭풍, 폭풍의 일격(26레벨 전에는 원시의 일격), 용암 채찍, 불꽃 폭발 중 화염 충격, 정기 폭발, 대지 충격. 적이 둘 이상 나를 공격하면: 번개 화살 대신 연쇄 번개, 화염 충격을 퍼뜨리는 용암 채찍, 넷부터 불꽃 회오리, 여섯부터 용암 토템. 알림: 번개 보호막, 주 무기에 질풍의 무기와 보조 무기에 불꽃의 무기, 불타는 토템, 불의 정령 토템, 야수 정령, 폭풍의 일격 뒤 지배력, 정기의 깨달음, 고대의 신속함, 그룹에서 폭풍채찍 토템과 피의 욕망, 날카로운 바람, 생명력이 낮으면 주술의 분노와 영혼 이동. 대지의 정령 토템은 나열되지만 꺼져 있습니다.",
--- e3f2e167 English: Weave every stack (wowsims)
-[2473] = "매 중첩 끼워 넣기 (wowsims)",
+-- ada73161 English: Weave every stack (simulator)
+[2473] = "매 중첩 끼워 넣기 (시뮬레이터)",
 -- ab469690 English: Off by default; same switch as the recommended Enhancement premade, so enable
 --     it and disable that one to use it. The simulator's list for players who time casts between
 --     swings: Lightning Bolt, Elemental Blast or Chain Lightning on any number of Maelstrom Weapon
@@ -10204,7 +10204,7 @@ addon.translation = {
 -- 98ae06d3 English: Health ladder (Hekili)
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Mists of Pandaria Classic (variant key: Restoration / Hekili). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2479] = "생명력 단계별 (Hekili)",
 -- db083550 English: Off by default; same switch as the recommended Restoration premade, so enable

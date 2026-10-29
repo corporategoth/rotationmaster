@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Affliction Warlock, levels 10-90 (the recommended variant): wowsims' order with
+-- Mists of Pandaria Classic Affliction Warlock, levels 10-90 (the recommended variant): simulator' order with
 -- Hekili's one-shard Haunt reserve. Selected in the Affliction specialization (265)
 -- from level 10 (RM stores MoP rotations per talent group). Pre-cast Haunt or Unstable
 -- Affliction; Soulburn + Soul Swap on a fresh target; Seed of Corruption on packs; Agony, Corruption and
@@ -23,8 +23,8 @@ assert(addon:RegisterDefaultRotation({
   ['mop.warlock.affliction-dots']=3,['mop.warlock.affliction-filler']=1},
  nameKey='Default.MoP.Warlock.Affliction.Name',descriptionKey='Default.MoP.Warlock.Affliction.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
- tags={'affliction','dps','caster','ranged','leveling','endgame','wowsims','hekili'},
- sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warlock/affliction/apls/default.apl.json',title='wowsims/mop: Affliction Warlock APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ tags={'affliction','dps','caster','ranged','leveling','endgame','hekili'},
+ sources={
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/WarlockAffliction.simc',title='Hekili (MoP fork): Affliction Warlock priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'},
  {url='https://wowtbc.gg/mop/class-guides/affliction-warlock/',title='wowtbc.gg: Affliction Warlock (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/affliction-warlock-leveling',title='Icy Veins: Affliction Warlock leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-10'}},

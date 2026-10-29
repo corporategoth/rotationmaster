@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Classic Era Rogue melee DPS, wowsims "sweaty" Sword Specialization timing (alternative premade).
+-- Classic Era Rogue melee DPS, simulator "sweaty" Sword Specialization timing (alternative premade).
 -- The recommended order (era/blocks.lua parts), but Sinister Strike waits for a fresh main-hand
 -- swing so a Sword Specialization extra attack does not clip it: at least 2.0 seconds to the next
 -- swing (tuned for a 2.6–2.8 speed sword; edit it in a clone), unless energy is near the cap or
@@ -19,12 +19,12 @@ local capped={type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=79
 local lasting=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.wowsims',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps.simulator',revision=6,
  blocks={['era.rogue.boundaries']=3,['era.rogue.opener']=3,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=2},
- nameKey='Default.Era.Rogue.DPS.Wowsims.Name',descriptionKey='Default.Era.Rogue.DPS.Wowsims.Description',
+ nameKey='Default.Era.Rogue.DPS.Simulator.Name',descriptionKey='Default.Era.Rogue.DPS.Simulator.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE'},
- tags={'dps','melee','endgame','wowsims'},
- sources={{url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/rogue/apls/combat_sinister_strike_sweaty.apl.json',title='wowsims/classic: Combat Sinister Strike "sweaty" APL',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'},
+ tags={'dps','melee','endgame'},
+ sources={
  {url='https://www.warcrafttavern.com/wow-classic/guides/rogue-leveling-guide/',title='Warcraft Tavern: Classic Rogue leveling guide (Sword Specialization timing)',reviewedAt='2026-10-23'}},
  body={priority=3,disabled=true,
  cooldowns={block('era.rogue.upkeep','rogue-')},

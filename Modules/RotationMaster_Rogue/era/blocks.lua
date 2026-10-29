@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Shared Classic Era Rogue blocks, vanilla and Season of Discovery (Built In composition;
--- authoring-time only). Consumers: rm.era.rogue.dps, .dps.warcrafttavern, .dps.wowsims and
+-- authoring-time only). Consumers: rm.era.rogue.dps, .dps.warcrafttavern, .dps.simulator and
 -- rm.sod.rogue.dps, .dps.icyveins, .dps.zockify, .tank. A content change needs a block revision
 -- bump, every consumer's pin and revision bumped, and both recorded in
 -- tests/fixtures/builtin_composition_ledger.lua.

@@ -6,7 +6,7 @@
 local F = dofile('tests/fixtures/addon.lua')
 local test, finish = F.suite()
 local M = dofile('tests/fixtures/era_premade_model_a.lua')
-local RANGED, CLIPPED, STING = 'rm.era.hunter.ranged', 'rm.era.hunter.ranged.icyveins', 'rm.era.hunter.ranged.wowsims'
+local RANGED, CLIPPED, STING = 'rm.era.hunter.ranged', 'rm.era.hunter.ranged.icyveins', 'rm.era.hunter.ranged.simulator'
 local SODR, SODM = 'rm.sod.hunter.ranged', 'rm.sod.hunter.melee'
 local VANILLA = { RANGED, CLIPPED, STING }
 local ALL = { RANGED, CLIPPED, STING, SODR, SODM }
@@ -61,7 +61,7 @@ test('the Hunter premades register valid, localized, sourced and composed for Er
     )
 
     for _, source in ipairs(M.row(a, STING).envelope.sources) do
-        assert(source.url:find('wowsims'), 'the wowsims variant cites only wowsims')
+        assert(source.url:find('simulator'), 'the simulator variant cites only simulator')
     end
 
     for _, source in ipairs(M.row(a, CLIPPED).envelope.sources) do
@@ -91,7 +91,7 @@ test('switch: one vanilla premade at every level; SoD realms take the SoD packs,
     assert(a:SetDefaultRotationEnabled(RANGED, false))
     assert(M.selected(a) == CLIPPED, 'Icy Veins next')
     assert(a:SetDefaultRotationEnabled(CLIPPED, false))
-    assert(M.selected(a) == STING, 'wowsims last')
+    assert(M.selected(a) == STING, 'simulator last')
     s.setSeason(3, true)
     assert(a:SetDefaultRotationEnabled(RANGED, true))
     assert(M.selected(a) == RANGED, 'Hardcore uses the vanilla premade')
@@ -276,7 +276,7 @@ test('vanilla group: full rotation after Auto Shot, sting outside raids, Arcane 
     M.expect(a, s, RANGED, 3044, nil, 'a target dying before Aimed lands: Arcane Shot')
 end)
 
-test('wowsims variant: Serpent Sting in raids once Aimed and Multi are cooling', function()
+test('simulator variant: Serpent Sting in raids once Aimed and Multi are cooling', function()
     local a, s = hunter()
     full(a, s)
     enable(a, STING)

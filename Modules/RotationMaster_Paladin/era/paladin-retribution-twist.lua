@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Classic Era Retribution seal twisting (Warcraft Tavern, wowsims): keep Seal of Righteousness up,
+-- Classic Era Retribution seal twisting (Warcraft Tavern, simulator): keep Seal of Righteousness up,
 -- swap to rank-1 Seal of Command in the last 0.4 s before a swing and back again, Judgement whenever
 -- it is ready, Consecration with Vengeance, Hammer of Wrath, Exorcism on Undead and Demons.
 -- Disabled by default (opt-in): it needs a swing timer, practice and a lot of mana.
@@ -20,9 +20,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['era.paladin.undead']=1},
  nameKey='Default.Era.Paladin.Retribution.Twist.Name',descriptionKey='Default.Era.Paladin.Retribution.Twist.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN'},
- tags={'endgame','raid','retribution','melee','single-target','seal-twisting','warcraft-tavern','wowsims'},
+ tags={'endgame','raid','retribution','melee','single-target','seal-twisting','warcraft-tavern'},
  sources={{url='https://www.warcrafttavern.com/wow-classic/guides/pve-retribution-paladin-rotations-cooldowns/',title='Warcraft Tavern: Classic Retribution Paladin rotations (seal twisting)',reviewedAt='2026-10-23'},
-  {url='https://github.com/wowsims/classic/tree/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/retribution_paladin',title='wowsims/classic basic Retribution APL',reviewedAt='2026-10-23',revision='7779ebb'}},
+  },
  body={priority=3,disabled=true,switch=all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=20},{type='SPELL_KNOWN',spell=20375},{type='PRIMARY_TALENT_TREE',tree=3}),
   cooldowns={block('twist-upkeep','era.paladin.ret-upkeep','twist-'),block('twist-safety','era.paladin.safety','twist-')},
   rotation={

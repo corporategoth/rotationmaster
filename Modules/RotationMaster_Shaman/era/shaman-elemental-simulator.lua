@@ -1,8 +1,8 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Classic Era Elemental Shaman, wowsims order (alternative premade; same switch, lower priority).
+-- Classic Era Elemental Shaman, simulator order (alternative premade; same switch, lower priority).
 -- The only measured list: Chain Lightning on cooldown even on one target, Earth Shock while
--- Elemental Mastery is up, otherwise Lightning Bolt (wowsims also drops to rank 4 below 30% mana,
+-- Elemental Mastery is up, otherwise Lightning Bolt (simulator also drops to rank 4 below 30% mana,
 -- which Rotation Master cannot pin). Same boundaries, interrupt and reminders as the recommended
 -- premade (era/blocks.lua). Mana-hungry by design.
 local _,addon=...
@@ -12,12 +12,12 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental.wowsims',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.elemental.simulator',revision=5,
  blocks={['era.shaman.manual-target']=2,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.caster-totems']=1},
- nameKey='Default.Era.Shaman.Elemental.Wowsims.Name',descriptionKey='Default.Era.Shaman.Elemental.Wowsims.Description',
+ nameKey='Default.Era.Shaman.Elemental.Simulator.Name',descriptionKey='Default.Era.Shaman.Elemental.Simulator.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
- tags={'dps','ranged','caster','endgame','wowsims'},
- sources={{url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/elemental_shaman/apls/default.apl.json',title='wowsims/classic: Elemental Shaman default APL',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'}},
+ tags={'dps','ranged','caster','endgame'},
+ sources={},
  body={priority=21,disabled=true,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=1}}},
  cooldowns={
   block('era.shaman.shield','ele-ws-'),

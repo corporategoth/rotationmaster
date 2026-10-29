@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Arms Warrior, levels 10-90 (the recommended variant): wowsims' Phase 5 order in
+-- Mists of Pandaria Classic Arms Warrior, levels 10-90 (the recommended variant): simulator' Phase 5 order in
 -- wowtbc.gg's simpler shape. Selected in the Arms specialization (71) from level 10 (RM stores MoP
 -- rotations per talent group, so the switch reads the specialization). Colossus Smash is the window: refreshed when it is
 -- missing or about to end, Mortal Strike, Storm Bolt with it, Dragon Roar and Bladestorm outside it; below
@@ -31,8 +31,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Arms.Name',descriptionKey='Default.MoP.Warrior.Arms.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
- tags={'arms','dps','melee','leveling','endgame','wowsims','wowtbc'},
- sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warrior/arms/apls/arms.apl.json',title='wowsims/mop: Arms Warrior APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ tags={'arms','dps','melee','leveling','endgame','wowtbc'},
+ sources={
  {url='https://wowtbc.gg/mop/class-guides/arms-warrior/',title='wowtbc.gg: Arms Warrior (MoP Classic)',reviewedAt='2026-10-23'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/arms-warrior-leveling',title='Icy Veins: Arms Warrior leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.method.gg/mop-classic/arms-warrior-class-guide-mop-classic',title='Method: Arms Warrior guide (MoP Classic)',reviewedAt='2026-10-23',revision='2025-07-22'}},

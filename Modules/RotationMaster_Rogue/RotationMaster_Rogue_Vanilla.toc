@@ -14,7 +14,7 @@ bind.lua
 era/blocks.lua
 era/rogue-dps.lua
 era/rogue-dps-warcrafttavern.lua
-era/rogue-dps-wowsims.lua
+era/rogue-dps-simulator.lua
 era/sod-rogue-tank.lua
 era/sod-rogue-dps.lua
 era/sod-rogue-dps-icyveins.lua

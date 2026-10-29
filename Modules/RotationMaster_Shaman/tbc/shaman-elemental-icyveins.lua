@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Elemental, Icy Veins shape with wowsims' adaptive mana model: Lightning Bolt filler,
+-- Elemental, Icy Veins shape with simulator' adaptive mana model: Lightning Bolt filler,
 -- Chain Lightning with Elemental Mastery, on Clearcasting with mana to spare, or on
 -- cooldown when mana is in surplus; Flame Shock only while moving. Below Chain
 -- Lightning (32) a target in melee is left to auto-attack (Icy Veins leveling).
@@ -17,10 +17,10 @@ assert(addon:RegisterDefaultRotation({
   ['tbc.shaman.elemental-opening']=2,['tbc.shaman.boundaries']=3,['tbc.shaman.interrupt']=1,['tbc.shaman.elemental-aoe']=1},
  nameKey='Default.TBC.Shaman.Elemental.IcyVeins.Name',descriptionKey='Default.TBC.Shaman.Elemental.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='SHAMAN'},
- tags={'leveling','endgame','elemental','caster','single-target','aoe','icy-veins','wowsims'},
+ tags={'leveling','endgame','elemental','caster','single-target','aoe','icy-veins'},
  sources={{url='https://www.icy-veins.com/tbc-classic/elemental-shaman-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Elemental Shaman rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/elemental-shaman-leveling-guide',title='Icy Veins: Elemental Shaman leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/shaman/elemental/rotation.go',title='wowsims/tbc Elemental adaptive rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77',notes='Chain Lightning on Clearcasting or mana surplus.'}},
+  },
  body={priority=30,switch={type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='PRIMARY_TALENT_TREE',tree=1}}},
   cooldowns={
    {id='ele-icy-shield',type='block',block='tbc.shaman.shield',prefix='ele-icy-'},

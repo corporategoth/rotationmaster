@@ -162,28 +162,31 @@ test(
     end
 )
 
-test('Retribution (Wowhead & wowsims) leveling: Crusader opener, Righteousness, Judgement of Righteousness', function()
-    local f, s = fixture(10)
-    H.learn(f, s, CRUSADER)
-    fight(s)
-    assert(H.first(f, s, RET) == CRUSADER, 'open with the Crusader seal')
-    s.buffs = { { id = CRUSADER } }
-    assert(H.first(f, s, RET) == JUDGE)
-    s.buffs = {}
-    s.debuffs = { { id = 21183, mine = false } }
-    assert(H.first(f, s, RET) == SOR, 'then the main seal')
-    s.buffs = { { id = SOR } }
-    assert(H.first(f, s, RET) == JUDGE)
-    s.mana = 0.2
-    assert(H.first(f, s, RET) == nil, 'Judgement waits for mana: melee')
-    s.mana = 1
-    s.debuffs = {}
-    s.ttd = 4
-    assert(H.first(f, s, RET) == JUDGE, 'no opener on a target about to die')
-end)
+test(
+    'Retribution (Wowhead & simulator) leveling: Crusader opener, Righteousness, Judgement of Righteousness',
+    function()
+        local f, s = fixture(10)
+        H.learn(f, s, CRUSADER)
+        fight(s)
+        assert(H.first(f, s, RET) == CRUSADER, 'open with the Crusader seal')
+        s.buffs = { { id = CRUSADER } }
+        assert(H.first(f, s, RET) == JUDGE)
+        s.buffs = {}
+        s.debuffs = { { id = 21183, mine = false } }
+        assert(H.first(f, s, RET) == SOR, 'then the main seal')
+        s.buffs = { { id = SOR } }
+        assert(H.first(f, s, RET) == JUDGE)
+        s.mana = 0.2
+        assert(H.first(f, s, RET) == nil, 'Judgement waits for mana: melee')
+        s.mana = 1
+        s.debuffs = {}
+        s.ttd = 4
+        assert(H.first(f, s, RET) == JUDGE, 'no opener on a target about to die')
+    end
+)
 
 test(
-    'Retribution (Wowhead & wowsims) at 70: Blood, Crusader Strike, selective Judgement, Exorcism, Consecration',
+    'Retribution (Wowhead & simulator) at 70: Blood, Crusader Strike, selective Judgement, Exorcism, Consecration',
     function()
         local f, s = fixture(70, { 5, 11, 45 })
         H.learn(f, s, unpack(RET70))
@@ -319,7 +322,7 @@ test(
 )
 
 test(
-    'Protection (Wowhead & wowsims): pull, crushing targets, Consecration, Exorcism, Judgement, Holy Shield, Avenger\'s Shield',
+    'Protection (Wowhead & simulator): pull, crushing targets, Consecration, Exorcism, Judgement, Holy Shield, Avenger\'s Shield',
     function()
         local f, s = fixture(70, { 0, 41, 20 })
         H.learn(f, s, WISDOM, 26573, 879, 20925, 31935, 2812, 24275, 25780)

@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Protection Warrior, levels 10-90: wowsims' Phase 5 Generic order, with Weakened Armor
+-- Mists of Pandaria Classic Protection Warrior, levels 10-90: simulator' Phase 5 Generic order, with Weakened Armor
 -- kept only on elites and bosses so trash pulls do not waste globals. Selected in the Protection
 -- specialization (73). Rage goes to Shield Block whenever it is down and Shield Barrier when hurt with rage to
 -- spare; Heroic Strike / Cleave on Ultimatum, Incite or near the cap. Rotation: Devastate for three Weakened Armor
@@ -32,8 +32,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.warrior.boundaries']=4},
  nameKey='Default.MoP.Warrior.Protection.Name',descriptionKey='Default.MoP.Warrior.Protection.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
- tags={'protection','tank','melee','leveling','endgame','wowsims','icy-veins'},
- sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warrior/protection/apls/default.apl.json',title='wowsims/mop: Protection Warrior APL (Generic)',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ tags={'protection','tank','melee','leveling','endgame','icy-veins'},
+ sources={
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/protection-warrior-pve-rotation-cooldowns-abilities',title='Icy Veins: Protection Warrior rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/protection-warrior-leveling',title='Icy Veins: Protection Warrior leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.warcrafttavern.com/mop/guides/pve-protection-warrior-tank-rotation-cooldowns/',title='Warcraft Tavern: Protection Warrior rotation (MoP)',reviewedAt='2026-10-23'}},

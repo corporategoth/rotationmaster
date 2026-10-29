@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Protection, Wowhead with wowsims: a pre-pull of Holy Shield, Avenger's Shield and
+-- Protection, Wowhead with simulator: a pre-pull of Holy Shield, Avenger's Shield and
 -- Judgement; against a crushing target (world boss, or three or more levels above you)
 -- Holy Shield comes first; otherwise Consecration, Exorcism on Undead and Demons,
 -- Judgement, Holy Shield, then Avenger's Shield except on crushing targets. Seal of
@@ -21,10 +21,10 @@ assert(addon:RegisterDefaultRotation({
  blocks={['tbc.paladin.tank-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
  nameKey='Default.TBC.Paladin.Protection.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Protection.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
- tags={'leveling','endgame','protection','tank','single-target','aoe','wowhead','wowsims'},
+ tags={'leveling','endgame','protection','tank','single-target','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/paladin/tank-rotation-cooldowns-abilities-pve',title='Wowhead: Protection Paladin tank rotation',reviewedAt='2026-10-23',revision='2026-02-10'},
   {url='https://www.wowhead.com/tbc/guide/classes/paladin/protection/leveling-tips',title='Wowhead: Protection Paladin leveling',reviewedAt='2026-10-23',revision='2026-09-04'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/paladin/protection/rotation.go',title='wowsims/tbc Protection rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'}},
+  },
  body={priority=20,switch=any(own(25780),{type='PRIMARY_TALENT_TREE',tree=2}),
   cooldowns={
    {id='prot-wh-upkeep',type='block',block='tbc.paladin.tank-upkeep',prefix='prot-wh-'},

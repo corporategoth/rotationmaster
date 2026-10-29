@@ -12,5 +12,5 @@
 
 bind.lua
 tbc/blocks.lua
-tbc/hunter-ranged-wowsims.lua
+tbc/hunter-ranged-simulator.lua
 tbc/hunter-ranged-wowhead.lua

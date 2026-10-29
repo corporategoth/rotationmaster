@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- TBC Rogue melee DPS, levels 1–70, wowsims order (the recommended variant; Icy Veins agrees).
+-- TBC Rogue melee DPS, levels 1–70, simulator order (the recommended variant; Icy Veins agrees).
 -- One premade for every spec: the builder follows what is known (Mutilate, Hemorrhage, Backstab,
 -- Sinister Strike). Slice and Dice from two points and refreshed in its last two seconds; a
 -- two-point Eviscerate on a target about to die; at five points Rupture when it is missing, Blade
@@ -17,12 +17,12 @@ local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,oper
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowsims',revision=6,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.simulator',revision=6,
  blocks={['tbc.rogue.opening']=4,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
- nameKey='Default.TBC.Rogue.DPS.Wowsims.Name',descriptionKey='Default.TBC.Rogue.DPS.Wowsims.Description',
+ nameKey='Default.TBC.Rogue.DPS.Simulator.Name',descriptionKey='Default.TBC.Rogue.DPS.Simulator.Description',
  applicability={families={'tbc'},actionContext='player',class='ROGUE'},
- tags={'dps','melee','leveling','endgame','wowsims','icy-veins'},
- sources={{url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/rogue/rotation.go',title='wowsims/tbc: Rogue rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'},
+ tags={'dps','melee','leveling','endgame','icy-veins'},
+ sources={
  {url='https://www.icy-veins.com/tbc-classic/rogue-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: TBC Rogue DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-01-12'},
  {url='https://www.icy-veins.com/tbc-classic/combat-rogue-leveling-guide',title='Icy Veins: Combat Rogue leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
  {url='https://warcrafttavern.com/tbc/guides/pve-subtlety-rogue-rotation-cooldowns-abilities/',title='Warcraft Tavern: Subtlety Rogue PvE rotation (stealth openers)',reviewedAt='2026-10-23'}},

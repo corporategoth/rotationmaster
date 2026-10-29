@@ -12,5 +12,5 @@
 
 bind.lua
 tbc/blocks.lua
-tbc/rogue-dps-wowsims.lua
+tbc/rogue-dps-simulator.lua
 tbc/rogue-dps-wowhead.lua

@@ -1,11 +1,11 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- TBC Rogue premades: melee DPS (wowsims recommended, Wowhead). Real predicates, catalog,
+-- TBC Rogue premades: melee DPS (simulator recommended, Wowhead). Real predicates, catalog,
 -- composition, sequence and publisher; WoW observations are modeled in
 -- tests/fixtures/tbc_physical_premades.lua.
 local M = dofile('tests/fixtures/tbc_physical_premades.lua')
 local test, finish = M.F.suite()
-local RS, RH = 'rm.tbc.rogue.dps.wowsims', 'rm.tbc.rogue.dps.wowhead'
+local RS, RH = 'rm.tbc.rogue.dps.simulator', 'rm.tbc.rogue.dps.wowhead'
 
 local function rogue(level, ...)
     local f, s = M.fixture('ROGUE', { level = level })
@@ -29,7 +29,7 @@ end
 
 local function both(f, s, g, t, a, b)
     local x, y = first(f, s, RS), first(g, t, RH)
-    assert(x == a and y == (b == nil and a or b), 'wowsims ' .. tostring(x) .. ' wowhead ' .. tostring(y))
+    assert(x == a and y == (b == nil and a or b), 'simulator ' .. tostring(x) .. ' wowhead ' .. tostring(y))
 end
 
 local function set(s, t, key, value)
@@ -37,7 +37,7 @@ local function set(s, t, key, value)
 end
 
 test(
-    'both premades register valid 1–70, share the switch, the wowsims premade auto-selects and the Wowhead one ships disabled',
+    'both premades register valid 1–70, share the switch, the simulator premade auto-selects and the Wowhead one ships disabled',
     function()
         local f, s = rogue(1)
         local a = f.addon
@@ -54,7 +54,7 @@ test(
         end
 
         for _, src in ipairs(a:GetDefaultRotation(RH).envelope.sources) do
-            assert(not src.url:find('icy%-veins') and not src.url:find('wowsims'), src.url)
+            assert(not src.url:find('icy%-veins') and not src.url:find('simulator'), src.url)
         end
 
         for _, src in ipairs(a:GetDefaultRotation(RS).envelope.sources) do
@@ -131,7 +131,7 @@ test('stealth opener adapts by spell known and group, then stops without breakin
 end)
 
 test(
-    'Slice and Dice: wowsims from two points, Wowhead from one; renewed only in its last two seconds; own only',
+    'Slice and Dice: simulator from two points, Wowhead from one; renewed only in its last two seconds; own only',
     function()
         local f, s = rogue(30, mid)
         local g, t = rogue(30, mid)
@@ -152,7 +152,7 @@ test(
 )
 
 test(
-    'five-point finisher: wowsims Rupture when it will last and Blade Flurry is down, Wowhead always Eviscerate; pool at five',
+    'five-point finisher: simulator Rupture when it will last and Blade Flurry is down, Wowhead always Eviscerate; pool at five',
     function()
         local f, s = rogue(40, mid, { 13877 })
         local g, t = rogue(40, mid, { 13877 })
@@ -189,7 +189,7 @@ test(
     end
 )
 
-test('near-death two-point Eviscerate is a wowsims finisher only', function()
+test('near-death two-point Eviscerate is a simulator finisher only', function()
     local f, s = rogue(40, mid)
     local g, t = rogue(40, mid)
 

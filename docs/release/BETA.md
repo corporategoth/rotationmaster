@@ -35,10 +35,6 @@ a real client. Your reports are what turn it into a release.
 - **Faster**: an idle gate, a lean evaluation engine, much less garbage per poll.
 - **Integrations**: Masque, Questie, boss-mod timers, more action-bar addons, tooltips that show your item sets and rotations.
 - **Ten languages**, following the game's language.
-- **Not supported: WowSims.** Rotation Master does not import or export WowSims rotations; rotations travel as Rotation
-  Master exports. Early test builds had a converter, removed because of the WowSims maintainers' attitude toward addon
-  developers they consider beneath them (they indicated that community submissions supporting small addons, with only
-  around 200,000 downloads, are not wanted).
 - **Replaced**: the 1.x windows (built on AceGUI) are gone; every window is now native.
 
 The list of every renamed Built In is in `docs/builtin-name-changes.md`.

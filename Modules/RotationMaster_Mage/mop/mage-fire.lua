@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Fire Mage, levels 10–90, in the Fire specialization (63).
--- wowsims' proc handling (Wowhead's Phase 5 page and Hekili agree): Pyroblast! at once unless
+-- simulator' proc handling (Wowhead's Phase 5 page and Hekili agree): Pyroblast! at once unless
 -- Combustion is less than 5 s away, then pooled with Fireball until Heating Up; Inferno Blast on
 -- Heating Up; Fireball filler, Scorch on the move. Combustion right after a Pyroblast while Ignite and
 -- the Pyroblast DoT are up, because RM cannot read Ignite's size. Icy Veins' always-hold rule is
@@ -22,9 +22,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=3,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=2},
  nameKey='Default.MoP.Mage.Fire.Name',descriptionKey='Default.MoP.Mage.Fire.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
- tags={'fire','leveling','single-target','aoe','wowsims','wowhead'},
+ tags={'fire','leveling','single-target','aoe','wowhead'},
  sources={
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/mage/fire/apls/fire.apl.json',title='wowsims/mop: Fire Mage APL',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Pyroblast! pooling before Combustion; Presence of Mind and Alter Time sequence.'},
+  
   {url='https://www.wowhead.com/mop-classic/guide/classes/mage/fire/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Fire Mage rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},
   {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/MageFire.simc',title='Hekili (MoP Classic fork): Fire Mage priority',reviewedAt='2026-10-23',revision='0750b5dd98'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/fire-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Fire Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Inferno Blast spreading, AoE, talent rows.'},

@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Unholy Death Knight, rune-cap and Shadow Infusion pooling (wowsims
+-- Mists of Pandaria Classic Unholy Death Knight, rune-cap and Shadow Infusion pooling (simulator
 -- default APL as far as RM can read it; wowtbc.gg, Method and MaxDps agree). Off by default, same
 -- switch as rm.mop.deathknight.unholy: Death Coil rebuilds Shadow Infusion while Dark Transformation
 -- is down, Scourge Strike first when both Unholy or both Death runes are up, Festering Strike first
@@ -18,14 +18,14 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local infusion={type='BUFF_STACKS',unit='pet',spell=91342,operator='GREATERTHANOREQUALS',value=5}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.unholy.wowsims',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.deathknight.unholy.simulator',revision=5,
  blocks={['mop.deathknight.boundaries']=3,['mop.deathknight.upkeep']=1,['mop.deathknight.unholy-upkeep']=2,['mop.deathknight.unholy-open']=2,
   ['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
- nameKey='Default.MoP.DeathKnight.Unholy.Wowsims.Name',descriptionKey='Default.MoP.DeathKnight.Unholy.Wowsims.Description',
+ nameKey='Default.MoP.DeathKnight.Unholy.Simulator.Name',descriptionKey='Default.MoP.DeathKnight.Unholy.Simulator.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
- tags={'unholy','single-target','aoe','wowsims'},
+ tags={'unholy','single-target','aoe'},
  sources={
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/death_knight/unholy/apls/default.apl.json',title='wowsims/mop Unholy default APL',reviewedAt='2026-10-23',revision='ec2c6c2552'},
+  
   {url='https://wowtbc.gg/mop/class-guides/unholy-death-knight/',title='wowtbc.gg: MoP Unholy Death Knight',reviewedAt='2026-10-23',notes='Death Coil to five stacks while Dark Transformation is down; rune-pair order.'},
   {url='https://www.method.gg/mop-classic/unholy-death-knight-class-guide-mop-classic',title='Method: MoP Classic Unholy Death Knight',reviewedAt='2026-10-23',revision='2025-07-22'},
   {url='https://github.com/kaminaris/MaxDps-DeathKnight/blob/95faf1baa6e91b0d5e32480227e35f54409dcfc2/Specialization/Mop/Unholy.lua',title='MaxDps-DeathKnight MoP Unholy',reviewedAt='2026-10-23',revision='95faf1baa6',notes='Same rune-pair rule; IDs not used.'},

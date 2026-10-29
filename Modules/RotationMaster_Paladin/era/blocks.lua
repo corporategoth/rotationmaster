@@ -122,7 +122,7 @@ paladin('sod.paladin.seal',{
   spell('seal-righteousness',20154),
  }},
 },2)
--- Season of Discovery tank upkeep (Wowhead Phase 8, wowsims, Icy Veins): Righteous Fury, Holy
+-- Season of Discovery tank upkeep (Wowhead Phase 8, simulator, Icy Veins): Righteous Fury, Holy
 -- Shield before a pull, Devotion, Sanctuary or Kings, Avenging Wrath in combat, Divine Protection
 -- (Malleable Protection) below 40%, Lay on Hands below 10%, Hand of Reckoning in a group when your
 -- target is not attacking you.

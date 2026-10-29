@@ -18,12 +18,12 @@ local S = {
 [834] = { "Default.TBC.Shaman.Enhancement.IcyVeins.Name", "Enhancement (Icy Veins)" },
 -- a97cd0b7
 [835] = { "Default.TBC.Shaman.Enhancement.IcyVeins.Description", "Melee Enhancement from level 1 to 70, and the default for any Shaman no other premade fits. Pulls with Lightning Bolt from range, interrupts with Earth Shock, drops Fire Nova and Magma Totems on three or more nearby enemies, then Stormstrike, Earth Shock while Stormstrike's debuff is up, Flame Shock on a target that will live, Earth Shock on cooldown, and Lightning Bolt while the target is out of reach. Separate reminders: weapon imbues, Water or Lightning Shield, Strength of Earth, Windfury (group) or Grace of Air (solo), Searing on long fights, water totems, Shamanistic Rage, Bloodlust/Heroism on bosses, Stoneclaw and Earth Elemental when solo. Fire Elemental is an optional step that starts off. Totem placement, Ghost Wolf and healing stay with you." },
--- 7637d9eb
-[836] = { "Default.TBC.Shaman.Enhancement.Wowsims.Name", "Enhancement (Wowhead & wowsims)" },
+-- f2b68c6d
+[836] = { "Default.TBC.Shaman.Enhancement.Simulator.Name", "Enhancement (Wowhead & simulator)" },
 -- 1ec4e078
-[837] = { "Default.TBC.Shaman.Enhancement.Wowsims.Description", "The level-70 raid model for totem twisting, an alternative to the recommended Icy Veins Enhancement premade, off by default: enable it and disable that one, or raise its priority. Stormstrike, a Fire Nova Totem weave, Flame Shock whenever it has fallen off, and Earth Shock as the main shock, with Lightning Bolt only out of reach. Reminders twist Windfury and Grace of Air Totems, keep Searing down, use Shamanistic Rage when mana runs low, and share the Icy Veins variant's imbue, shield and totem upkeep." },
--- 3a3fe11d
-[838] = { "Default.TBC.Shaman.Elemental.IcyVeins.Name", "Elemental (Icy Veins & wowsims)" },
+[837] = { "Default.TBC.Shaman.Enhancement.Simulator.Description", "The level-70 raid model for totem twisting, an alternative to the recommended Icy Veins Enhancement premade, off by default: enable it and disable that one, or raise its priority. Stormstrike, a Fire Nova Totem weave, Flame Shock whenever it has fallen off, and Earth Shock as the main shock, with Lightning Bolt only out of reach. Reminders twist Windfury and Grace of Air Totems, keep Searing down, use Shamanistic Rage when mana runs low, and share the Icy Veins variant's imbue, shield and totem upkeep." },
+-- 0dc1ed9b
+[838] = { "Default.TBC.Shaman.Elemental.IcyVeins.Name", "Elemental (Icy Veins & simulator)" },
 -- c334526c
 [839] = { "Default.TBC.Shaman.Elemental.IcyVeins.Description", "Caster Elemental for the Elemental talent tree. Lightning Bolt is the filler; Chain Lightning goes out with Elemental Mastery, on Clearcasting while you have 40% mana, or freely above 80%; Flame Shock only while moving; Earth Shock interrupts; Fire Nova, Chain Lightning and Magma for packs. Before Chain Lightning a target in melee is left to auto-attack to save mana. Reminders: Water or Lightning Shield, a weapon imbue, Totem of Wrath (or Searing on long fights), Wrath of Air, Mana Spring, Totemic Call after the fight, Elemental Mastery and Bloodlust/Heroism." },
 -- 6c2dcf2e
@@ -55,7 +55,7 @@ local S = {
 -- 7c2241f3
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
 --     Burning Crusade Classic (variant key: FireIcyVeins). Names in parentheses (guide or tool such
---     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
 --     proper names and stay unchanged.
 [1424] = { "Default.TBC.Mage.FireIcyVeins.Name", "Fire (Icy Veins)" },
 -- 1e584220
@@ -63,25 +63,25 @@ local S = {
 -- c3a8c4ee
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
 --     Burning Crusade Classic (variant key: FireWowhead). Names in parentheses (guide or tool such
---     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
 --     proper names and stay unchanged.
 [1426] = { "Default.TBC.Mage.FireWowhead.Name", "Fire (Wowhead)" },
--- a335455e
-[1427] = { "Default.TBC.Mage.FireWowhead.Description", "Fire after Wowhead and wowsims. Like the Icy Veins Fire premade, but it weaves Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with Fireball instead of Pyroblast. An alternative to the recommended Icy Veins Fire premade, off by default: enable it and disable that one, or raise its priority." },
+-- 2caeb60c
+[1427] = { "Default.TBC.Mage.FireWowhead.Description", "Fire after Wowhead and simulator. Like the Icy Veins Fire premade, but it weaves Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with Fireball instead of Pyroblast. An alternative to the recommended Icy Veins Fire premade, off by default: enable it and disable that one, or raise its priority." },
 -- 93006d61
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
 --     Burning Crusade Classic (variant key: Arcane).
 [1428] = { "Default.TBC.Mage.Arcane.Name", "Arcane" },
 -- d64a2c81
 [1429] = { "Default.TBC.Mage.Arcane.Description", "Arcane, chosen when Arcane is your main talent tree. Before level 64: Arcane Missiles, with Frostbolt when mana runs low. From 64: Arcane Blast while burning (Arcane Power, Bloodlust or above 35% mana), otherwise three Arcane Blast stacks and Frostbolt until they are about to drop. Arcane Explosion and Cone of Cold for three or more enemies. Reminders include Arcane Power, Presence of Mind, mana gem and Evocation." },
--- 35f743e1
-[1741] = { "Default.TBC.Paladin.Retribution.Wowhead.Name", "Retribution (Wowhead & wowsims)" },
+-- 01059048
+[1741] = { "Default.TBC.Paladin.Retribution.Wowhead.Name", "Retribution (Wowhead & simulator)" },
 -- 6fc82107
 [1742] = { "Default.TBC.Paladin.Retribution.Wowhead.Description", "Melee Retribution from level 1 to 70, and the default for any Paladin no other premade fits. Opens each target with Judgement of Wisdom (low mana) or the Crusader, keeps your best seal up (Blood or Martyr, Command, then Righteousness), Crusader Strike, judges only Righteousness, Blood or Martyr (or Command on a stunned target), Exorcism on Undead and Demons, Consecration for three or more enemies with mana to spare. Hammer of Wrath is left to you (Wowhead uses it only on fleeing targets). Reminders: Sanctity, Retribution or Devotion Aura, a Blessing on yourself, a heal after the fight, Avenging Wrath. Seal twisting is a separate premade." },
 -- 89f00a09
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     The Burning Crusade Classic (variant key: Retribution / IcyVeins). Names in parentheses
---     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
 --     Warcraft Tavern) are proper names and stay unchanged.
 [1743] = { "Default.TBC.Paladin.Retribution.IcyVeins.Name", "Retribution (Icy Veins)" },
 -- c68e9ea0
@@ -92,14 +92,14 @@ local S = {
 [1745] = { "Default.TBC.Paladin.Retribution.Twist.Name", "Retribution seal twisting" },
 -- 34a6a34f
 [1746] = { "Default.TBC.Paladin.Retribution.Twist.Description", "Off by default; enable it if you twist seals (level 64+, Seal of Command and Blood or Martyr). Opens with Judgement of the Crusader, then each swing puts up Seal of Command (rank 1) early and switches to Blood or Martyr in the last 0.4 seconds, Crusader Strike between twists, judges only Blood or Martyr, Exorcism and Consecration only as fillers, and rolls Blood without twisting below 12% mana. Needs a reliable swing timer; latency is not accounted for." },
--- 316a63c1
-[1747] = { "Default.TBC.Paladin.Protection.Wowhead.Name", "Protection (Wowhead & wowsims)" },
+-- b9e3d93c
+[1747] = { "Default.TBC.Paladin.Protection.Wowhead.Name", "Protection (Wowhead & simulator)" },
 -- c9c2efbf
 [1748] = { "Default.TBC.Paladin.Protection.Wowhead.Description", "Tanking for the Protection tree or any Paladin with Righteous Fury on. Pulls with Holy Shield, Avenger's Shield and Judgement; against a crushing target (world boss or three or more levels above you) Holy Shield comes first; then Consecration, Exorcism on Undead and Demons, Judgement, Holy Shield, Holy Wrath on undead packs, Avenger's Shield except on crushing targets. Seal of Wisdom on packs when mana is short, Righteousness otherwise. Reminders: Righteous Fury, Devotion Aura, Sanctuary (or Kings, or Wisdom), Avenging Wrath, Lay on Hands. Taunts and target swaps stay with you." },
 -- 80b938a1
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1749] = { "Default.TBC.Paladin.Protection.IcyVeins.Name", "Protection (Icy Veins)" },
 -- 3ae9045e
@@ -112,52 +112,52 @@ local S = {
 [1753] = { "Default.TBC.Paladin.Holy.Wowhead.Name", "Holy (Wowhead tank healing)" },
 -- 63b194ff
 [1754] = { "Default.TBC.Paladin.Holy.Wowhead.Description", "Wowhead's raid tank healing, an alternative to the recommended Holy premade, off by default: enable it and disable that one, or raise its priority. Holy Light whenever your target is missing a tenth of their health, Flash of Light only for small deficits, with the same emergencies, cleansing, Judgement and reminders as the blended Holy premade." },
--- 4396ff42
+-- ffb13c96
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
---     The Burning Crusade Classic (variant key: Ranged / Wowsims). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     The Burning Crusade Classic (variant key: Ranged / simulator). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
-[1755] = { "Default.TBC.Hunter.Ranged.Wowsims.Name", "Ranged DPS (wowsims)" },
+[1755] = { "Default.TBC.Hunter.Ranged.Simulator.Name", "Ranged DPS (simulator)" },
 -- 2b43c4a1
-[1756] = { "Default.TBC.Hunter.Ranged.Wowsims.Description", "Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot, keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you have plenty. From level 62: Multi-Shot when ready, Steady Shot straight after each Auto Shot, Arcane Shot to fill the gap, Serpent Sting when solo. With three or more enemies fighting you, Multi-Shot whenever it is ready. Reminds you of aspects (Viper when mana runs low, Hawk again at half mana), pet care, Kill Command, major cooldowns on elites and bosses and Silencing Shot. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you." },
+[1756] = { "Default.TBC.Hunter.Ranged.Simulator.Description", "Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot, keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you have plenty. From level 62: Multi-Shot when ready, Steady Shot straight after each Auto Shot, Arcane Shot to fill the gap, Serpent Sting when solo. With three or more enemies fighting you, Multi-Shot whenever it is ready. Reminds you of aspects (Viper when mana runs low, Hawk again at half mana), pet care, Kill Command, major cooldowns on elites and bosses and Silencing Shot. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you." },
 -- 825c84d1
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     The Burning Crusade Classic (variant key: Ranged / Wowhead). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1757] = { "Default.TBC.Hunter.Ranged.Wowhead.Name", "Ranged DPS (Wowhead)" },
--- fb9ad1ee
-[1758] = { "Default.TBC.Hunter.Ranged.Wowhead.Description", "Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee, leveling shots, multi-target Multi-Shot and reminders as the wowsims version, but once Steady Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no Arcane Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper reminder. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you. An alternative to the recommended wowsims ranged premade, off by default: enable it and disable that one, or raise its priority." },
--- 469b61e4
+-- c4d18a35
+[1758] = { "Default.TBC.Hunter.Ranged.Wowhead.Description", "Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee, leveling shots, multi-target Multi-Shot and reminders as the simulator version, but once Steady Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no Arcane Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper reminder. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you. An alternative to the recommended simulator ranged premade, off by default: enable it and disable that one, or raise its priority." },
+-- 4f534fae
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
---     Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     Burning Crusade Classic (variant key: DPS / simulator). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
-[1759] = { "Default.TBC.Rogue.DPS.Wowsims.Name", "Melee DPS (wowsims)" },
+[1759] = { "Default.TBC.Rogue.DPS.Simulator.Name", "Melee DPS (simulator)" },
 -- a600e4ad
-[1760] = { "Default.TBC.Rogue.DPS.Wowsims.Description", "Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte, Slice and Dice from two combo points (renewed in its last two seconds), Eviscerate on a target about to die, and at five points Rupture when it will last (not while Blade Flurry cleaves), otherwise Eviscerate. Builds with Mutilate or Backstab (dagger) when the target is not attacking you, otherwise Hemorrhage or Sinister Strike. Reminds you of missing poisons, Kick, Blade Flurry and Adrenaline Rush, Cold Blood and Evasion. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you." },
+[1760] = { "Default.TBC.Rogue.DPS.Simulator.Description", "Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte, Slice and Dice from two combo points (renewed in its last two seconds), Eviscerate on a target about to die, and at five points Rupture when it will last (not while Blade Flurry cleaves), otherwise Eviscerate. Builds with Mutilate or Backstab (dagger) when the target is not attacking you, otherwise Hemorrhage or Sinister Strike. Reminds you of missing poisons, Kick, Blade Flurry and Adrenaline Rush, Cold Blood and Evasion. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you." },
 -- 5f9b3940
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
 --     Burning Crusade Classic (variant key: DPS / Wowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1761] = { "Default.TBC.Rogue.DPS.Wowhead.Name", "Melee DPS (Wowhead)" },
--- 19e52877
-[1762] = { "Default.TBC.Rogue.DPS.Wowhead.Description", "Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and reminders as the wowsims version, but Slice and Dice starts from one combo point and every five-point finisher is Eviscerate: no Rupture. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you. An alternative to the recommended wowsims melee DPS premade, off by default: enable it and disable that one, or raise its priority." },
+-- d6b11787
+[1762] = { "Default.TBC.Rogue.DPS.Wowhead.Description", "Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and reminders as the simulator version, but Slice and Dice starts from one combo point and every five-point finisher is Eviscerate: no Rupture. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you. An alternative to the recommended simulator melee DPS premade, off by default: enable it and disable that one, or raise its priority." },
 -- d05e07b7
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
 --     Burning Crusade Classic (variant key: Balance).
 [1763] = { "Default.TBC.Druid.Balance.Name", "Balance" },
 -- 8177cc43
 [1764] = { "Default.TBC.Druid.Balance.Description", "Caster Balance from level 1 to 70, and the default for any Druid no other premade fits. Pulls with Starfire (Wrath before 20), Insect Swarm and Moonfire while moving, Faerie Fire in a group, Hurricane for three or more enemies, Moonfire when it has run out and you have 30% mana, Starfire on Nature's Grace, Wrath against a target in melee, then Starfire (Wrath before it is learned). No advice in Cat, Bear or travel forms. Reminders: Mark of the Wild, Thorns while solo, Omen of Clarity, Moonkin Form, Force of Nature on a long fight, Innervate when low." },
--- 9a2fa639
-[1765] = { "Default.TBC.Druid.Feral.IcyVeins.Name", "Feral (Icy Veins, Warcraft Tavern & wowsims)" },
+-- 9f5ae657
+[1765] = { "Default.TBC.Druid.Feral.IcyVeins.Name", "Feral (Icy Veins, Warcraft Tavern & simulator)" },
 -- 43a0ca32
 [1766] = { "Default.TBC.Druid.Feral.IcyVeins.Description", "Cat and bear for the Feral tree, following your form. Cat: stealth opener (Pounce, Ravage or Shred), Faerie Fire (Feral), Rip at four combo points on a target that lives, Ferocious Bite between Rips without Clearcasting, Mangle kept up, Shred from behind or Mangle/Claw when the target is on you. Bear: Faerie Fire, Lacerate saved before it drops, Demoralizing Roar unless a warrior's Shout is up, Swipe for packs, Mangle, five Lacerates, Swipe. In caster form it suggests Cat (or Bear) Form. Reminders: Mark, Thorns, Omen, Maul with spare rage, Tiger's Fury before a pull, Frenzied Regeneration. Powershifting is an optional step that starts off (it needs a powershift macro)." },
 -- 4c55a525
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
 --     Burning Crusade Classic (variant key: Feral / Wowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1767] = { "Default.TBC.Druid.Feral.Wowhead.Name", "Feral (Wowhead)" },
 -- 9092413a
@@ -168,22 +168,22 @@ local S = {
 [1769] = { "Default.TBC.Druid.Restoration.Name", "Restoration" },
 -- da5557c1
 [1770] = { "Default.TBC.Druid.Restoration.Description", "Healing for the Restoration tree on your friendly target (or yourself): Healing Touch after Nature's Swiftness, Swiftmend a dying target that has your Rejuvenation or Regrowth, three rolling Lifeblooms in combat, Rejuvenation and Regrowth when missing, then Regrowth in Tree of Life or Healing Touch outside it. A hostile target gets Moonfire and Wrath for soloing. Reminders: Mark, Omen, Tree of Life, Nature's Swiftness, Tranquility, Innervate and Rebirth. Choosing whom to heal and downranking stay with you." },
--- 469b61e4
+-- 4f534fae
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
---     The Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
---     are proper names and stay unchanged.
-[1771] = { "Default.TBC.Warrior.DPS.Wowsims.Name", "Melee DPS (wowsims)" },
+--     The Burning Crusade Classic (variant key: DPS / simulator). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
+[1771] = { "Default.TBC.Warrior.DPS.Simulator.Name", "Melee DPS (simulator)" },
 -- e30bf8c3
-[1772] = { "Default.TBC.Warrior.DPS.Wowsims.Description", "Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept, Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is learned). With Bloodthirst or Mortal Strike: that strike, Whirlwind with rage to spare, Execute, Overpower. Before them: Whirlwind, Execute, Overpower, Rend. Spare rage goes to Devastate or Sunder Armor, then Hamstring. Reminds you of Battle Shout, Bloodrage, Heroic Strike or Cleave as rage dumps, Sweeping Strikes, Death Wish, Recklessness and interrupts. Slam timing, stance dancing and Berserker Rage stay with you." },
+[1772] = { "Default.TBC.Warrior.DPS.Simulator.Description", "Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept, Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is learned). With Bloodthirst or Mortal Strike: that strike, Whirlwind with rage to spare, Execute, Overpower. Before them: Whirlwind, Execute, Overpower, Rend. Spare rage goes to Devastate or Sunder Armor, then Hamstring. Reminds you of Battle Shout, Bloodrage, Heroic Strike or Cleave as rage dumps, Sweeping Strikes, Death Wish, Recklessness and interrupts. Slam timing, stance dancing and Berserker Rage stay with you." },
 -- 6d10d944
 [1773] = { "Default.TBC.Warrior.DPS.IcyVeins.Name", "Melee DPS (Icy Veins)" },
--- c50ff4f3
-[1774] = { "Default.TBC.Warrior.DPS.IcyVeins.Description", "Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and leveling steps as the wowsims version, but with Mortal Strike Execute comes first, with Bloodthirst Execute comes right after it, Whirlwind follows without holding rage, and Hamstring only near full rage. Slam timing, stance dancing and Berserker Rage stay with you. An alternative to the recommended wowsims melee DPS premade, off by default: enable it and disable that one, or raise its priority." },
+-- b57d248a
+[1774] = { "Default.TBC.Warrior.DPS.IcyVeins.Description", "Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and leveling steps as the simulator version, but with Mortal Strike Execute comes first, with Bloodthirst Execute comes right after it, Whirlwind follows without holding rage, and Hamstring only near full rage. Slam timing, stance dancing and Berserker Rage stay with you. An alternative to the recommended simulator melee DPS premade, off by default: enable it and disable that one, or raise its priority." },
 -- 871d5911
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     The Burning Crusade Classic (variant key: Protection / Wowhead). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1775] = { "Default.TBC.Warrior.Protection.Wowhead.Name", "Tank (Wowhead)" },
 -- 91dfa1ce
@@ -191,7 +191,7 @@ local S = {
 -- ea76d926
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1777] = { "Default.TBC.Warrior.Protection.IcyVeins.Name", "Tank (Icy Veins)" },
 -- aa141592
@@ -199,7 +199,7 @@ local S = {
 -- 3adec7ba
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: DpsIcyVeins). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1779] = { "Default.TBC.Priest.DpsIcyVeins.Name", "Damage (Icy Veins)" },
 -- 9b0711bb
@@ -207,7 +207,7 @@ local S = {
 -- ce79d246
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1781] = { "Default.TBC.Priest.DpsWowhead.Name", "Damage (Wowhead)" },
 -- fe006eaa
@@ -215,7 +215,7 @@ local S = {
 -- d0f0e9e6
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: HealerWowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1783] = { "Default.TBC.Priest.HealerWowhead.Name", "Healer (Wowhead)" },
 -- d31781e0
@@ -223,7 +223,7 @@ local S = {
 -- 45321807
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     The Burning Crusade Classic (variant key: HealerIcyVeins). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [1785] = { "Default.TBC.Priest.HealerIcyVeins.Name", "Healer (Icy Veins)" },
 -- e31d4277
@@ -235,7 +235,7 @@ local S = {
 -- e3790b25
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [1789] = { "Default.TBC.Warlock.DpsWowhead.Name", "Drain-tank (Wowhead)" },
 -- 522ed69f
@@ -269,7 +269,7 @@ local S = {
 -- d580a703
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     WoW Forever (variant key: Enhancement). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [1947] = { "Default.Forever.Shaman.Enhancement.Name", "Enhancement (Icy Veins)" },
 -- 339ec7e4
@@ -277,8 +277,8 @@ local S = {
 -- eb2363b2
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     WoW Forever (variant key: Enhancement / Wowhead). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1949] = { "Default.Forever.Shaman.Enhancement.Wowhead.Name", "Enhancement, mana-efficient (Wowhead)" },
 -- abc72f43
 [1950] = { "Default.Forever.Shaman.Enhancement.Wowhead.Description", "Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work, Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in the rotation (shocks pull and interrupt), and in groups or on packs Searing Totem with Fire Nova on cooldown. Same imbue, shield and interrupt reminders as the Icy Veins premade. Choose it instead of that premade if mana runs out. An alternative to the recommended Enhancement premade, off by default: enable it and disable that one, or raise its priority." },
@@ -295,7 +295,7 @@ local S = {
 -- b9f016be
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     WoW Forever (variant key: DPS / Wowhead). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [1955] = { "Default.Forever.Warlock.DPS.Wowhead.Name", "All trees (Wowhead)" },
 -- 02cc5c3e
@@ -303,8 +303,8 @@ local S = {
 -- 80b938a1
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1957] = { "Default.Forever.Warrior.Protection.Name", "Protection (Icy Veins)" },
 -- 95bdeac5
 [1958] = { "Default.Forever.Warrior.Protection.Description", "Tanking whenever you are in Defensive Stance, from level 10 to 60. Charges to pull (in Defensive Stance once you have Vanguard), Victory Rush, and on two or more enemies Thunder Clap on cooldown, Demoralizing Shout, Shield Slam, Revenge and Rend. On one target: Shield Slam, Revenge, Demoralizing Shout, Rend, Sunder Armor (five on elites) and Thunder Clap on dangerous targets. Reminders: Battle Shout, Bloodrage, Shield Bash, Shield Block while you hold the target, Heroic Strike while Shield Slam and Revenge are both recovering, Cleave on packs; Taunt and Shield Wall are listed but off. Rage, health and the target's mana are hidden from addons on Forever, so the rage thresholds, casters and Last Stand are your call. Left to you: swapping to Battle Stance to Charge before Vanguard, taunting other enemies and picking up loose ones." },
@@ -347,15 +347,15 @@ local S = {
 -- 8335d07b
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     WoW Forever (variant key: Ranged). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1975] = { "Default.Forever.Hunter.Ranged.Name", "Ranged (Wowhead)" },
 -- 5c5cdd9b
 [1976] = { "Default.Forever.Hunter.Ranged.Description", "Every ranged Hunter from level 1 to 60 (Beast Mastery, Marksmanship, and Survival until Strider Kick), and the Forever Hunter default. Pull: Hunter's Mark, Sniper Shot while Rapid Killing lasts, Auto Shot. Then your own Serpent Sting, Summon Hawk twice and Arcane Shot once on their shared cooldown (Arcane Shot on cooldown before Summon Hawk), Sniper Shot under Rapid Killing or on elites, Aimed Shot. Two or more enemies fighting you: Multi-Shot instead of Aimed Shot, Explosive Trap with three near you, Volley on five. Moving: instant shots only. A mob in melee range gets Raptor Strike and Mongoose Bite. Reminders: Aspect of the Hawk (Monkey before it), Trueshot Aura, pet calling and reviving, Rapid Fire, Bestial Wrath and Blood Fury on elites or in dungeons, Intimidation when a mob is on you. Pet commands, feeding, kiting and Feign Death stay with you; disable the pet reminders if you play Lone Wolf. It never reads your mana or anyone's health, which Forever hides from addons, so Hunter's Mark and Serpent Sting go on every target and Mend Pet is yours." },
 -- a82fce4f
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     WoW Forever (variant key: RangedMobalytics). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [1977] = { "Default.Forever.Hunter.RangedMobalytics.Name", "Ranged, mana-saving (Mobalytics)" },
 -- 530b5b4d
@@ -363,8 +363,8 @@ local S = {
 -- 5f8e7ecc
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     WoW Forever (variant key: Survival). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1979] = { "Default.Forever.Hunter.Survival.Name", "Survival melee (Wowhead)" },
 -- 8da10e55
 [1980] = { "Default.Forever.Hunter.Survival.Description", "Dual-wield melee Survival once Survival is your main talent tree with 21 points, Strider Kick's tier (until then the ranged premade levels you, as the guides advise). Pull with Hunter's Mark and Serpent Sting, then Mongoose Bite, Strider Kick, Raptor Strike and Counterattack, with Explosive Trap on three or more enemies. Out of melee it shoots: Serpent Sting, Arcane Shot, Aimed Shot, Auto Shot. Reminders: Aspect of the Beast, Hunter's Mark (Expose Prey needs it), Rapid Fire and Blood Fury on elites or in dungeons, Deterrence while you hold the target's attention, pet care (health is hidden on Forever, so Mend Pet is yours). An optional Immolation Trap step is off by default." },
@@ -403,8 +403,8 @@ local S = {
 -- 2ba64aad
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
---     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
---     stay unchanged.
+--     Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names
+--     and stay unchanged.
 [1993] = { "Default.Forever.Paladin.Protection.Name", "Protection (Wowhead)" },
 -- 65aad40e
 [1994] = { "Default.Forever.Paladin.Protection.Description", "Tanking, once Protection is your main talent tree or you turn on Righteous Fury. When the target is fighting someone else: Judgement with Seal of Fury (the taunt), Swift Judgement to reset it. Two or more enemies engaged: Consecration, Exorcism and Holy Wrath on Undead and Demons, Holy Strike. One enemy: Exorcism on Undead and Demons, Holy Strike, Consecration. Reminders: Righteous Fury, Seal of Fury, Judgement on cooldown, Holy Shield while tanking, your aura and Blessing. Health and mana are hidden from addons on Forever, so Templar's Bulwark and Lay on Hands are your call. Pulling, positioning and other taunts stay with you." },
@@ -448,7 +448,7 @@ local S = {
 -- 2b5ecbd1
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Retail (current expansion) (variant key: BloodSimc). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2011] = { "Default.Retail.DeathKnight.BloodSimc.Name", "Deathbringer reference (SimulationCraft)" },
 -- 8ed0754d
@@ -468,7 +468,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Retail (current expansion) (variant key: FrostWowhead). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2017] = { "Default.Retail.DeathKnight.FrostWowhead.Name", "Reference (Wowhead)" },
 -- 6899840b
@@ -488,7 +488,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Retail (current expansion) (variant key: UnholySimc). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2023] = { "Default.Retail.DeathKnight.UnholySimc.Name", "Reference (SimulationCraft)" },
 -- 100d5361
@@ -526,7 +526,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
 --     Hunter, Retail (current expansion) (variant key: VengeanceSimc). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2035] = { "Default.Retail.DemonHunter.VengeanceSimc.Name", "Reference (SimulationCraft)" },
 -- d4f52cf1
@@ -542,7 +542,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
 --     Hunter, Retail (current expansion) (variant key: DevourerGuide). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2039] = { "Default.Retail.DemonHunter.DevourerGuide.Name", "Reference (Icy Veins)" },
 -- 5da6da74
@@ -551,7 +551,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
 --     Hunter, Retail (current expansion) (variant key: DevourerSimc). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2041] = { "Default.Retail.DemonHunter.DevourerSimc.Name", "Reference (SimulationCraft)" },
 -- 0228846e
@@ -599,7 +599,7 @@ local S = {
 -- beb78fe5
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Retail (current expansion) (variant key: GuardianSimc). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2057] = { "Default.Retail.Druid.GuardianSimc.Name", "Defensive reference (SimulationCraft)" },
 -- f0f6bfc8
@@ -644,7 +644,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
 --     Retail (current expansion) (variant key: Preservation). A reference-only rotation built from
 --     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2071] = { "Default.Retail.Evoker.Preservation.Name", "Reference (Icy Veins)" },
 -- 21ab41c4
@@ -689,7 +689,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     Retail (current expansion) (variant key: SurvivalGuide). A reference-only rotation built from
 --     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2085] = { "Default.Retail.Hunter.SurvivalGuide.Name", "Reference (SimulationCraft)" },
 -- 1b766914
@@ -749,7 +749,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
 --     Retail (current expansion) (variant key: BrewmasterGuide). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2105] = { "Default.Retail.Monk.BrewmasterGuide.Name", "Reference (Icy Veins)" },
 -- a07ba74a
@@ -769,7 +769,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
 --     Retail (current expansion) (variant key: Mistweaver). A reference-only rotation built from
 --     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2111] = { "Default.Retail.Monk.Mistweaver.Name", "Reference (Icy Veins)" },
 -- 671bd99c
@@ -792,7 +792,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Retail (current expansion) (variant key: Retribution / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2117] = { "Default.Retail.Paladin.Retribution.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 66c84fb8
@@ -808,7 +808,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2121] = { "Default.Retail.Paladin.Protection.IcyVeins.Name", "Reference (Icy Veins)" },
 -- f169797b
@@ -842,7 +842,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Retail (current expansion) (variant key: Shadow / IcyVeins). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2131] = { "Default.Retail.Priest.Shadow.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 1cbf9308
@@ -850,7 +850,7 @@ local S = {
 -- 6a76d2e3
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Retail (current expansion) (variant key: Discipline). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2133] = { "Default.Retail.Priest.Discipline.Name", "Atonement (Icy Veins)" },
 -- c8fa3896
@@ -884,7 +884,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Retail (current expansion) (variant key: Assassination / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2143] = { "Default.Retail.Rogue.Assassination.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 04026a9b
@@ -900,7 +900,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Retail (current expansion) (variant key: Outlaw / IcyVeins). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2147] = { "Default.Retail.Rogue.Outlaw.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 3a3eecef
@@ -916,7 +916,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Retail (current expansion) (variant key: Subtlety / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2151] = { "Default.Retail.Rogue.Subtlety.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 5fff6443
@@ -939,7 +939,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Retail (current expansion) (variant key: Elemental / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2157] = { "Default.Retail.Shaman.Elemental.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 8fc57d38
@@ -954,7 +954,7 @@ local S = {
 -- 5c90fed4
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Retail (current expansion) (variant key: Enhancement / Stormbringer). Names in parentheses
---     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
 --     Warcraft Tavern) are proper names and stay unchanged.
 [2161] = { "Default.Retail.Shaman.Enhancement.Stormbringer.Name", "Stormbringer reference (SimulationCraft)" },
 -- 4890c5e6
@@ -962,7 +962,7 @@ local S = {
 -- 33731fb7
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Retail (current expansion) (variant key: Enhancement / Totemic). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2163] = { "Default.Retail.Shaman.Enhancement.Totemic.Name", "Totemic reference (SimulationCraft)" },
 -- 4485ad39
@@ -992,7 +992,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Retail (current expansion) (variant key: Affliction / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2171] = { "Default.Retail.Warlock.Affliction.IcyVeins.Name", "Reference (Icy Veins)" },
 -- d01f383a
@@ -1008,7 +1008,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Retail (current expansion) (variant key: Demonology / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2175] = { "Default.Retail.Warlock.Demonology.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 631224a9
@@ -1024,7 +1024,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Retail (current expansion) (variant key: Destruction / Simc). A reference-only rotation built
 --     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2179] = { "Default.Retail.Warlock.Destruction.Simc.Name", "Reference (SimulationCraft)" },
 -- ad764c7b
@@ -1050,7 +1050,7 @@ local S = {
 -- b82b4f60
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Arms / Slayer). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2187] = { "Default.Retail.Warrior.Arms.Slayer.Name", "Slayer reference (SimulationCraft)" },
 -- 4c91f0b4
@@ -1058,7 +1058,7 @@ local S = {
 -- 8a86f34e
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Arms / Colossus). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2189] = { "Default.Retail.Warrior.Arms.Colossus.Name", "Colossus reference (SimulationCraft)" },
 -- 5b252489
@@ -1073,7 +1073,7 @@ local S = {
 -- b82b4f60
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Fury / Slayer). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2193] = { "Default.Retail.Warrior.Fury.Slayer.Name", "Slayer reference (SimulationCraft)" },
 -- 082fcea6
@@ -1093,7 +1093,7 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
 --     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
---     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
 --     unchanged.
 [2199] = { "Default.Retail.Warrior.Protection.IcyVeins.Name", "Reference (Icy Veins)" },
 -- b8b51708
@@ -1114,8 +1114,8 @@ local S = {
 -- 3c5a26cc
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Classic Era (variant key: Balance / IcyVeins). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2205] = { "Default.Era.Druid.Balance.IcyVeins.Name", "Balance (Icy Veins)" },
 -- 72e2ae3e
 [2206] = { "Default.Era.Druid.Balance.IcyVeins.Description", "Icy Veins' raid list for realms with the 16-debuff limit, an alternative to the recommended Balance premade, off by default: enable it and disable that one, or raise its priority. Starfire and nothing else, no Moonfire or Insect Swarm, Hurricane when three or more enemies are on you, Wrath only before Starfire is learned. Same reminders as the recommended premade." },
@@ -1146,7 +1146,7 @@ local S = {
 -- b765b6c7
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Classic Era (variant key: Restoration / WarcraftTavern). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2217] = { "Default.Era.Druid.Restoration.WarcraftTavern.Name", "Restoration (Warcraft Tavern)" },
 -- 8cdc97b9
@@ -1154,7 +1154,7 @@ local S = {
 -- d6247adc
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Balance). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2219] = { "Default.SoD.Druid.Balance.Name", "Balance (SoD)" },
 -- 5bcfabec
@@ -1166,7 +1166,7 @@ local S = {
 -- c4d16f19
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Balance / Wowhead). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2223] = { "Default.SoD.Druid.Balance.Wowhead.Name", "Balance (SoD, Wowhead)" },
 -- 75dabca6
@@ -1174,7 +1174,7 @@ local S = {
 -- 3e1ff241
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Feral). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2225] = { "Default.SoD.Druid.Feral.Name", "Feral cat (SoD)" },
 -- e7b0a6ca
@@ -1182,20 +1182,20 @@ local S = {
 -- 3c52079f
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2227] = { "Default.SoD.Druid.Tank.Name", "Bear tank (SoD)" },
 -- 6ae09c71
 [2228] = { "Default.SoD.Druid.Tank.Description", "Season of Discovery bear tank, chosen when Lacerate is engraved. Faerie Fire (Feral) or Sunfire (Bear) to pull from range, Lacerate before it drops, Mangle on cooldown, Lacerate, Swipe; on three or more enemies Mangle under Berserk and Swipe. In Cat Form it plays the cat list for off-tanking; in caster form it shifts to Bear. Reminders: Maul with 30 rage, Berserk, Survival Instincts, Frenzied Regeneration and Barkskin when low, Enrage between pulls, Demoralizing Roar on elites. Taunting and target choice stay with you." },
--- 017c4426
-[2229] = { "Default.SoD.Druid.Tank.Wowsims.Name", "Bear tank (SoD, wowsims cat weave)" },
--- 83e89d4a
-[2230] = { "Default.SoD.Druid.Tank.Wowsims.Description", "Off by default; for experts whose gear also grants Savage Roar. The wowsims Phase 7 cat weave: leave Bear for Cat when your Rake is down, keep Savage Roar and Rake up (Tiger's Fury, Mangle to build), then return to Dire Bear and play the tank list. Reminders as the recommended tank premade." },
+-- 89c7b6e8
+[2229] = { "Default.SoD.Druid.Tank.Simulator.Name", "Bear tank (SoD, simulator cat weave)" },
+-- a83b9a00
+[2230] = { "Default.SoD.Druid.Tank.Simulator.Description", "Off by default; for experts whose gear also grants Savage Roar. The simulator Phase 7 cat weave: leave Bear for Cat when your Rake is down, keep Savage Roar and Rake up (Tiger's Fury, Mangle to build), then return to Dire Bear and play the tank list. Reminders as the recommended tank premade." },
 -- 24f21f83
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2231] = { "Default.SoD.Druid.Restoration.Name", "Restoration (SoD)" },
 -- ba307284
 [2232] = { "Default.SoD.Druid.Restoration.Description", "Season of Discovery Restoration, chosen when Lifebloom is engraved (or Restoration is your main tree without another legs rune). Heals your current friendly target: instant Healing Touch after Nature's Swiftness or Fury of Stormrage, Wild Growth when two or more nearby are hurt, Swiftmend on your HoT for Efflorescence or below 40%, three Lifebloom stacks refreshed with a second left, Rejuvenation, Regrowth below 60%, Nourish, rank 4 Healing Touch. On an enemy: Sunfire, Moonfire, Wrath. Reminders: Tree of Life and Survival Instincts in heavy moments, Nature's Swiftness, Tranquility, Innervate, Rebirth, Revive, dispels. Choosing whom to heal stays with you." },
@@ -1209,14 +1209,14 @@ local S = {
 [2235] = { "Default.Era.Hunter.Ranged.IcyVeins.Name", "Ranged, clipped (Icy Veins)" },
 -- 7fe04411
 [2236] = { "Default.Era.Hunter.Ranged.IcyVeins.Description", "Off by default; enable it for a ranged weapon faster than 3.0 seconds. Like Hunter: Ranged, but in a group Aimed Shot and Multi-Shot go out as soon as they are ready, even if that delays an Auto Shot, Serpent Sting is never used, and Rapid Fire, Bestial Wrath and racials are used on every pull." },
--- 23771115
-[2237] = { "Default.Era.Hunter.Ranged.Wowsims.Name", "Ranged, raid Serpent Sting (wowsims)" },
+-- f0c76c87
+[2237] = { "Default.Era.Hunter.Ranged.Simulator.Name", "Ranged, raid Serpent Sting (simulator)" },
 -- afe0ee0b
-[2238] = { "Default.Era.Hunter.Ranged.Wowsims.Description", "Off by default; enable it where the raid has debuff room for your sting. Like Hunter: Ranged, but in a group Serpent Sting is kept up everywhere, raids included, refreshed under 5 seconds while Aimed Shot and Multi-Shot are both cooling, and Arcane Shot is never used." },
+[2238] = { "Default.Era.Hunter.Ranged.Simulator.Description", "Off by default; enable it where the raid has debuff room for your sting. Like Hunter: Ranged, but in a group Serpent Sting is kept up everywhere, raids included, refreshed under 5 seconds while Aimed Shot and Multi-Shot are both cooling, and Arcane Shot is never used." },
 -- 1fa5802f
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     Season of Discovery (variant key: Ranged). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2239] = { "Default.SoD.Hunter.Ranged.Name", "Ranged (SoD)" },
 -- 09b14a5d
@@ -1224,7 +1224,7 @@ local S = {
 -- fb035172
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
 --     Season of Discovery (variant key: Melee). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2241] = { "Default.SoD.Hunter.Melee.Name", "Melee (SoD)" },
 -- 4c275cc2
@@ -1248,15 +1248,15 @@ local S = {
 -- 76354bcf
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Classic Era (variant key: Fire / WarcraftTavern). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2249] = { "Default.Era.Mage.Fire.WarcraftTavern.Name", "Fire (Warcraft Tavern)" },
 -- 83ffa7ee
 [2250] = { "Default.Era.Mage.Fire.WarcraftTavern.Description", "Fire after Warcraft Tavern, an alternative to the recommended Fire premade, off by default: enable it and disable that one, or raise its priority. Combustion is spent at the pull on elites and bosses instead of waiting for Scorch stacks; Pyroblast opens; Scorch keeps five stacks with Improved Scorch; Fireball fills; Fire Blast only while moving. Packs: Flamestrike first, then Arcane Explosion, Cone of Cold and Blast Wave close in, Blizzard at range. Same reminders as the Fire premade." },
 -- 91d3c82e
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2251] = { "Default.SoD.Mage.Fire.Name", "Fire (SoD)" },
 -- 67a08e15
@@ -1264,7 +1264,7 @@ local S = {
 -- 0f6cec9f
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Frost). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2253] = { "Default.SoD.Mage.Frost.Name", "Frost (SoD)" },
 -- b6fc82b9
@@ -1276,7 +1276,7 @@ local S = {
 -- 3a7614c3
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Arcane). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2257] = { "Default.SoD.Mage.Arcane.Name", "Arcane (SoD)" },
 -- a0acdff9
@@ -1284,7 +1284,7 @@ local S = {
 -- a23552e6
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
 --     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2259] = { "Default.SoD.Mage.Healer.Name", "Healer (SoD)" },
 -- 83b2fb47
@@ -1320,8 +1320,8 @@ local S = {
 -- 8094efdd
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Retribution). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2271] = { "Default.SoD.Paladin.Retribution.Name", "Retribution (SoD)" },
 -- 0cc623b4
 [2272] = { "Default.SoD.Paladin.Retribution.Description", "Season of Discovery melee from level 1 to 60, and the default for any Paladin there. Keeps Seal of Martyrdom up (Righteousness until you have it), opens with Exorcism, casts Divine Storm at three Holy Power, then by weapon speed: with a two-hander of 3.3 seconds or slower, Crusader Strike, Exorcism, Divine Storm and Judgement; with a faster one, Judgement only as the seal runs out, then Exorcism, Crusader Strike and Divine Storm. Consecration with mana or three close enemies, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Hammer of Wrath with mana to spare (always with Improved Hammer of Wrath engraved). Runes are used as you engrave them. Reminders: Sanctity Aura, a Blessing, Avenging Wrath with Aura Mastery, a heal between fights, Divine Shield when about to die." },
@@ -1337,34 +1337,34 @@ local S = {
 [2277] = { "Default.SoD.Paladin.Retribution.Stacking.Name", "Retribution, seal stacking (SoD)" },
 -- 1def9d31
 [2278] = { "Default.SoD.Paladin.Retribution.Stacking.Description", "Off by default; enable it with the Soul of the Sealbearer rune or the six-piece set that makes seals linger (Rotation Master cannot see either). Keeps both Seal of Command and Seal of Martyrdom up, Divine Storm at three Holy Power, Crusader Strike, Exorcism, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Consecration, and Judgement while both seals are up." },
--- 68461fe5
+-- 0fb3c120
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Shockadin). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
-[2279] = { "Default.SoD.Paladin.Shockadin.Name", "Shockadin (SoD, wowsims)" },
+[2279] = { "Default.SoD.Paladin.Shockadin.Name", "Shockadin (SoD, simulator)" },
 -- 9a1756b6
 [2280] = { "Default.SoD.Paladin.Shockadin.Description", "Off by default; enable it if you deal damage with the Holy tree. It applies with Holy as your main tree and Shock and Awe engraved. Seal of Martyrdom (else Righteousness), judged as it runs out, Holy Shock to keep Sunlight up or at three Holy Power, Exorcism and Crusader Strike. Same reminders as the Season of Discovery Retribution premade." },
 -- 924f353b
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Protection). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2281] = { "Default.SoD.Paladin.Protection.Name", "Protection (SoD)" },
 -- 58619700
 [2282] = { "Default.SoD.Paladin.Protection.Description", "Season of Discovery tanking, chosen by Righteous Fury, an engraved Hammer of the Righteous or Shield of Righteousness, or the Protection tree. Seal of Martyrdom, a pull with Holy Shield, Avenger's Shield and Exorcism, Holy Shield kept up; on one target Hammer of the Righteous, Shield of Righteousness, Exorcism, Avenger's Shield, Judgement, Divine Storm, Consecration; with three or more enemies on you Hammer of the Righteous, Avenger's Shield, Consecration, Shield of Righteousness, Exorcism. Reminders: Righteous Fury, Holy Shield before a pull, Devotion Aura, Sanctuary or Kings, Avenging Wrath, Divine Protection below 40%, Lay on Hands, Hand of Reckoning in a group when your target attacks someone else." },
--- 29a17682
+-- c138082a
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
---     Season of Discovery (variant key: Protection / Wowsims). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
---     are proper names and stay unchanged.
-[2283] = { "Default.SoD.Paladin.Protection.Wowsims.Name", "Protection (SoD, wowsims)" },
--- f2677084
-[2284] = { "Default.SoD.Paladin.Protection.Wowsims.Description", "The wowsims tank list, an alternative to the recommended Season of Discovery Protection premade, off by default: enable it and disable that one, or raise its priority. Judgement whenever a seal is up, the seal renewed just before it runs out, Holy Shield, Avenger's Shield, Hammer of the Righteous, Exorcism, Shield of Righteousness last. Same reminders as the recommended premade." },
+--     Season of Discovery (variant key: Protection / simulator). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
+[2283] = { "Default.SoD.Paladin.Protection.Simulator.Name", "Protection (SoD, simulator)" },
+-- cfa4b56e
+[2284] = { "Default.SoD.Paladin.Protection.Simulator.Description", "The simulator tank list, an alternative to the recommended Season of Discovery Protection premade, off by default: enable it and disable that one, or raise its priority. Judgement whenever a seal is up, the seal renewed just before it runs out, Holy Shield, Avenger's Shield, Hammer of the Righteous, Exorcism, Shield of Righteousness last. Same reminders as the recommended premade." },
 -- e757b87a
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Season of Discovery (variant key: Holy). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2285] = { "Default.SoD.Paladin.Holy.Name", "Holy (SoD)" },
 -- 45b566d4
@@ -1383,10 +1383,10 @@ local S = {
 [2291] = { "Default.Era.Priest.Dps.WarcraftTavern.Name", "Damage (Warcraft Tavern wand economy)" },
 -- a52bcaac
 [2292] = { "Default.Era.Priest.Dps.WarcraftTavern.Description", "Warcraft Tavern's low-downtime leveling style, an alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority. Solo: Mind Blast to pull, Shadow Word: Pain once, Mind Blast again only while the target is above 30%, and your wand between Mind Blasts instead of Smite or Mind Flay. No automatic shield before pulls. In a group: Shadow Word: Pain, Mind Blast, Mind Flay. Same reminders as the recommended premade." },
--- 73068ffe
-[2293] = { "Default.Era.Priest.Dps.Wowsims.Name", "Damage (wowsims Undead raid)" },
--- f3ea634f
-[2294] = { "Default.Era.Priest.Dps.Wowsims.Description", "The recommended damage priority with wowsims' raid choice for Undead priests: Inner Focus is spent on Devouring Plague instead of Mind Blast, and Devouring Plague is cast in raids too, so use it only where your raid has debuff slots to spare. No Vampiric Embrace. An alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority." },
+-- 545a097f
+[2293] = { "Default.Era.Priest.Dps.Simulator.Name", "Damage (simulator Undead raid)" },
+-- 589927b7
+[2294] = { "Default.Era.Priest.Dps.Simulator.Description", "The recommended damage priority with simulator' raid choice for Undead priests: Inner Focus is spent on Devouring Plague instead of Mind Blast, and Devouring Plague is cast in raids too, so use it only where your raid has debuff slots to spare. No Vampiric Embrace. An alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority." },
 -- a491a33c
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Classic Era (variant key: Healer).
@@ -1396,7 +1396,7 @@ local S = {
 -- 999e9eba
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Season of Discovery (variant key: Dps). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2297] = { "Default.SoD.Priest.Dps.Name", "Damage (SoD)" },
 -- 63f3ee22
@@ -1408,7 +1408,7 @@ local S = {
 -- a23552e6
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
 --     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2301] = { "Default.SoD.Priest.Healer.Name", "Healer (SoD)" },
 -- 37b39f3b
@@ -1421,24 +1421,24 @@ local S = {
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Classic Era (variant key: DPS).
 [2305] = { "Default.Era.Rogue.DPS.Name", "Melee DPS" },
--- b5cd3c00
-[2306] = { "Default.Era.Rogue.DPS.Description", "Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the target is not facing you, Cheap Shot solo, Garrote outside raids. In combat: Riposte, Slice and Dice from one combo point when it is missing on an elite or a healthy target (renewed at five points in its last three seconds), Expose Armor at five points in a group when you have Improved Expose Armor 2/2 and nobody Sunders, a two-point Eviscerate on a target about to die, otherwise Eviscerate at five and no builder past five. The builder follows what you know: Ghostly Strike and Hemorrhage outside raids, Backstab with a dagger when the target is not facing you, else Sinister Strike. Reminders: poisons on each weapon (Deadly on an off-hand weapon when carried), Kick, Thistle Tea, Blade Flurry and Adrenaline Rush on elites or two enemies with Slice and Dice up, Cold Blood at five, Evasion solo when hurt. Vanish, Gouge, Preparation, Kidney Shot and racials are listed off; Feint, Sprint, Blind, Sap and positioning stay with you." },
+-- 5fc6d26a
+[2306] = { "Default.Era.Rogue.DPS.Description", "Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from simulator, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the target is not facing you, Cheap Shot solo, Garrote outside raids. In combat: Riposte, Slice and Dice from one combo point when it is missing on an elite or a healthy target (renewed at five points in its last three seconds), Expose Armor at five points in a group when you have Improved Expose Armor 2/2 and nobody Sunders, a two-point Eviscerate on a target about to die, otherwise Eviscerate at five and no builder past five. The builder follows what you know: Ghostly Strike and Hemorrhage outside raids, Backstab with a dagger when the target is not facing you, else Sinister Strike. Reminders: poisons on each weapon (Deadly on an off-hand weapon when carried), Kick, Thistle Tea, Blade Flurry and Adrenaline Rush on elites or two enemies with Slice and Dice up, Cold Blood at five, Evasion solo when hurt. Vanish, Gouge, Preparation, Kidney Shot and racials are listed off; Feint, Sprint, Blind, Sap and positioning stay with you." },
 -- 64659ecb
 [2307] = { "Default.Era.Rogue.DPS.WarcraftTavern.Name", "Melee DPS, five-point finishers (Warcraft Tavern)" },
 -- 6e2089d2
 [2308] = { "Default.Era.Rogue.DPS.WarcraftTavern.Description", "Warcraft Tavern's way, an alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority. Every finisher waits for five combo points so Relentless Strikes refunds it. Slice and Dice is used from its second rank (level 42) when missing or ending, otherwise Eviscerate; no low-point Slice, no near-death Eviscerate and no Expose Armor (a warrior's Sunder covers it). Same openers, builders and reminders as the recommended premade." },
--- bd2e9cba
-[2309] = { "Default.Era.Rogue.DPS.Wowsims.Name", "Swords, swing-synced Sinister Strike (wowsims)" },
--- 29c60f99
-[2310] = { "Default.Era.Rogue.DPS.Wowsims.Description", "The wowsims \"sweaty\" Combat order for Sword Specialization, an alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority. Sinister Strike only right after a main-hand swing (2.0 seconds or more to the next one, set for a 2.6–2.8 speed sword; change it in a clone), unless energy is near full or the target is about to die, so the extra sword attack does not delay your swing. Eviscerate at five also waits for Slice and Dice, full energy or a dying target. Otherwise as the recommended premade." },
+-- 1bddd98c
+[2309] = { "Default.Era.Rogue.DPS.Simulator.Name", "Swords, swing-synced Sinister Strike (simulator)" },
+-- a0a38e03
+[2310] = { "Default.Era.Rogue.DPS.Simulator.Description", "The simulator \"sweaty\" Combat order for Sword Specialization, an alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority. Sinister Strike only right after a main-hand swing (2.0 seconds or more to the next one, set for a 2.6–2.8 speed sword; change it in a clone), unless energy is near full or the target is about to die, so the extra sword attack does not delay your swing. Eviscerate at five also waits for Slice and Dice, full energy or a dying target. Otherwise as the recommended premade." },
 -- b33d1254
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2311] = { "Default.SoD.Rogue.DPS.Name", "Melee DPS (SoD)" },
--- d3dc0f9a
-[2312] = { "Default.SoD.Rogue.DPS.Description", "Season of Discovery, levels 1–60 with runes as you engrave them; built from wowsims Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a group, Ambush for a Backstab build with a dagger, Cheap Shot solo. On three or more enemies fighting you: Blunderbuss, Crimson Tempest, Fan of Knives first. Then Ambush on a Cutthroat proc (with a dagger), Saber Slash kept at three stacks, Poisoned Knife at four poison stacks, Slice and Dice from two points (renewed from four, unless Cut to the Chase is engraved), Expose Armor duty when nobody Sunders or keeps Sebacious Poison up, with Carnage engraved a bleed (Crimson Tempest, else Rupture; none with Saber Slash), Envenom at five (Eviscerate until you engrave it), and a builder by glove rune: Mutilate, Saber Slash, Backstab (with a dagger), else Sinister Strike. Reminders: a temporary enchant on each weapon, Kick, Thistle Tea, Blade Flurry, Adrenaline Rush, Cold Blood and Evasion, and with Master of Subtlety engraved Vanish to renew it and Preparation." },
+-- 1b2af050
+[2312] = { "Default.SoD.Rogue.DPS.Description", "Season of Discovery, levels 1–60 with runes as you engrave them; built from simulator Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a group, Ambush for a Backstab build with a dagger, Cheap Shot solo. On three or more enemies fighting you: Blunderbuss, Crimson Tempest, Fan of Knives first. Then Ambush on a Cutthroat proc (with a dagger), Saber Slash kept at three stacks, Poisoned Knife at four poison stacks, Slice and Dice from two points (renewed from four, unless Cut to the Chase is engraved), Expose Armor duty when nobody Sunders or keeps Sebacious Poison up, with Carnage engraved a bleed (Crimson Tempest, else Rupture; none with Saber Slash), Envenom at five (Eviscerate until you engrave it), and a builder by glove rune: Mutilate, Saber Slash, Backstab (with a dagger), else Sinister Strike. Reminders: a temporary enchant on each weapon, Kick, Thistle Tea, Blade Flurry, Adrenaline Rush, Cold Blood and Evasion, and with Master of Subtlety engraved Vanish to renew it and Preparation." },
 -- e2dafa09
 [2313] = { "Default.SoD.Rogue.DPS.IcyVeins.Name", "Melee DPS, Rupture for Carnage (SoD, Icy Veins)" },
 -- 9aaebdaf
@@ -1450,17 +1450,17 @@ local S = {
 -- ebb8b9e3
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2317] = { "Default.SoD.Rogue.Tank.Name", "Tank (SoD)" },
--- d50349d8
-[2318] = { "Default.SoD.Rogue.Tank.Description", "Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built from wowsims Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on cooldown, Blade Dance from one combo point (renewed from three), Slice and Dice from three (renewed from four), Fan of Knives, Crimson Tempest and Blunderbuss on three or more enemies, Blunderbuss while Blade Dance is up, Eviscerate at five with both buffs up, Poisoned Knife at low energy, then Saber Slash, Mutilate or Sinister Strike. Reminders: Tease in a group when your target attacks someone else, Kick, Evasion below half health, Blade Flurry, Adrenaline Rush, Thistle Tea and weapon poisons (the off-hand one only with an off-hand weapon). Shadowstep and Sebacious Poison duty stay with you." },
+-- a76bbe4d
+[2318] = { "Default.SoD.Rogue.Tank.Description", "Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built from simulator Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on cooldown, Blade Dance from one combo point (renewed from three), Slice and Dice from three (renewed from four), Fan of Knives, Crimson Tempest and Blunderbuss on three or more enemies, Blunderbuss while Blade Dance is up, Eviscerate at five with both buffs up, Poisoned Knife at low energy, then Saber Slash, Mutilate or Sinister Strike. Reminders: Tease in a group when your target attacks someone else, Kick, Evasion below half health, Blade Flurry, Adrenaline Rush, Thistle Tea and weapon poisons (the off-hand one only with an off-hand weapon). Shadowstep and Sebacious Poison duty stay with you." },
 -- b12b36cf
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Classic Era (variant key: Enhancement).
 [2319] = { "Default.Era.Shaman.Enhancement.Name", "Enhancement" },
--- 5faeab70
-[2320] = { "Default.Era.Shaman.Enhancement.Description", "Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a talent majority; built from Icy Veins, Wowhead and wowsims. Lightning Bolt pulls from range; Earth Shock interrupts. In raids only Stormstrike and Frost Shock (debuff slots). On three or more enemies fighting you, Fire Nova and Magma totems. Then Stormstrike, Earth Shock into the Stormstrike debuff or to finish, Flame Shock when it will run its course, Earth Shock while you have half your mana, and Lightning Bolt while out of reach. Reminders: Rockbiter solo and Windfury Weapon in dungeons, Lightning Shield, Strength of Earth, Searing, Windfury or Grace of Air, Mana Spring or Healing Stream, healing after a pull and in emergencies. Stoneclaw, Earthbind, totem twisting and racials are listed off; dispels, purges and cleansing totems stay with you." },
+-- e9357a95
+[2320] = { "Default.Era.Shaman.Enhancement.Description", "Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a talent majority; built from Icy Veins, Wowhead and simulator. Lightning Bolt pulls from range; Earth Shock interrupts. In raids only Stormstrike and Frost Shock (debuff slots). On three or more enemies fighting you, Fire Nova and Magma totems. Then Stormstrike, Earth Shock into the Stormstrike debuff or to finish, Flame Shock when it will run its course, Earth Shock while you have half your mana, and Lightning Bolt while out of reach. Reminders: Rockbiter solo and Windfury Weapon in dungeons, Lightning Shield, Strength of Earth, Searing, Windfury or Grace of Air, Mana Spring or Healing Stream, healing after a pull and in emergencies. Stoneclaw, Earthbind, totem twisting and racials are listed off; dispels, purges and cleansing totems stay with you." },
 -- 327189d1
 [2321] = { "Default.Era.Shaman.Enhancement.WarcraftTavern.Name", "Enhancement, Flame Shock first (Warcraft Tavern)" },
 -- bc01445d
@@ -1471,10 +1471,10 @@ local S = {
 [2323] = { "Default.Era.Shaman.Elemental.Name", "Elemental" },
 -- 5ee9955c
 [2324] = { "Default.Era.Shaman.Elemental.Description", "Elemental from level 10 (most points in Elemental); built from Icy Veins and Wowhead. Earth Shock interrupts and finishes a target about to die. While moving: Flame Shock, else Frost Shock. Solo with the target in melee: Earth Shock above 30% health, then melee. On three or more enemies: Fire Nova and Magma totems when you are in melee, and Chain Lightning. Chain Lightning under Elemental Mastery or Clearcasting, otherwise Lightning Bolt. Reminders: Lightning Shield, Rockbiter outside raids, Searing or Magma, Mana Spring or Healing Stream, Elemental Mastery with Chain Lightning ready, Nature's Swiftness and Healing Wave below 30%, healing after a pull. Dispels, purges and downranking stay with you." },
--- 7f93a27b
-[2325] = { "Default.Era.Shaman.Elemental.Wowsims.Name", "Elemental, Chain Lightning on cooldown (wowsims)" },
--- d02c941a
-[2326] = { "Default.Era.Shaman.Elemental.Wowsims.Description", "The wowsims Elemental list, an alternative to the recommended Elemental premade, off by default: enable it and disable that one, or raise its priority. Chain Lightning on cooldown even on one target, Earth Shock while Elemental Mastery is up, otherwise Lightning Bolt. Faster but much hungrier for mana than the recommended premade; same interrupt, totems and reminders." },
+-- f652ee1c
+[2325] = { "Default.Era.Shaman.Elemental.Simulator.Name", "Elemental, Chain Lightning on cooldown (simulator)" },
+-- a3ba0441
+[2326] = { "Default.Era.Shaman.Elemental.Simulator.Description", "The simulator Elemental list, an alternative to the recommended Elemental premade, off by default: enable it and disable that one, or raise its priority. Chain Lightning on cooldown even on one target, Earth Shock while Elemental Mastery is up, otherwise Lightning Bolt. Faster but much hungrier for mana than the recommended premade; same interrupt, totems and reminders." },
 -- 6a3c6c77
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Classic Era (variant key: Restoration).
@@ -1488,37 +1488,37 @@ local S = {
 -- 37e5b161
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Season of Discovery (variant key: Enhancement). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2331] = { "Default.SoD.Shaman.Enhancement.Name", "Enhancement (SoD)" },
--- 929796a6
-[2332] = { "Default.SoD.Shaman.Enhancement.Description", "Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or two-hander, and every SoD Shaman no other premade fits; built from wowsims Phase 6, Icy Veins and Wowhead. Flame Shock pulls; Earth Shock interrupts. On three or more enemies: Magma, Fire Nova from a fire totem, Chain Lightning at four Maelstrom stacks, Flame Shock. Then Lava Burst at five Maelstrom stacks, Stormstrike, Lava Lash, Lightning Bolt at five stacks, Flame Shock when it will run, Earth Shock, Molten Blast, Lightning Bolt from range. Reminders: Windfury Weapon (Rockbiter before), Flametongue on an off-hand weapon with Lava Lash (else Windfury; never on a shield; an Icy Veins Windfury-both line is listed off), Water or Lightning Shield, Spirit of the Alpha, Feral Spirit, Shamanistic Rage below 65% mana, totems, Ancestral Guidance. Totemic Projection, dispels and purges stay with you." },
+-- 64d2c56f
+[2332] = { "Default.SoD.Shaman.Enhancement.Description", "Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or two-hander, and every SoD Shaman no other premade fits; built from simulator Phase 6, Icy Veins and Wowhead. Flame Shock pulls; Earth Shock interrupts. On three or more enemies: Magma, Fire Nova from a fire totem, Chain Lightning at four Maelstrom stacks, Flame Shock. Then Lava Burst at five Maelstrom stacks, Stormstrike, Lava Lash, Lightning Bolt at five stacks, Flame Shock when it will run, Earth Shock, Molten Blast, Lightning Bolt from range. Reminders: Windfury Weapon (Rockbiter before), Flametongue on an off-hand weapon with Lava Lash (else Windfury; never on a shield; an Icy Veins Windfury-both line is listed off), Water or Lightning Shield, Spirit of the Alpha, Feral Spirit, Shamanistic Rage below 65% mana, totems, Ancestral Guidance. Totemic Projection, dispels and purges stay with you." },
 -- 0fb65642
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Season of Discovery (variant key: Elemental). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2333] = { "Default.SoD.Shaman.Elemental.Name", "Elemental (SoD)" },
--- f9d25821
-[2334] = { "Default.SoD.Shaman.Elemental.Description", "Season of Discovery Elemental from level 10 (most points in Elemental); built from wowsims Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame Shock, Earth Shock at eight Lightning Shield charges, Lava Burst or Chain Lightning on a Power Surge proc. On three or more enemies: Flame Shock, Chain Lightning, Fire Nova, Lava Burst, Earth Shock at eight charges, Magma. Then Lava Burst on Power Surge, Flame Shock kept up, Lava Burst while your Flame Shock lasts, Earth Shock at eight charges, Chain Lightning on two enemies, Lightning Bolt. Reminders: Flametongue for Burn, Lightning Shield, Earth Shield on yourself, Spirit of the Alpha, Feral Spirit, Shamanistic Rage, Elemental Mastery, totems. Trinkets, Totemic Projection, dispels and purges stay with you." },
+-- 90cd327e
+[2334] = { "Default.SoD.Shaman.Elemental.Description", "Season of Discovery Elemental from level 10 (most points in Elemental); built from simulator Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame Shock, Earth Shock at eight Lightning Shield charges, Lava Burst or Chain Lightning on a Power Surge proc. On three or more enemies: Flame Shock, Chain Lightning, Fire Nova, Lava Burst, Earth Shock at eight charges, Magma. Then Lava Burst on Power Surge, Flame Shock kept up, Lava Burst while your Flame Shock lasts, Earth Shock at eight charges, Chain Lightning on two enemies, Lightning Bolt. Reminders: Flametongue for Burn, Lightning Shield, Earth Shield on yourself, Spirit of the Alpha, Feral Spirit, Shamanistic Rage, Elemental Mastery, totems. Trinkets, Totemic Projection, dispels and purges stay with you." },
 -- 24f21f83
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
---     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
---     names and stay unchanged.
+--     Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [2335] = { "Default.SoD.Shaman.Restoration.Name", "Restoration (SoD)" },
 -- ff16512c
 [2336] = { "Default.SoD.Shaman.Restoration.Description", "Season of Discovery Restoration from level 10 (most points in Restoration); built from Icy Veins and Wowhead. On your friendly target: Riptide then Lesser Healing Wave below 40%, Cure Poison or Cure Disease, Healing Rain when three group members near you are below 85%, Chain Heal when two are (at once on a Power Surge proc), Riptide below 95% for Tidal Waves, Healing Wave below 90%. On an enemy it fights. Reminders: Water Shield (Lightning Shield before), Earth Shield on your friendly target or yourself, Shamanistic Rage, Mana Tide, Mana Spring and Strength of Earth. Choosing whom to heal and Tremor or cleansing totems stay with you." },
 -- 007cf117
 [2337] = { "Default.SoD.Shaman.Tank.Name", "Tank (SoD, Way of Earth)" },
--- 8ecde7ce
-[2338] = { "Default.SoD.Shaman.Tank.Description", "Season of Discovery tank, chosen once Way of Earth is engraved; built from Icy Veins, Wowhead, wowsims and Warcraft Tavern. Flame Shock pulls. Earth Shock taunts a target in melee that is not attacking you, and interrupts. On two or more enemies: Molten Blast, Flame Shock, Chain Lightning at five Maelstrom stacks or on Power Surge, Fire Nova at five stacks. Then Flame Shock kept up, Lava Burst on Power Surge or while Flame Shock lasts, Stormstrike, Earth Shock, Lightning Bolt at five stacks, Molten Blast, Frost Shock. Reminders: Rockbiter, Lightning Shield, Spirit of the Alpha on yourself, Feral Spirit, Shamanistic Rage, Searing or Magma, and group totems." },
+-- 3332db10
+[2338] = { "Default.SoD.Shaman.Tank.Description", "Season of Discovery tank, chosen once Way of Earth is engraved; built from Icy Veins, Wowhead, simulator and Warcraft Tavern. Flame Shock pulls. Earth Shock taunts a target in melee that is not attacking you, and interrupts. On two or more enemies: Molten Blast, Flame Shock, Chain Lightning at five Maelstrom stacks or on Power Surge, Fire Nova at five stacks. Then Flame Shock kept up, Lava Burst on Power Surge or while Flame Shock lasts, Stormstrike, Earth Shock, Lightning Bolt at five stacks, Molten Blast, Frost Shock. Reminders: Rockbiter, Lightning Shield, Spirit of the Alpha on yourself, Feral Spirit, Shamanistic Rage, Searing or Magma, and group totems." },
 -- 2628a00c
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Classic Era (variant key: DPS).
 [2339] = { "Default.Era.Warlock.DPS.Name", "Every tree" },
--- 67b0af4c
-[2340] = { "Default.Era.Warlock.DPS.Description", "Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built from Wowhead, Icy Veins, Warcraft Tavern and wowsims. Stops while you cast or channel and never tags a mob someone else is fighting while you are solo. Nightfall's Shadow Trance first; Shadowburn and Searing Pain to finish a group target; a solo target about to die gets Drain Soul (for a shard, or with Improved Drain Soul), Shadowburn or Conflagrate, then the wand, never new DoTs. While moving only instants. On three or more enemies: Hellfire when they are on you and you have half your health, otherwise Rain of Fire. One curse: in raids Curse of Shadow or the Elements when nobody has it, Doom on long elite fights, otherwise Agony. Immolate when it pays (Destruction, raids, or with 40% mana), Corruption, Siphon Life (in raids only on Shadow Vulnerability). Solo: Dark Pact, Life Tap when healthy, Drain Life when hurt, the wand. Shadow Bolt otherwise. Reminders: Demon Armor or Demon Skin, your pet (Voidwalker solo, Imp in a group, Succubus for Demonic Sacrifice), Fel Domination, Demonic Sacrifice, Amplify Curse, Voidwalker Sacrifice and a Healthstone when low, Health Funnel. Curse assignments, Curse of Recklessness on a fleeing mob, Fear, Banish, Soulstones and creating Healthstones stay with you." },
+-- cd5cc4e5
+[2340] = { "Default.Era.Warlock.DPS.Description", "Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built from Wowhead, Icy Veins, Warcraft Tavern and simulator. Stops while you cast or channel and never tags a mob someone else is fighting while you are solo. Nightfall's Shadow Trance first; Shadowburn and Searing Pain to finish a group target; a solo target about to die gets Drain Soul (for a shard, or with Improved Drain Soul), Shadowburn or Conflagrate, then the wand, never new DoTs. While moving only instants. On three or more enemies: Hellfire when they are on you and you have half your health, otherwise Rain of Fire. One curse: in raids Curse of Shadow or the Elements when nobody has it, Doom on long elite fights, otherwise Agony. Immolate when it pays (Destruction, raids, or with 40% mana), Corruption, Siphon Life (in raids only on Shadow Vulnerability). Solo: Dark Pact, Life Tap when healthy, Drain Life when hurt, the wand. Shadow Bolt otherwise. Reminders: Demon Armor or Demon Skin, your pet (Voidwalker solo, Imp in a group, Succubus for Demonic Sacrifice), Fel Domination, Demonic Sacrifice, Amplify Curse, Voidwalker Sacrifice and a Healthstone when low, Health Funnel. Curse assignments, Curse of Recklessness on a fleeing mob, Fear, Banish, Soulstones and creating Healthstones stay with you." },
 -- 2a4e91fe
 [2341] = { "Default.Era.Warlock.DPS.WarcraftTavern.Name", "Drain tank (Warcraft Tavern)" },
 -- f3fb6b8f
@@ -1530,37 +1530,37 @@ local S = {
 -- 4f0bc39e
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2345] = { "Default.SoD.Warlock.Tank.Name", "Tank (SoD, Metamorphosis)" },
--- 1e24cbef
-[2346] = { "Default.SoD.Warlock.Tank.Description", "Season of Discovery tank, chosen once Metamorphosis is engraved; built from wowsims, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is missing or ending, a Soul Fire! proc, Incinerate to keep its fire buff; on three or more enemies Shadow Cleave, Lake of Fire, Shadowflame and Hellfire. Then a curse (Agony, else Recklessness when nobody has it), Shadowflame (Immolate before you engrave it), Master Channeler Drain Life, Corruption, Siphon Life, Conflagrate for Backdraft, Soul Fire under Decimation below 35%, and Searing Pain as the threat filler. Reminders: Metamorphosis, Fel Armor, your pet, Immolation Aura, Demonic Grace, Vengeance when low, Menace when the target attacks someone else, Demonic Howl on packs, Amplify Curse, Life Tap for a pet low on mana. Infernal Armor stays with you." },
+-- 4026dce5
+[2346] = { "Default.SoD.Warlock.Tank.Description", "Season of Discovery tank, chosen once Metamorphosis is engraved; built from simulator, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is missing or ending, a Soul Fire! proc, Incinerate to keep its fire buff; on three or more enemies Shadow Cleave, Lake of Fire, Shadowflame and Hellfire. Then a curse (Agony, else Recklessness when nobody has it), Shadowflame (Immolate before you engrave it), Master Channeler Drain Life, Corruption, Siphon Life, Conflagrate for Backdraft, Soul Fire under Decimation below 35%, and Searing Pain as the threat filler. Reminders: Metamorphosis, Fel Armor, your pet, Immolation Aura, Demonic Grace, Vengeance when low, Menace when the target attacks someone else, Demonic Howl on packs, Amplify Curse, Life Tap for a pet low on mana. Infernal Armor stays with you." },
 -- 91d3c82e
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
 --     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2347] = { "Default.SoD.Warlock.Fire.Name", "Fire (SoD)" },
--- b3afd0ce
-[2348] = { "Default.SoD.Warlock.Fire.Description", "Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is engraved; built from wowsims Phase 6 and Wowhead. Shadowburn and Searing Pain to finish; instants while moving; Incinerate's buff, Lake of Fire and Hellfire on packs; a curse (Recklessness in a group when nobody has it, Doom on long elite fights, else Agony); Conflagrate only to keep Backdraft; Immolate and Incinerate's buff kept up; below 35% Soul Fire under Decimation instead of Chaos Bolt; Soul Fire! procs; Chaos Bolt; solo Master Channeler Drain Life and Life Tap; Incinerate (Shadow Bolt before you engrave it). Reminders: Fel Armor, the Imp, Amplify Curse and the safety reminders." },
+-- 8e9ea310
+[2348] = { "Default.SoD.Warlock.Fire.Description", "Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is engraved; built from simulator Phase 6 and Wowhead. Shadowburn and Searing Pain to finish; instants while moving; Incinerate's buff, Lake of Fire and Hellfire on packs; a curse (Recklessness in a group when nobody has it, Doom on long elite fights, else Agony); Conflagrate only to keep Backdraft; Immolate and Incinerate's buff kept up; below 35% Soul Fire under Decimation instead of Chaos Bolt; Soul Fire! procs; Chaos Bolt; solo Master Channeler Drain Life and Life Tap; Incinerate (Shadow Bolt before you engrave it). Reminders: Fel Armor, the Imp, Amplify Curse and the safety reminders." },
 -- c007c49e
 [2349] = { "Default.SoD.Warlock.Fire.IcyVeins.Name", "Fire, Conflagrate on cooldown (SoD, Icy Veins)" },
 -- 11cdbaf7
 [2350] = { "Default.SoD.Warlock.Fire.IcyVeins.Description", "Icy Veins' and Warcraft Tavern's Season of Discovery Destruction, an alternative to the recommended Season of Discovery Fire premade, off by default: enable it and disable that one, or raise its priority. Immolate kept up, Conflagrate and Chaos Bolt on cooldown (Chaos Bolt also below 35%), Incinerate's buff, Soul Fire under Decimation below 35%, Incinerate filler; the damage curse only while moving, with Recklessness in a group when nobody has it." },
 -- 998799fe
 [2351] = { "Default.SoD.Warlock.Shadow.Name", "Shadow, Affliction and Felguard (SoD)" },
--- 7646e9f2
-[2352] = { "Default.SoD.Warlock.Shadow.Description", "Season of Discovery Affliction and Felguard builds, and every SoD Warlock no other premade fits; built from wowsims Phase 6, Wowhead and Icy Veins. Nightfall procs; Shadowburn or Drain Soul to finish a group target; a dying solo target gets Drain Soul, not DoTs; instants while moving; Lake of Fire and Hellfire on packs; a curse (Recklessness in a group when nobody has it, else Agony); Unstable Affliction, Master Channeler Drain Life, Shadowflame (Immolate before it), Corruption, Haunt, Siphon Life (each renewed under 6 seconds with Invocation engraved); Drain Soul below 20% with Soul Siphon engraved; solo sustain and the wand; Shadow Bolt. Reminders: Fel Armor, your pet (a Felguard once engraved), Life Tap for a pet low on mana, Amplify Curse and the safety reminders. Curse assignments and Shadow Bolt Volley packs stay with you." },
--- 9b2b374b
-[2353] = { "Default.SoD.Warlock.Shadow.Wowsims.Name", "Shadow, Drain Soul filler (SoD, wowsims)" },
--- aff32cb7
-[2354] = { "Default.SoD.Warlock.Shadow.Wowsims.Description", "The wowsims Phase 6 Affliction list for a Soul Siphon build, an alternative to the recommended Season of Discovery Shadow premade, off by default: enable it and disable that one, or raise its priority. Drain Soul is the filler at any health, and the next step shows as soon as it is due so you can clip the channel for it; any other channel is left to finish. Unstable Affliction and Shadowflame renewed with 7.5 seconds left, Agony and Corruption with 6, Master Channeler Drain Life, Haunt, Shadow Bolt only on a Shadow Trance proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade." },
+-- c8da1636
+[2352] = { "Default.SoD.Warlock.Shadow.Description", "Season of Discovery Affliction and Felguard builds, and every SoD Warlock no other premade fits; built from simulator Phase 6, Wowhead and Icy Veins. Nightfall procs; Shadowburn or Drain Soul to finish a group target; a dying solo target gets Drain Soul, not DoTs; instants while moving; Lake of Fire and Hellfire on packs; a curse (Recklessness in a group when nobody has it, else Agony); Unstable Affliction, Master Channeler Drain Life, Shadowflame (Immolate before it), Corruption, Haunt, Siphon Life (each renewed under 6 seconds with Invocation engraved); Drain Soul below 20% with Soul Siphon engraved; solo sustain and the wand; Shadow Bolt. Reminders: Fel Armor, your pet (a Felguard once engraved), Life Tap for a pet low on mana, Amplify Curse and the safety reminders. Curse assignments and Shadow Bolt Volley packs stay with you." },
+-- 9fe0ee40
+[2353] = { "Default.SoD.Warlock.Shadow.Simulator.Name", "Shadow, Drain Soul filler (SoD, simulator)" },
+-- 8e9b4067
+[2354] = { "Default.SoD.Warlock.Shadow.Simulator.Description", "The simulator Phase 6 Affliction list for a Soul Siphon build, an alternative to the recommended Season of Discovery Shadow premade, off by default: enable it and disable that one, or raise its priority. Drain Soul is the filler at any health, and the next step shows as soon as it is due so you can clip the channel for it; any other channel is left to finish. Unstable Affliction and Shadowflame renewed with 7.5 seconds left, Agony and Corruption with 6, Master Channeler Drain Life, Haunt, Shadow Bolt only on a Shadow Trance proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade." },
 -- e5b321d7
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Classic Era (variant key: DPS).
 [2355] = { "Default.Era.Warrior.DPS.Name", "Melee DPS" },
--- c080d284
-[2356] = { "Default.Era.Warrior.DPS.Description", "Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. Charge to pull, Intercept a distant target, Whirlwind (Thunder Clap before you learn it) on three or more enemies fighting you, then Execute first below 20%, Sunder Armor to five on bosses without Expose Armor, Bloodthirst, Mortal Strike, Slam right after a swing with Improved Slam (set for a two-hander; change it in a clone), Whirlwind while keeping rage for your main strike, Overpower, Rend until your main strike is learned, Sunder Armor on healthy targets and Hamstring near the rage cap. Reminders: Battle Shout, Heroic Strike from 40 rage (20 while leveling), Cleave on packs, Bloodrage, Sweeping Strikes, Death Wish (bosses: their last 30 seconds), Recklessness with Death Wish, Pummel or Shield Bash. Intimidating Shout and Retaliation are listed off for Hardcore emergencies; stance dancing stays with you." },
+-- b97180f8
+[2356] = { "Default.Era.Warrior.DPS.Description", "Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on Hardcore and Self-Found realms; built from simulator, Icy Veins and Wowhead. Charge to pull, Intercept a distant target, Whirlwind (Thunder Clap before you learn it) on three or more enemies fighting you, then Execute first below 20%, Sunder Armor to five on bosses without Expose Armor, Bloodthirst, Mortal Strike, Slam right after a swing with Improved Slam (set for a two-hander; change it in a clone), Whirlwind while keeping rage for your main strike, Overpower, Rend until your main strike is learned, Sunder Armor on healthy targets and Hamstring near the rage cap. Reminders: Battle Shout, Heroic Strike from 40 rage (20 while leveling), Cleave on packs, Bloodrage, Sweeping Strikes, Death Wish (bosses: their last 30 seconds), Recklessness with Death Wish, Pummel or Shield Bash. Intimidating Shout and Retaliation are listed off for Hardcore emergencies; stance dancing stays with you." },
 -- c0b21fb1
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Classic Era (variant key: Protection).
@@ -1574,11 +1574,11 @@ local S = {
 -- b33d1254
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2361] = { "Default.SoD.Warrior.DPS.Name", "Melee DPS (SoD)" },
--- dbdfa29c
-[2362] = { "Default.SoD.Warrior.DPS.Description", "Season of Discovery, levels 1–60 with runes as you engrave them: two-hander, dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built from wowsims Phase 6 and Wowhead Phase 7/8. Charge, Victory Rush, Intercept, Whirlwind (Thunder Clap before it) on two or more enemies, Slam at three Slammin' stacks, Rend kept up, Slam on Blood Surge (on cooldown with Precise Timing engraved), Bloodthirst, Mortal Strike, Shield Slam (with a shield), Overpower; then Quick Strike when it is engraved (two-hander), otherwise Whirlwind, Raging Blow and Devastate (Sunder before it); Execute with 30 rage or on Sudden Death; Hamstring near the rage cap. Reminders: Battle and Commanding Shout, Heroic Strike from 50 rage (always while Consumed by Rage enrages you), Cleave, Bloodrage, Rampage, Death Wish, Recklessness, Sweeping Strikes, interrupts. Berserker Rage and the Taste for Blood Battle Stance dip are listed off." },
+-- 8778ee5f
+[2362] = { "Default.SoD.Warrior.DPS.Description", "Season of Discovery, levels 1–60 with runes as you engrave them: two-hander, dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built from simulator Phase 6 and Wowhead Phase 7/8. Charge, Victory Rush, Intercept, Whirlwind (Thunder Clap before it) on two or more enemies, Slam at three Slammin' stacks, Rend kept up, Slam on Blood Surge (on cooldown with Precise Timing engraved), Bloodthirst, Mortal Strike, Shield Slam (with a shield), Overpower; then Quick Strike when it is engraved (two-hander), otherwise Whirlwind, Raging Blow and Devastate (Sunder before it); Execute with 30 rage or on Sudden Death; Hamstring near the rage cap. Reminders: Battle and Commanding Shout, Heroic Strike from 50 rage (always while Consumed by Rage enrages you), Cleave, Bloodrage, Rampage, Death Wish, Recklessness, Sweeping Strikes, interrupts. Berserker Rage and the Taste for Blood Battle Stance dip are listed off." },
 -- c5bed192
 [2363] = { "Default.SoD.Warrior.DPS.Wowhead.Name", "Battle Forecaster stance dance (SoD, Wowhead)" },
 -- ef07220e
@@ -1590,11 +1590,11 @@ local S = {
 -- ebb8b9e3
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
 --     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
---     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern) are proper
 --     names and stay unchanged.
 [2367] = { "Default.SoD.Warrior.Tank.Name", "Tank (SoD)" },
--- 93f460da
-[2368] = { "Default.SoD.Warrior.Tank.Description", "Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase 8 and wowsims. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge, Whirlwind and Devastate; then Shield Slam whenever Defender's Resolve is missing or ending, Revenge, Shield Slam, Shockwave, Execute, Whirlwind at five Gladiator's Cunning stacks, Devastate (Sunder before it), Demoralizing Shout and Thunder Clap on elites, Rend before Shield Slam; Shield Slam and Shield Block only with a shield on. Reminders: Battle and Commanding Shout, Shield Block, Heroic Strike from 50 rage, Cleave from 55, Bloodrage, Rampage, Last Stand, interrupts. Taunt, Shield Wall, Death Wish, Recklessness and Retaliation are listed off; the Gladiator swap for Execute stays with you." },
+-- 5f490610
+[2368] = { "Default.SoD.Warrior.Tank.Description", "Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase 8 and simulator. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge, Whirlwind and Devastate; then Shield Slam whenever Defender's Resolve is missing or ending, Revenge, Shield Slam, Shockwave, Execute, Whirlwind at five Gladiator's Cunning stacks, Devastate (Sunder before it), Demoralizing Shout and Thunder Clap on elites, Rend before Shield Slam; Shield Slam and Shield Block only with a shield on. Reminders: Battle and Commanding Shout, Shield Block, Heroic Strike from 50 rage, Cleave from 55, Bloodrage, Rampage, Last Stand, interrupts. Taunt, Shield Wall, Death Wish, Recklessness and Retaliation are listed off; the Gladiator swap for Execute stays with you." },
 -- d70604e8
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Mists of Pandaria Classic (variant key: Blood). The standard recommended rotation for
@@ -1602,14 +1602,14 @@ local S = {
 [2369] = { "Default.MoP.DeathKnight.Blood.Name", "Recommended" },
 -- 235cf9c7
 [2370] = { "Default.MoP.DeathKnight.Blood.Description", "Recommended for Blood tanks, chosen in the Blood specialization. Pulls from range with Outbreak, Icy Touch or Death Grip. Death Strike below half health, whenever Blood Shield is missing (from 80), and before all four Frost and Unholy runes sit full; Rune Strike near 90 runic power (Death Coil at 80 before you learn it); Outbreak, else Icy Touch and Plague Strike, for diseases, and Blood Boil to refresh them from 68; Soul Reaper under 35%; Heart Strike (Blood Strike before 60) on two Blood runes; Crimson Scourge on Death and Decay while diseases last, else Blood Boil; Blood Tap at eleven charges; then Death Strike, Heart Strike, Rune Strike and Horn of Winter. Three enemies on you: Death and Decay, a disease spread (Blood Boil with Roiling Blood, else Pestilence) and Blood Boil. Reminders: Blood Presence when you have none, Bone Shield, Horn of Winter, Mind Freeze, Rune Tap, Vampiric Blood, Icebound Fortitude, Empower Rune Weapon and Death Pact by your health, Dancing Rune Weapon on elites, Army of the Dead before a group boss. It cannot see incoming damage, so Anti-Magic Shell (off) and big defensives are yours." },
--- a7eb3532
+-- 45f2a617
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
---     Knight, Mists of Pandaria Classic (variant key: Blood / Wowsims). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
---     Tavern) are proper names and stay unchanged.
-[2371] = { "Default.MoP.DeathKnight.Blood.Wowsims.Name", "Health-reactive (wowsims)" },
+--     Knight, Mists of Pandaria Classic (variant key: Blood / simulator). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
+[2371] = { "Default.MoP.DeathKnight.Blood.Simulator.Name", "Health-reactive (simulator)" },
 -- a92e9e2e
-[2372] = { "Default.MoP.DeathKnight.Blood.Wowsims.Description", "An alternative to the recommended Blood premade for raid tanks with healers, off by default: enable it and disable that one, or raise its priority. Death Strike only below 70% health, when Blood Shield is missing or about to fade, or before the Frost and Unholy runes cap, instead of on every rune; a lone Blood rune goes to Heart Strike when the Frost and Unholy runes are more than a second away. It has no area-of-effect section, and the same reminders as the recommended one." },
+[2372] = { "Default.MoP.DeathKnight.Blood.Simulator.Description", "An alternative to the recommended Blood premade for raid tanks with healers, off by default: enable it and disable that one, or raise its priority. Death Strike only below 70% health, when Blood Shield is missing or about to fade, or before the Frost and Unholy runes cap, instead of on every rune; a lone Blood rune goes to Heart Strike when the Frost and Unholy runes are more than a second away. It has no area-of-effect section, and the same reminders as the recommended one." },
 -- 747fb182
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
 --     Knight, Mists of Pandaria Classic (variant key: FrostDualWield).
@@ -1628,10 +1628,10 @@ local S = {
 [2377] = { "Default.MoP.DeathKnight.Unholy.Name", "Unholy" },
 -- 5c6efba1
 [2378] = { "Default.MoP.DeathKnight.Unholy.Description", "Recommended for Unholy, and the premade for any Death Knight Blood and Frost do not claim, including one without a specialization. Pulls from range with Outbreak or Icy Touch (Death Grip solo). Death Strike on Dark Succor or below 35% health, diseases (Unholy Blight, Outbreak, Plague Strike, Icy Touch), Blood Tap at eleven charges, Soul Reaper under 35%, Dark Transformation at five Shadow Infusion stacks, Death Coil near the runic power cap, Death and Decay on a target that will live, Scourge Strike, Death Coil on Sudden Doom or at 40, Outbreak while Unholy Strength is up, Festering Strike (Blood Strike before you learn it), Plague Leech, Horn of Winter. Three enemies on you: a disease spread, Death and Decay, Blood Boil and Icy Touch on a Frost rune. Reminders: Unholy Presence, your ghoul, Summon Gargoyle under Bloodlust or on a long elite fight, Unholy Frenzy, Empower Rune Weapon, Horn of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a group boss; Anti-Magic Shell is off." },
--- 56eecd5b
-[2379] = { "Default.MoP.DeathKnight.Unholy.Wowsims.Name", "Unholy, rune-cap pooling (wowsims)" },
+-- dd1a3e1e
+[2379] = { "Default.MoP.DeathKnight.Unholy.Simulator.Name", "Unholy, rune-cap pooling (simulator)" },
 -- 457f3061
-[2380] = { "Default.MoP.DeathKnight.Unholy.Wowsims.Description", "An alternative to the recommended Unholy premade, as the simulator, wowtbc.gg, Method and MaxDps play it; off by default: enable it and disable that one, or raise its priority. While Dark Transformation is down Death Coil goes to rebuilding Shadow Infusion, Scourge Strike comes first when both Unholy or both Death runes are ready, and Festering Strike first when both Blood and both Frost runes are; otherwise the same opening, diseases, AoE and reminders as the recommended one." },
+[2380] = { "Default.MoP.DeathKnight.Unholy.Simulator.Description", "An alternative to the recommended Unholy premade, as the simulator, wowtbc.gg, Method and MaxDps play it; off by default: enable it and disable that one, or raise its priority. While Dark Transformation is down Death Coil goes to rebuilding Shadow Infusion, Scourge Strike comes first when both Unholy or both Death runes are ready, and Festering Strike first when both Blood and both Frost runes are; otherwise the same opening, diseases, AoE and reminders as the recommended one." },
 -- 5ea8498f
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
@@ -1644,15 +1644,15 @@ local S = {
 --     Mists of Pandaria Classic (variant key: Balance). The standard recommended rotation for the
 --     specialization.
 [2383] = { "Default.MoP.Druid.Balance.Name", "Recommended" },
--- 625c32c1
-[2384] = { "Default.MoP.Druid.Balance.Description", "Recommended for Balance from level 10, after Wowhead's Phase 5 list and wowsims. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts Starfall in Lunar Eclipse, Starsurge on Shooting Stars and on cooldown, Hurricane in Solar or Astral Storm in Lunar at five enemies, Starfire in and after Lunar and Wrath in and after Solar. Rotation Master cannot read Eclipse energy, so between Eclipses it keeps casting Starfire if Starfire was one of your last three casts, otherwise Wrath. Reminders: Mark of the Wild, Moonkin Form, Incarnation as an Eclipse starts and Celestial Alignment as one ends (on elites or long fights), Nature's Vigil, Force of Nature, Nature's Swiftness for Dream of Cenarius, Innervate, Solar Beam, Barkskin and Renewal when low. Wild Mushroom placement stays manual; the Detonate reminder is off by default. It stops while you cast, travel, are in Cat or Bear Form, or have no enemy targeted." },
+-- 8e274530
+[2384] = { "Default.MoP.Druid.Balance.Description", "Recommended for Balance from level 10, after Wowhead's Phase 5 list and simulator. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts Starfall in Lunar Eclipse, Starsurge on Shooting Stars and on cooldown, Hurricane in Solar or Astral Storm in Lunar at five enemies, Starfire in and after Lunar and Wrath in and after Solar. Rotation Master cannot read Eclipse energy, so between Eclipses it keeps casting Starfire if Starfire was one of your last three casts, otherwise Wrath. Reminders: Mark of the Wild, Moonkin Form, Incarnation as an Eclipse starts and Celestial Alignment as one ends (on elites or long fights), Nature's Vigil, Force of Nature, Nature's Swiftness for Dream of Cenarius, Innervate, Solar Beam, Barkskin and Renewal when low. Wild Mushroom placement stays manual; the Detonate reminder is off by default. It stops while you cast, travel, are in Cat or Bear Form, or have no enemy targeted." },
 -- d70604e8
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Mists of Pandaria Classic (variant key: Feral). The standard recommended rotation for the
 --     specialization.
 [2385] = { "Default.MoP.Druid.Feral.Name", "Recommended" },
--- 008c4d0b
-[2386] = { "Default.MoP.Druid.Feral.Description", "Recommended for Feral from level 10, after wowsims and Wowhead's Phase 5 list. Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up, uses Predatory Swiftness for a Healing Touch at four or five combo points with Dream of Cenarius, Rip at five points (Ferocious Bite refreshes it below 25% health), Ferocious Bite at five points while Rip and Savage Roar both have six seconds left, Rake, Thrash on Clearcasting, Shred on Clearcasting or Berserk when the target is not attacking you (Rotation Master cannot tell whether you are behind it) and Mangle; Thrash and Swipe at four enemies. In Bear Form it gives a short tanking list. Reminders: Tiger's Fury under 35 energy, Berserk with it on elites or long fights, Incarnation, Force of Nature, Nature's Vigil, Skull Bash, Survival Instincts and Barkskin when low, Mark of the Wild. Bear- and Wrath-weaving, and Heart of the Wild, stay manual." },
+-- 30101468
+[2386] = { "Default.MoP.Druid.Feral.Description", "Recommended for Feral from level 10, after simulator and Wowhead's Phase 5 list. Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up, uses Predatory Swiftness for a Healing Touch at four or five combo points with Dream of Cenarius, Rip at five points (Ferocious Bite refreshes it below 25% health), Ferocious Bite at five points while Rip and Savage Roar both have six seconds left, Rake, Thrash on Clearcasting, Shred on Clearcasting or Berserk when the target is not attacking you (Rotation Master cannot tell whether you are behind it) and Mangle; Thrash and Swipe at four enemies. In Bear Form it gives a short tanking list. Reminders: Tiger's Fury under 35 energy, Berserk with it on elites or long fights, Incarnation, Force of Nature, Nature's Vigil, Skull Bash, Survival Instincts and Barkskin when low, Mark of the Wild. Bear- and Wrath-weaving, and Heart of the Wild, stay manual." },
 -- 450e41c9
 [2387] = { "Default.MoP.Druid.Feral.IcyVeins.Name", "Bite only in execute (Icy Veins)" },
 -- 34b2bf98
@@ -1662,8 +1662,8 @@ local S = {
 --     Mists of Pandaria Classic (variant key: Guardian). The standard recommended rotation for the
 --     specialization.
 [2389] = { "Default.MoP.Druid.Guardian.Name", "Recommended" },
--- b19b167d
-[2390] = { "Default.MoP.Druid.Guardian.Description", "Recommended for Guardian tanks from level 10, after wowsims and Wowhead's Phase 5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened Blows up with Thrash and Weakened Armor with Faerie Fire on elites, uses a Dream of Cenarius Healing Touch when hurt, Mangle on cooldown, Thrash and Swipe at three enemies, then Lacerate, Thrash and Faerie Fire. In Cat Form (Heart of the Wild) it gives a short damage list. Reminders: Savage Defense whenever it is down, Enrage for rage, Frenzied Regeneration when low or rage-capped, Maul above 90 rage or on Tooth and Claw, Barkskin while the target attacks you, Survival Instincts when low, Berserk and Incarnation on two enemies or a boss, Force of Nature, Nature's Vigil, Cenarion Ward, Skull Bash, Mark of the Wild. Taunting and Might of Ursoc stay manual (both reminders are off by default)." },
+-- fb9929bb
+[2390] = { "Default.MoP.Druid.Guardian.Description", "Recommended for Guardian tanks from level 10, after simulator and Wowhead's Phase 5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened Blows up with Thrash and Weakened Armor with Faerie Fire on elites, uses a Dream of Cenarius Healing Touch when hurt, Mangle on cooldown, Thrash and Swipe at three enemies, then Lacerate, Thrash and Faerie Fire. In Cat Form (Heart of the Wild) it gives a short damage list. Reminders: Savage Defense whenever it is down, Enrage for rage, Frenzied Regeneration when low or rage-capped, Maul above 90 rage or on Tooth and Claw, Barkskin while the target attacks you, Survival Instincts when low, Berserk and Incarnation on two enemies or a boss, Force of Nature, Nature's Vigil, Cenarion Ward, Skull Bash, Mark of the Wild. Taunting and Might of Ursoc stay manual (both reminders are off by default)." },
 -- d70604e8
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
@@ -1674,7 +1674,7 @@ local S = {
 -- f3d02e30
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
 --     Mists of Pandaria Classic (variant key: Restoration / Wowhead). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2393] = { "Default.MoP.Druid.Restoration.Wowhead.Name", "Tank healing (Wowhead)" },
 -- 28164e24
@@ -1754,12 +1754,12 @@ local S = {
 [2417] = { "Default.MoP.Monk.Brewmaster.Name", "Recommended" },
 -- 94fb9e53
 [2418] = { "Default.MoP.Monk.Brewmaster.Description", "Picked automatically in the Brewmaster specialization. Keeps Shuffle up with Blackout Kick, uses Keg Smash whenever its Chi fits, Expel Harm when you are hurt (at once below 35%), Jab to spend energy, Tiger Palm for Tiger Power and as the free filler (Jab builds Chi before level 34), and Touch of Death when it is usable. From range out of combat: Chi Wave, Dizzying Haze, Clash or Keg Smash. On three or more enemies: Rushing Jade Wind, Breath of Fire and Spinning Crane Kick only while Shuffle has time left. Reminders: Sturdy Ox, Legacy of the Emperor, Purifying Brew on Heavy Stagger (Moderate when Shuffle is banked), Elusive Brew from six stacks, Guard with Power Guard, Chi Brew, Xuen, Fortifying Brew, Dampen Harm or Diffuse Magic when low, Spear Hand Strike. The Black Ox Statue reminder is off; Avert Harm, Zen Meditation and Provoke stay with you." },
--- fbb1d180
+-- bd502f1d
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
 --     Mists of Pandaria Classic (variant key: Brewmaster / Offensive). Names in parentheses (guide
---     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
-[2419] = { "Default.MoP.Monk.Brewmaster.Offensive.Name", "Damage first (wowsims)" },
+[2419] = { "Default.MoP.Monk.Brewmaster.Offensive.Name", "Damage first (simulator)" },
 -- e83b14c9
 [2420] = { "Default.MoP.Monk.Brewmaster.Offensive.Description", "An alternative to the Brewmaster premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's damage-first list for a tank who outgears the content: Rushing Jade Wind before Keg Smash, Chi spent on Blackout Kick for damage, and no routine Purifying Brew or Guard (Purifying Brew only lights on the tier-15 Purifier proc). Elusive Brew, Chi Brew, Xuen and Fortifying Brew are still reminders." },
 -- d70604e8
@@ -1805,10 +1805,10 @@ local S = {
 [2433] = { "Default.MoP.Paladin.Protection.Name", "Recommended" },
 -- 0c1b3a03
 [2434] = { "Default.MoP.Paladin.Protection.Description", "Recommended for Protection, from level 10 in the Protection specialization. Pulls with Avenger's Shield, then Avenger's Shield on a Grand Crusader proc, Avenger's Shield, Hammer of Wrath, Crusader Strike, Judgment, your level-90 talent, Consecration, Holy Wrath and Sacred Shield. Three or more enemies on you switch to Avenger's Shield, Consecration, Hammer of the Righteous, Judgment and Holy Wrath. Shield of the Righteous, Eternal Flame and Word of Glory are off the global cooldown, so they light beside the rotation: Shield of the Righteous whenever you can afford it, Eternal Flame on yourself when it is running out with 3 Holy Power and three Bastion of Glory stacks, Word of Glory below half health without that talent. Other reminders: Righteous Fury, Seal of Insight when another seal (except Righteousness) or none is active, blessings, Rebuke, Sacred Shield, Avenging Wrath and Holy Avenger while you are tanking, and Guardian of Ancient Kings, Ardent Defender, Divine Protection and Lay on Hands by your health. It cannot see incoming damage, so plan big defensives yourself." },
--- 4816b24b
-[2435] = { "Default.MoP.Paladin.Protection.Wowsims.Name", "Pool Holy Power (wowsims)" },
+-- e3cb6b71
+[2435] = { "Default.MoP.Paladin.Protection.Simulator.Name", "Pool Holy Power (simulator)" },
 -- 0709f739
-[2436] = { "Default.MoP.Paladin.Protection.Wowsims.Description", "An alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's tank lists: Shield of the Righteous waits for full Holy Power unless you fall below 40% health or Divine Purpose makes it free; Eternal Flame just before it fades with more than two Bastion of Glory stacks; Sacred Shield kept up; Holy Avenger and Avenging Wrath on cooldown. Generators run Crusader Strike, Judgment, then Avenger's Shield, Holy Wrath, the level-90 talent and Hammer of Wrath, with the same three-enemy AoE order. Boss-timed defensives are yours." },
+[2436] = { "Default.MoP.Paladin.Protection.Simulator.Description", "An alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's tank lists: Shield of the Righteous waits for full Holy Power unless you fall below 40% health or Divine Purpose makes it free; Eternal Flame just before it fades with more than two Bastion of Glory stacks; Sacred Shield kept up; Holy Avenger and Avenging Wrath on cooldown. Generators run Crusader Strike, Judgment, then Avenger's Shield, Holy Wrath, the level-90 talent and Hammer of Wrath, with the same three-enemy AoE order. Boss-timed defensives are yours." },
 -- d70604e8
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
 --     Mists of Pandaria Classic (variant key: Holy). The standard recommended rotation for the
@@ -1864,8 +1864,8 @@ local S = {
 --     Mists of Pandaria Classic (variant key: Assassination). The standard recommended rotation for
 --     the specialization.
 [2453] = { "Default.MoP.Rogue.Assassination.Name", "Recommended" },
--- be1774f6
-[2454] = { "Default.MoP.Rogue.Assassination.Description", "Recommended for Assassination, from level 10 to 90 (wowsims and Wowhead for Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo, otherwise Mutilate (Dispatch on Blindside, with a dagger). Keeps Slice and Dice up (Envenom refreshes it from level 60) and Rupture on the target, spends five points on Envenom while Rupture lasts and four points to keep the Envenom buff rolling when you do not have Anticipation, then Marked for Death, Dispatch below 35% or on Blindside (it needs a dagger in the main hand), and Mutilate. Against four or more enemies fighting you: Slice and Dice, Crimson Tempest at seven, Rupture, Envenom and Fan of Knives; tabbing Rupture onto other targets is up to you. Solo it adds Recuperate and a Kidney Shot when you are low. Reminders: poisons, Kick, Vendetta on long fights, Shadow Blades with Vendetta, Vanish and Preparation inside Vendetta, Shadowstep from range, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint, Sprint and positioning." },
+-- a78d028d
+[2454] = { "Default.MoP.Rogue.Assassination.Description", "Recommended for Assassination, from level 10 to 90 (simulator and Wowhead for Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo, otherwise Mutilate (Dispatch on Blindside, with a dagger). Keeps Slice and Dice up (Envenom refreshes it from level 60) and Rupture on the target, spends five points on Envenom while Rupture lasts and four points to keep the Envenom buff rolling when you do not have Anticipation, then Marked for Death, Dispatch below 35% or on Blindside (it needs a dagger in the main hand), and Mutilate. Against four or more enemies fighting you: Slice and Dice, Crimson Tempest at seven, Rupture, Envenom and Fan of Knives; tabbing Rupture onto other targets is up to you. Solo it adds Recuperate and a Kidney Shot when you are low. Reminders: poisons, Kick, Vendetta on long fights, Shadow Blades with Vendetta, Vanish and Preparation inside Vendetta, Shadowstep from range, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint, Sprint and positioning." },
 -- 446abf99
 [2455] = { "Default.MoP.Rogue.Assassination.IcyVeins.Name", "Envenom at five (Icy Veins)" },
 -- 584543ab
@@ -1875,8 +1875,8 @@ local S = {
 --     Mists of Pandaria Classic (variant key: Combat). The standard recommended rotation for the
 --     specialization.
 [2457] = { "Default.MoP.Rogue.Combat.Name", "Recommended" },
--- 43003559
-[2458] = { "Default.MoP.Rogue.Combat.Description", "Recommended for Combat, from level 10 to 90 (Wowhead and wowsims for Phase 5). Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike is the builder and Sinister Strike is used only under Bloodlust or Heroism with Adrenaline Rush (and before level 20). Opens with Cheap Shot solo, otherwise Ambush. Keeps Slice and Dice up from two points and Revealing Strike on the target, spends five points only while Revealing Strike is up (Slice and Dice, Rupture on a long single-target fight without Blade Flurry, Eviscerate) and waits for energy at five. Against eight or more enemies: Slice and Dice, Crimson Tempest and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders: poisons, Kick, Blade Flurry on against two or more enemies and off again, Adrenaline Rush at low energy with Shadow Blades, Killing Spree, Vanish and Preparation for Ambush in Deep Insight, Shadowstep, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint and positioning behind the target for Ambush." },
+-- e298e91f
+[2458] = { "Default.MoP.Rogue.Combat.Description", "Recommended for Combat, from level 10 to 90 (Wowhead and simulator for Phase 5). Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike is the builder and Sinister Strike is used only under Bloodlust or Heroism with Adrenaline Rush (and before level 20). Opens with Cheap Shot solo, otherwise Ambush. Keeps Slice and Dice up from two points and Revealing Strike on the target, spends five points only while Revealing Strike is up (Slice and Dice, Rupture on a long single-target fight without Blade Flurry, Eviscerate) and waits for energy at five. Against eight or more enemies: Slice and Dice, Crimson Tempest and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders: poisons, Kick, Blade Flurry on against two or more enemies and off again, Adrenaline Rush at low energy with Shadow Blades, Killing Spree, Vanish and Preparation for Ambush in Deep Insight, Shadowstep, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint and positioning behind the target for Ambush." },
 -- 44b84c55
 [2459] = { "Default.MoP.Rogue.Combat.IcyVeins.Name", "Sinister Strike builder (Icy Veins)" },
 -- 610b2100
@@ -1884,7 +1884,7 @@ local S = {
 -- 972be132
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Mists of Pandaria Classic (variant key: Combat / Hekili). Names in parentheses (guide or tool
---     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft Tavern)
 --     are proper names and stay unchanged.
 [2461] = { "Default.MoP.Rogue.Combat.Hekili.Name", "Anticipation (Hekili)" },
 -- a677df00
@@ -1894,12 +1894,12 @@ local S = {
 --     Mists of Pandaria Classic (variant key: Subtlety). The standard recommended rotation for the
 --     specialization.
 [2463] = { "Default.MoP.Rogue.Subtlety.Name", "Recommended" },
--- 53ec1c4b
-[2464] = { "Default.MoP.Rogue.Subtlety.Description", "Recommended for Subtlety with Shadow Focus, from level 10 to 90 (wowsims and Wowhead for Phase 5). In Stealth or Shadow Dance: Premeditation, Slice and Dice before the pull, finishers at five points, Ambush, Garrote. Outside: Slice and Dice; at five points Slice and Dice and Rupture when they are about to drop, Eviscerate while both last; Marked for Death; Hemorrhage to keep its bleed; Backstab (with a dagger) when the target is not attacking you, otherwise Hemorrhage. Against three or more enemies: Slice and Dice, Crimson Tempest, Eviscerate and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders: poisons, Kick, Shadow Dance at 75 energy with Slice and Dice and Rupture up, Vanish when Find Weakness is ending, Preparation, Shadow Blades outside Dance and Stealth, Shadowstep, Evasion solo. Left to you: standing behind the target (RM cannot see facing), Tricks of the Trade and Expose Armor (listed but off)." },
+-- c2f73eb9
+[2464] = { "Default.MoP.Rogue.Subtlety.Description", "Recommended for Subtlety with Shadow Focus, from level 10 to 90 (simulator and Wowhead for Phase 5). In Stealth or Shadow Dance: Premeditation, Slice and Dice before the pull, finishers at five points, Ambush, Garrote. Outside: Slice and Dice; at five points Slice and Dice and Rupture when they are about to drop, Eviscerate while both last; Marked for Death; Hemorrhage to keep its bleed; Backstab (with a dagger) when the target is not attacking you, otherwise Hemorrhage. Against three or more enemies: Slice and Dice, Crimson Tempest, Eviscerate and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders: poisons, Kick, Shadow Dance at 75 energy with Slice and Dice and Rupture up, Vanish when Find Weakness is ending, Preparation, Shadow Blades outside Dance and Stealth, Shadowstep, Evasion solo. Left to you: standing behind the target (RM cannot see facing), Tricks of the Trade and Expose Armor (listed but off)." },
 -- a7cbb172
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
 --     Mists of Pandaria Classic (variant key: Subtlety / WarcraftTavern). Names in parentheses
---     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics,
 --     Warcraft Tavern) are proper names and stay unchanged.
 [2465] = { "Default.MoP.Rogue.Subtlety.WarcraftTavern.Name", "Subterfuge (Warcraft Tavern)" },
 -- 01394d1f
@@ -1925,10 +1925,10 @@ local S = {
 [2471] = { "Default.MoP.Shaman.Enhancement.Name", "Recommended" },
 -- 30126acf
 [2472] = { "Default.MoP.Shaman.Enhancement.Description", "Recommended for Enhancement from level 10, chosen in the Enhancement specialization. Wowhead's order: Unleash Elements while running in, then Unleash Elements with Unleashed Fury, Elemental Blast and Lightning Bolt at five Maelstrom Weapon (or woven at three when your next swing is over a second away), Stormblast in Ascendance, Stormstrike (Primal Strike before 26), Lava Lash, Flame Shock under Unleash Flame, Unleash Elements, Earth Shock. Two or more enemies on you: Chain Lightning instead of Lightning Bolt, Lava Lash to spread Flame Shock, Fire Nova from four, Magma from six. Reminders: Lightning Shield, Windfury on the main hand and Flametongue on the off hand, Searing Totem, Fire Elemental, Feral Spirit, Ascendance after Stormstrike, Elemental Mastery, Ancestral Swiftness, Stormlash and Bloodlust in a group, Wind Shear, Shamanistic Rage and Astral Shift when low. Earth Elemental is listed but off." },
--- e3f2e167
-[2473] = { "Default.MoP.Shaman.Enhancement.Wowsims.Name", "Weave every stack (wowsims)" },
+-- ada73161
+[2473] = { "Default.MoP.Shaman.Enhancement.Simulator.Name", "Weave every stack (simulator)" },
 -- ab469690
-[2474] = { "Default.MoP.Shaman.Enhancement.Wowsims.Description", "Off by default; same switch as the recommended Enhancement premade, so enable it and disable that one to use it. The simulator's list for players who time casts between swings: Lightning Bolt, Elemental Blast or Chain Lightning on any number of Maelstrom Weapon stacks whenever the cast finishes before your next main-hand swing, Unleash Elements also whenever Flame Shock is missing, and Earth Shock only below two stacks. Reminders as the recommended premade." },
+[2474] = { "Default.MoP.Shaman.Enhancement.Simulator.Description", "Off by default; same switch as the recommended Enhancement premade, so enable it and disable that one to use it. The simulator's list for players who time casts between swings: Lightning Bolt, Elemental Blast or Chain Lightning on any number of Maelstrom Weapon stacks whenever the cast finishes before your next main-hand swing, Unleash Elements also whenever Flame Shock is missing, and Earth Shock only below two stacks. Reminders as the recommended premade." },
 -- a926ad7a
 [2475] = { "Default.MoP.Shaman.Enhancement.IcyVeins.Name", "Lava Lash first (Icy Veins)" },
 -- 1509ab70
@@ -1943,7 +1943,7 @@ local S = {
 -- 98ae06d3
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
 --     Mists of Pandaria Classic (variant key: Restoration / Hekili). Names in parentheses (guide or
---     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     tool such as Icy Veins, Wowhead, SimulationCraft, simulator, Hekili, Mobalytics, Warcraft
 --     Tavern) are proper names and stay unchanged.
 [2479] = { "Default.MoP.Shaman.Restoration.Hekili.Name", "Health ladder (Hekili)" },
 -- db083550

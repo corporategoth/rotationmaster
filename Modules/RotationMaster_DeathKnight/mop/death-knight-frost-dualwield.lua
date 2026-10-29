@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Frost Death Knight with two one-handed weapons (Masterfrost), levels
--- 55–90, after Icy Veins' rotation with wowsims' masterfrost cap guards. Selected in the Frost
+-- 55–90, after Icy Veins' rotation with simulator' masterfrost cap guards. Selected in the Frost
 -- specialization (251) while the off hand holds a weapon (with a two-hander rm.mop.deathknight.frost
 -- takes over). Killing Machine goes to Frost Strike, Howling Blast is the main rune spender,
 -- Obliterate spends capped Unholy runes below 77 runic power.
@@ -19,11 +19,11 @@ assert(addon:RegisterDefaultRotation({
   ['mop.deathknight.frost-tail']=1,['mop.deathknight.survival']=1,['mop.deathknight.spread']=1},
  nameKey='Default.MoP.DeathKnight.FrostDualWield.Name',descriptionKey='Default.MoP.DeathKnight.FrostDualWield.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DEATHKNIGHT'},
- tags={'frost','single-target','aoe','icy-veins','wowsims'},
+ tags={'frost','single-target','aoe','icy-veins'},
  sources={
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-death-knight-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Frost Death Knight rotation (dual-wield)',reviewedAt='2026-10-23',revision='2025-09-23'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-death-knight-leveling',title='Icy Veins: MoP Classic Frost Death Knight leveling',reviewedAt='2026-10-23',revision='2025-09-23'},
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/death_knight/frost/apls/masterfrost.apl.json',title='wowsims/mop Frost masterfrost APL',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Obliterate on two Unholy runes, Frost Strike above 76.'},
+  
   {url='https://www.wowhead.com/mop-classic/guide/classes/death-knight/frost/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Frost Death Knight rotation',reviewedAt='2026-10-23',revision='2025-08-02',notes='Read from a Wayback snapshot; same order.'},
  },
  body={priority=30,specs={251},switch={type='WEAPON_TYPE',slot='offhand',kind='weapon'},

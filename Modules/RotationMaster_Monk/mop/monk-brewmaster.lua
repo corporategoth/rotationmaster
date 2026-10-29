@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Brewmaster Monk, levels 10–90, in the Brewmaster specialization
--- (268). wowsims' Phase 5 Generic order with Wowhead's
+-- (268). simulator' Phase 5 Generic order with Wowhead's
 -- Shuffle-first purify rule: Shuffle through Blackout Kick, Keg Smash under the Chi cap, Expel
 -- Harm when hurt, Jab at 80 energy, Tiger Power, Tiger Palm filler; Breath of Fire and Spinning
 -- Crane Kick on packs only while Shuffle is safe. Purifying Brew, Elusive Brew, Guard and Chi Brew
@@ -29,9 +29,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1,['mop.monk.brewmaster-upkeep']=2,['mop.monk.brewmaster-pull']=3},
  nameKey='Default.MoP.Monk.Brewmaster.Name',descriptionKey='Default.MoP.Monk.Brewmaster.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
- tags={'brewmaster','tank','leveling','single-target','aoe','wowsims','wowhead'},
+ tags={'brewmaster','tank','leveling','single-target','aoe','wowhead'},
  sources={
-  {url='https://github.com/wowsims/mop/blob/master/ui/specs/monk/brewmaster/apls/default.apl.json',title='wowsims/mop: Brewmaster Generic APL (Phase 5)',reviewedAt='2026-10-23',revision='ec2c6c2552'},
+  
   {url='https://www.wowhead.com/mop-classic/guide/classes/monk/brewmaster/tank-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Brewmaster Monk rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20',notes='Read from a Wayback snapshot; Shuffle before Purifying Brew.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/brewmaster-monk-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Brewmaster Monk rotation',reviewedAt='2026-10-23',revision='2025-07-09',notes='Elusive Brew from six stacks, Breath of Fire only with Shuffle safe; leveling equals the cap rotation.'},
  },

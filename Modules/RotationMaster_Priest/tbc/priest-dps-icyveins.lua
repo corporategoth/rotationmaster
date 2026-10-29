@@ -3,7 +3,7 @@
 -- TBC Priest damage, levels 1–70; the default Priest premade whenever the healer premade does
 -- not apply (solo, Shadow, or no talents yet). Smite and wand early, Mind Flay once learned,
 -- Shadowform, Vampiric Touch and Shadow Word: Death as they arrive; Holy and Discipline
--- questers keep Holy Fire and Smite. DoTs go before Mind Blast (Icy Veins, wowsims, MaxDps);
+-- questers keep Holy Fire and Smite. DoTs go before Mind Blast (Icy Veins, simulator, MaxDps);
 -- a dying solo target is wanded (Icy Veins). Thresholds are RM policy.
 -- The Wowhead variant is rm.tbc.priest.dps.wowhead.
 local _,addon=...
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
  sources={
   {url='https://www.icy-veins.com/tbc-classic/shadow-priest-leveling-guide',title='Icy Veins: Shadow Priest leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.icy-veins.com/tbc-classic/shadow-priest-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Shadow Priest rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/priest/shadow/rotation.go',title='wowsims TBC Shadow Priest rotation',reviewedAt='2026-10-23',revision='3301fca'},
+  
   {url='https://github.com/kaminaris/MaxDps-Priest/tree/0ecad695ef2548e1aeaab8d7235311d4e211370d/Specialization/TBC',title='MaxDps-Priest TBC modules',reviewedAt='2026-10-23',revision='0ecad69'},
  },
  body={

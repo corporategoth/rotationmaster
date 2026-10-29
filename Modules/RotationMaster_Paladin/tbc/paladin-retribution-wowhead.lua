@@ -1,10 +1,10 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Retribution, Wowhead with wowsims: a judgement opener chosen by mana (Wisdom when
+-- Retribution, Wowhead with simulator: a judgement opener chosen by mana (Wisdom when
 -- low, else the Crusader), the best seal you know, Crusader Strike, Judgement only of a
 -- seal worth judging (Command only on a stunned target), Exorcism on Undead and Demons,
 -- Consecration only for packs. Hammer of Wrath is left out: Wowhead keeps it for fleeing
--- targets, wowsims never casts it, and RUNNER needs the MobInfo2 addon.
+-- targets, simulator never casts it, and RUNNER needs the MobInfo2 addon.
 -- Catch-all Paladin premade (lowest priority): every level, no talents, ties.
 -- Shared blocks: Defaults/blocks/paladin.lua. Original priority data, no guide prose.
 local _,addon=...
@@ -20,10 +20,10 @@ assert(addon:RegisterDefaultRotation({
  blocks={['tbc.paladin.ret-upkeep']=2,['tbc.paladin.melee-opening']=2,['tbc.paladin.boundaries']=2},
  nameKey='Default.TBC.Paladin.Retribution.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Retribution.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN'},
- tags={'leveling','endgame','retribution','melee','single-target','aoe','wowhead','wowsims'},
+ tags={'leveling','endgame','retribution','melee','single-target','aoe','wowhead'},
  sources={{url='https://www.wowhead.com/tbc/guide/classes/paladin/retribution/leveling-tips',title='Wowhead: Retribution Paladin leveling',reviewedAt='2026-10-23',revision='2026-09-04'},
   {url='https://www.wowhead.com/tbc/guide/classes/paladin/retribution/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Retribution Paladin DPS rotation',reviewedAt='2026-10-23',revision='2026-02-10'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/paladin/retribution/rotation.go',title='wowsims/tbc Retribution rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77',notes='Exorcism and Consecration mana gates; no Hammer of Wrath.'}},
+  },
  body={priority=2,
   cooldowns={{id='ret-wh-upkeep',type='block',block='tbc.paladin.ret-upkeep',prefix='ret-wh-'}},
   rotation={

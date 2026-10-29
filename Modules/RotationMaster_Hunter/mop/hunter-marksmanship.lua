@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Marksmanship Hunter, levels 10–90, in the Marksmanship
--- specialization (254). Wowhead's Phase 5 order with wowsims' rule for when to hard-cast
+-- specialization (254). Wowhead's Phase 5 order with simulator' rule for when to hard-cast
 -- Aimed Shot: Steady Shots in pairs for Steady Focus (63), Chimera Shot, Serpent Sting, Aimed
 -- Shot on Fire!, Kill Shot, talents, Aimed Shot above 80% health, under Rapid Fire or Bloodlust, at
 -- 85 focus or while Chimera is away, Arcane Shot only while moving, Steady Shot. Four or more
@@ -29,10 +29,10 @@ assert(addon:RegisterDefaultRotation({
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1},
  nameKey='Default.MoP.Hunter.Marksmanship.Name',descriptionKey='Default.MoP.Hunter.Marksmanship.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER'},
- tags={'marksmanship','leveling','single-target','aoe','wowhead','wowsims'},
+ tags={'marksmanship','leveling','single-target','aoe','wowhead'},
  sources={
   {url='https://www.wowhead.com/mop-classic/guide/classes/hunter/marksmanship/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Marksmanship Hunter rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/hunter/marksmanship/apls/mm.apl.json',title='wowsims/mop Marksmanship APL',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='When to hard-cast Aimed Shot; Arcane Shot only at a cap.'},
+  
   {url='https://www.warcrafttavern.com/mop/guides/pve-marksmanship-hunter-dps-rotations-cooldowns/',title='Warcraft Tavern: MoP Marksmanship Hunter rotation',reviewedAt='2026-10-23',notes='Arcane Shot when you cannot stand still.'},
  },
  body={priority=10,specs={254},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

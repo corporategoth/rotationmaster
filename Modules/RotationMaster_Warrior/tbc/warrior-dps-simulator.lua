@@ -1,8 +1,8 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- TBC Warrior melee DPS, levels 1–70, wowsims/Wowhead order (the recommended DPS variant).
+-- TBC Warrior melee DPS, levels 1–70, simulator/Wowhead order (the recommended DPS variant).
 -- Arms and Fury share one priority: talents decide Mortal Strike vs Bloodthirst by spell known.
--- Execute is a filler after Bloodthirst/Mortal Strike/Whirlwind, as wowsims measured and Wowhead
+-- Execute is a filler after Bloodthirst/Mortal Strike/Whirlwind, as simulator measured and Wowhead
 -- says TBC changed; the Icy Veins variant keeps Execute first. Boundaries, reminders, the
 -- multi-target arm, the pre-talent leveling arm and Sunder are shared blocks (Defaults/blocks/warrior.lua).
 -- Left manual: the 2H Slam-after-swing loop (no time-since-swing condition), stance dancing,
@@ -13,12 +13,12 @@ local function known(id)return{type='SPELL_KNOWN',spell=id}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.wowsims',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.simulator',revision=5,
  blocks={['tbc.warrior.boundaries']=4,['tbc.warrior.upkeep']=1,['tbc.warrior.dps-upkeep']=1,['tbc.warrior.dps-opening']=1,['tbc.warrior.dps-leveling']=1,['tbc.warrior.sunder']=1},
- nameKey='Default.TBC.Warrior.DPS.Wowsims.Name',descriptionKey='Default.TBC.Warrior.DPS.Wowsims.Description',
+ nameKey='Default.TBC.Warrior.DPS.Simulator.Name',descriptionKey='Default.TBC.Warrior.DPS.Simulator.Description',
  applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
- tags={'dps','melee','leveling','endgame','aoe','wowsims','wowhead'},
- sources={{url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/warrior/dps/rotation.go',title='wowsims/tbc: Warrior DPS rotation',reviewedAt='2026-10-23',revision='3301fca59306a747e521274c36e073e69acc7b77'},
+ tags={'dps','melee','leveling','endgame','aoe','wowhead'},
+ sources={
  {url='https://www.wowhead.com/tbc/guide/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Warrior DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-06-11'},
  {url='https://www.wowhead.com/tbc/guide/classes/warrior/leveling-tips',title='Wowhead: TBC Warrior leveling',reviewedAt='2026-10-23',revision='2026-01-17'},
  {url='https://www.icy-veins.com/tbc-classic/arms-warrior-leveling-guide',title='Icy Veins: Arms Warrior leveling (shared pre-talent arm)',reviewedAt='2026-10-23',revision='2026-01-12'}},

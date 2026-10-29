@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Shadow Priest, levels 10-90 (the recommended variant): wowsims' order with the
+-- Mists of Pandaria Classic Shadow Priest, levels 10-90 (the recommended variant): simulator' order with the
 -- guides' simplifications. Selected in the Shadow specialization (258) from level 10 (RM stores MoP rotations
 -- per talent group, so the switch reads the specialization). Devouring Plague at three Shadow Orbs when Mind Blast is
 -- ready or six seconds away; Mind Blast; Shadow Word: Death below 20%; Mind Flay under your Devouring Plague with
@@ -23,8 +23,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=5,['mop.priest.shadow-cooldowns']=2},
  nameKey='Default.MoP.Priest.Shadow.Name',descriptionKey='Default.MoP.Priest.Shadow.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST'},
- tags={'shadow','dps','caster','leveling','endgame','wowsims','icy-veins','method','wowtbc'},
- sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/priest/shadow/apls/default.apl.json',title='wowsims/mop: Shadow Priest APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ tags={'shadow','dps','caster','leveling','endgame','icy-veins','method','wowtbc'},
+ sources={
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/shadow-priest-pve-rotation-cooldowns-abilities',title='Icy Veins: Shadow Priest rotation (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/shadow-priest-leveling',title='Icy Veins: Shadow Priest leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
  {url='https://www.method.gg/mop-classic/shadow-priest-class-guide-mop-classic',title='Method: Shadow Priest guide (MoP Classic)',reviewedAt='2026-10-23'},

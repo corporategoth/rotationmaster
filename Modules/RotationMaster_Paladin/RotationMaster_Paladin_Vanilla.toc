@@ -23,6 +23,6 @@ era/paladin-sod-retribution-twist.lua
 era/paladin-sod-retribution-stacking.lua
 era/paladin-sod-shockadin.lua
 era/paladin-sod-protection.lua
-era/paladin-sod-protection-wowsims.lua
+era/paladin-sod-protection-simulator.lua
 era/paladin-sod-holy.lua
 era/paladin-sod-holy-wowhead.lua

@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Shared TBC Hunter blocks (Built In composition; authoring-time only).
--- Consumers: rm.tbc.hunter.ranged.wowsims and rm.tbc.hunter.ranged.wowhead. A content change
+-- Consumers: rm.tbc.hunter.ranged.simulator and rm.tbc.hunter.ranged.wowhead. A content change
 -- needs a block revision bump, every consumer's pin and revision bumped, and both recorded in
 -- tests/fixtures/builtin_composition_ledger.lua.
 -- Policy and sources are the consumers'; see premade-research tbc/hunter.md.

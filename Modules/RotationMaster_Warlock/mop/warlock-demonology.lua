@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Mists of Pandaria Classic Demonology Warlock, levels 10-90 (the recommended variant): wowsims' structure.
+-- Mists of Pandaria Classic Demonology Warlock, levels 10-90 (the recommended variant): simulator' structure.
 -- Selected in the Demonology specialization (266)
 -- from level 10 (RM stores MoP rotations per talent group). Pre-cast Soul Fire or Shadow Bolt. In Metamorphosis: leave it
 -- when Dark Soul is down and fury is at 300 or less, Doom, Touch of Chaos to extend Corruption, Soul Fire on
@@ -19,8 +19,8 @@ assert(addon:RegisterDefaultRotation({
   ['mop.warlock.demonology-pull']=3,['mop.warlock.demonology-caster']=2,['mop.warlock.demonology-filler']=1},
  nameKey='Default.MoP.Warlock.Demonology.Name',descriptionKey='Default.MoP.Warlock.Demonology.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK'},
- tags={'demonology','dps','caster','ranged','pet','leveling','endgame','wowsims','hekili'},
- sources={{url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/warlock/demonology/apls/default.apl.json',title='wowsims/mop: Demonology Warlock APL',reviewedAt='2026-10-23',revision='ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9'},
+ tags={'demonology','dps','caster','ranged','pet','leveling','endgame','hekili'},
+ sources={
  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/WarlockDemonology.simc',title='Hekili (MoP fork): Demonology Warlock priority',reviewedAt='2026-10-23',revision='0750b5dd98005481baf828cce26149b9abca875b'},
  {url='https://www.icy-veins.com/mists-of-pandaria-classic/demonology-warlock-leveling',title='Icy Veins: Demonology Warlock leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-06-10'}},
  body={priority=30,specs={266},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},

@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.warcrafttavern.com/wow-classic/guides/pve-arcane-mage-rotations-cooldowns/',title='Warcraft Tavern: Classic Arcane Mage PvE',reviewedAt='2026-10-23'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/mage-leveling-guide/',title='Warcraft Tavern: Classic Mage leveling',reviewedAt='2026-10-23'},
   {url='https://github.com/kaminaris/MaxDps-Mage/tree/886c8e27f48e38e0f9b8c22cf56b5e625dfce3f0/Specialization/Classic',title='MaxDps-Mage Classic Frost and Arcane modules',reviewedAt='2026-10-23',revision='886c8e2'},
-  {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/mage/apls/p1.apl.json',title='wowsims/classic Mage APL',reviewedAt='2026-10-23',revision='7779ebb'},
+  
  },
  body={
   priority=1,

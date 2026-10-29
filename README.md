@@ -68,14 +68,6 @@ lighting a button, and `/rm errors` opens the addon error report.
 
 [Documentation and rotation sharing](https://rotationmaster.neuromancy.net/) · [Report an issue](https://github.com/corporategoth/rotationmaster/issues) · [Discord](https://discord.gg/4aKZSpUMet)
 
-## WowSims is not supported
-
-Rotation Master does not import or export WowSims rotations. Test builds of 2.0 had a WowSims converter in the rotation
-transfer window; it was removed before release. The reason is the WowSims maintainers' attitude toward addon developers they
-consider beneath them: they indicated that community submissions supporting small addons, with only around 200,000 downloads,
-are not wanted. Rotation Master therefore no longer supports their project, and the pull requests sent to their repositories
-were closed. Rotations move between players as Rotation Master exports, which is the only transfer format.
-
 ## Developer information
 
 | For | Start at |
@@ -103,8 +95,7 @@ GitHub is a mirror.
 Rotation Master is released under [MIT + Attribution](LICENSE), copyright 2018–2026 Preston A. Elder. Derivatives must
 acknowledge Rotation Master and its original author, PreZ, in any credits or About pages, including in game. Versions through
 1.4.3e remain plain MIT. Vendored libraries and the font retain their own licenses; see `Libs/UPSTREAM.json`,
-`Libs/Ace3-LICENSE.txt` and `Fonts/OFL.txt`. Built In rotations derived from WowSims APLs carry the simulators' MIT notice in
-`THIRD_PARTY_NOTICES.md`.
+`Libs/Ace3-LICENSE.txt` and `Fonts/OFL.txt`. Third-party notices are in `THIRD_PARTY_NOTICES.md`.
 
 [coffee-image]: https://cdn.buymeacoffee.com/buttons/default-orange.png
 [coffee]: https://buymeacoffee.com/corporategoth

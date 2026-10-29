@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- TBC Hunter ranged DPS, levels 1–70, Wowhead raid shot policy (alternative variant).
--- Same switch and shared blocks as the wowsims variant (Defaults/blocks/hunter.lua). Differs where
+-- Same switch and shared blocks as the simulator variant (Defaults/blocks/hunter.lua). Differs where
 -- Wowhead differs once Steady Shot is learned: Multi-Shot and Steady Shot after each Auto Shot
 -- only (no Arcane Shot filler, no Serpent Sting), Arcane Shot only while moving, and no Aspect of
 -- the Viper (Wowhead uses mana potions instead); Hawk is always the aspect reminder.

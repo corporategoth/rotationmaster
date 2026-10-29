@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Classic Era Warrior melee DPS, levels 1–60, Arms and Fury (the recommended vanilla DPS premade and
--- the catch-all for any warrior outside Defensive Stance; also Hardcore and Self-Found). wowsims
+-- the catch-all for any warrior outside Defensive Stance; also Hardcore and Self-Found). simulator
 -- order with Icy Veins' three-target area threshold and Wowhead's leveling gates: Charge to pull;
 -- Intercept a distant target; Whirlwind (Thunder Clap before it) on three engaged enemies;
 -- Execute first below 20%; Sunder to five on bosses with no Expose Armor; Bloodthirst; Mortal
@@ -35,8 +35,8 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.warrior.boundaries']=3,['era.warrior.upkeep']=1,['era.warrior.aoe-strikes']=1},
  nameKey='Default.Era.Warrior.DPS.Name',descriptionKey='Default.Era.Warrior.DPS.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR'},
- tags={'dps','melee','leveling','endgame','aoe','wowsims','icy-veins','wowhead'},
- sources={{url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/warrior/apls/dps_reck.apl.json',title='wowsims/classic: Warrior DPS APL',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'},
+ tags={'dps','melee','leveling','endgame','aoe','icy-veins','wowhead'},
+ sources={
  {url='https://www.icy-veins.com/wow-classic/warrior-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Warrior DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
  {url='https://www.icy-veins.com/wow-classic/classic-warrior-leveling-guide',title='Icy Veins: Classic Warrior leveling guide',reviewedAt='2026-10-23',revision='2024-11-17'},
  {url='https://www.icy-veins.com/wow-classic/hardcore-warrior-class-overview',title='Icy Veins: Hardcore Warrior overview (emergency buttons)',reviewedAt='2026-10-23',revision='2023-05-14'},

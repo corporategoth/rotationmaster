@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Windwalker Monk, levels 10–90, in the Windwalker specialization
--- (269). wowsims' Phase 5 order, which Wowhead's Phase 5 list mirrors: Touch of
+-- (269). simulator' Phase 5 order, which Wowhead's Phase 5 list mirrors: Touch of
 -- Death, Tiger Power, Rising Sun Kick, Chi Wave, Combo Breaker procs, Fists of Fury when the
 -- channel will not cap energy, Jab at a two-Chi deficit, Blackout Kick. Cleave and AoE from two
 -- engaged enemies. Tigereye Brew is held to 19 stacks (15 with Chi to spend, 10 under Bloodlust).
@@ -30,9 +30,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.monk.boundaries']=3,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=3,['mop.monk.windwalker-tail']=1},
  nameKey='Default.MoP.Monk.Windwalker.Name',descriptionKey='Default.MoP.Monk.Windwalker.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK'},
- tags={'windwalker','leveling','single-target','aoe','wowsims','wowhead'},
+ tags={'windwalker','leveling','single-target','aoe','wowhead'},
  sources={
-  {url='https://github.com/wowsims/mop/blob/master/ui/specs/monk/windwalker/apls/default.apl.json',title='wowsims/mop: Windwalker APL (Phase 5)',reviewedAt='2026-10-23',revision='ec2c6c2552'},
+  
   {url='https://www.wowhead.com/mop-classic/guide/classes/monk/windwalker/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Windwalker Monk rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20',notes='Read from a Wayback snapshot; Tigereye Brew at 19, 15 with Chi or 10 with a burst buff.'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/windwalker-monk-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Windwalker Monk rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Fists of Fury gates and Expel Harm instead of Jab when hurt; leveling order.'},
  },

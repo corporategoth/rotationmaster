@@ -4,9 +4,9 @@
 -- does not apply (solo, Shadow, or no talents yet). Smite and the wand early, Holy Fire opener for
 -- builds without Shadowform, Mind Flay and Shadowform as talented; Shadow Word: Pain once per
 -- target, Mind Blast on cooldown, the wand on a dying solo target or a low mana pool (Icy Veins
--- leveling and raid, Wowhead, Warcraft Tavern, wowsims agree on this core). Vampiric Embrace and
+-- leveling and raid, Wowhead, Warcraft Tavern, simulator agree on this core). Vampiric Embrace and
 -- Devouring Plague stay out of raids (debuff slots). Thresholds are RM policy.
--- Variants: rm.era.priest.dps.warcrafttavern (wand economy), rm.era.priest.dps.wowsims (Undead raid).
+-- Variants: rm.era.priest.dps.warcrafttavern (wand economy), rm.era.priest.dps.simulator (Undead raid).
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/classic/guide/classes/priest/shadow/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Shadow Priest rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
   {url='https://www.wowhead.com/classic/guide/classes/priest/hardcore-leveling-tips',title='Wowhead: Hardcore Priest leveling',reviewedAt='2026-10-23',revision='2024-11-20'},
   {url='https://www.warcrafttavern.com/wow-classic/guides/shadow-priest-pve/',title='Warcraft Tavern: Classic Shadow Priest PvE',reviewedAt='2026-10-23'},
-  {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/shadow_priest/apls/p1.apl.json',title='wowsims/classic Shadow Priest P1 APL',reviewedAt='2026-10-23',revision='7779ebb'},
+  
  },
  body={
   priority=10,

@@ -2,7 +2,7 @@
 
 -- Shared Mists of Pandaria Classic Paladin blocks (Built In composition; authoring-time only).
 -- Consumers: rm.mop.paladin.retribution, .retribution.warcrafttavern, .protection,
--- .protection.wowsims, .holy and .unspecialized. A content change needs a block revision bump,
+-- .protection.simulator, .holy and .unspecialized. A content change needs a block revision bump,
 -- every consumer's pin and revision bumped, and both recorded in
 -- tests/fixtures/builtin_composition_ledger.lua.
 -- Seals are stances in MoP, read by spell (FORM form: Command 105361, Truth 31801, Righteousness 20154,

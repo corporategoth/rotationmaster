@@ -5,7 +5,7 @@
 -- and talents (Unstable Affliction, Siphon Life, Incinerate, Seed, sacrifice buffs).
 -- Solo it wands and drains when hurt (Icy Veins); in a group Immolate is cast only by a
 -- Destruction build or when a Fire Mage's Improved Scorch is up (Icy Veins, MaxDps), and Siphon
--- Life in a raid only under Improved Shadow Bolt (Wowhead, wowsims). Cast-time DoTs are
+-- Life in a raid only under Improved Shadow Bolt (Wowhead, simulator). Cast-time DoTs are
 -- refreshed about one cast before they expire (Wowhead). Thresholds are RM policy.
 -- The Wowhead drain-tank variant is rm.tbc.warlock.dps.wowhead.
 local _,addon=...
@@ -35,8 +35,8 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/tbc-classic/destruction-warlock-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Destruction Warlock rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
   {url='https://www.wowhead.com/tbc/guide/classes/warlock/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Warlock DPS rotation (Siphon Life and refresh timing)',reviewedAt='2026-10-23',revision='2026-02-10'},
   {url='https://github.com/kaminaris/MaxDps-Warlock/tree/432c75e0dd45802eabaeee3cb472513392b9b83d/Specialization/TBC',title='MaxDps-Warlock TBC modules',reviewedAt='2026-10-23',revision='432c75e'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/sim/warlock/rotations.go',title='wowsims TBC Warlock rotations',reviewedAt='2026-10-23',revision='3301fca'},
-  {url='https://github.com/wowsims/tbc/blob/3301fca59306a747e521274c36e073e69acc7b77/ui/core/talents/warlock.ts',title='wowsims TBC Warlock talent layout',reviewedAt='2026-10-23',revision='3301fca',notes='Talent positions only.'},
+  
+  
  },
  body={
   priority=10,

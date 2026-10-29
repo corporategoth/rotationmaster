@@ -3,7 +3,7 @@
 -- Shared Classic Era Druid blocks (Built In composition; authoring-time only), vanilla and
 -- Season of Discovery. Consumers: rm.era.druid.balance[.icyveins], rm.era.druid.feral[.wowhead,
 -- .warcrafttavern,.warcrafttavern.casual], rm.era.druid.restoration[.warcrafttavern],
--- rm.sod.druid.balance[.icyveins,.wowhead], rm.sod.druid.feral, rm.sod.druid.tank[.wowsims] and
+-- rm.sod.druid.balance[.icyveins,.wowhead], rm.sod.druid.feral, rm.sod.druid.tank[.simulator] and
 -- rm.sod.druid.restoration. A content change needs a revision bump, every consumer's `blocks` pin
 -- and revision bumped, and ledger rows in tests/fixtures/builtin_composition_ledger.lua.
 -- Forms are read by spell (FORM form, any rank): the shapeshift-bar index moves as forms are learned, the spell does not.
@@ -84,7 +84,7 @@ druid('era.druid.powershift',{
   mana('GREATERTHANOREQUALS',.15),negate(own(417141)))),
  wait('wait'),
 },2)
--- Vanilla cat (Icy Veins, Wowhead, wowsims, Warcraft Tavern leveling): Faerie Fire (Feral) kept up,
+-- Vanilla cat (Icy Veins, Wowhead, simulator, Warcraft Tavern leveling): Faerie Fire (Feral) kept up,
 -- Clearcasting on Shred, a finisher from four combo points (Rip before Ferocious Bite is learned,
 -- else on long-lived targets outside raids; Bite under 63 energy), Rake outside raids, builder.
 druid('era.druid.cat',{
@@ -139,7 +139,7 @@ druid('era.druid.caster-pull',{
  {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-starfire',2912,negate(moving())),spell('pull-wrath',5176,negate(moving())),spell('pull-moonfire',8921),stop('pull-stop')}},
 },3)
--- Vanilla Balance (Wowhead 2025, Warcraft Tavern, wowsims): Faerie Fire in a group, Hurricane on
+-- Vanilla Balance (Wowhead 2025, Warcraft Tavern, simulator): Faerie Fire in a group, Hurricane on
 -- three or more, Moonfire and Insect Swarm on targets that live (mana floor), Starfire (on a Nature's
 -- Grace proc first), Wrath before Starfire is learned, melee when dry.
 druid('era.druid.caster',{
@@ -178,7 +178,7 @@ druid('era.druid.resto-damage',{
 },2)
 
 -- Season of Discovery.
--- Cat (Wowhead SoD, wowsims P5, Icy Veins): Faerie Fire when none is up, Savage Roar, Swipe (Cat)
+-- Cat (Wowhead SoD, simulator P5, Icy Veins): Faerie Fire when none is up, Savage Roar, Swipe (Cat)
 -- on four or more, Mangle debuff, Clearcasting on Shred, Rip at five combo points with Savage Roar
 -- lasting, Rake, builder, powershift, Faerie Fire refresh last.
 druid('sod.druid.cat',{
@@ -195,7 +195,7 @@ druid('sod.druid.cat',{
  spell('faerie-fire-refresh',16857,{type='DEBUFF_REMAIN',unit='target',spell=16857,anyrank=true,operator='LESSTHAN',value=8}),
  ref('powershift','era.druid.powershift','shift-'),
 },2)
--- Bear (Icy Veins, wowsims P6, Warcraft Tavern): Faerie Fire (Feral) or Sunfire (Bear) to pull from
+-- Bear (Icy Veins, simulator P6, Warcraft Tavern): Faerie Fire (Feral) or Sunfire (Bear) to pull from
 -- range, Lacerate before it drops, packs (Mangle under Berserk, Swipe), Mangle, Lacerate, Swipe.
 druid('sod.druid.bear',{
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),

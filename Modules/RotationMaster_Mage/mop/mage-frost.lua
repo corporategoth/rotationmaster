@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Mists of Pandaria Classic Frost Mage, levels 10–90, in the Frost specialization
--- (64). wowsims' order, which Method and wowtbc.gg share: Ice Lance at two Fingers of
+-- (64). simulator' order, which Method and wowtbc.gg share: Ice Lance at two Fingers of
 -- Frost, Frostfire Bolt on Brain Freeze, the bomb, Frozen Orb, Ice Lance on one Fingers of Frost,
 -- Frostbolt. From 87 a proc is held for Alter Time when it is less than 10 s away (spent anyway in
 -- its last 3 s). Freeze is a highlight for the Water Elemental's ground-targeted root.
@@ -29,9 +29,9 @@ assert(addon:RegisterDefaultRotation({
  blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1},
  nameKey='Default.MoP.Mage.Frost.Name',descriptionKey='Default.MoP.Mage.Frost.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
- tags={'frost','leveling','single-target','aoe','wowsims','method'},
+ tags={'frost','leveling','single-target','aoe','method'},
  sources={
-  {url='https://github.com/wowsims/mop/blob/ec2c6c2552cc7e2a9555bb5eb89144dfb3b9c8d9/ui/specs/mage/frost/apls/frost.apl.json',title='wowsims/mop: Frost Mage APL',reviewedAt='2026-10-23',revision='ec2c6c2552',notes='Ice Lance at two Fingers of Frost; Icy Veins and Alter Time cadence; procs held for Alter Time.'},
+  
   {url='https://www.method.gg/mop-classic/frost-mage-class-guide-mop-classic',title='Method: MoP Classic Frost Mage guide',reviewedAt='2026-10-23',notes='Phase 1 text.'},
   {url='https://wowtbc.gg/mop/class-guides/frost-mage',title='wowtbc.gg: MoP Classic Frost Mage PvE guide',reviewedAt='2026-10-23'},
   {url='https://www.icy-veins.com/mists-of-pandaria-classic/frost-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Frost Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Freeze on rootable targets, AoE and Blizzard, talent rows.'},

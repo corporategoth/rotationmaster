@@ -14,7 +14,7 @@ bind.lua
 era/blocks.lua
 era/priest-dps.lua
 era/priest-dps-warcrafttavern.lua
-era/priest-dps-wowsims.lua
+era/priest-dps-simulator.lua
 era/priest-healer.lua
 era/priest-sod-dps.lua
 era/priest-sod-dps-wowhead.lua

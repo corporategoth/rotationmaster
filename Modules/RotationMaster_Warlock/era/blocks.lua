@@ -2,7 +2,7 @@
 
 -- Shared Classic Era Warlock blocks, vanilla and Season of Discovery (Built In composition;
 -- authoring-time only). Consumers: rm.era.warlock.dps, .dps.warcrafttavern, .dps.icyveins and
--- rm.sod.warlock.tank, .fire, .fire.icyveins, .shadow, .shadow.wowsims. A content change needs a
+-- rm.sod.warlock.tank, .fire, .fire.icyveins, .shadow, .shadow.simulator. A content change needs a
 -- block revision bump, every consumer's pin and revision bumped, and both recorded in
 -- tests/fixtures/builtin_composition_ledger.lua.
 -- Policy and sources are the consumers'; see premade-research era/warlock.md. Talent positions

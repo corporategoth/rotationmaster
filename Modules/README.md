@@ -47,7 +47,7 @@ These replace the bracketed Mage, Warlock and Priest previews (removed with thei
 |---|---|---|
 | `rm.tbc.mage.frost` | knows Fireball, 0 (catch-all, also unspecced) | Frostbolt; Frost Nova when attacked (not on world bosses); Cone of Cold / Blizzard / Arcane Explosion on packs; Ice Lance on frozen targets; wand finish |
 | `rm.tbc.mage.fire.icyveins` (recommended) | level ≥ 10 and Fire primary, 20 | Pyroblast opener; Improved Scorch keeps five Fire Vulnerability stacks; Fireball; Fire Blast only while moving |
-| `rm.tbc.mage.fire.wowhead` | same, 10, off | Fireball opener; Fire Blast weaved whenever ready (Wowhead, wowsims) |
+| `rm.tbc.mage.fire.wowhead` | same, 10, off | Fireball opener; Fire Blast weaved whenever ready (Wowhead, simulator) |
 | `rm.tbc.mage.arcane` | level ≥ 10 and Arcane primary, 20 | Arcane Missiles before 64; then Arcane Blast under Arcane Power/Bloodlust, at 35%+ mana or to keep stacks, otherwise Frostbolt |
 | `rm.tbc.warlock.dps.icyveins` (recommended) | knows Shadow Bolt, 10 | Every tree: procs, instants while moving, Seed/Hellfire/Shadowfury on packs, curse by situation, DoTs refreshed once under 1.5 s, Drain Life/Life Tap/wand solo, Incinerate or Shadow Bolt |
 | `rm.tbc.warlock.dps.wowhead` | same, 5, off | Drain-tanking solo (Drain Life filler, no wand); Immolate and Siphon Life kept for elites; group Immolate after Corruption and Siphon Life |
@@ -65,13 +65,13 @@ These replace the bracketed Warrior, Rogue and Hunter previews (removed, with th
 
 | Premade | Switch, priority | Differs from its sibling by |
 |---|---|---|
-| `rm.tbc.warrior.protection.wowhead` (Wowhead, wowsims) | Defensive Stance (`FORM` 2), 30 | Thunder Clap/Demoralizing Shout upkeep on elites; Shield Block against crush-capable targets |
+| `rm.tbc.warrior.protection.wowhead` (Wowhead, simulator) | Defensive Stance (`FORM` 2), 30 | Thunder Clap/Demoralizing Shout upkeep on elites; Shield Block against crush-capable targets |
 | `rm.tbc.warrior.protection.icyveins` | Defensive Stance, 25, off | no single-target debuff upkeep; Shield Block while the target attacks you; Rend before Shield Slam |
-| `rm.tbc.warrior.dps.wowsims` (wowsims, Wowhead) | level ≥ 1 (catch-all), 10 | Execute after Bloodthirst/Mortal Strike/Whirlwind; Devastate/Sunder filler |
+| `rm.tbc.warrior.dps.simulator` (simulator, Wowhead) | level ≥ 1 (catch-all), 10 | Execute after Bloodthirst/Mortal Strike/Whirlwind; Devastate/Sunder filler |
 | `rm.tbc.warrior.dps.icyveins` | level ≥ 1, 5, off | Execute first (Arms) or second (Fury); Hamstring only near the rage cap |
-| `rm.tbc.rogue.dps.wowsims` (wowsims, Icy Veins) | level ≥ 1, 10 | two-point Slice and Dice; Rupture when it will last; near-death Eviscerate |
+| `rm.tbc.rogue.dps.simulator` (simulator, Icy Veins) | level ≥ 1, 10 | two-point Slice and Dice; Rupture when it will last; near-death Eviscerate |
 | `rm.tbc.rogue.dps.wowhead` | level ≥ 1, 5, off | one-point Slice and Dice; Eviscerate only |
-| `rm.tbc.hunter.ranged.wowsims` (wowsims, rotationtools, Icy Veins) | level ≥ 1, 10 | Arcane Shot fills a clipped Steady; solo Serpent Sting; Viper/Hawk hysteresis |
+| `rm.tbc.hunter.ranged.simulator` (simulator, rotationtools, Icy Veins) | level ≥ 1, 10 | Arcane Shot fills a clipped Steady; solo Serpent Sting; Viper/Hawk hysteresis |
 | `rm.tbc.hunter.ranged.wowhead` | level ≥ 1, 5, off | Multi/Steady only; no Sting at 62+; no Viper |
 
 Shared steps live in `Modules/RotationMaster_{Warrior,Rogue,Hunter}/tbc/blocks.lua`. Every rotation starts with one cast/channel Stop and one no-target Stop; Warrior and Hunter pulls sit behind one out-of-combat Branch; the Rogue opener behind one stealth Branch; multi-target play is one Branch on `THREAT_COUNT` (enemies with nameplates that have you on their threat table: two for Warriors, three for Hunters' Multi-Shot) and an elite-or-second-enemy gate on Rogue cooldowns. `DISTANCE_COUNT` is not used: an enemy whose range LibRangeCheck cannot bound makes it unavailable, and an unavailable Branch halts the whole rotation. RM cannot count enemies around the target, so Hunter traps and Volley stay manual. `tests/defaults_tbc_{warrior,rogue,hunter}.lua` run each premade through the real predicates, catalog, sequence and publisher with modeled WoW observations; native gameplay acceptance remains open.
@@ -82,15 +82,15 @@ These replace the bounded Shaman, Druid and Paladin leveling previews. Each prem
 
 | Class | Premade (priority) | Switch |
 |---|---|---|
-| Shaman | Enhancement, Icy Veins (10) / Wowhead & wowsims (5, off) | catch-all: every Shaman no other premade fits, including below 10, no points and ties |
-| Shaman | Elemental, Icy Veins & wowsims (30) / Wowhead (21, off) / NextActionTBC (20, off) | primary tree Elemental |
+| Shaman | Enhancement, Icy Veins (10) / Wowhead & simulator (5, off) | catch-all: every Shaman no other premade fits, including below 10, no points and ties |
+| Shaman | Elemental, Icy Veins & simulator (30) / Wowhead (21, off) / NextActionTBC (20, off) | primary tree Elemental |
 | Shaman | Restoration (30) | primary tree Restoration |
 | Druid | Balance (0) | catch-all |
-| Druid | Feral cat and bear, Icy Veins, Warcraft Tavern & wowsims (30) / Wowhead (20, off) | primary tree Feral Combat; the form decides cat or bear |
+| Druid | Feral cat and bear, Icy Veins, Warcraft Tavern & simulator (30) / Wowhead (20, off) | primary tree Feral Combat; the form decides cat or bear |
 | Druid | Restoration (30) | primary tree Restoration |
-| Paladin | Retribution, Wowhead & wowsims (2) / Icy Veins (1, off) | catch-all |
+| Paladin | Retribution, Wowhead & simulator (2) / Icy Veins (1, off) | catch-all |
 | Paladin | Retribution seal twisting (3, disabled by default) | Seal of Command and Blood or Martyr learned, primary tree Retribution |
-| Paladin | Protection, Wowhead & wowsims (20) / Icy Veins (19, off) | Righteous Fury up, or primary tree Protection |
+| Paladin | Protection, Wowhead & simulator (20) / Icy Veins (19, off) | Righteous Fury up, or primary tree Protection |
 | Paladin | Holy, Icy Veins & Wowhead (10) / Wowhead tank healing (9, off) | in a group and primary tree Holy |
 
 Every rotation starts with Stops (casting or channeling, travel forms, no attackable target), then a pull or opener section that ends in a Stop when out of combat, then the priority. Independent upkeep (imbues, shields, totems, auras, blessings, forms, Mark, cooldowns) lives in `cooldowns`. Optional steps that need a macro or a raid decision (Fire Elemental, powershifting) ship `disabled` and can be enabled in a clone. A Branch or Stop whose condition is unavailable halts the whole priority, so enemy counts (`DISTANCE_COUNT`, unavailable whenever a nameplate's range is ambiguous) and time-to-die forecasts (`TT_HEALTH`) appear only on action steps. Druid forms are read from their auras, not the `FORM` slot index. Healer premades act on the current friendly target (or none) and leave choosing whom to heal, and downranking, to the player. `tests/defaults_tbc_{shaman,druid,paladin}.lua` run each premade through the real predicates, catalog, readiness and sequence executor with modeled native APIs (`tests/fixtures/tbc_hybrid_premades.lua`); native gameplay acceptance is pending. Sources, reviewed 2026-10-23, are recorded in each manifest; research notes are kept outside the addon.
@@ -110,7 +110,7 @@ assert(addon:RegisterDefaultBlock({id='shared.preserve-cast',revision=1,families
 A consumer pins every block it reaches, including nested ones, in `blocks`. It references a block as a step anywhere in `rotation`, `cooldowns`, a branch arm or another block:
 
 ```lua
-id='rm.tbc.rogue.dps.wowsims',revision=1,blocks={['tbc.rogue.opening']=1,['tbc.rogue.upkeep']=1,['tbc.rogue.builders']=1},
+id='rm.tbc.rogue.dps.simulator',revision=1,blocks={['tbc.rogue.opening']=1,['tbc.rogue.upkeep']=1,['tbc.rogue.builders']=1},
 rotation={{id='rogue-ref-opening',type='block',block='tbc.rogue.opening',prefix='rogue-'}, ...}
 ```
 
@@ -162,11 +162,11 @@ Blizzard's Assisted Combat has no list for the healer specializations (Holy Pala
 
 | Class | Vanilla (priority) | Season of Discovery (priority) |
 |---|---|---|
-| Druid | Balance, catch-all (2) / Icy Veins Starfire-only (1, off); Feral, primary tree Feral Combat (30) / Warcraft Tavern Rip and Bite (29, off) / Tavern no powershift (28, off) / Wowhead raid bear (27, off); Restoration, primary tree Restoration (30) / Tavern damage tiers (29, off) | Bear tank, Lacerate known (140) / wowsims cat weave (139, disabled); Feral, Savage Roar known or the Feral Combat tree without other role runes (130); Restoration, Lifebloom known or the Restoration tree (130); Balance, catch-all (103) / Wowhead (102, off) / Icy Veins (101, off) |
-| Hunter | Ranged, catch-all (10) / Icy Veins clipped (5, disabled) / wowsims raid Serpent Sting (4, disabled) | Melee, Flanking Strike, Wyvern Strike or Carve known without Chimera or Explosive Shot (110); Ranged, catch-all, Kill Shot vs Lock and Load branch (100) |
+| Druid | Balance, catch-all (2) / Icy Veins Starfire-only (1, off); Feral, primary tree Feral Combat (30) / Warcraft Tavern Rip and Bite (29, off) / Tavern no powershift (28, off) / Wowhead raid bear (27, off); Restoration, primary tree Restoration (30) / Tavern damage tiers (29, off) | Bear tank, Lacerate known (140) / simulator cat weave (139, disabled); Feral, Savage Roar known or the Feral Combat tree without other role runes (130); Restoration, Lifebloom known or the Restoration tree (130); Balance, catch-all (103) / Wowhead (102, off) / Icy Veins (101, off) |
+| Hunter | Ranged, catch-all (10) / Icy Veins clipped (5, disabled) / simulator raid Serpent Sting (4, disabled) | Melee, Flanking Strike, Wyvern Strike or Carve known without Chimera or Explosive Shot (110); Ranged, catch-all, Kill Shot vs Lock and Load branch (100) |
 | Mage | Fire, any Fire point and no Frost point or Fire primary (10) / Warcraft Tavern burst Combustion (9, off); Frost AoE grinding (Icy Veins), solo with Improved Blizzard (5); Frost, catch-all, also Arcane builds (1) | Healer, Regeneration or Mass Regeneration known (105); Arcane, Arcane Blast known and the Arcane tree (104); Frost, the Frost tree (103) / Warcraft Tavern Fire-rune build (102, off); Fire, catch-all (101) |
-| Paladin | Protection, own Righteous Fury or the Protection tree (20) / Icy Veins Seal of Wisdom (19, off); Holy, group and the Holy tree (10); Retribution seal twisting (3, disabled); Retribution, catch-all (2) | Protection, Righteous Fury, Hammer of the Righteous or Shield of Righteousness or the Protection tree (120) / wowsims (119, off); Holy, group and a Holy rune or the Holy tree without Crusader Strike (110) / Wowhead Holy Light first (109, off); seal twisting (104, disabled); seal stacking (103, disabled); Retribution, catch-all (102) / Icy Veins Phase 4 (101, off); Shockadin (100, disabled) |
-| Priest | Healer, group and the Discipline or Holy tree (20); Damage, catch-all (10) / Warcraft Tavern wand economy (5, off) / wowsims Undead raid (4, off) | Healer, group and the Discipline or Holy tree (120) / Warcraft Tavern Serendipity (115, off); Damage, catch-all (110) / Wowhead Mind Spike stacks (105, off) |
+| Paladin | Protection, own Righteous Fury or the Protection tree (20) / Icy Veins Seal of Wisdom (19, off); Holy, group and the Holy tree (10); Retribution seal twisting (3, disabled); Retribution, catch-all (2) | Protection, Righteous Fury, Hammer of the Righteous or Shield of Righteousness or the Protection tree (120) / simulator (119, off); Holy, group and a Holy rune or the Holy tree without Crusader Strike (110) / Wowhead Holy Light first (109, off); seal twisting (104, disabled); seal stacking (103, disabled); Retribution, catch-all (102) / Icy Veins Phase 4 (101, off); Shockadin (100, disabled) |
+| Priest | Healer, group and the Discipline or Holy tree (20); Damage, catch-all (10) / Warcraft Tavern wand economy (5, off) / simulator Undead raid (4, off) | Healer, group and the Discipline or Holy tree (120) / Warcraft Tavern Serendipity (115, off); Damage, catch-all (110) / Wowhead Mind Spike stacks (105, off) |
 
 Every Mage step that casts Balefire Bolt goes through one gate in `era/blocks.lua`: never at four or more of its stacks (read as a buff and as a debuff, since which list the client uses is unconfirmed) and never within 2.5 s of the previous cast, because the fifth stack kills the player; older guides' 8–10 stacks are lethal. Branch and Stop conditions use `THREAT_COUNT` for enemy counts; `DISTANCE_COUNT` and `TT_HEALTH` appear only on single steps. `tests/defaults_era_{druid,hunter,mage,paladin,priest}.lua` run every premade through the real predicates, catalog, build context (realm season), composition and sequence executor on a modeled 1.15 client (`tests/fixtures/era_premade_model_a.lua`: legacy talent and spellbook APIs, `C_Seasons`, combo points through `UnitPower`); native gameplay acceptance is pending. Spell, aura and rune IDs follow the research's 1.15.9 client-data cross-check and still need in-game verification.
 
@@ -176,9 +176,9 @@ Every Mage step that casts Balefire Bolt goes through one gate in `era/blocks.lu
 
 | Class | Vanilla (priority) | Season of Discovery (priority) |
 |---|---|---|
-| Rogue | melee DPS, catch-all (10); Warcraft Tavern five-point finishers (5, off); wowsims sword swing-sync (3, off) | tank: Tease known (60); melee DPS, catch-all (50); Icy Veins Rupture (45, off); Zockify lean Envenom (42, off) |
-| Shaman | Elemental, primary Elemental tree (30) / wowsims Chain Lightning on cooldown (21, off); Restoration, the Restoration tree (30) / Warcraft Tavern Chain Heal (21, off); Enhancement, catch-all (10) / Warcraft Tavern (5, off) | tank: Windfury known with Rockbiter on the main hand (70); Restoration, the Restoration tree (60); Elemental, the Elemental tree (50); Enhancement, catch-all (40) |
-| Warlock | every tree, catch-all (10); Warcraft Tavern drain tank (5, off); Icy Veins curse and Corruption raids (3, off) | tank: Metamorphosis known (80); Fire: Chaos Bolt or Incinerate known (70) / Icy Veins (65, off); Shadow, catch-all (60) / wowsims Drain Soul filler (55, off) |
+| Rogue | melee DPS, catch-all (10); Warcraft Tavern five-point finishers (5, off); simulator sword swing-sync (3, off) | tank: Tease known (60); melee DPS, catch-all (50); Icy Veins Rupture (45, off); Zockify lean Envenom (42, off) |
+| Shaman | Elemental, primary Elemental tree (30) / simulator Chain Lightning on cooldown (21, off); Restoration, the Restoration tree (30) / Warcraft Tavern Chain Heal (21, off); Enhancement, catch-all (10) / Warcraft Tavern (5, off) | tank: Windfury known with Rockbiter on the main hand (70); Restoration, the Restoration tree (60); Elemental, the Elemental tree (50); Enhancement, catch-all (40) |
+| Warlock | every tree, catch-all (10); Warcraft Tavern drain tank (5, off); Icy Veins curse and Corruption raids (3, off) | tank: Metamorphosis known (80); Fire: Chaos Bolt or Incinerate known (70) / Icy Veins (65, off); Shadow, catch-all (60) / simulator Drain Soul filler (55, off) |
 | Warrior | tank: Defensive Stance (30) / Icy Veins Battle Shout threat (25, off); melee DPS, catch-all (10) | tank: Defensive Stance (70); melee DPS, catch-all (50) / Wowhead Battle Forecaster (45, off) / Icy Veins (40, off) |
 
 Every rotation starts with a cast/channel Stop and a no-target Stop (Warlocks also refuse a mob someone else is fighting while they are solo); pulls sit behind one out-of-combat Branch, the Rogue opener behind one stealth Branch, healers behind one friendly-target Branch, and packs behind one `THREAT_COUNT` Branch. `DISTANCE_COUNT` and `TT_HEALTH` appear only on single steps. Talent conditions use the tree layout (`PRIMARY_TALENT_TREE` switches; individual talents by tier-then-column index, to verify in game); weapon imbues use `WEAPON_IMBUE` enchant IDs; Soul Shards are read with `CARRYING`, never `POINT`. `RUNNER` is not used: it exists only with MobInfo2 and would leave a premade unresolved without it. `tests/defaults_era_{rogue,shaman,warlock,warrior}.lua` run each premade on the real `era` client family with modeled talents, season, enchants, totems and pets (`tests/fixtures/era_rogue_shaman_warlock_warrior.lua`); native gameplay acceptance is pending and every spell, aura and enchant ID still needs in-game verification.
@@ -189,14 +189,14 @@ Every rotation starts with a cast/channel Stop and a no-target Stop (Warlocks al
 
 | Class | Premade (priority) | Switch |
 |---|---|---|
-| Death Knight | Blood (30) / Blood, health-reactive, wowsims (25, off) | knows Blood Rites or Dark Command |
+| Death Knight | Blood (30) / Blood, health-reactive, simulator (25, off) | knows Blood Rites or Dark Command |
 | | Frost, two weapons (30) | knows Howling Blast and the off hand reports a swing speed |
 | | Frost, two-hander (20) | knows Howling Blast |
-| | Unholy (10) / Unholy, rune-cap pooling, wowsims (5, off) | catch-all (Death Coil) |
+| | Unholy (10) / Unholy, rune-cap pooling, simulator (5, off) | catch-all (Death Coil) |
 | Druid | Balance (30), Feral (30) / Feral, Icy Veins (20, off), Guardian (30), Restoration (30) / Restoration tank healing, Wowhead (20, off), before a specialization (0) | Starfire, Tiger's Fury, Savage Defense, Swiftmend; catch-all |
 | Hunter | Beast Mastery (10), Marksmanship (10) / Marksmanship, Icy Veins (5, off), Survival (10), before a specialization (1) | Kill Command, Aimed Shot, Explosive Shot; catch-all |
 | Mage | Arcane (30) / Icy Veins (25, off), Fire (30) / Icy Veins (25, off), Frost (30), before a specialization (0) | Arcane Blast, Pyroblast, Summon Water Elemental; catch-all |
-| Monk | Brewmaster (30) / offensive, wowsims (20, off), Windwalker (30) / SimulationCraft 5.4.8 (20, off), Mistweaver (30), before a specialization (0) | Stance of the Sturdy Ox, Fists of Fury, Soothing Mist; catch-all |
-| Paladin | Retribution (30) / Warcraft Tavern (20, off), Protection (30) / pool Holy Power, wowsims (20, off), Holy (30), before a specialization (0) | Templar's Verdict, Avenger's Shield, Holy Shock; catch-all |
+| Monk | Brewmaster (30) / offensive, simulator (20, off), Windwalker (30) / SimulationCraft 5.4.8 (20, off), Mistweaver (30), before a specialization (0) | Stance of the Sturdy Ox, Fists of Fury, Soothing Mist; catch-all |
+| Paladin | Retribution (30) / Warcraft Tavern (20, off), Protection (30) / pool Holy Power, simulator (20, off), Holy (30), before a specialization (0) | Templar's Verdict, Avenger's Shield, Holy Shock; catch-all |
 
 Rotations follow the TBC structure: Stops for casting, channeling and no attackable target, an out-of-combat pull that ends in a Stop, one `THREAT_COUNT` Branch for multiple enemies, and independent upkeep, cooldowns, interrupts and health-gated defensives in `cooldowns` (off-GCD spenders such as Shield of the Righteous light there too). `TT_HEALTH` and `DISTANCE_COUNT` appear only on action steps. Resources use the Mists `POINT` map (Holy Power, Chi, Combo Points); Arcane Charges are read as the player debuff 36032; Death Knight runes use `RUNE` by current type (Death runes are type 4, so "a Frost or Death rune" is an OR); Eclipse energy is unreadable, so Balance follows the Eclipse buffs. Talent rows use grid `TALENT` only where a talent changes another step (Roiling Blood, the Mage tier 5/6 choices, Holy Avenger / Divine Purpose). The Frost Death Knight weapon split relies on `SWING_TIME` (off hand) being unreadable with a two-hander, which fails the dual-wield switch without halting anything; it must never move into a Branch or Stop. `tests/defaults_mop_{death_knight,druid,hunter,mage,monk,paladin}.lua` run each premade through the real predicates, catalog, composition and sequence executor on a modeled 5.5.4 client (`tests/fixtures/mop_premade_model_a.lua`), including that no pack registers on a Wrath progression client. Spell IDs follow the research's 5.5.4 client data and still need in-game verification.

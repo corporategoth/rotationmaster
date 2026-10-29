@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Season of Discovery Druid Balance, levels 1-60, and the SoD default for every Druid no other SoD
--- premade fits. After wowsims P6 with Wowhead's Phase 8 thresholds: Starsurge whenever its buff is
+-- premade fits. After simulator P6 with Wowhead's Phase 8 thresholds: Starsurge whenever its buff is
 -- down, Hurricane on six or more (four with the Gale Winds rune), Insect Swarm only on the move, Sunfire and Moonfire on
 -- targets that live, Starfire only when empowered (Starsurge or Lunar Eclipse), Wrath filler.
 -- In Cat or Bear Form it plays the SoD Feral sections.
@@ -21,9 +21,9 @@ assert(addon:RegisterDefaultRotation({
   ['sod.druid.caster-pull']=3},
  nameKey='Default.SoD.Druid.Balance.Name',descriptionKey='Default.SoD.Druid.Balance.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
- tags={'season-of-discovery','leveling','endgame','balance','caster','single-target','aoe','wowsims','wowhead'},
+ tags={'season-of-discovery','leveling','endgame','balance','caster','single-target','aoe','wowhead'},
  sources={
-  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/balance_druid/apls/phase_6.apl.json',title='wowsims/sod Balance Phase 6 APL',reviewedAt='2026-10-23',revision='0e3f6ef'},
+  
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/druid/balance/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Balance Druid rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-11'},
   {url='https://www.icy-veins.com/wow-classic/balance-druid-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Balance Druid rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  },

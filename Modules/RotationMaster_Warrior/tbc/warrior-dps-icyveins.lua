@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- TBC Warrior melee DPS, levels 1–70, Icy Veins order (alternative DPS variant).
--- Differs from the wowsims variant only where Icy Veins differs: Arms (Mortal Strike known) puts
+-- Differs from the simulator variant only where Icy Veins differs: Arms (Mortal Strike known) puts
 -- Execute first, Fury keeps Bloodthirst above Execute, Whirlwind follows without a rage reserve,
 -- and spare rage goes to Hamstring near the cap instead of a Sunder filler.
 -- Everything both variants agree on is a shared block (Defaults/blocks/warrior.lua).

@@ -240,9 +240,9 @@ test('shipped composed packs expand once into plain trees pinned as the ledger r
     end
 
     for _, pair in ipairs({
-        { 'rm.tbc.rogue.dps.wowsims', 'rm.tbc.rogue.dps.wowhead', 'rogue-sinister' },
-        { 'rm.tbc.warrior.dps.wowsims', 'rm.tbc.warrior.dps.icyveins', 'warrior-dps-charge' },
-        { 'rm.tbc.hunter.ranged.wowsims', 'rm.tbc.hunter.ranged.wowhead', 'hunter-auto-shot' },
+        { 'rm.tbc.rogue.dps.simulator', 'rm.tbc.rogue.dps.wowhead', 'rogue-sinister' },
+        { 'rm.tbc.warrior.dps.simulator', 'rm.tbc.warrior.dps.icyveins', 'warrior-dps-charge' },
+        { 'rm.tbc.hunter.ranged.simulator', 'rm.tbc.hunter.ranged.wowhead', 'hunter-auto-shot' },
     }) do
         local left = find(a:GetDefaultRotation(pair[1]).envelope.body.rotation, pair[3])
         local right = find(a:GetDefaultRotation(pair[2]).envelope.body.rotation, pair[3])

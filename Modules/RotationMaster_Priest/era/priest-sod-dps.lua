@@ -4,7 +4,7 @@
 -- Season of Discovery realm whenever the healer premade does not apply. Runes count only while
 -- engraved. Shadowform; Vampiric Touch pre-cast; Void Plague, Shadow Word: Pain and Vampiric Touch
 -- kept up (refreshed under 1.5 s, which Pain and Suffering rarely needs); Mind Blast on cooldown
--- (wowsims Phase 8); Mind Flay on Melting Faces and as the filler with the Phase 8 six-piece,
+-- (simulator Phase 8); Mind Flay on Melting Faces and as the filler with the Phase 8 six-piece,
 -- otherwise Mind Spike (Icy Veins, Wowhead, Warcraft Tavern); Void Zone and Mind Sear on four or
 -- more enemies; Penance, Holy Fire and Smite before Shadowform. Thresholds are RM policy.
 -- Variant: rm.sod.priest.dps.wowhead (Mind Blast at three Mind Spike stacks).
@@ -19,9 +19,9 @@ assert(addon:RegisterDefaultRotation({
   ['sod.priest.moving']=2,['sod.priest.dots']=2,['sod.priest.procs']=1,['sod.priest.filler']=1},
  nameKey='Default.SoD.Priest.Dps.Name',descriptionKey='Default.SoD.Priest.Dps.Description',
  applicability={families={'era'},actionContext='player',class='PRIEST',rulesets={'season:2'}},
- tags={'shadow','damage','leveling','raid','single-target','aoe','season-of-discovery','wowsims','icy-veins'},
+ tags={'shadow','damage','leveling','raid','single-target','aoe','season-of-discovery','icy-veins'},
  sources={
-  {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/shadow_priest/builds/phase_8.build.json',title='wowsims/sod Shadow Priest Phase 8 build',reviewedAt='2026-10-23',revision='0e3f6ef'},
+  
   {url='https://www.icy-veins.com/wow-classic/shadow-priest-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Shadow Priest rotation',reviewedAt='2026-10-23',revision='2025-04-08',notes='Text describes Phase 4.'},
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/priest/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Priest DPS rotation',reviewedAt='2026-10-23',revision='2025-02-01',notes='Phase 7 text; AoE and cooldowns only.'},
   {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/priest/dps-leveling-tips',title='Wowhead: SoD Priest DPS leveling',reviewedAt='2026-10-23',revision='2025-02-01'},

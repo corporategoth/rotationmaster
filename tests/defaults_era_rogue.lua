@@ -5,7 +5,7 @@
 -- in tests/fixtures/era_rogue_shaman_warlock_warrior.lua.
 local M = dofile('tests/fixtures/era_rogue_shaman_warlock_warrior.lua')
 local test, finish = M.F.suite()
-local DPS, TAV, SIM = 'rm.era.rogue.dps', 'rm.era.rogue.dps.warcrafttavern', 'rm.era.rogue.dps.wowsims'
+local DPS, TAV, SIM = 'rm.era.rogue.dps', 'rm.era.rogue.dps.warcrafttavern', 'rm.era.rogue.dps.simulator'
 
 local SOD, SIV, SZK, TANK =
     'rm.sod.rogue.dps', 'rm.sod.rogue.dps.icyveins', 'rm.sod.rogue.dps.zockify', 'rm.sod.rogue.tank'
@@ -301,7 +301,7 @@ test('builders follow what is known, the raid and whether the target faces you',
 end)
 
 test(
-    'wowsims swing sync: Sinister Strike right after a main-hand swing, near the energy cap or on a dying target',
+    'simulator swing sync: Sinister Strike right after a main-hand swing, near the energy cap or on a dying target',
     function()
         local f, s = rogue(60, mid)
         local a = f.addon

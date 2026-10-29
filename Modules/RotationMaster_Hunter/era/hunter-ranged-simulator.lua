@@ -1,6 +1,6 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Classic Era Hunter ranged DPS after the wowsims/classic P1 list, levels 1–60. Off by default:
+-- Classic Era Hunter ranged DPS after the simulator/classic P1 list, levels 1–60. Off by default:
 -- it keeps Serpent Sting up in raids too, which the 16-debuff limit on standard Era realms usually
 -- forbids. Same switch as rm.era.hunter.ranged; in a group: Aimed Shot and Multi-Shot after an Auto
 -- Shot, then Serpent Sting under 5 s left while both are cooling, never Arcane Shot.
@@ -16,16 +16,13 @@ local function cooling(id)return any(negate(known(id)),{type='SPELL_COOLDOWN',sp
 local stingless=all(negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
  negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}),negate({type='DEBUFF',unit='target',spell=3034,anyrank=true,owndebuff=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.wowsims',revision=5,
+ format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.simulator',revision=5,
  blocks={['era.hunter.boundaries']=3,['era.hunter.dead-zone']=3,['era.hunter.opening']=3,['era.hunter.solo']=2,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1,['era.hunter.cooldowns']=1},
- nameKey='Default.Era.Hunter.Ranged.Wowsims.Name',descriptionKey='Default.Era.Hunter.Ranged.Wowsims.Description',
+ nameKey='Default.Era.Hunter.Ranged.Simulator.Name',descriptionKey='Default.Era.Hunter.Ranged.Simulator.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER'},
- tags={'dps','ranged','endgame','raid','wowsims'},
- sources={
-  {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/hunter/apls/p1.apl.json',title='wowsims/classic: Hunter P1 APL',reviewedAt='2026-10-23',revision='7779ebb'},
-  {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/sim/hunter/aimed_shot.go',title='wowsims/classic: Aimed Shot model',reviewedAt='2026-10-23',revision='7779ebb'},
- },
+ tags={'dps','ranged','endgame','raid'},
+ sources={},
  body={priority=4,disabled=true,
  cooldowns={block('era.hunter.hawk','hunter-'),block('era.hunter.upkeep','hunter-'),block('era.hunter.cooldowns','hunter-')},
  rotation={

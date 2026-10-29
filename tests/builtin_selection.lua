@@ -379,11 +379,11 @@ test('Classic (TBC): an enabled Built In whose switch matches is chosen before t
     assert(a:SetDefaultRotationEnabled('rm.tbc.shaman.enhancement.icyveins', false))
     select(f)
     assert(not tostring(current(f)):find('^rm%.'), 'a disabled Built In was chosen: ' .. tostring(current(f)))
-    assert(a:SetDefaultRotationEnabled('rm.tbc.shaman.enhancement.wowsims', true))
+    assert(a:SetDefaultRotationEnabled('rm.tbc.shaman.enhancement.simulator', true))
     select(f)
 
     assert(
-        current(f) == 'rm.tbc.shaman.enhancement.wowsims',
+        current(f) == 'rm.tbc.shaman.enhancement.simulator',
         'the enabled alternative was not chosen: ' .. tostring(current(f))
     )
 end)

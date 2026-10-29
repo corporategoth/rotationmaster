@@ -2,7 +2,7 @@
 
 -- Classic Era Enhancement Shaman, levels 1–60 (the recommended vanilla premade and the catch-all
 -- for every Shaman with no points, a tie or a hybrid leveling build; also Hardcore and Self-Found).
--- Icy Veins order with wowsims' gates: Lightning Bolt pull from range; Earth Shock interrupts; in
+-- Icy Veins order with simulator' gates: Lightning Bolt pull from range; Earth Shock interrupts; in
 -- raids Stormstrike and Frost Shock only (debuff slots); Fire Nova and Magma totems on packs;
 -- Stormstrike; Earth Shock into its debuff or to finish; Flame Shock when it will run; Earth
 -- Shock with half mana; Lightning Bolt while out of reach. Rockbiter solo, Windfury in dungeons.
@@ -29,13 +29,13 @@ assert(addon:RegisterDefaultRotation({
  blocks={['era.shaman.manual']=3,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.Era.Shaman.Enhancement.Name',descriptionKey='Default.Era.Shaman.Enhancement.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN'},
- tags={'dps','melee','leveling','endgame','aoe','icy-veins','wowhead','wowsims'},
+ tags={'dps','melee','leveling','endgame','aoe','icy-veins','wowhead'},
  sources={{url='https://www.icy-veins.com/wow-classic/enhancement-shaman-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
  {url='https://www.icy-veins.com/wow-classic/enhancement-shaman-leveling-guide-1-60',title='Icy Veins: Classic Enhancement Shaman leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},
  {url='https://www.icy-veins.com/wow-classic/hardcore-shaman-class-overview',title='Icy Veins: Hardcore Shaman overview (safety totems)',reviewedAt='2026-10-23',revision='2023-05-19'},
  {url='https://www.wowhead.com/classic/guide/classes/shaman/enhancement/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Enhancement Shaman DPS rotation',reviewedAt='2026-10-23',revision='2023-12-02'},
  {url='https://www.wowhead.com/classic/guide/classes/shaman/enhancement/leveling-tips',title='Wowhead: Classic Enhancement Shaman leveling tips',reviewedAt='2026-10-23',revision='2024-11-20'},
- {url='https://github.com/wowsims/classic/blob/7779ebbf79dc7f1341e6ab939b28a3402c9a730a/ui/enhancement_shaman/apls/default.apl.json',title='wowsims/classic: Enhancement Shaman default APL',reviewedAt='2026-10-23',revision='7779ebbf79dc7f1341e6ab939b28a3402c9a730a'}},
+ },
  body={priority=10,
  cooldowns={
   spell('enh-windfury-weapon',8232,all(dungeon,any(negate({type='WEAPON'}),rockbiter))),
