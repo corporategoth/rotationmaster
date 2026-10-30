@@ -37,19 +37,7 @@ installation, testing and known issues.
 
 Built In rotations are starting points, not guarantees of the best action for every character, encounter or play style.
 
-## Supported WoW clients
-
-| Client | Interface |
-| --- | --- |
-| Classic Era / Season of Discovery 1.15.9 | 11509 |
-| TBC Anniversary 2.5.6 | 20506 |
-| Mists of Pandaria Classic 5.5.4 | 50504 |
-| Retail (Midnight) 12.1.5 | 120105 |
-| WoW Forever 1.60.1 | 16001 |
-
-These are the clients targeted by the beta; they have not all been verified in game. See [client support][client-support]
-for what has actually been tested. Retail and Forever restrict some game information and addon actions, so available
-conditions vary. Raid-marker units, marker conditions and Set Mark are unavailable on those two clients.
+Available conditions vary by client. See [client support][client-support] for details and in-game testing status.
 
 Rotation Master uses your game language automatically: English, German, Spanish, Latin American Spanish, French, Italian,
 Korean, Brazilian Portuguese, Russian, Simplified Chinese and Traditional Chinese.
@@ -106,10 +94,10 @@ acknowledge Rotation Master and its original author, PreZ, in any credits or Abo
 [commits]: https://github.com/corporategoth/rotationmaster/commits/master
 [license-badge]: https://img.shields.io/badge/license-MIT%20%2B%20Attribution-blue?style=for-the-badge
 [license]: LICENSE
-[retail-badge]: https://img.shields.io/badge/Retail-12.1.5-blue?style=for-the-badge
-[forever-badge]: https://img.shields.io/badge/Forever-1.60.1-blue?style=for-the-badge
-[era-badge]: https://img.shields.io/badge/Classic%20Era-1.15.9-orange?style=for-the-badge
-[sod-badge]: https://img.shields.io/badge/Season%20of%20Discovery-1.15.9-orange?style=for-the-badge
-[tbc-badge]: https://img.shields.io/badge/TBC%20Anniversary-2.5.6-orange?style=for-the-badge
-[mists-badge]: https://img.shields.io/badge/Mists%20Classic-5.5.4-orange?style=for-the-badge
+[retail-badge]: docs/assets/client-badges/retail.svg
+[forever-badge]: docs/assets/client-badges/forever.svg
+[era-badge]: docs/assets/client-badges/era.svg
+[sod-badge]: docs/assets/client-badges/sod.svg
+[tbc-badge]: docs/assets/client-badges/tbc.svg
+[mists-badge]: docs/assets/client-badges/mists.svg
 [client-support]: docs/quality/client-support.md
