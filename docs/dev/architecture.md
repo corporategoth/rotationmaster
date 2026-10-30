@@ -19,9 +19,6 @@ packaged TOC against the same list.
 | --- | --- | --- |
 | 11509 | Classic Era 1.15.9 (also Season of Discovery, Hardcore, Self-Found) | `era` |
 | 20506 | TBC Anniversary 2.5.6 | `tbc` |
-| 30405 | Wrath of the Lich King Classic 3.4.5 | `progression` |
-| 38002 | Wrath Titan Reforged 3.80.2 | `progression` |
-| 40402 | Cataclysm Classic 4.4.2 | `progression` |
 | 50504 | Mists of Pandaria Classic 5.5.4 | `progression` (expansion 4) |
 | 120105 | Retail (Midnight) 12.1.5 | `retail` |
 | 16001 | WoW Forever 1.60.1 | `forever` |

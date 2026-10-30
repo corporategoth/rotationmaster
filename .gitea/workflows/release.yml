@@ -157,10 +157,9 @@ jobs:
           expected="$(jq -r .sha256 tools/vendor/bigwigs-packager/UPSTREAM.json)"
           echo "${expected}  tools/vendor/bigwigs-packager/release.sh" | sha256sum -c -
 
-      # Pass one: build only (-d), no secrets in the environment. The zip it makes is the one that gets checked and the
-      # one attached to the Gitea release.
-      - name: Build the package with the BigWigs packager
-        run: bash tools/vendor/bigwigs-packager/release.sh -d -u -e -l -r "${GITHUB_WORKSPACE}/.release"
+      # Build the same multi-client package used by GitHub and attach that checked ZIP to the Gitea release.
+      - name: Build the package
+        run: python3 tools/package_release.py --tag "${TAG}" --check --out "${GITHUB_WORKSPACE}/.release"
 
       - name: Check the package
         run: |

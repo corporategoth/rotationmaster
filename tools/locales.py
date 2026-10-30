@@ -67,7 +67,7 @@ TRANSLATORS_FILE = 'tools/locale_translators.json'
 BUNDLES_JSON = 'Locales/bundles.json'
 INDEX_FILE = 'Data/text_bundle_index.lua'
 # The interfaces every load-on-demand text add-on declares (the same list as the other Modules/ add-ons).
-BUNDLE_INTERFACE = '11509, 20506, 30405, 38002, 40402, 50504, 120105, 16001'
+BUNDLE_INTERFACE = '11509, 20506, 50504, 120105, 16001'
 AI_NOTE = 'AI-assisted, not yet reviewed by a native speaker'
 
 
