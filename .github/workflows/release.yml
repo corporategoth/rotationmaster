@@ -111,8 +111,8 @@ jobs:
           set -euo pipefail
           expected="$(jq -r .sha256 tools/vendor/bigwigs-packager/UPSTREAM.json)"
           echo "${expected}  tools/vendor/bigwigs-packager/release.sh" | sha256sum -c -
-          bash tools/vendor/bigwigs-packager/release.sh -d -u -e -l -r "${GITHUB_WORKSPACE}/.release"
-          python3 tools/package_release.py --check-zip ".release/RotationMaster-${TAG}.zip" --version "${TAG}"
+          python3 tools/package_release.py --tag "${TAG}" --check --out "${GITHUB_WORKSPACE}/.release"
+          sha256sum ".release/RotationMaster-${TAG}.zip" > .release/package.sha256
       - name: Upload to addon sites
         if: ${{ env.DRY_RUN != 'true' }}
         env:
@@ -123,4 +123,9 @@ jobs:
         run: |
           set -euo pipefail
           read -r -a args <<< "${PACKAGER_FLAGS}"
-          bash tools/vendor/bigwigs-packager/release.sh "${args[@]}" -r "${GITHUB_WORKSPACE}/.release"
+          sha256sum -c .release/package.sha256
+          # The vendored uploader accepts an existing archive via these variables. Keep its staging directory,
+          # skip copying and zipping, and upload precisely the file checked above to every selected site.
+          export archive="${GITHUB_WORKSPACE}/.release/RotationMaster-${TAG}.zip"
+          export archive_name="RotationMaster-${TAG}.zip" archive_label="${TAG}" archive_version="${TAG}"
+          bash tools/vendor/bigwigs-packager/release.sh "${args[@]}" -c -z -o -r "${GITHUB_WORKSPACE}/.release"

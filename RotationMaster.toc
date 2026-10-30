@@ -1,8 +1,7 @@
 # Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
-## Interface: 11509, 20506, 30405, 38002, 40402, 50504, 120105, 16001
+## Interface: 11509, 20506, 50504, 120105, 16001
 ## Interface-Classic: 11509
 ## Interface-BCC: 20506
-## Interface-Wrath: 30405
 ## Title: Rotation Master
 ## Version: @project-version@
 ## Author: PreZ

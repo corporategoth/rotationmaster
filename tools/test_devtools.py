@@ -107,6 +107,63 @@ class Pkgmeta(unittest.TestCase):
 
 
 class Text(unittest.TestCase):
+    def test_release_targets_only_current_supported_clients(self):
+        self.assertEqual(set(P.SUPPORTED_CLIENTS), {11509, 16001, 20506, 50504, 120105})
+
+    def test_vendored_uploader_can_reuse_the_checked_archive(self):
+        root = temp_dir(self)
+        archive = root / 'RotationMaster-test.zip'
+        archive.write_bytes(b'checked archive')
+        source = root / 'source'
+        source.mkdir()
+        (source / 'RotationMaster.toc').write_text('## Interface: 11509, 20506, 50504, 120105, 16001\n'
+                                                   '## X-Curse-Project-ID: 301085\n## X-Wago-ID: vEGPM4N1\n')
+        (source / '.pkgmeta').write_text('package-as: RotationMaster\nmanual-changelog: CHANGELOG.md\n')
+        (source / 'CHANGELOG.md').write_text('# Test\n')
+        fixture_env = dict(os.environ)
+        for key in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_PREFIX',
+                    'GITHUB_ACTIONS', 'GITHUB_REF', 'GITHUB_REF_NAME', 'GITHUB_SHA', 'GITHUB_OUTPUT',
+                    'GITHUB_REPOSITORY', 'GITHUB_TOKEN', 'GH_TOKEN', 'CF_API_TOKEN', 'WOWI_API_TOKEN'):
+            fixture_env.pop(key, None)
+        fixture_env.update(GIT_AUTHOR_NAME='T', GIT_AUTHOR_EMAIL='t@example.invalid',
+                           GIT_COMMITTER_NAME='T', GIT_COMMITTER_EMAIL='t@example.invalid')
+        subprocess.run(['git', 'init', '-q', '-b', 'main', str(source)], check=True, env=fixture_env)
+        for args in (('add', 'RotationMaster.toc', '.pkgmeta', 'CHANGELOG.md'),
+                     ('commit', '-q', '-m', 'test'), ('tag', '2.0.0-beta.1')):
+            subprocess.run(['git', '-C', str(source), *args], check=True, capture_output=True, env=fixture_env)
+        calls = root / 'uploads.txt'
+        curl = root / 'curl'
+        curl.write_text(f'''#!{sys.executable}
+import json, os, pathlib, sys
+args = sys.argv[1:]
+url = args[-1]
+if url.endswith('/api/game/wow/versions'):
+    print(json.dumps([{{'id': i + 1, 'gameVersionTypeID': t, 'name': v}} for i, (t, v) in enumerate([(67408, '1.15.9'), (73246, '2.5.6'), (79434, '5.5.4'), (517, '12.1.5'), (88568, '1.60.1')])]))
+elif url.endswith('/api/data/game'):
+    print(json.dumps({{'patches': {{'classic': ['1.15.9'], 'bc': ['2.5.6'], 'mop': ['5.5.4'], 'retail': ['12.1.5'], 'forever': ['1.60.1']}}}}))
+elif '/upload-file' in url or '/version' in url:
+    sys.stdin.read()
+    target = next(a.split('=@', 1)[1] for a in args if a.startswith('file=@'))
+    with open(os.environ['FAKE_UPLOADS'], 'a') as out:
+        out.write(url + ' ' + pathlib.Path(target).read_bytes().decode() + '\\n')
+    print('200', end='')
+else:
+    raise SystemExit('unexpected URL: ' + url)
+''')
+        curl.chmod(0o755)
+        env = {**fixture_env, 'PATH': str(root) + os.pathsep + os.environ['PATH'], 'FAKE_UPLOADS': str(calls),
+               'CF_API_KEY': 'test', 'WAGO_API_TOKEN': 'test', 'archive': str(archive),
+               'archive_name': archive.name, 'archive_label': 'test', 'archive_version': 'test'}
+        result = subprocess.run(['bash', str(P.PACKAGER), '-c', '-z', '-o', '-u', '-e', '-l', '-w', '0',
+                                 '-r', str(root), '-t', str(source)], env=env, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(archive.read_bytes(), b'checked archive')
+        self.assertNotIn('Copying files into', result.stdout)
+        self.assertNotIn('Creating archive:', result.stdout)
+        uploads = calls.read_text().splitlines()
+        self.assertEqual(len(uploads), 2, result.stdout + result.stderr)
+        self.assertTrue(all(line.endswith(' checked archive') for line in uploads), uploads)
+
     def test_keywords_blocks_and_endings(self):
         text = '--@do-not-package@\nsecret()\n--@end-do-not-package@\nv=@project-version@ r=@project-revision@\r\nend\n'
         out = P.process_text('x.lua', text.encode(), INFO, False).decode()

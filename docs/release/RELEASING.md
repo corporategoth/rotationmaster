@@ -105,7 +105,7 @@ may create duplicate files. Gitea's Release workflow has its own dry-run option 
 - Both release runs are green, and the GitHub run shows the plan you expected (`type=beta`, `sites=curseforge wago`).
 - The Gitea release exists, is marked prerelease for a beta, has the notes and the zip.
 - **CurseForge** lists a *Beta* file with the right game versions; **Wago** shows it as beta; **WoWInterface** shows no new file
-  for a beta. If a game version was rejected (CurseForge may not know `38002` or `16001` yet), the upload step says so.
+  for a beta. If a game version was rejected, the upload step says so.
 - The mirror on GitHub received the tag and, through the webhook, the release.
 - Install the CurseForge package into a clean client and check Settings > About shows the tag as the version.
 
