@@ -1,0 +1,95 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Item set import parsing: validates pasted text for the item set importer and returns a candidate set. It only
+-- parses and validates; it never writes the saved item sets (the item set settings page does that after the user
+-- confirms). Loaded after Core/profile_data.lua; the codec is passed in by the caller, so this file has no codec load
+-- order to respect.
+
+local addon_name, addon = ...
+local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
+
+-- Trims whitespace from both ends of a string.
+-- @param s string  The text to trim.
+-- @return string  The trimmed text; empty when it holds only whitespace.
+--
+-- Linear trim: '^%s*(.-)%s*$' is quadratic on a long run of spaces in pasted text.
+local function trim(s)
+    local a = s:find('%S')
+
+    if not a then
+        return ''
+    end
+
+    return s:sub(a, s:match('^.*()%S'))
+end
+
+-- Parses the text a user pasted into the item set importer into a candidate item set.
+-- @param text string  The pasted text: an encoded RM-ItemSet envelope or a plain list of item ids and names separated
+--   by commas or newlines; at most 131072 bytes.
+-- @param codec table  The codec object whose Decode(text) method decodes an envelope; supplied by the caller.
+-- @return table|nil  { name = string|nil, items = table }, where name is nil for a plain list; nil when the size, shape
+--   or any item is out of bounds.
+-- @return string|nil  The localized "Invalid item list." message when the first return is nil; nil otherwise.
+function addon:ParseItemSetImport(text, codec)
+    if type(text) ~= 'string' or #text > 131072 then
+        return nil, L['Invalid item list.']
+    end
+
+    local decoded = codec:Decode(text)
+    local result
+
+    if decoded then
+        local value = decoded.value
+
+        if
+            type(value) ~= 'table'
+            or value.format ~= 'RM-ItemSet'
+            or value.version ~= 1
+            or type(value.items) ~= 'table'
+            or type(value.name) ~= 'string'
+            or #value.name > 256
+            or not value.name:find('%S')
+        then
+            return nil, L['Invalid item list.']
+        end
+
+        result = { name = value.name, items = value.items }
+    else
+        result = { items = {} }
+
+        for line in (text:gsub(',', '\n') .. '\n'):gmatch('(.-)\n') do
+            local value = trim(line)
+
+            if value ~= '' then
+                result.items[#result.items + 1] = tonumber(value) or value
+            end
+        end
+    end
+
+    local count = 0
+
+    for key, item in pairs(result.items) do
+        if
+            type(key) ~= 'number'
+            or key < 1
+            or key % 1 ~= 0
+            or key > #result.items
+            or not (type(item) == 'number' and item > 0 and item % 1 == 0
+                or type(item) == 'string'
+                    and #item > 0
+                    and #item <= 1024
+                    and not tonumber(item)
+                    and not item:find('[%z\1-\31\127]'))
+        then
+            return nil, L['Invalid item list.']
+        end
+
+        count = count + 1
+    end
+
+    if count ~= #result.items or count > 256 then
+        return nil, L['Invalid item list.']
+    end
+
+    return result
+end

@@ -1,0 +1,72 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Mists of Pandaria Classic Holy Paladin, levels 10–90, in the Holy specialization (65). Icy Veins' Eternal
+-- Flame and Selfless Healer builds (the talent decides which steps apply) with Warcraft Tavern's
+-- triage. A friendly target is healed: spend 3 Holy Power (or Divine Purpose) on Light of Dawn for a
+-- hurt group, Eternal Flame or Word of Glory for one; Holy Shock on cooldown; Infusion of Light and
+-- Selfless Healer procs; Flash of Light in an emergency; Holy Radiance for the group; Divine Light,
+-- then Holy Light. An enemy target gets Holy Shock, Judgment, Crusader Strike and the rest. Beacon of
+-- Light and Sacred Shield go on your focus (set the tank as focus); whom to heal is your choice.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function target(op,v)return{type='HEALTHPCT',unit='target',operator=op,value=v}end
+local function hurt(v,n)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=30,healthoperator='LESSTHAN',health=v,operator='GREATERTHANOREQUALS',value=n or 3}end
+local focus={type='FRIENDLY',unit='focus'}
+local function onFocus(...)local list={};for i,id in ipairs({...})do list[i]={type='BUFF',unit='focus',spell=id,ownbuff=true}end;return{type='OR',value=list}end
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.holy',revision=6,
+ blocks={['mop.paladin.boundaries']=3,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN'},
+ tags={'holy','healer','leveling','icy-veins','warcraft-tavern'},
+ sources={
+  {url='https://www.icy-veins.com/mists-of-pandaria-classic/holy-paladin-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Holy Paladin rotation',reviewedAt='2026-10-23',revision='2025-06-10'},
+  {url='https://www.icy-veins.com/mists-of-pandaria-classic/holy-paladin-leveling',title='Icy Veins: MoP Classic Holy Paladin leveling',reviewedAt='2026-10-23',revision='2025-06-10'},
+  {url='https://www.warcrafttavern.com/mop/guides/pve-holy-paladin-rotations-cooldowns/',title='Warcraft Tavern: MoP Holy Paladin rotation',reviewedAt='2026-10-23',notes='Triage thresholds and the damage rotation.'},
+  {url='https://www.method.gg/mop-classic/holy-paladin-class-guide-mop-classic',title='Method: MoP Classic Holy Paladin guide',reviewedAt='2026-10-23',revision='2025-07-23',notes='Beacon on the tank; cooldowns in heavy damage, not all at once.'},
+ },
+ body={priority=30,specs={65},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+  cooldowns={
+   BuiltinConditions.block('holy-seal','mop.paladin.seal-insight','holy-'),
+   BuiltinConditions.block('holy-upkeep','mop.paladin.upkeep','holy-'),
+   BuiltinConditions.spell('holy-beacon',53563,BuiltinConditions.all(focus,BuiltinConditions.negate(onFocus(53563)))),
+   BuiltinConditions.spell('holy-sacred-shield',20925,BuiltinConditions.all(focus,BuiltinConditions.negate(onFocus(65148,148039)))),
+   BuiltinConditions.spell('holy-divine-plea',54428,BuiltinConditions.all(BuiltinConditions.combat(),{type='MANAPCT',unit='player',operator='LESSTHAN',value=.6})),
+   BuiltinConditions.spell('holy-lights-hammer',114158,hurt(.85)),
+   BuiltinConditions.spell('holy-avenging-wrath',31884,BuiltinConditions.all({type='GROUP'},hurt(.7))),
+   BuiltinConditions.spell('holy-divine-favor',31842,BuiltinConditions.all({type='GROUP'},hurt(.7))),
+   BuiltinConditions.spell('holy-guardian',86669,BuiltinConditions.all({type='GROUP'},hurt(.7))),
+   BuiltinConditions.spell('holy-holy-avenger',105809,BuiltinConditions.all({type='GROUP'},hurt(.7))),
+   BuiltinConditions.spell('holy-lay-on-hands',633,BuiltinConditions.all({type='FRIENDLY',unit='target'},target('LESSTHAN',.15),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=25771}))),
+  },
+  rotation={
+   BuiltinConditions.block('holy-boundaries','mop.paladin.boundaries','holy-'),
+   {id='holy-heal',type='branch',conditions={type='FRIENDLY',unit='target'},onTrue={
+    {id='holy-spend',type='branch',conditions=BuiltinConditions.any({type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=3},BuiltinConditions.buff(90174)),onFalse={},onTrue={
+     BuiltinConditions.spell('holy-light-of-dawn',85222,hurt(.9)),
+     BuiltinConditions.spell('holy-eternal-flame',114163,BuiltinConditions.negate({type='BUFF',unit='target',spell=114163,ownbuff=true})),
+     BuiltinConditions.spell('holy-word-of-glory',85673,target('LESSTHAN',.9))}},
+    BuiltinConditions.spell('holy-shock',20473),
+    {id='holy-infusion',type='branch',conditions=BuiltinConditions.buff(54149),onFalse={},onTrue={
+     BuiltinConditions.spell('holy-infusion-radiance',82327,hurt(.85)),
+     BuiltinConditions.spell('holy-infusion-divine-light',82326,target('LESSTHAN',.7))}},
+    {id='holy-selfless',type='branch',conditions={type='BUFF_STACKS',unit='player',spell=114250,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
+     BuiltinConditions.spell('holy-selfless-radiance',82327,hurt(.85)),
+     BuiltinConditions.spell('holy-selfless-flash',19750,target('LESSTHAN',.8))}},
+    BuiltinConditions.spell('holy-flash-emergency',19750,target('LESSTHAN',.35)),
+    BuiltinConditions.spell('holy-radiance',82327,hurt(.85)),
+    BuiltinConditions.spell('holy-divine-light',82326,target('LESSTHAN',.7)),
+    BuiltinConditions.spell('holy-holy-light',635,target('LESSTHAN',.9)),
+    BuiltinConditions.spell('holy-flash-before-holy-light',19750,BuiltinConditions.all(target('LESSTHAN',.9),BuiltinConditions.negate({type='SPELL_KNOWN',spell=635}))),
+    BuiltinConditions.stop('holy-heal-stop')},
+   onFalse={
+    BuiltinConditions.stop('holy-target',BuiltinConditions.negate({type='ATTACKABLE',unit='target'})),
+    BuiltinConditions.spell('holy-damage-shock',20473),
+    BuiltinConditions.spell('holy-damage-judgment',20271),
+    BuiltinConditions.spell('holy-damage-crusader-strike',35395),
+    BuiltinConditions.spell('holy-damage-holy-prism',114165),
+    BuiltinConditions.spell('holy-damage-execution-sentence',114157),
+    BuiltinConditions.spell('holy-damage-hammer-wrath',24275),
+    BuiltinConditions.spell('holy-damage-denounce',2812)}},
+  },
+ },
+}))

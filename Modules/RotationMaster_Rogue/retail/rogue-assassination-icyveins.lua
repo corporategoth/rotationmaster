@@ -1,0 +1,57 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Retail (Midnight) Assassination Rogue, Icy Veins and SimulationCraft's default list: the optimal
+-- reference, disabled by default because bleed timers and buffs are hidden in Midnight
+-- combat. Bleeds first in their last 30%: Garrote while not at full combo points, Rupture at 5+.
+-- At 5+ combo points spend (Coup de Grace, Envenom); below, build: Crimson Tempest on three or
+-- more enemies, Fan of Knives on two or more close by, Ambush (Blindside), Mutilate. From stealth
+-- Garrote, then Ambush. Reminders: Deathmark with both bleeds up, Kingsbane alongside it, Vanish
+-- with Deathmark ready, Shiv on a Deathstalker's Mark target, Thistle Tea whenever it is ready in
+-- combat (energy is secret on Retail).
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function dot(id)return{type='DEBUFF',unit='target',spell=id,owndebuff=true}end
+local function refresh(id,v)return BuiltinConditions.any(BuiltinConditions.negate(dot(id)),{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator='LESSTHAN',value=v})end
+local function points(op,v)return{type='POINT',unit='player',operator=op,value=v}end
+local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
+local fight=BuiltinConditions.all(BuiltinConditions.combat(),{type='ATTACKABLE',unit='target'})
+local bled=BuiltinConditions.all(dot(703),dot(1943))
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.retail.rogue.assassination.icyveins',revision=6,
+ blocks={['retail.rogue.boundaries']=2,['retail.rogue.upkeep']=2},
+ applicability={families={'retail'},actionContext='player',class='ROGUE'},
+ tags={'assassination','melee','reference','single-target','aoe','icy-veins','simulationcraft'},
+ sources={
+  {url='https://www.icy-veins.com/wow/assassination-rogue-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Assassination Rogue rotation (Midnight)',reviewedAt='2026-10-23',revision='2026-10-12'},
+  {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/rogue_assassination.simc',title='SimulationCraft: Assassination Rogue default list',reviewedAt='2026-10-23',revision='c5fea93fb77d'},
+ },
+ body={priority=5,disabled=true,specs={259},
+  cooldowns={
+   block('retail.rogue.upkeep','assaiv-'),
+   BuiltinConditions.spell('assaiv-deathmark',360194,BuiltinConditions.all(fight,bled)),
+   BuiltinConditions.spell('assaiv-kingsbane',385627,BuiltinConditions.all(fight,bled,BuiltinConditions.any(dot(360194),BuiltinConditions.negate({type='SPELL_AVAIL',spell=360194})))),
+   BuiltinConditions.spell('assaiv-vanish',1856,BuiltinConditions.all(fight,BuiltinConditions.negate({type='STEALTHED'}),{type='SPELL_AVAIL',spell=360194})),
+   BuiltinConditions.spell('assaiv-shiv',5938,BuiltinConditions.all(fight,dot(457129))),
+   BuiltinConditions.spell('assaiv-thistle-tea',381623,fight),
+  },
+  rotation={
+   block('retail.rogue.boundaries','assaiv-'),
+   {id='assaiv-stealthed',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={
+    BuiltinConditions.spell('assaiv-stealthed-garrote',703),
+    BuiltinConditions.spell('assaiv-stealthed-ambush',8676),
+    {id='assaiv-stealthed-stop',type='stop',suppress_attack=true,conditions={}},
+   }},
+   BuiltinConditions.spell('assaiv-garrote',703,BuiltinConditions.all(refresh(703,5.4),points('GREATERTHANOREQUALS',-1))),
+   BuiltinConditions.spell('assaiv-rupture',1943,BuiltinConditions.all(points('GREATERTHANOREQUALS',5),refresh(1943,6))),
+   {id='assaiv-spend',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={
+    BuiltinConditions.spell('assaiv-crimson-tempest',1247227,BuiltinConditions.all({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},BuiltinConditions.negate(dot(1247227)))),
+    BuiltinConditions.spell('assaiv-fan-of-knives',51723,{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=2}),
+    BuiltinConditions.spell('assaiv-ambush',8676),
+    BuiltinConditions.spell('assaiv-mutilate',1329),
+   },onTrue={
+    BuiltinConditions.spell('assaiv-coup-de-grace',441776),
+    BuiltinConditions.spell('assaiv-envenom',32645),
+   }},
+  },
+ },
+}))

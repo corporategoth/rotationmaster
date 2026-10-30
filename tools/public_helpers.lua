@@ -1,0 +1,2070 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Curated public authoring documentation. Executable bodies are extracted from
+-- the actual addon functions; this file must never contain copied Lua bodies.
+return {
+    Platform_GetUnitStateObservation = {
+        module = 'Platform/unit_states.lua',
+        member = 'Platform.GetUnitStateObservation',
+        callName = 'addon.Platform:GetUnitStateObservation',
+        description = 'Observe death or ghost state, or friendliness to the player, for the exact selected unit on probe- and restricted-policy clients. A missing, failed, restricted or malformed required observation is unavailable. Unit absence is unavailable rather than a negative match, including under NOT. No cross-poll state is retained.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Exact nonempty unit token to observe.' },
+            kind = {
+                type = 'string',
+                description = 'Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit).',
+            },
+        },
+        returns = {
+            { type = 'boolean | nil', description = 'Readable current state, or nil when unavailable.' },
+            {
+                type = 'string | nil',
+                description = 'Availability or query-validation reason when no current state can be read.',
+            },
+        },
+    },
+    Platform_GetUnitPresenceObservation = {
+        module = 'Platform/unit_presence.lua',
+        member = 'Platform.GetUnitPresenceObservation',
+        callName = 'addon.Platform:GetUnitPresenceObservation',
+        description = 'Observe unit presence on identified client families. Pass the selected unit unchanged to one protected UnitExists call. Preserve readable true and false; missing, failed, restricted, nil or malformed required observations return nil with a reason. No identity, visibility, range or combat-state query is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Readable nonempty unit token, passed unchanged as the single native argument.',
+            },
+        },
+        returns = {
+            {
+                type = 'boolean | nil',
+                description = 'Known unit presence or absence; nil when the required observation is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Client-family, query-validation or required-observation availability reason for a nil result.',
+            },
+        },
+    },
+    Platform_GetUnitCreatureTypeID = {
+        module = 'Platform/creature_type.lua',
+        member = 'Platform.GetUnitCreatureTypeID',
+        callName = 'addon.Platform:GetUnitCreatureTypeID',
+        description = 'Observe creature identity from native UnitCreatureType return two on probe- and restricted-policy clients. Check exact UnitExists(unit) first; readable false returns false without requiring or calling creature metadata. A present unit requires a readable finite numeric ID; the unused localized name does not affect availability. Preserve signed, fractional, zero and future finite IDs as known values. Missing, failed, nil, restricted or malformed required facts return nil with a reason. No creature enumeration, translated caption comparison or longterm cache is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Readable nonempty selected unit token, passed unchanged as the single argument to existence and creature metadata queries.',
+            },
+        },
+        returns = {
+            {
+                type = 'number | boolean | nil',
+                description = 'Finite native creature ID, false for known unit absence, or nil when required observations are unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or required-observation availability reason for a nil ID.',
+            },
+        },
+    },
+    GetConditionCreatureTypeMatch = {
+        module = 'Core/creature_conditions.lua',
+        member = 'GetConditionCreatureTypeMatch',
+        callName = 'addon:GetConditionCreatureTypeMatch',
+        description = 'Compare the selected unit creature ID with one existing saved creature-type key. Resolve the fixed key-to-ID identity in one private executable mapper; gameplay matching does not depend on the mutable localized UI caption map. Share complete native observations within the supplied evaluation-pass cache by actual observer, receiver and unit, including absence and unavailable reasons. Known absence or a known different ID returns false; an unavailable required observation returns nil with a reason. No longterm state or caption mutation is added.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+            unit = {
+                type = 'string',
+                description = 'Readable nonempty unit token to match, unchanged in the native observation.',
+            },
+            key = {
+                type = 'string',
+                description = 'Existing stored CREATURE key: BEAST, DRAGONKIN, DEMON, ELEMENTAL, GIANT, UNDEAD, HUMANOID, CRITTER, MECHANICAL, OTHER, TOTEM, NONCOMBAT_PET or GAS_CLUUD.',
+            },
+            cache = {
+                type = 'table | nil',
+                description = 'Evaluation-pass cache for complete unit observations; nil observes directly. Different selected keys reuse the same unit snapshot.',
+            },
+        },
+        returns = {
+            {
+                type = 'boolean | nil',
+                description = 'True for an exact identity match; false for known absence or mismatch; nil when required data or the query is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or required-observation availability reason for a nil match.',
+            },
+        },
+    },
+    Platform_GetMobInfo2Observation = {
+        module = 'Platform/mobinfo2.lua',
+        member = 'Platform.GetMobInfo2Observation',
+        callName = 'addon.Platform:GetMobInfo2Observation',
+        description = 'Read optional MobInfo2 historical observations on probe- and restricted-policy clients. Cache only exact selected-unit presence; UnitName result one, UnitLevel result one and the three-argument MI2_GetMobData(name,level,unit) dot call stay fresh each invocation. Known absent units and successful unrecorded nil or omitted history remain distinct from unavailable native/provider facts. Preserve readable runner scalar truthiness, school signs and missing-Hits default one. Positive resistance ratios must be finite; complete immunity consumes finite Hits while partial immunity needs only its negative school observation. Never infer native resistance or borrow old records.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Selected nonempty unit token, unchanged in native/provider calls.',
+            },
+            kind = { type = 'string', description = 'Closed kind: runner, resist or immune.' },
+            school = {
+                type = 'string | nil',
+                description = 'Nonempty historical school key for resist/immune; unused for runner.',
+            },
+            cache = {
+                type = 'table | nil',
+                description = 'Evaluation-pass presence cache only; name, level and provider history remain fresh.',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Record with exists=false; recorded=false for known no history; or runner, ratio, or immune with hits/hitsReason. Nil means a required observation is unavailable.',
+            },
+            { type = 'string | nil', description = 'Policy, capability or required-observation availability reason.' },
+        },
+    },
+    Platform_GetInspectRoleObservation = {
+        module = 'Platform/role.lua',
+        member = 'Platform.GetInspectRoleObservation',
+        callName = 'addon.Platform:GetInspectRoleObservation',
+        description = 'Observe a selected unit role on probe- and restricted-policy clients without issuing inspection requests. Known unit absence returns false. Prefer the callable modern inspection API, with legacy fallback only when that callable is absent; a selected failure never falls through. Require a positive finite integral specialization ID and consume only role return five from the exact one-argument GetSpecializationInfoByID call. Missing, failed, restricted or malformed required facts are unavailable; readable nonempty future role strings remain exact.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Selected nonempty unit token; unchanged native argument.' },
+        },
+        returns = {
+            {
+                type = 'string | boolean | nil',
+                description = 'Known nonempty role string, false for known absent unit, or nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Policy, capability or required-observation availability reason.' },
+        },
+    },
+    Platform_GetTalentGroupRoleObservation = {
+        module = 'Platform/role.lua',
+        member = 'Platform.GetTalentGroupRoleObservation',
+        callName = 'addon.Platform:GetTalentGroupRoleObservation',
+        description = 'Observe the first role result of the exact legacy GetTalentGroupRole(group) dot call on probe- and restricted-policy clients. Forward the readable selected group unchanged, including nil as one argument; do not infer group bounds, substitute another API or query a player unit. The complete legacy primary declaration is not established. Missing, failed, restricted, empty or malformed role data is unavailable; readable nonempty future strings remain exact.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            group = {
+                type = 'any',
+                description = 'Live selected talent-group argument, forwarded unchanged as one argument after readability checking.',
+            },
+        },
+        returns = {
+            { type = 'string | nil', description = 'Known nonempty role string, or nil when unavailable.' },
+            { type = 'string | nil', description = 'Policy, capability or required-observation availability reason.' },
+        },
+    },
+    Platform_GetUnitStatObservation = {
+        module = 'Platform/unit_stat.lua',
+        member = 'Platform.GetUnitStatObservation',
+        callName = 'addon.Platform:GetUnitStatObservation',
+        description = 'Observe the effective statistic from native return two only. On probe- and restricted-policy clients, query exact UnitExists(unit), then UnitStat(unit,stat) for selector 1..5 or UnitArmor(unit) for selector 6. Known absence returns exists=false; missing, failed, restricted or nonfinite required facts return nil. Preserve finite signed, fractional and zero values; ignore all unused tuple fields. The 1..6 route is an RM selector policy, not a native value-domain limit.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Selected nonempty unit token, unchanged in native calls.' },
+            stat = { type = 'number', description = 'Integral RM statistic selector 1..5, or 6 for effective armor.' },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Record with exists=false, or exists=true and finite value; nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Query, policy or observation availability reason.' },
+        },
+    },
+    Platform_GetHealthForecastIdentityObservation = {
+        module = 'Platform/health_forecast.lua',
+        member = 'Platform.GetHealthForecastIdentityObservation',
+        callName = 'addon.Platform:GetHealthForecastIdentityObservation',
+        description = 'On probe- and restricted-policy clients, observe exact UnitExists(unit), then UnitGUID(unit) only for a present unit. Known absence is false. Present identity requires a readable nonempty GUID; missing, failed, malformed or restricted required facts are unavailable. No health, provider or extra-unit observation is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Selected nonempty unit token.' },
+        },
+        returns = {
+            {
+                type = 'string | boolean | nil',
+                description = 'Present GUID, false for known absence, or nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Policy, validation or observation availability reason.' },
+        },
+    },
+    Platform_GetHealthForecastValueObservation = {
+        module = 'Platform/health_forecast.lua',
+        member = 'Platform.GetHealthForecastValueObservation',
+        callName = 'addon.Platform:GetHealthForecastValueObservation',
+        description = 'Read a lazy health scalar after a separate identity gate. Kind current uses exact UnitHealth(unit); maximum uses exact UnitHealthMax(unit). Probe- and restricted-policy clients accept readable finite nonnegative numbers including zero. No repeated existence/GUID call or alternate tuple fallback is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Selected nonempty unit token; this call alone does not establish presence.',
+            },
+            kind = { type = 'string', description = 'Closed scalar kind: current or maximum.' },
+        },
+        returns = {
+            {
+                type = 'number | nil',
+                description = 'Finite nonnegative native health scalar, or nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Policy, validation or required observation availability reason.' },
+        },
+    },
+    Platform_GetHealthForecastProviderObservation = {
+        module = 'Platform/health_forecast.lua',
+        member = 'Platform.GetHealthForecastProviderObservation',
+        callName = 'addon.Platform:GetHealthForecastProviderObservation',
+        description = 'Read optional RealMobHealth using its exact one-argument dot call. Absent nil/false namespace returns an empty record. Normalize current and maximum independently: nil/false fields permit native fallback, numeric zero remains present. Malformed, failed, restricted, negative or nonfinite consumed provider facts are unavailable. No provider or stale fallback cache is used.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Selected unit token forwarded as the only provider argument.' },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Partial current/maximum record, empty when provider absent, or nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Provider, validation or observation availability reason.' },
+        },
+    },
+    Platform_GetHealthForecastTimeObservation = {
+        module = 'Platform/health_forecast.lua',
+        member = 'Platform.GetHealthForecastTimeObservation',
+        callName = 'addon.Platform:GetHealthForecastTimeObservation',
+        description = 'Observe a fresh protected zero-argument GetTime for a needed health forecast. Require readability and a finite number; preserve signed and fractional values without adding a monotonic, integral or nonnegative restriction. No clock cache or extra native query is used.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+        },
+        returns = {
+            { type = 'number | nil', description = 'Fresh readable finite clock, or nil when unavailable.' },
+            { type = 'string | nil', description = 'Capability or clock observation availability reason.' },
+        },
+    },
+    Forecast_calculate = {
+        module = 'Functions/forecast.lua',
+        member = 'Functions.forecast.calculate',
+        namespace = 'Functions.forecast',
+        callName = 'Functions.forecast.calculate',
+        description = 'Calculate a checked health-history rate using an explicit finite window and clock. Preserve ordered weighting, per-row live canonical rounding, skipped streams, array holes, fractional keys and final visited ages. A fixed 4096-unit budget covers visited rows and accumulation bins across both streams; excess or invalid consumed arithmetic returns unavailable, never a partial estimate or clamp. This new API has its own source identity; historical trend functions remain unchanged.',
+        args = {
+            platform = { type = 'RMPlatform', description = 'Readability authority for consumed values.' },
+            history = {
+                type = 'table',
+                description = 'Damage/heals arrays of time/value rows; only selected streams are consumed.',
+            },
+            window = {
+                type = 'number',
+                description = 'Explicit finite weighting window; no profile fallback or clamp.',
+            },
+            noheals = { type = 'boolean', description = 'True skips all access to the healing stream.' },
+            nodmg = { type = 'boolean', description = 'True skips all access to the damage stream.' },
+            now = {
+                type = 'number',
+                description = 'Explicit finite clock snapshot; signed and fractional values remain valid.',
+            },
+        },
+        returns = {
+            { type = 'number | nil', description = 'Finite signed combined rate, or nil for unavailable calculation.' },
+            { type = 'number | nil', description = 'Finite final stream age, or nil when unavailable.' },
+            {
+                type = 'string | nil',
+                description = 'Work-limit, data or arithmetic availability reason for nil rate/age.',
+            },
+        },
+    },
+    GetConditionThreatCount = {
+        module = 'Core/threat_count_conditions.lua',
+        member = 'GetConditionThreatCount',
+        callName = 'addon:GetConditionThreatCount',
+        description = 'Count only GUID-keyed units already in the observed membership snapshot. Verify current token identity before using the published threat observer; known absent or reused tokens are excluded without adding replacements. Complete identity and threat observations share only the supplied evaluation cache, while membership is traversed fresh. Known nonenemy or optional nil threat is not counted; required unreadable, malformed or failed facts make the entire result unavailable. This does not enumerate a complete roster, apply a range filter or modify tracked records.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+            minimum = {
+                type = 'number',
+                description = 'Finite minimum native threat status, preserving signed and fractional thresholds.',
+            },
+            cache = {
+                type = 'table | nil',
+                description = 'Caller-owned evaluation observation cache; nil queries afresh.',
+            },
+        },
+        returns = {
+            {
+                type = 'number | nil',
+                description = 'Complete nonnegative observed count including zero, or nil when unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, snapshot, identity or threat observation availability reason.',
+            },
+        },
+    },
+    GetConditionHealthForecast = {
+        module = 'Core/health_forecast_conditions.lua',
+        member = 'GetConditionHealthForecast',
+        callName = 'addon:GetConditionHealthForecast',
+        description = 'Estimate time until selected health. Cache complete native identity and lazy scalar observations per evaluation pass, while provider, history, window, clock and forecast stay live. Exact target equality returns zero before history work. Preserve deliberate no-estimate false and initialized-zero results for zero or opposite rates; required invalid facts, overflow or 4096-unit work exhaustion are unavailable. Never mutate history or invent a partial estimate.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+            unit = { type = 'string', description = 'Selected unit token, unchanged in observations.' },
+            healthTarget = {
+                type = 'number',
+                description = 'Absolute health target (negative means deficit) or percentage fraction.',
+            },
+            percentage = {
+                type = 'boolean',
+                description = 'True selects percentage target and optional fresh provider facts.',
+            },
+            mode = {
+                type = 'any',
+                description = 'noheals selects damage only; nodmg selects healing only; other readable values select both.',
+            },
+            cache = {
+                type = 'table | nil',
+                description = 'Evaluation-pass native observation cache; nil queries afresh.',
+            },
+        },
+        returns = {
+            {
+                type = 'number | boolean | nil',
+                description = 'Finite ETA including zero, false for known absence/no estimate, or nil when unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Observation, history, work-limit or arithmetic availability reason.',
+            },
+        },
+    },
+    Platform_GetPlayerOwnerClassObservation = {
+        module = 'Platform/rotation_owner.lua',
+        member = 'Platform.GetPlayerOwnerClassObservation',
+        callName = 'addon.Platform:GetPlayerOwnerClassObservation',
+        description = 'Read a fresh protected UnitClass player observation for rotation ownership. Consume only the readable nonempty class filename from return two. No existence, level, vehicle, family or combat-policy read is added, and no result persists across calls. Core ownership still validates the class token and character key separately; overridden context providers retain their complete original path.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+        },
+        returns = {
+            { type = 'string | nil', description = 'Fresh readable class filename, or nil when unavailable.' },
+            { type = 'string | nil', description = 'Capability or observation availability reason for a nil class.' },
+        },
+    },
+    Platform_GetRuneTypeObservation = {
+        module = 'Platform/runes.lua',
+        member = 'Platform.GetRuneTypeObservation',
+        callName = 'addon.Platform:GetRuneTypeObservation',
+        description = 'Observe one exact native rune slot using GetRuneType with its single index argument. Require a readable finite positive integral type; known future numeric types remain distinct from the selected type, and Death is an exact type rather than a wildcard. Missing, failed, restricted or malformed observations remain unavailable. No class, unit, count or inferred base-rune query is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            index = { type = 'number', description = 'Exact integral native rune slot from 1 through 6.' },
+        },
+        returns = {
+            {
+                type = 'number | nil',
+                description = 'Readable finite positive integral rune type, or nil when unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, slot-validation or required observation availability reason for a nil type.',
+            },
+        },
+    },
+    Platform_GetRuneCooldownObservation = {
+        module = 'Platform/runes.lua',
+        member = 'Platform.GetRuneCooldownObservation',
+        callName = 'addon.Platform:GetRuneCooldownObservation',
+        description = 'Read one protected GetRuneCooldown tuple for an exact native slot. Normalize ready, start and duration independently: ready requires a readable Boolean, while each time requires a readable finite number and preserves signed, fractional and zero values. Every unavailable field carries its own reason. A successful empty tuple yields a partial record; missing capability, policy or native-call failure yields nil. Never infer ready from timing or timing from ready. Cache this complete record at the caller to share one observation between rune-count and cooldown predicates.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            index = { type = 'number', description = 'Exact integral native rune slot from 1 through 6.' },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Partial record containing ready or readyReason, start or startReason, and duration or durationReason; nil only when the query itself is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, slot-validation, capability or native-call availability reason for a nil record.',
+            },
+        },
+    },
+    Platform_GetRuneEvaluationTime = {
+        module = 'Platform/runes.lua',
+        member = 'Platform.GetRuneEvaluationTime',
+        callName = 'addon.Platform:GetRuneEvaluationTime',
+        description = 'Read a fresh protected zero-argument GetTime for rune cooldown arithmetic. Require a readable finite number. This observation is deliberately uncached; callers preserve the original clock-before-scan order and require its value only when a matching rune needs timing. No evaluation-start substitution or inferred time is supplied.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+        },
+        returns = {
+            { type = 'number | nil', description = 'Fresh finite native clock value, or nil when unavailable.' },
+            {
+                type = 'string | nil',
+                description = 'Policy, capability or clock observation availability reason for a nil time.',
+            },
+        },
+    },
+    calculate = {
+        module = 'Functions/trends.lua',
+        member = 'Functions.trends.calculate',
+        namespace = 'Functions.trends',
+        callName = 'Functions.trends.calculate',
+        description = 'Estimate signed health change from weighted damage and healing history. Damage contributes a negative rate and healing a positive rate. Read the live profile window when no window is supplied, use the live clock and legacy rounding service, and preserve the existing weighting and rounded-age calculation. This helper does not validate or sanitize history, clamp timestamps, or guarantee finite results.',
+        args = {
+            history = {
+                type = 'table | false | nil',
+                description = 'History record with newest-first damage and heals arrays of time/value entries. Falsy history returns only zero without reading the clock.',
+            },
+            window = {
+                type = 'number | false | nil',
+                description = 'Weighting window in seconds; nil or false uses the current profile damage_history setting.',
+            },
+            noheals = {
+                type = 'boolean | nil',
+                description = 'Truthy skips the heals stream without reading its array.',
+            },
+            nodmg = {
+                type = 'boolean | nil',
+                description = 'Truthy skips the damage stream without reading its array.',
+            },
+        },
+        returns = {
+            {
+                type = 'number',
+                description = 'Combined signed weighted rate from the original formula; malformed or nonfinite inputs retain the legacy error/numeric behavior.',
+            },
+            {
+                type = 'number | nil',
+                description = 'Larger rounded stream age in seconds, not a sample count or proof of continuous observation. Omitted when history is falsy.',
+            },
+        },
+    },
+    calculateOld = {
+        module = 'Functions/trends.lua',
+        member = 'Functions.trends.calculateOld',
+        namespace = 'Functions.trends',
+        callName = 'Functions.trends.calculateOld',
+        description = 'Run the historical health-snapshot trend formula using the live profile history window, clock and legacy rounding service. Preserve its maximum-health transitions, early stop at full or zero health, weighting, errors and return counts. An empty array, or snapshots that record no weighted change, return only zero rather than a 0/0 result; this is the legacy algorithm rather than a validated forecast.',
+        args = {
+            health = {
+                type = 'table | false | nil',
+                description = 'Newest-first health snapshots containing time, value and max. Falsy input returns only zero without reading the clock.',
+            },
+        },
+        returns = {
+            {
+                type = 'number',
+                description = 'Weighted health-snapshot change from the original total/count formula; zero for falsy input or when no weighted change was recorded.',
+            },
+            {
+                type = 'number | nil',
+                description = 'Original rounded-age bucket count, omitted when the result is the lone zero.',
+            },
+        },
+    },
+    Platform_GetPlayerComboPointObservation = {
+        module = 'Platform/points.lua',
+        member = 'Platform.GetPlayerComboPointObservation',
+        callName = 'addon.Platform:GetPlayerComboPointObservation',
+        description = 'Observe the explicitly selected TBC player combo transport. Current uses exactly GetComboPoints(player,target); maximum uses UnitPowerMax(player,powerType) with the original selector. Other families are unavailable here and must use their existing point-power observer. Preserve readable finite signed, fractional and zero values. Missing, failed, restricted or malformed data remains unavailable; a failed chosen combo query never falls back to UnitPower. This observes no other actor and adds no cache.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            powerType = {
+                type = 'number',
+                description = 'Original explicit readable finite nonnegative integer combo-resource selector, including zero; retained for the maximum query.',
+            },
+            kind = {
+                type = 'string',
+                description = 'Exactly current for the player/target combo query or maximum for the player capacity query.',
+            },
+        },
+        returns = {
+            {
+                type = 'number | nil',
+                description = 'Finite native resource quantity, retaining its sign and fractional part; nil when unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or required observation availability reason for a nil quantity.',
+            },
+        },
+    },
+    Platform_GetUnitPointFragmentObservation = {
+        module = 'Platform/points.lua',
+        member = 'Platform.GetUnitPointFragmentObservation',
+        callName = 'addon.Platform:GetUnitPointFragmentObservation',
+        description = 'Observe a point resource that the client reports in fragments (Mists of Pandaria Burning Embers). Current uses exactly UnitPower(unit,powerType,true) and maximum UnitPowerMax(unit,powerType,true); the result is divided by Blizzard MAX_POWER_PER_EMBER (10), so 35 fragments are 3.5. Probe policy only. Missing, failed, restricted or malformed data remains unavailable; it never falls back to the whole-unit query. No cache is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Exact nonempty unit token, passed unchanged.' },
+            powerType = {
+                type = 'number',
+                description = 'Explicit readable finite nonnegative integer power selector.',
+            },
+            kind = { type = 'string', description = 'Exactly current for UnitPower or maximum for UnitPowerMax.' },
+        },
+        returns = {
+            {
+                type = 'number | nil',
+                description = 'Finite quantity in whole units with its fractional part; nil when unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or required observation availability reason for a nil quantity.',
+            },
+        },
+    },
+    GetConditionPointResourceV2 = {
+        module = 'Core/point_conditions.lua',
+        member = 'GetConditionPointResourceV2',
+        callName = 'addon:GetConditionPointResourceV2',
+        captureBindings = { playerClassCacheKey = 'builtin:Core/point_conditions.lua:playerClassCacheKey' },
+        description = 'Resolve point resources using the original live class mapping and identity cache, with an explicit TBC player ComboPoints-fallback transport policy. A player fallback matching the readable raw Enum.PowerType table and ComboPoints value captured at module load selects target-combo; explicit class-map entries, other actors and other families retain power. Replaced, inherited or unprovable fallback provenance retains power. This versioned policy does not claim native UnitPower is broken or equivalent. Known unit absence returns false; unavailable required observations return nil with a reason. No current or maximum quantity is queried here.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+            unit = {
+                type = 'string',
+                description = 'Exact selected unit token; only the literal player token may select the TBC combo transport.',
+            },
+            cache = {
+                type = 'table | nil',
+                description = 'Evaluation-pass cache, or nil to observe identity directly. Successful player class observations may use the existing longterm identity cache; resource mapping remains live.',
+            },
+        },
+        returns = {
+            {
+                type = 'number | boolean | nil',
+                description = 'Explicit nonnegative integer selector, false for known unit absence, or nil when required data is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or identity/selector availability reason for a nil selector.',
+            },
+            {
+                type = 'string | nil',
+                description = 'On a selected resource only, target-combo for the explicit TBC player fallback or power for the existing selected-unit transport.',
+            },
+        },
+    },
+    Platform_GetUnitPointIdentityObservation = {
+        module = 'Platform/points.lua',
+        member = 'Platform.GetUnitPointIdentityObservation',
+        callName = 'addon.Platform:GetUnitPointIdentityObservation',
+        description = 'Observe exact selected-unit existence and optionally its class filename for point-resource conditions. Known absence returns exists=false without reading class. Present units require only UnitClass return two when requested; unused localized names and IDs do not affect availability. Required missing, failed, restricted or malformed observations remain unavailable. This does not select a resource or cache identity.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Exact unit token passed unchanged to UnitExists and, when required, UnitClass.',
+            },
+            includeClass = {
+                type = 'boolean',
+                description = 'True also requires the present unit class filename; false reads existence only.',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Readable record with Boolean exists and the requested class filename when present; nil when required data is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or required observation availability reason for a nil record.',
+            },
+        },
+    },
+    Platform_GetUnitPointPowerObservation = {
+        module = 'Platform/points.lua',
+        member = 'Platform.GetUnitPointPowerObservation',
+        callName = 'addon.Platform:GetUnitPointPowerObservation',
+        description = 'Read one explicitly selected point-resource quantity with an exact two-argument UnitPower or UnitPowerMax query. The selector is required; no primary-resource inference or actor remapping occurs. Preserve finite signed, fractional and zero quantities without clamping. Missing, failed, restricted or nonfinite data remains unavailable. Current and maximum are separate observations so callers can share current snapshots while requesting maximum lazily.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Exact unit token whose selected resource quantity is requested.' },
+            powerType = {
+                type = 'number',
+                description = 'Explicit readable finite nonnegative integer power selector, including zero.',
+            },
+            kind = {
+                type = 'string',
+                description = 'Exactly current for UnitPower or maximum for UnitPowerMax; no other native query is added.',
+            },
+        },
+        returns = {
+            {
+                type = 'number | nil',
+                description = 'Finite native resource quantity, retaining its sign and fractional part; nil when unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or availability reason for a nil quantity.',
+            },
+        },
+    },
+    GetClassGroupCount = {
+        module = 'Core/class_group_conditions.lua',
+        member = 'GetClassGroupCount',
+        callName = 'addon:GetClassGroupCount',
+        description = 'Count matching class tokens in the current fixed roster. Read group membership first; when requested, raid membership selects raid1 through raid40 without a separate player fact. Solo and party paths read player first, then party1 through party4 when grouped. A complete known roster returns a count, including zero; any required unavailable fact returns nil with a reason. Complete observations share the evaluation-pass cache; no player class persists across passes. Archived raw callbacks retain their original load-time class separately.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+            cache = { type = 'table | nil', description = 'Evaluation-pass cache, or nil for fresh observations.' },
+            class = {
+                type = 'string',
+                description = 'Nonempty class filename token to count; no class-token whitelist is applied.',
+            },
+            raid = {
+                type = 'boolean | nil',
+                description = 'True permits the raid roster when raid membership is known true; false or nil uses the solo or party roster.',
+            },
+        },
+        returns = {
+            {
+                type = 'number | nil',
+                description = 'Complete matching class count, including zero, or nil when unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Validation, policy or required-fact availability reason for a nil count.',
+            },
+        },
+    },
+    GetConditionPointResource = {
+        module = 'Core/point_conditions.lua',
+        member = 'GetConditionPointResource',
+        callName = 'addon:GetConditionPointResource',
+        captureBindings = { playerClassCacheKey = 'builtin:Core/point_conditions.lua:playerClassCacheKey' },
+        description = 'Resolve the selected unit point-resource selector using the live class-to-resource map and ComboPoints fallback. Known absence returns false; unavailable required identity or selector data returns nil with a reason. Share complete identity observations within the evaluation pass. Only successful player class observations persist in the current longterm cache, tied to the native UnitClass identity; existence is refreshed each pass. This selects a resource without reading its current or maximum quantity.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+            unit = {
+                type = 'string',
+                description = 'Exact selected unit token; player class alone may use the successful longterm cache.',
+            },
+            cache = {
+                type = 'table | nil',
+                description = 'Evaluation-pass cache, or nil to observe identity directly. Resource mapping is resolved live on each invocation.',
+            },
+        },
+        returns = {
+            {
+                type = 'number | boolean | nil',
+                description = 'Explicit nonnegative integer power selector, false for a known absent unit, or nil when required data is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or identity/selector availability reason for a nil selector.',
+            },
+        },
+    },
+    Platform_GetPlayerFormObservation = {
+        module = 'Platform/form.lua',
+        member = 'Platform.GetPlayerFormObservation',
+        callName = 'addon.Platform:GetPlayerFormObservation',
+        description = 'Observe the current player form with one protected zero-argument GetShapeshiftForm call. Preserve every readable finite numeric result, including zero, signed and fractional values; no stronger native index domain is inferred. Missing, failed, nil, restricted or nonfinite data remains unavailable. No form count, class, spell ID, unit or optional argument is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+        },
+        returns = {
+            {
+                type = 'number | nil',
+                description = 'Readable finite current-form observation, including zero for the current unshifted comparison; nil when unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Client-policy, capability, call or observation availability reason for a nil form.',
+            },
+        },
+    },
+    Platform_GetLossOfControlCount = {
+        module = 'Platform/loss_of_control.lua',
+        member = 'Platform.GetLossOfControlCount',
+        callName = 'addon.Platform:GetLossOfControlCount',
+        description = 'Read the documented active loss-of-control count with a protected zero-argument dot call. Require a readable finite nonnegative integer. Zero is a complete empty scan and does not require a row API. RM limits a scan to 256 rows and returns unavailable beyond that resource budget; this is not a declared native maximum. Required missing, failed, restricted or malformed observations remain unavailable.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+        },
+        returns = {
+            {
+                type = 'number | nil',
+                description = 'Known active count from zero through the RM scan budget, or nil when unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Combat-policy, capability, observation or scan-budget reason for a nil count.',
+            },
+        },
+    },
+    Platform_GetLossOfControlEvent = {
+        module = 'Platform/loss_of_control.lua',
+        member = 'Platform.GetLossOfControlEvent',
+        callName = 'addon.Platform:GetLossOfControlEvent',
+        description = 'Read one documented active loss-of-control row by its native index and requested subject kind. Type queries require only the readable control type string; school queries require only the readable finite nonnegative integer school mask. Optional timing is returned as a finite timeRemaining or an explicit per-field reason, so an unrelated subject does not require a usable timer. Missing rows are unavailable snapshot observations. No display fields, inferred deadline, duration sum, maximum or native alias fallback is used.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            index = {
+                type = 'number',
+                description = 'Native one-based integral active-row index within the 256-row RM scan budget.',
+            },
+            kind = {
+                type = 'string',
+                description = 'Exactly type or school; selects the required subject field without requiring the other.',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Normalized requested subject with finite timeRemaining or timeRemainingReason; nil when the required row or subject is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query, capability or required row/subject availability reason for a nil record.',
+            },
+        },
+    },
+    Platform_GetZonePVPObservation = {
+        module = 'Platform/zone_pvp.lua',
+        member = 'Platform.GetZonePVPObservation',
+        callName = 'addon.Platform:GetZonePVPObservation',
+        description = 'Observe the first zone PvP classification result with one protected zero-argument dot call. Prefer callable C_PvP.GetZonePVPInfo and use the global helper only when the modern callable is absent. A successful nil or no returned values produces a known empty record; missing, failed, restricted or malformed observations remain unavailable. Readable empty and future strings retain their exact meaning, and unused return fields do not determine availability. Never switch backends after a modern result or failure.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Successful observation record with pvpType string or nil; nil record means unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Client-policy, capability, call or observation availability reason for a nil record.',
+            },
+        },
+    },
+    Platform_GetInstanceObservation = {
+        module = 'Platform/instance.lua',
+        member = 'Platform.GetInstanceObservation',
+        callName = 'addon.Platform:GetInstanceObservation',
+        description = 'Observe one protected zero-argument IsInInstance tuple. Required readable Boolean membership is independent of the type field: known outside returns without interpreting the unused type; inside returns a readable string type or an instanceTypeReason when that secondary field is unavailable. Callers testing outside need only membership; inside type comparisons must check the secondary reason. No outdoors, zone or unit inference is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Record with inInstance and, when inside, instanceType or instanceTypeReason; nil when membership is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Client-policy, native-call or required membership availability reason for a nil record.',
+            },
+        },
+    },
+    Platform_GetPetObservation = {
+        module = 'Platform/pet.lua',
+        member = 'Platform.GetPetObservation',
+        callName = 'addon.Platform:GetPetObservation',
+        description = 'Observe exact pet existence and optionally its formatted GetUnitName display name. Presence-only queries never require name data. Known absence skips the name query. Present pets require a readable nonempty name only when requested; required missing, failed, nil, restricted or malformed observations return nil with a reason. The display helper is called with its single original pet argument, without UnitName fallback or inferred bar, health or ability state.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            includeName = {
+                type = 'boolean | nil',
+                description = 'True requests the formatted pet name; false or omitted reads presence only.',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Pet observation with Boolean exists and, for a requested present pet, name; nil when required data is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or availability reason for a nil pet observation.',
+            },
+        },
+    },
+    Platform_GetUnitThreatObservation = {
+        module = 'Platform/threat.lua',
+        member = 'Platform.GetUnitThreatObservation',
+        callName = 'addon.Platform:GetUnitThreatObservation',
+        description = 'Observe ordered selected-unit existence, hostility from player, then the player threat status on that unit. Known absence, nonenemy and a successfully read nil threat status return false, preserving the no-threat predicate. Finite status numbers including zero retain their original comparison meaning. Required missing, failed, nil, restricted or malformed facts return nil with a reason. No attackability, death, combat or vehicle inference is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Exact unit token used for existence and as the recipient of player hostility and threat queries.',
+            },
+        },
+        returns = {
+            {
+                type = 'number | boolean | nil',
+                description = 'Finite native threat status, false for known absence/nonenemy/no-threat, or nil for unavailable observations.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or availability reason for a nil threat observation.',
+            },
+        },
+    },
+    Platform_GetUnitMetadataObservation = {
+        module = 'Platform/unit_metadata.lua',
+        member = 'Platform.GetUnitMetadataObservation',
+        callName = 'addon.Platform:GetUnitMetadataObservation',
+        description = 'Observe one consumed native unit metadata field after checking UnitExists: class uses UnitClass return two, creature uses the localized UnitCreatureType name, and classification uses UnitClassification. A readable absent unit returns false without querying metadata. Unused tuple fields do not affect availability; a required missing, failed, nil, restricted or malformed value returns nil with a reason. No player class, GUID, enum or translation inference is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Exact unit token checked for existence and passed to the selected metadata API.',
+            },
+            kind = {
+                type = 'string',
+                description = 'One of class, creature or classification; other metadata kinds are unsupported.',
+            },
+        },
+        returns = {
+            {
+                type = 'string | boolean | nil',
+                description = 'Readable consumed metadata string, false for a known absent unit, or nil when required data is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or availability reason for a nil metadata observation.',
+            },
+        },
+    },
+    Platform_GetPlayerFlagObservation = {
+        module = 'Platform/player_flags.lua',
+        member = 'Platform.GetPlayerFlagObservation',
+        callName = 'addon.Platform:GetPlayerFlagObservation',
+        description = 'Observe one independent zero-argument player flag: stealthed uses IsStealthed, control uses HasFullControl, and outdoors uses IsOutdoors. Readable true and false retain their meanings. Required missing, failed, nil, restricted or malformed data returns nil with a reason. No existence, instance or ability-usability inference is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            kind = {
+                type = 'string',
+                description = 'One of stealthed, control or outdoors; no other predicate is invoked.',
+            },
+        },
+        returns = {
+            {
+                type = 'boolean | nil',
+                description = 'Readable selected flag or nil when required data is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or availability reason for a nil player flag.',
+            },
+        },
+    },
+    Platform_GetUnitIdentityObservation = {
+        module = 'Platform/unit_identity.lua',
+        member = 'Platform.GetUnitIdentityObservation',
+        callName = 'addon.Platform:GetUnitIdentityObservation',
+        description = 'Compare two exact unit tokens using UnitIsUnit after checking only the first token with UnitExists. A readable absent first unit returns false without comparing. Required missing, failed, restricted or malformed observations return nil with a reason. No second existence query, GUID lookup or inferred identity is added.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'First exact unit token, checked for existence before comparison.',
+            },
+            otherunit = { type = 'string', description = 'Second exact unit token, passed unchanged to UnitIsUnit.' },
+        },
+        returns = {
+            {
+                type = 'boolean | nil',
+                description = 'Readable unit equality, false for a known absent first unit, or nil when required observations are unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, token-validation or availability reason for a nil identity result.',
+            },
+        },
+    },
+    Platform_GetUnitFlagObservation = {
+        module = 'Platform/unit_flags.lua',
+        member = 'Platform.GetUnitFlagObservation',
+        callName = 'addon.Platform:GetUnitFlagObservation',
+        description = 'Observe one current unit flag: combat uses UnitAffectingCombat, enemy uses UnitIsEnemy with player as the first unit, and pvp uses UnitIsPVP. A readable absent unit returns false without querying the flag. Required missing, failed, restricted or malformed observations return nil with a reason. This preserves the exact selected unit and does not infer friendliness, attackability or other unit states.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Exact unit token whose selected flag should be observed.' },
+            kind = {
+                type = 'string',
+                description = 'One of combat, enemy or pvp; other flag kinds are not supported.',
+            },
+        },
+        returns = {
+            {
+                type = 'boolean | nil',
+                description = 'Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or availability reason for a nil unit flag.',
+            },
+        },
+    },
+    Platform_GetUnitAttackabilityObservation = {
+        module = 'Platform/unit_attackability.lua',
+        member = 'Platform.GetUnitAttackabilityObservation',
+        callName = 'addon.Platform:GetUnitAttackabilityObservation',
+        description = 'Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Exact selected unit token; the attacker remains player.' },
+        },
+        returns = {
+            {
+                type = 'boolean | nil',
+                description = 'True for a readable attackable non-dead unit, false for a conclusive negative result, or nil when a required observation is unavailable.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or availability reason for nil attackability.',
+            },
+        },
+    },
+    Platform_GetPlayerMovementObservation = {
+        module = 'Platform/player_movement.lua',
+        member = 'Platform.GetPlayerMovementObservation',
+        callName = 'addon.Platform:GetPlayerMovementObservation',
+        description = 'Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Fresh readable record with finite nonnegative speed, or nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Policy or availability reason for a nil movement observation.' },
+        },
+    },
+    Platform_GetUnitPowerObservation = {
+        module = 'Platform/unit_power.lua',
+        member = 'Platform.GetUnitPowerObservation',
+        callName = 'addon.Platform:GetUnitPowerObservation',
+        description = 'Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Exact unit token whose resource should be observed; this does not redirect player or vehicle units.',
+            },
+            resource = {
+                type = 'string',
+                description = 'mana selects the explicit live Mana enum; current reads and forwards the actual UnitPowerType identity, including Mana zero.',
+            },
+            includeMaximum = {
+                type = 'boolean | nil',
+                description = 'True also observes the selected resource maximum; false or nil reads current quantity only.',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Fresh readable record with exists and, when present, powerType and finite current quantity. Requested maximum is finite and nonnegative. Quantities may be fractional; current-mode current may be signed.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, query-validation or availability reason for a nil resource observation.',
+            },
+        },
+    },
+    Platform_GetUnitLevelObservation = {
+        module = 'Platform/unit_level.lua',
+        member = 'Platform.GetUnitLevelObservation',
+        callName = 'addon.Platform:GetUnitLevelObservation',
+        description = 'Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Unit token whose raw level should be observed.' },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Fresh readable record with exists and, when present, a positive integer level.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Availability or query-validation reason for a nil level observation.',
+            },
+        },
+    },
+    GetConditionUnitLevel = {
+        module = 'Core/level_conditions.lua',
+        member = 'GetConditionUnitLevel',
+        callName = 'addon:GetConditionUnitLevel',
+        description = 'Resolve a readable raw unit level for condition evaluation. Known absence returns false; unavailable observations return nil with a reason. Cache observations within the supplied evaluation pass. Only valid player levels are retained between passes until a skill, profile or level refresh.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+            unit = { type = 'string', description = 'Unit token whose raw level should be resolved.' },
+            cache = {
+                type = 'table | nil',
+                description = 'Shared evaluation cache; nil observes directly without a per-pass cache.',
+            },
+        },
+        returns = {
+            {
+                type = 'number | boolean | nil',
+                description = 'Positive integer level, false for a known absent unit, or nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Availability or query-validation reason for a nil level.' },
+        },
+    },
+    Platform_GetUnitHealthObservation = {
+        module = 'Platform/unit_health.lua',
+        member = 'Platform.GetUnitHealthObservation',
+        callName = 'addon.Platform:GetUnitHealthObservation',
+        description = 'Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Unit token whose current health should be observed.' },
+            includeMaximum = {
+                type = 'boolean | nil',
+                description = 'True also observes maximum health; false or nil reads current health only.',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Fresh readable record with exists and, when present, current health. Maximum health is included only when requested.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Policy, validation or availability reason for a nil health observation.',
+            },
+        },
+    },
+    Platform_GetItemInfoInstant = {
+        module = 'Platform/items.lua',
+        member = 'Platform.GetItemInfoInstant',
+        callName = 'addon.Platform:GetItemInfoInstant',
+        description = 'Read normalized native item classification metadata. The record contains canonical itemID, classID and subClassID, plus equipLoc, the non-localized INVTYPE_* equip location token, when it is readable and nonempty; it does not require loaded item display text. Missing, failed, malformed or restricted metadata returns nil with a reason.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            item = {
+                type = 'number | string',
+                description = 'Positive item ID or native-recognized item name/link to classify.',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Readable canonical item classification record (itemID, classID, subClassID and optional equipLoc), or nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Validation or availability reason for a nil result.' },
+        },
+    },
+    Platform_GetRosterClassObservation = {
+        module = 'Platform/roster_class.lua',
+        member = 'Platform.GetRosterClassObservation',
+        callName = 'addon.Platform:GetRosterClassObservation',
+        description = 'Read public roster identity on identified client families. Input routing is limited to player, party1 through party4 and raid1 through raid40. Call UnitExists with that exact one-argument token first; known false returns false without querying class. For a present unit, consume only UnitClass return two as a readable nonempty class filename string, without a class enum restriction. Missing, failed, malformed or restricted required facts return nil with a reason.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Exact helper-owned player, party1..party4 or raid1..raid40 token.',
+            },
+        },
+        returns = {
+            {
+                type = 'string | boolean | nil',
+                description = 'Observed class filename string, false for a known absent unit, or nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Validation, policy or availability reason for a nil result.' },
+        },
+    },
+    Platform_GetGroupMembership = {
+        module = 'Platform/groups.lua',
+        member = 'Platform.GetGroupMembership',
+        callName = 'addon.Platform:GetGroupMembership',
+        description = 'Read public group membership on identified client families. Unknown clients are unsupported. True raidOnly checks IsInRaid; false or nil checks IsInGroup using its native default group category. A readable false result stays false. Missing, failed, malformed or restricted observations return nil with a reason.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            raidOnly = {
+                type = 'boolean | nil',
+                description = 'True requests raid membership; false or nil requests any group membership.',
+            },
+        },
+        returns = {
+            { type = 'boolean | nil', description = 'Observed membership, or nil when unavailable.' },
+            { type = 'string | nil', description = 'Validation or availability reason for a nil result.' },
+        },
+    },
+    Platform_GetAnnouncementRecipientGroupMembership = {
+        module = 'Platform/announcement_recipient.lua',
+        member = 'Platform.GetAnnouncementRecipientGroupMembership',
+        callName = 'addon.Platform:GetAnnouncementRecipientGroupMembership',
+        description = 'Resolve an exact cast-recipient name against the current bounded party or raid roster, then observe membership through a unit token. Missing, ambiguous or changing roster data remains unavailable; never reads the selected target or retains state across casts.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            recipient = { type = 'string', description = 'Exact readable recipient name recorded for this cast.' },
+            raidOnly = {
+                type = 'boolean | nil',
+                description = 'True checks raid membership only; false or nil checks party or raid.',
+            },
+        },
+        returns = {
+            { type = 'boolean | nil', description = 'Observed membership, or nil when unavailable.' },
+            { type = 'string | nil', description = 'Validation or availability reason for a nil result.' },
+        },
+    },
+    Platform_GetUnitGroupMembership = {
+        module = 'Platform/groups.lua',
+        member = 'Platform.GetUnitGroupMembership',
+        callName = 'addon.Platform:GetUnitGroupMembership',
+        description = 'Read a specified unit membership in the player party or raid. True raidOnly queries only UnitInRaid; otherwise a true UnitInParty result short-circuits, false proceeds to UnitInRaid, and unknown remains unavailable. Readable nil raid index means false; integer raid index1..40 means true. Names are passed unchanged to native APIs; native name-query acceptance requires client qualification.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Readable nonempty unit token or native-recognized name, passed unchanged.',
+            },
+            raidOnly = {
+                type = 'boolean | nil',
+                description = 'True checks raid membership only; false or nil checks party then raid.',
+            },
+        },
+        returns = {
+            { type = 'boolean | nil', description = 'Observed membership, or nil when unavailable.' },
+            { type = 'string | nil', description = 'Validation or availability reason for a nil result.' },
+        },
+    },
+    Platform_GetGlyphItemInfo = {
+        module = 'Platform/glyphs.lua',
+        member = 'Platform.GetGlyphItemInfo',
+        callName = 'addon.Platform:GetGlyphItemInfo',
+        description = 'Classify a numeric item as a glyph for the requested class, using guarded native item metadata. Class is optional and defaults to the readable player class. This establishes item classification only, not equipped status or an item-to-glyph-spell ID mapping.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            itemID = {
+                type = 'number',
+                description = 'Positive integer glyph item ID stored by the condition; arrays, item-set keys and spell IDs are not item references.',
+            },
+            classID = {
+                type = 'number | nil',
+                description = 'Optional positive class ID; nil queries the current player class under protection.',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Readable canonical itemID/classID/subClassID record when the item is a glyph for the requested class; nil for invalid or unavailable metadata.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Classification, validation or availability reason for a nil result.',
+            },
+        },
+    },
+    Platform_GetGlyphSocketSnapshot = {
+        module = 'Platform/glyphs.lua',
+        member = 'Platform.GetGlyphSocketSnapshot',
+        callName = 'addon.Platform:GetGlyphSocketSnapshot',
+        description = 'Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Normalized bounded socket snapshot with slots and complete, or nil when the query is unavailable.',
+            },
+            { type = 'string | nil', description = 'Policy, validation or availability reason for a nil snapshot.' },
+        },
+    },
+    Platform_GetUnitCastObservation = {
+        module = 'Platform/casting.lua',
+        member = 'Platform.GetUnitCastObservation',
+        callName = 'addon.Platform:GetUnitCastObservation',
+        description = 'Observe a unit casting or channeling on probe- and restricted-policy clients. A known absent unit or a readable inactive result returns active=false. Active records contain name, or nameReason when the name is secret (the unit is still casting), and independently available remainingSeconds, durationSeconds, interruptible and spellID fields, with remainingReason, durationReason, interruptibleReason or spellReason when an optional field is unavailable. Missing, failed or restricted presence observations return nil with a reason.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = { type = 'string', description = 'Unit token whose current cast or channel should be observed.' },
+            kind = {
+                type = 'string',
+                description = 'Observation kind: cast or channel. These use different native interruptibility tuple positions.',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Fresh readable record with active, then name or nameReason, remainingSeconds, durationSeconds, interruptible and spellID. Remaining time and duration are in seconds; remaining time is clamped to zero. An unavailable optional field has its own reason; it does not invalidate an active record.',
+            },
+            {
+                type = 'string | nil',
+                description = 'Availability or query-validation reason when the whole observation is unavailable.',
+            },
+        },
+    },
+    Platform_GetNameplateMaxDistance = {
+        module = 'Platform/range.lua',
+        member = 'Platform.GetNameplateMaxDistance',
+        callName = 'addon.Platform:GetNameplateMaxDistance',
+        description = 'Read the current positive nameplate visibility distance using the supported CVar API. This limits a Distance Count query; it does not prove that all nearby units have been observed. Missing, malformed, restricted or failed observations return nil with a reason.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+        },
+        returns = {
+            {
+                type = 'number | nil',
+                description = 'Current positive visibility distance in yards; nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Availability reason for a nil result.' },
+        },
+    },
+    Platform_GetRangeCheckBounds = {
+        module = 'Platform/range.lua',
+        member = 'Platform.GetRangeCheckBounds',
+        callName = 'addon.Platform:GetRangeCheckBounds',
+        description = 'Read the public LibRangeCheck interval for a unit. A successful upper bound is inclusive; a positive failed lower bound is strict. A zero lower floor is synthetic. Neither bound is an exact distance, and a missing upper bound is not proof that the unit is outside every radius. Unavailable, malformed, restricted or failed observations return nil with a reason.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            unit = {
+                type = 'string',
+                description = 'Current unit token whose distance from the player should be observed.',
+            },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Availability or validation reason for a nil result.' },
+        },
+    },
+    Platform_IsAutoRepeatActive = {
+        module = 'Platform/spells.lua',
+        member = 'Platform.IsAutoRepeatActive',
+        callName = 'addon.Platform:IsAutoRepeatActive',
+        description = 'Read the player auto-repeat state for a spell such as Shoot or Auto Shot. This is distinct from a current or queued cast. Modern clients receive the exact spell ID; a legacy query resolves the player spell-book slot first. Restricted client policies, unreadable results and unavailable book slots return nil with a reason. This observes state and never starts or stops a spell.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter (implicit with colon calls).',
+            },
+            spellID = { type = 'number', description = 'Positive integer spell ID, not a spell-book slot.' },
+        },
+        returns = {
+            {
+                type = 'boolean | nil',
+                description = 'True when the client reports this spell auto-repeating; false when it reports inactive; nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Validation or availability reason for a nil result.' },
+        },
+    },
+    Widget_GetSpellId = {
+        module = 'Conditions/common.lua',
+        callName = 'addon:Widget_GetSpellId',
+        description = 'Resolve the spell identifier stored by a condition. With exact rank enabled the supplied ID is retained; otherwise ranked Classic clients resolve the currently known rank through the spell catalog. Returns nil and an availability reason if resolution cannot be completed.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+            spellid = { type = 'number', description = 'Stored spell ID to resolve.' },
+            ranked = {
+                type = 'boolean | nil',
+                description = 'True to require this exact rank; false or nil follows the available rank.',
+            },
+        },
+        returns = {
+            { type = 'number | nil', description = 'Resolved spell ID, or nil when unavailable.' },
+            { type = 'string | nil', description = 'Availability reason when resolution fails; nil on success.' },
+        },
+    },
+    Platform_IsSpellReady = {
+        module = 'Platform/spells.lua',
+        member = 'Platform.IsSpellReady',
+        callName = 'addon.Platform:IsSpellReady',
+        description = 'Check whether a spell can be recommended now, allowing a spell whose remaining cooldown ends with the current global cooldown. On Retail and Forever, where cooldown times are secret in combat, readiness comes from the never-secret isEnabled, isActive and isOnGCD flags instead. This checks cooldown readiness only; it does not check learned status, range or resource usability. Pass evaluation time from evalStart or GetTime().',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter. A dot reference requires addon.Platform as the first argument; a colon call supplies it implicitly.',
+            },
+            spell = {
+                type = 'number | string',
+                description = 'Spell ID or client-recognized spell name whose cooldown should be checked.',
+            },
+            now = {
+                type = 'number',
+                description = 'Current evaluation time in seconds from GetTime(), normally evalStart.',
+            },
+        },
+        returns = {
+            {
+                type = 'boolean | nil',
+                description = 'True when ready by the end of the global cooldown; false when its own cooldown prevents recommendation; nil when the client cannot supply a readable result.',
+            },
+            { type = 'string | nil', description = 'Availability or validation reason when the result is nil.' },
+        },
+    },
+    Platform_GetSpellCooldown = {
+        module = 'Platform/spells.lua',
+        member = 'Platform.GetSpellCooldown',
+        callName = 'addon.Platform:GetSpellCooldown',
+        description = 'Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate. When the client hides the times (Retail and Forever in combat) the record is nil with reason restricted-value, followed by the never-secret isEnabled, isActive and isOnGCD flags when they can be read.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter. A dot reference requires addon.Platform as the first argument; a colon call supplies it implicitly.',
+            },
+            spell = {
+                type = 'number | string',
+                description = 'Spell ID or client-recognized spell name whose cooldown should be read.',
+            },
+        },
+        returns = {
+            { type = 'table | nil', description = 'Readable cooldown record, or nil when unavailable.' },
+            { type = 'string | nil', description = 'Availability or validation reason when the record is nil.' },
+            {
+                type = 'boolean | nil',
+                description = 'With restricted-value only: isEnabled, false while the cooldown is on hold.',
+            },
+            {
+                type = 'boolean | nil',
+                description = 'With restricted-value only: isActive, true while a cooldown (its own or the global one) is running.',
+            },
+            {
+                type = 'boolean | nil',
+                description = 'With restricted-value only: isOnGCD, true when the running cooldown is the global cooldown; may be nil.',
+            },
+        },
+    },
+    Platform_GetSpellCharges = {
+        module = 'Platform/spells.lua',
+        member = 'Platform.GetSpellCharges',
+        callName = 'addon.Platform:GetSpellCharges',
+        description = 'Read a normalized charge record: currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate and isActive. Unsupported spells or restricted client data return nil with a reason.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter. A dot reference requires addon.Platform as the first argument; a colon call supplies it implicitly.',
+            },
+            spell = {
+                type = 'number | string',
+                description = 'Spell ID or client-recognized spell name whose charges should be read.',
+            },
+        },
+        returns = {
+            { type = 'table | nil', description = 'Readable charge record, or nil when unavailable.' },
+            { type = 'string | nil', description = 'Availability or validation reason when the record is nil.' },
+        },
+    },
+    Platform_GetSpellRangeState = {
+        module = 'Platform/actions.lua',
+        member = 'Platform.GetSpellRangeState',
+        callName = 'addon.Platform:GetSpellRangeState',
+        description = 'Read spell-specific range for a unit using the appropriate client API or spell-book slot. A spell without a range restriction returns applicable=false; otherwise applicable=true and inRange records whether the unit is in range. Unknown or inaccessible observations return nil with a reason.',
+        args = {
+            self = {
+                type = 'RMPlatform',
+                description = 'Rotation Master platform adapter. A dot reference requires addon.Platform as the first argument; a colon call supplies it implicitly.',
+            },
+            id = { type = 'number', description = 'Spell ID whose range should be checked.' },
+            unit = { type = 'string | nil', description = 'Unit token, such as target; nil uses target.' },
+            bank = { type = 'string', description = 'Spell-book scope: spell, pet or any.' },
+        },
+        returns = {
+            {
+                type = 'table | nil',
+                description = 'Range record with applicable and, when applicable, inRange; nil when unavailable.',
+            },
+            { type = 'string | nil', description = 'Availability or validation reason when the record is nil.' },
+        },
+    },
+    getCached = {
+        module = 'Functions/cache.lua',
+        member = 'Functions.cache.getCached',
+        bindingID = 'builtin:utils.lua:getCached',
+        namespace = 'Functions.cache',
+        compatibilityNamespaces = { 'utils' },
+        callName = 'Functions.cache.getCached',
+        description = 'Call an observation once per cache and exact argument tuple, including nil results. Pass the evaluation cache to share observations within a recommendation cycle; nil cache calls directly.',
+        args = {
+            cache = { type = 'table | nil', description = 'Evaluation cache, or nil to bypass caching.' },
+            func = { type = 'function | string', description = 'Function or global function name to call.' },
+            ['...'] = {
+                type = 'any',
+                description = 'Arguments forwarded unchanged; types, identity, arity and nil positions distinguish cache entries.',
+            },
+        },
+        returns = { type = '...', description = 'All original results, preserving nil positions and return count.' },
+    },
+    getRetryCached = {
+        module = 'Functions/cache.lua',
+        member = 'Functions.cache.getRetryCached',
+        bindingID = 'builtin:utils.lua:getRetryCached',
+        namespace = 'Functions.cache',
+        compatibilityNamespaces = { 'utils' },
+        callName = 'Functions.cache.getRetryCached',
+        description = 'Cache an observation after it returns a non-nil value; retry observations whose entire return tuple is nil. Uses the same exact argument keys as getCached.',
+        args = {
+            cache = { type = 'table | nil', description = 'Evaluation cache, or nil to bypass caching.' },
+            func = { type = 'function | string', description = 'Function or global function name to call.' },
+            ['...'] = { type = 'any', description = 'Arguments forwarded unchanged to the observed function.' },
+        },
+        returns = { type = '...', description = 'All original results, preserving nil positions and return count.' },
+    },
+    round = {
+        module = 'Functions/values.lua',
+        member = 'Functions.values.round',
+        namespace = 'Functions.values',
+        callName = 'Functions.values.round',
+        description = 'Round with the existing floor(num * 10^places + 0.5) / 10^places formula. Places defaults to zero and may be negative. Halfway negative values round toward positive infinity; no finite-number validation or alternative rounding policy is added.',
+        args = {
+            num = { type = 'number', description = 'Value passed to the original arithmetic formula.' },
+            numDecimalPlaces = {
+                type = 'number | nil',
+                description = 'Decimal places, default zero; negative values round to tens or larger powers of ten.',
+            },
+        },
+        returns = { type = 'number', description = 'One rounded numeric result from the original formula.' },
+    },
+    isint = {
+        module = 'Functions/values.lua',
+        member = 'Functions.values.isint',
+        namespace = 'Functions.values',
+        callName = 'Functions.values.isint',
+        description = 'Apply the legacy integer or canonical numeric-string spelling test. Numbers use floor equality; strings must equal the spelling obtained after numeric conversion and floor. Other types return false. This is not a finite-number validator.',
+        args = { num = { type = 'any', description = 'Number or string to inspect; other types do not match.' } },
+        returns = {
+            type = 'boolean',
+            description = 'Whether the original floor-equality or exact numeric-spelling predicate matches.',
+        },
+    },
+    starts_with = {
+        module = 'Functions/text.lua',
+        member = 'Functions.text.starts_with',
+        namespace = 'Functions.text',
+        callName = 'Functions.text.starts_with',
+        description = 'Test a literal byte prefix using a Lua string slice. Empty prefixes match; pattern characters have no special meaning and case is preserved.',
+        args = {
+            str = { type = 'string', description = 'Text to inspect.' },
+            start = { type = 'string', description = 'Literal prefix, including an empty prefix.' },
+        },
+        returns = { type = 'boolean', description = 'Whether the text begins with the exact prefix.' },
+    },
+    ends_with = {
+        module = 'Functions/text.lua',
+        member = 'Functions.text.ends_with',
+        namespace = 'Functions.text',
+        callName = 'Functions.text.ends_with',
+        description = 'Test a literal byte suffix using a Lua string slice. Empty suffixes match; pattern characters have no special meaning and case is preserved.',
+        args = {
+            str = { type = 'string', description = 'Text to inspect.' },
+            ending = { type = 'string', description = 'Literal suffix, including an empty suffix.' },
+        },
+        returns = { type = 'boolean', description = 'Whether the text ends with the exact suffix.' },
+    },
+    compare = {
+        module = 'Functions/values.lua',
+        member = 'Functions.values.compare',
+        bindingID = 'builtin:utils.lua:compare',
+        namespace = 'Functions.values',
+        compatibilityNamespaces = { 'utils' },
+        callName = 'Functions.values.compare',
+        description = 'Compare two values using an RM operator identifier: LESSTHAN, LESSTHANOREQUALS, GREATERTHAN, GREATERTHANOREQUALS, EQUALS, NOTEQUALS or DIVISIBLE. Invalid operators warn and return nil; operands must support the selected Lua operation.',
+        args = {
+            operator = { type = 'string', description = 'RM operator identifier.' },
+            left = { type = 'any', description = 'Left operand; use numbers for ordering and divisibility.' },
+            right = { type = 'any', description = 'Right operand; DIVISIBLE requires a nonzero divisor.' },
+        },
+        returns = { type = 'boolean | nil', description = 'Comparison result, or nil for an unknown operator.' },
+    },
+    isin = {
+        module = 'Functions/values.lua',
+        member = 'Functions.values.isin',
+        bindingID = 'builtin:utils.lua:isin',
+        namespace = 'Functions.values',
+        compatibilityNamespaces = { 'utils' },
+        callName = 'Functions.values.isin',
+        description = 'Check whether a table has a non-nil value at a key. A stored false value still counts as present; this does not scan table values.',
+        args = {
+            array = { type = 'table', description = 'Table to inspect.' },
+            value = { type = 'any', description = 'Lookup key.' },
+        },
+        returns = { type = 'boolean', description = 'True when array[value] is non-nil.' },
+    },
+    playerize = {
+        module = 'Functions/presentation.lua',
+        member = 'Functions.presentation.playerize',
+        bindingID = 'builtin:utils.lua:playerize',
+        namespace = 'Functions.presentation',
+        callName = 'Functions.presentation.playerize',
+        description = 'Choose the supplied player value only for the literal player unit token; every other unit selects the nonplayer value. Selected false and nil values are preserved.',
+        args = {
+            unit = { type = 'string | nil', description = 'Unit token to compare with the literal player token.' },
+            player = { type = 'any', description = 'Value returned when unit is player.' },
+            nonplayer = { type = 'any', description = 'Value returned for every other unit.' },
+        },
+        returns = { type = 'any', description = 'The selected value, including false or nil.' },
+    },
+    phrase = {
+        module = 'Functions/presentation.lua',
+        member = 'Functions.presentation.phrase',
+        namespace = 'Functions.presentation',
+        callName = 'Functions.presentation.phrase',
+        description = 'Create a transient named condition summary. Use {name} for scalar values and {{positive|negative}} for predicate alternatives; prefix a primary alternative with !. Escape literal double braces as {{{{ and }}}}. Values are inserted literally without parsing their percent signs, links, colors or braces. Typed predicate values participate in primary selection. Templates, values and rendered text are bounded; malformed input renders a localized unavailable summary. This changes presentation only and runs no condition observations.',
+        args = {
+            template = {
+                type = 'string',
+                description = 'Localized complete sentence with named slots and optional explicit predicate alternatives.',
+            },
+            values = {
+                type = 'table',
+                description = 'Identifier-keyed scalar values or typed predicates. Strings, finite numbers and booleans are supported; referenced slots must be present. Values are captured when the phrase is created.',
+            },
+        },
+        returns = {
+            type = 'RMConditionPhrase',
+            description = 'Transient trusted phrase recognized by condition summary rendering; do not persist it as condition data.',
+        },
+    },
+    predicate = {
+        module = 'Functions/presentation.lua',
+        member = 'Functions.presentation.predicate',
+        namespace = 'Functions.presentation',
+        callName = 'Functions.presentation.predicate',
+        captureBindings = { operators = 'builtin:Functions/presentation.lua:operators' },
+        description = 'Create a typed comparison predicate for a named condition phrase. Positive wording uses the original captured operator map and negative wording uses the current negated operator map. A primary predicate takes precedence over qualifiers; only the first eligible predicate negates. Unknown operators use the existing operator placeholder. This formats wording without comparing values or evaluating a condition.',
+        args = {
+            operator = { type = 'string', description = 'Comparison operator key, such as EQUALS or LESSTHAN.' },
+            primary = {
+                type = 'boolean | nil',
+                description = 'True marks the main comparison to negate; false or nil leaves it eligible only when no primary predicate exists.',
+            },
+        },
+        returns = {
+            type = 'RMConditionPredicate',
+            description = 'Transient typed predicate used as a named phrase value; do not persist it as condition data.',
+        },
+    },
+    compareString = {
+        module = 'Functions/presentation.lua',
+        member = 'Functions.presentation.compareString',
+        bindingID = 'builtin:utils.lua:compareString',
+        namespace = 'Functions.presentation',
+        callName = 'Functions.presentation.compareString',
+        description = 'Format comparison wording with named Boolean alternatives when the operator has a negative form. The primary flag marks the positive form as the primary alternative. Positive operator labels use the captured operator map; negative labels and nullable dispatch retain their live addon APIs.',
+        args = {
+            operator = {
+                type = 'string | nil',
+                description = 'RM comparison operator identifier; missing labels use the operator placeholder.',
+            },
+            left = { type = 'string | number', description = 'Text or number shown before the comparison wording.' },
+            right = { type = 'string | number', description = 'Text or number shown after the comparison wording.' },
+            primary = {
+                type = 'boolean | nil',
+                description = 'Mark the positive wording as the primary named alternative.',
+            },
+        },
+        returns = { type = 'string', description = 'Comparison text retaining named Boolean alternative markup.' },
+    },
+    nullable = {
+        module = 'Functions/presentation.lua',
+        member = 'Functions.presentation.nullable',
+        bindingID = 'builtin:utils.lua:nullable',
+        namespace = 'Functions.presentation',
+        compatibilityNamespaces = { 'utils' },
+        captureBindings = { color = 'builtin:utils.lua:color' },
+        callName = 'Functions.presentation.nullable',
+        description = 'Return a present value unchanged, or a red display placeholder for nil. Use for readable condition labels, not as a boolean fallback.',
+        args = {
+            value = { type = 'any', description = 'Value to display; false is preserved.' },
+            default = {
+                type = 'string | nil',
+                description = 'Missing-value display text; omitted uses the localized value placeholder.',
+            },
+        },
+        returns = { type = 'any', description = 'Original non-nil value, or a colored placeholder string.' },
+    },
+    nullable_value = {
+        module = 'Functions/presentation.lua',
+        member = 'Functions.presentation.nullable_value',
+        bindingID = 'builtin:utils.lua:nullable_value',
+        namespace = 'Functions.presentation',
+        compatibilityNamespaces = { 'utils' },
+        captureBindings = { color = 'builtin:utils.lua:color' },
+        callName = 'Functions.presentation.nullable_value',
+        description = 'Look up a table key for display, preserving non-nil results; invalid tables, missing keys and nil keys use nullable placeholder text.',
+        args = {
+            value = { type = 'any', description = 'Key to look up.' },
+            array = { type = 'table | nil', description = 'Display lookup table.' },
+            default = {
+                type = 'string | nil',
+                description = 'Missing-value display text; omitted uses the localized value placeholder.',
+            },
+        },
+        returns = { type = 'any', description = 'Original non-nil lookup result, or a colored placeholder string.' },
+    },
+    split = {
+        module = 'Functions/text.lua',
+        member = 'Functions.text.split',
+        bindingID = 'builtin:utils.lua:split',
+        namespace = 'Functions.text',
+        compatibilityNamespaces = { 'utils' },
+        captureBindings = { string = 'builtin:utils.lua:string' },
+        callName = 'Functions.text.split',
+        description = 'Split a string into nonempty runs between separator characters. The separator is inserted into a Lua pattern character class; it is not a literal multi-character delimiter. Empty fields are omitted.',
+        args = {
+            inputstr = { type = 'string', description = 'Text to split.' },
+            sep = {
+                type = 'string | nil',
+                description = 'Lua pattern character-class separator, default %s for whitespace.',
+            },
+        },
+        returns = { type = 'string[]', description = 'Dense array of nonempty text fields.' },
+    },
+    wrap = {
+        module = 'Functions/text.lua',
+        member = 'Functions.text.wrap',
+        bindingID = 'builtin:utils.lua:wrap',
+        namespace = 'Functions.text',
+        compatibilityNamespaces = { 'utils' },
+        callName = 'Functions.text.wrap',
+        description = 'Wrap text at whitespace boundaries near a target column count. Long words are retained intact.',
+        args = {
+            str = { type = 'string', description = 'Text to wrap.' },
+            limit = { type = 'number | nil', description = 'Target line width, default 72 characters.' },
+        },
+        returns = { type = 'string', description = 'Text with line breaks inserted at word boundaries.' },
+    },
+    trim = {
+        module = 'Functions/text.lua',
+        member = 'Functions.text.trim',
+        bindingID = 'builtin:utils.lua:trim',
+        namespace = 'Functions.text',
+        compatibilityNamespaces = { 'utils' },
+        callName = 'Functions.text.trim',
+        description = 'Remove leading and trailing Lua-pattern whitespace from a string.',
+        args = { s = { type = 'string', description = 'Text to trim.' } },
+        returns = { type = 'string', description = 'Trimmed text.' },
+    },
+    CreateConditionGroup = {
+        module = 'UI/condition_layout.lua',
+        callName = 'addon:CreateConditionGroup',
+        description = 'Create a condition field container with RM-owned List, Table and responsive spell-field layouts. It accepts registered native condition widgets; add children with AddChild and attach the group to the callback parent.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+        },
+        returns = {
+            type = 'RMConditionGroup',
+            description = 'Condition container supporting SetLayout, AddChild, SetUserData, SetWidth and DoLayout.',
+        },
+    },
+    CreateConditionEditBox = {
+        module = 'UI/condition_inputs.lua',
+        callName = 'addon:CreateConditionEditBox',
+        description = 'Create a native text input using the condition widget contract. SetLabel, SetText, SetDisabled and SetCallback configure it; OnEnterPressed commits text. Add it to the callback parent with parent:AddChild(widget).',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+        },
+        returns = {
+            type = 'RMConditionInput',
+            description = 'Text widget supporting label, text, pending-edit and callback methods.',
+        },
+    },
+    CreateConditionSlider = {
+        module = 'UI/condition_inputs.lua',
+        callName = 'addon:CreateConditionSlider',
+        description = 'Create a native numeric condition input with a slider and typed numeric field. Configure SetSliderValues, SetValue, SetIsPercent and SetCallback; OnValueChanged reports committed values. Add it with parent:AddChild(widget).',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+        },
+        returns = {
+            type = 'RMConditionInput',
+            description = 'Numeric widget supporting slider bounds, percent display and pending-edit validation.',
+        },
+    },
+    CreateConditionDropdown = {
+        module = 'UI/selector.lua',
+        callName = 'addon:CreateConditionDropdown',
+        description = 'Create a native condition selector. SetList accepts key-to-label or key-to-entry maps; SetValue selects a key and OnValueChanged reports changes. Add it with parent:AddChild(widget).',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+        },
+        returns = {
+            type = 'RMConditionSelector',
+            description = 'Selector widget supporting SetList, SetValue, SetLabel, SetDisabled and callbacks.',
+        },
+    },
+    CreateConditionCheckBox = {
+        module = 'UI/checkbox.lua',
+        callName = 'addon:CreateConditionCheckBox',
+        description = 'Create a native boolean condition control. Configure SetLabel, SetValue, SetDisabled and OnValueChanged; add it with parent:AddChild(widget).',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+        },
+        returns = {
+            type = 'RMConditionCheckBox',
+            description = 'Checkbox widget with boolean value and callback methods.',
+        },
+    },
+    CreateConditionLink = {
+        module = 'UI/condition_display.lua',
+        callName = 'addon:CreateConditionLink',
+        description = 'Create native wrapping text with optional leading image and pointer callbacks. SetImage and SetImageSize configure the image; OnEnter, OnLeave and OnClick use the condition callback contract. Add it to the callback parent with parent:AddChild(widget); callbacks expire when its lease is released.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+        },
+        returns = {
+            type = 'RMConditionLink',
+            description = 'Native interactive text and image control with measured height and disabled state.',
+        },
+    },
+    CreateConditionPositionPad = {
+        module = 'UI/condition_position.lua',
+        callName = 'addon:CreateConditionPositionPad',
+        description = 'Create a native position pad using the shared directional controls. OnOffsetChanged reports horizontal and vertical direction, whether Center was pressed, and the increment (one, or ten with Shift). SetDisabled controls interaction; add the pad to the callback parent with parent:AddChild(widget).',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+        },
+        returns = {
+            type = 'RMConditionPositionPad',
+            description = 'Native directional pad with center reset and lease-protected callbacks.',
+        },
+    },
+    CreateConditionIcon = {
+        module = 'UI/condition_icon.lua',
+        callName = 'addon:CreateConditionIcon',
+        description = 'Create a native image control using the condition widget lifecycle. SetImage and SetImageSize choose the texture; SetText optionally adds a caption. OnClick, OnEnter and OnLeave use the shared callback contract. Add the control to the callback parent with parent:AddChild(widget).',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+        },
+        returns = {
+            type = 'RMConditionIcon',
+            description = 'Native image control with label, texture, disabled state and callbacks.',
+        },
+    },
+    CreateConditionLabel = {
+        module = 'UI/condition_display.lua',
+        callName = 'addon:CreateConditionLabel',
+        description = 'Create native wrapping text that measures its height from its width and font. SetText, SetFont or SetFontObject configure its contents. Add it to the callback parent with parent:AddChild(widget) so layout can track its measured height.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+        },
+        returns = {
+            type = 'RMConditionLabel',
+            description = 'Native wrapping text control with font, color and alignment methods.',
+        },
+    },
+    CreateConditionButton = {
+        module = 'UI/condition_display.lua',
+        callName = 'addon:CreateConditionButton',
+        description = 'Create a native button using the shared condition widget lifecycle and workbench theme. SetText, SetDisabled and SetCallback configure its label and interaction; OnClick receives the mouse button. Add it to the callback parent with parent:AddChild(widget).',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+        },
+        returns = {
+            type = 'RMConditionButton',
+            description = 'Native button with label, disabled state and lease-protected callbacks.',
+        },
+    },
+    Widget_UnitWidget = {
+        module = 'UI/condition_unit.lua',
+        bindingID = 'builtin:Conditions/common.lua:Widget_UnitWidget',
+        namespace = 'Conditions.common',
+        callName = 'addon:Widget_UnitWidget',
+        description = 'Create a configured unit selector bound to a condition value record. Returns the widget for the caller to add to the condition callback parent.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+            value = { type = 'table', description = 'Condition value record updated when a unit is chosen.' },
+            units = { type = 'table', description = 'Unit key-to-display-name map shown in the selector.' },
+            update = { type = 'function', description = 'Callback invoked after changing the selected unit.' },
+            field = { type = 'string | nil', description = 'Value record field to edit; defaults to unit.' },
+        },
+        returns = {
+            type = 'RMConditionSelector',
+            description = 'Configured unit selector; add it with parent:AddChild(widget).',
+        },
+    },
+    Widget_SpellWidget = {
+        module = 'Conditions/common.lua',
+        callName = 'addon:Widget_SpellWidget',
+        description = 'Create a spell input with suggestions, validation and spell-link support for custom condition widgets. The update callback owns saving a chosen value; add the returned widget to the callback parent.',
+        args = {
+            self = { type = 'RMAddon', description = 'Rotation Master addon instance (implicit with colon calls).' },
+            spec = { type = 'number', description = 'Specialization scope used to resolve spell suggestions.' },
+            editbox = {
+                type = 'string',
+                description = 'Reference input kind, such as Spec_EditBox, used for spell suggestions.',
+            },
+            value = {
+                type = 'table',
+                description = 'Condition value record containing spell, ranked and disabled fields; updated in place.',
+            },
+            nametoid = { type = 'function', description = 'Resolver mapping a typed spell name to its ID.' },
+            isvalid = { type = 'function', description = 'Predicate that validates the proposed spell value.' },
+            update = { type = 'function', description = 'Callback receiving the committed spell value.' },
+        },
+        returns = {
+            type = 'RMConditionGroup',
+            description = 'Spell field group containing an action icon, reference input and optional rank control.',
+        },
+    },
+    keys = {
+        module = 'Functions/collections.lua',
+        member = 'Functions.collections.keys',
+        callName = 'Functions.collections.keys',
+        description = 'Collect table keys and sort them by their associated values using Lua less-than comparison. This sorts values rather than key names; equal values have no guaranteed key order.',
+        args = { array = { type = 'table', description = 'Table whose values must be mutually comparable.' } },
+        returns = { type = 'table', description = 'Dense array of keys sorted by associated value.' },
+    },
+    spairs = {
+        module = 'Functions/collections.lua',
+        member = 'Functions.collections.spairs',
+        callName = 'Functions.collections.spairs',
+        description = 'Create an iterator over a sorted snapshot of table keys. Default ordering compares keys; a custom order callback receives the original table and two keys. Values are read from the original table when each key is yielded. The legacy iterator ends when the next captured key is nil or false.',
+        args = {
+            t = {
+                type = 'table',
+                description = 'Table to traverse; keys must be mutually comparable when no custom ordering is supplied.',
+            },
+            order = {
+                type = 'function | nil',
+                description = 'Optional ordering callback called as order(t, leftKey, rightKey).',
+            },
+        },
+        returns = {
+            type = 'function',
+            description = 'Iterator yielding a captured key and its current table value, or no values when exhausted.',
+        },
+    },
+    tomap = {
+        module = 'Functions/collections.lua',
+        member = 'Functions.collections.tomap',
+        callName = 'Functions.collections.tomap',
+        description = 'Copy a table using tostring of each original key as the destination key. Values retain their original identities. Colliding stringified keys overwrite each other in unspecified pairs traversal order.',
+        args = { array = { type = 'table', description = 'Table whose keys should be converted to strings.' } },
+        returns = { type = 'table', description = 'New table with stringified keys and unchanged values.' },
+    },
+    index = {
+        module = 'Functions/collections.lua',
+        member = 'Functions.collections.index',
+        callName = 'Functions.collections.index',
+        description = 'Return the first key whose value equals the supplied value during pairs traversal. Nil or false input tables and absent values return nil. Multiple matching keys have no guaranteed selection order.',
+        args = {
+            array = { type = 'table | nil | false', description = 'Table to search; nil or false returns nil.' },
+            value = { type = 'any', description = 'Value compared with each table value using Lua equality.' },
+        },
+        returns = { type = 'any', description = 'Matching key, including a false key, or nil when no match exists.' },
+    },
+    tablelength = {
+        module = 'Functions/collections.lua',
+        member = 'Functions.collections.tablelength',
+        callName = 'Functions.collections.tablelength',
+        description = 'Count all entries visited by pairs, including false values and sparse numeric or nonnumeric keys. A nil table has length zero.',
+        args = { T = { type = 'table | nil', description = 'Table to count, or nil for zero.' } },
+        returns = { type = 'number', description = 'Number of entries visited.' },
+    },
+    multiinsert = {
+        module = 'Functions/collections.lua',
+        member = 'Functions.collections.multiinsert',
+        callName = 'Functions.collections.multiinsert',
+        description = 'Insert each value visited by ipairs at its corresponding leading index in the destination array. Existing entries shift after the inserted prefix; traversal stops at the first missing source index.',
+        args = {
+            t = { type = 'table', description = 'Destination array modified in place.' },
+            values = {
+                type = 'table',
+                description = 'Source array whose ipairs prefix is inserted without copying nested values.',
+            },
+        },
+        returns = { type = '...', description = 'No return values. The destination array is modified in place.' },
+    },
+    cleanArray = {
+        module = 'Functions/collections.lua',
+        member = 'Functions.collections.cleanArray',
+        callName = 'Functions.collections.cleanArray',
+        description = 'Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing.',
+        args = {
+            array = { type = 'table | nil', description = 'Table to modify, or nil to do nothing.' },
+            except = {
+                type = 'table | nil',
+                description = 'Optional collection of key values selecting entries; its own keys are ignored.',
+            },
+            invert = {
+                type = 'boolean | nil',
+                description = 'True removes listed entries; false or nil preserves only listed entries.',
+            },
+        },
+        returns = { type = '...', description = 'No return values. The supplied table is modified in place.' },
+    },
+    deepcopy = {
+        module = 'Functions/collections.lua',
+        member = 'Functions.collections.deepcopy',
+        callName = 'Functions.collections.deepcopy',
+        description = 'Create a shallow filtered copy despite the historical deepcopy name. Nested values retain their original identities and the source metatable is not copied. By default exclude keys listed among except values; invert true includes only listed keys. Nil input returns nil.',
+        args = {
+            array = { type = 'table | nil', description = 'Table to copy shallowly, or nil.' },
+            except = {
+                type = 'table | nil',
+                description = 'Optional collection of key values selecting entries; its own keys are ignored.',
+            },
+            invert = {
+                type = 'boolean | nil',
+                description = 'True includes only listed entries; false or nil excludes listed entries.',
+            },
+        },
+        returns = { type = 'table | nil', description = 'New shallow filtered table, or nil for nil input.' },
+    },
+    compareArray = {
+        module = 'Functions/collections.lua',
+        member = 'Functions.collections.compareArray',
+        callName = 'Functions.collections.compareArray',
+        description = 'Visit entries in both tables and compare each value with the indexed value in the other table using Lua equality. Normal indexing and equality metamethods apply; nested contents are not compared recursively.',
+        args = {
+            lhs = { type = 'table', description = 'First table to compare.' },
+            rhs = { type = 'table', description = 'Second table to compare.' },
+        },
+        returns = {
+            type = 'boolean',
+            description = 'True when every visited entry compares equal in both directions.',
+        },
+    },
+}

@@ -1,0 +1,2283 @@
+{
+ "_comment": "Who translated which file (tools/locales.py owns this file; it writes the \"-- Translators:\" header and the L[0] table of each locale file from it). kind is human or ai; only humans are credited on the About page.",
+ "deDE": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3067,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 9,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 354,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 1,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 446,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 2,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ],
+  "class-shaman": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-mage": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-paladin": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-hunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-rogue": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-druid": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warrior": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-priest": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warlock": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-deathknight": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-demonhunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-evoker": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-monk": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ]
+ },
+ "esES": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3067,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 9,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 354,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 1,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 446,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 2,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ],
+  "class-shaman": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-mage": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-paladin": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-hunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-rogue": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-druid": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warrior": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-priest": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warlock": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-deathknight": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-demonhunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-evoker": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-monk": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ]
+ },
+ "esMX": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3067,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 9,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 354,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 1,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 446,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 2,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ],
+  "class-shaman": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-mage": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-paladin": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-hunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-rogue": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-druid": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warrior": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-priest": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warlock": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-deathknight": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-demonhunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-evoker": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-monk": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ]
+ },
+ "frFR": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3067,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 9,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 354,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 1,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 446,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 2,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ],
+  "class-shaman": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-mage": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-paladin": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-hunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-rogue": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-druid": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warrior": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-priest": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warlock": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-deathknight": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-demonhunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-evoker": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-monk": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ]
+ },
+ "itIT": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3067,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 9,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 354,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 1,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 446,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 2,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ],
+  "class-shaman": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-mage": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-paladin": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-hunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-rogue": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-druid": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warrior": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-priest": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warlock": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-deathknight": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-demonhunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-evoker": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-monk": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ]
+ },
+ "koKR": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3067,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 9,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 354,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 1,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 446,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 2,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ],
+  "class-shaman": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-mage": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-paladin": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-hunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-rogue": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-druid": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warrior": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-priest": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warlock": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-deathknight": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-demonhunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-evoker": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-monk": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ]
+ },
+ "ptBR": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3067,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 9,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 354,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 1,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 446,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 2,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ],
+  "class-shaman": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-mage": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-paladin": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-hunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-rogue": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-druid": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warrior": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-priest": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warlock": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-deathknight": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-demonhunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-evoker": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-monk": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ]
+ },
+ "ruRU": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3067,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 9,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 354,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 1,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 446,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 2,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ],
+  "class-shaman": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-mage": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-paladin": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-hunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-rogue": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-druid": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warrior": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-priest": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warlock": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-deathknight": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-demonhunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-evoker": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-monk": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ]
+ },
+ "zhCN": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3067,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 9,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 354,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 1,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 446,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 2,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ],
+  "class-shaman": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-mage": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-paladin": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-hunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-rogue": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-druid": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warrior": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-priest": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warlock": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-deathknight": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-demonhunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-evoker": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-monk": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ]
+ },
+ "zhTW": {
+  "main": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 3067,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 9,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "help": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 354,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 1,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "conditions": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 446,
+    "first": "2026-10-28",
+    "last": "2026-10-28"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 2,
+    "first": "2026-10-29",
+    "last": "2026-10-29"
+   }
+  ],
+  "diagnostics": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 106
+   }
+  ],
+  "integrations": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 118
+   }
+  ],
+  "class-shaman": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-mage": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-paladin": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-hunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-rogue": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-druid": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warrior": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-priest": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-warlock": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-deathknight": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-demonhunter": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-evoker": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ],
+  "class-monk": [
+   {
+    "name": "Claude",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   },
+   {
+    "name": "Codex",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker"
+   }
+  ]
+ }
+}

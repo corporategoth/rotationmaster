@@ -1,0 +1,45 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Strict inverse: fixed Ghost Wolf presentation identity only, baseline0f73dbf.
+local old = {
+    print = "\n        local form\n        if value.value ~= nil then\n            if value.value == 0 then\n                form = L[\"humanoid\"]\n            elseif character_class == \"SHAMAN\" then\n                local info = addon.Platform:GetSpellInfo(\"Ghost Wolf\")\n                form = info and info.name\n            else\n                local info = addon.Platform:GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))\n                form = info and info.name\n            end\n        end\n        return string.format(L[\"you {{!are|are not}} in %s form\"], Functions.presentation.nullable(form, L[\"<form>\"]))\n    ",
+    widget = "\n        local top = parent:GetUserData(\"top\")\n        local root = top:GetUserData(\"root\")\n        local funcs = top:GetUserData(\"funcs\")\n\n        local forms = {}\n        local formsOrder = {}\n\n        forms[\"0\"] = L[\"humanoid\"]\n        table.insert(formsOrder, \"0\")\n        if character_class == \"SHAMAN\" then\n            local info = addon.Platform:GetSpellInfo(\"Ghost Wolf\")\n            forms[\"1\"] = info and info.name or L[\"<form>\"]\n            table.insert(formsOrder, tostring(\"1\"))\n        else\n            for i=1,GetNumShapeshiftForms() do\n                local spellid = select(4, GetShapeshiftFormInfo(i))\n                if spellid == nil then\n                    break\n                end\n                local info = addon.Platform:GetSpellInfo(spellid)\n                forms[tostring(i)] = info and info.name or L[\"<form>\"]\n                table.insert(formsOrder, tostring(i))\n            end\n        end\n\n        local formIcon = addon:CreateConditionIcon()\n        local function set_form_icon()\n            if value.value ~= nil then\n                if value.value == 0 then\n                    formIcon:SetImage(\"Interface\\\\Icons\\\\inv_misc_head_human_02\")\n                else\n                    if character_class == \"SHAMAN\" then\n                        if value.value == 1 then\n                            local info = addon.Platform:GetSpellInfo(\"Ghost Wolf\")\n                            formIcon:SetImage(info and info.iconID or \"Interface\\\\Icons\\\\INV_Misc_QuestionMark\")\n                        end\n                    else\n                        formIcon:SetImage(GetShapeshiftFormInfo(value.value))\n                    end\n                end\n            else\n                formIcon:SetImage(\"Interface\\\\Icons\\\\INV_Misc_QuestionMark\")\n            end\n        end\n\n        formIcon:SetWidth(44)\n        formIcon:SetHeight(44)\n        formIcon:SetImageSize(36, 36)\n        set_form_icon()\n        parent:AddChild(formIcon)\n\n        local form = addon:CreateConditionDropdown()\n        form:SetLabel(L[\"Form\"])\n        form:SetCallback(\"OnValueChanged\", function(_, _, v)\n            value.value = tonumber(v)\n            form:SetValue(v)\n            set_form_icon()\n            top:SetStatusText(funcs:print(root, spec))\n        end)\n        form.configure = function()\n            form:SetList(forms, formsOrder)\n            if (value.value) then\n                form:SetValue(tostring(value.value))\n            end\n        end\n        parent:AddChild(form)\n    ",
+}
+
+local repaired = {
+    print = "\n        local form\n        if value.value ~= nil then\n            if value.value == 0 then\n                form = L[\"humanoid\"]\n            elseif character_class == \"SHAMAN\" then\n                local info = addon.Platform:GetSpellInfo(2645)\n                form = info and info.name\n            else\n                local info = addon.Platform:GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))\n                form = info and info.name\n            end\n        end\n        return string.format(L[\"you {{!are|are not}} in %s form\"], Functions.presentation.nullable(form, L[\"<form>\"]))\n    ",
+    widget = "\n        local top = parent:GetUserData(\"top\")\n        local root = top:GetUserData(\"root\")\n        local funcs = top:GetUserData(\"funcs\")\n\n        local forms = {}\n        local formsOrder = {}\n\n        forms[\"0\"] = L[\"humanoid\"]\n        table.insert(formsOrder, \"0\")\n        if character_class == \"SHAMAN\" then\n            local info = addon.Platform:GetSpellInfo(2645)\n            forms[\"1\"] = info and info.name or L[\"<form>\"]\n            table.insert(formsOrder, tostring(\"1\"))\n        else\n            for i=1,GetNumShapeshiftForms() do\n                local spellid = select(4, GetShapeshiftFormInfo(i))\n                if spellid == nil then\n                    break\n                end\n                local info = addon.Platform:GetSpellInfo(spellid)\n                forms[tostring(i)] = info and info.name or L[\"<form>\"]\n                table.insert(formsOrder, tostring(i))\n            end\n        end\n\n        local formIcon = addon:CreateConditionIcon()\n        local function set_form_icon()\n            if value.value ~= nil then\n                if value.value == 0 then\n                    formIcon:SetImage(\"Interface\\\\Icons\\\\inv_misc_head_human_02\")\n                else\n                    if character_class == \"SHAMAN\" then\n                        if value.value == 1 then\n                            local info = addon.Platform:GetSpellInfo(2645)\n                            formIcon:SetImage(info and info.iconID or \"Interface\\\\Icons\\\\INV_Misc_QuestionMark\")\n                        end\n                    else\n                        formIcon:SetImage(GetShapeshiftFormInfo(value.value))\n                    end\n                end\n            else\n                formIcon:SetImage(\"Interface\\\\Icons\\\\INV_Misc_QuestionMark\")\n            end\n        end\n\n        formIcon:SetWidth(44)\n        formIcon:SetHeight(44)\n        formIcon:SetImageSize(36, 36)\n        set_form_icon()\n        parent:AddChild(formIcon)\n\n        local form = addon:CreateConditionDropdown()\n        form:SetLabel(L[\"Form\"])\n        form:SetCallback(\"OnValueChanged\", function(_, _, v)\n            value.value = tonumber(v)\n            form:SetValue(v)\n            set_form_icon()\n            top:SetStatusText(funcs:print(root, spec))\n        end)\n        form.configure = function()\n            form:SetList(forms, formsOrder)\n            if (value.value) then\n                form:SetValue(tostring(value.value))\n            end\n        end\n        parent:AddChild(form)\n    ",
+}
+
+local function once(text, from, to, label)
+    local a, b = text:find(from, 1, true)
+    assert(a and not text:find(from, b + 1, true), 'missing or duplicate ' .. label)
+    return text:sub(1, a - 1) .. to .. text:sub(b + 1)
+end
+
+local function inverse(text, callback)
+    assert(type(text) == 'string', 'expected source text')
+
+    if callback then
+        assert(repaired[callback] and text == repaired[callback], 'unexpected complete FORM callback')
+        return old[callback]
+    end
+
+    text = dofile('tests/fixtures/restore_pet_name_summary_literals.lua')(text)
+
+    for _, name in ipairs({ 'print', 'widget' }) do
+        local header = name == 'print' and 'print = function(_, value)' or 'widget = function(parent, spec, value)'
+        text = once(text, header .. repaired[name] .. 'end,', header .. old[name] .. 'end,', name)
+    end
+
+    local h = 5381
+
+    for i = 1, #text do
+        h = (h * 33 + text:byte(i)) % 4294967296
+    end
+
+    assert(#text == 39018 and string.format('%08x', h) == '932ec456', 'unrelated complete combat delta')
+    return text
+end
+
+return inverse, old, repaired

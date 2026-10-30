@@ -1,0 +1,92 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+# Rotation Master CI: everything the pre-commit and pre-push hooks run, plus the slow suites, and the release
+# package as an artifact. Gitea reads only this directory once it exists (not .github/workflows), so the old
+# GitHub workflows do not run on Gitea.
+#
+# Runner assumptions (the shared act_runner, one job at a time): label `ubuntu-latest` is the Gitea Ubuntu
+# image with root or sudo, apt and internet access. Lua, LuaJIT, zip and the WoW checker are installed per job by
+# .gitea/actions/toolchain. Jobs queue on the single runner, so the order below is the order they run in.
+name: Tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+# One run per ref at a time; a newer commit cancels the older run (the runner is shared).
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # pre-commit on every file: hygiene, Lua 5.1 syntax, the static gate (verify, catalog, locales, lint, generated
+  # files), spelling, the development tools' tests. Cheap, so it goes first and a failure stops the long jobs.
+  static:
+    name: Static checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.gitea/actions/toolchain
+        with:
+          pre-commit: 'true'
+      - name: pre-commit, commit stage, all files
+        run: pre-commit run --all-files --show-diff-on-failure --color never
+      - name: Workflow files are well formed
+        run: .venv-ci/bin/python tools/lint_workflows.py
+
+  # The whole suite, once per runtime. `tools/check_all.py` runs the same command list as `tools/check`, never stops
+  # at the first failure, and compares against tools/known_failures.txt: a suite on that list may fail, any other
+  # failure fails the job. default_corpus.lua alone takes several minutes; the lua5.1 leg is the long one.
+  tests:
+    name: Tests (${{ matrix.runtime }})
+    needs: [static]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [lua5.1, luajit, python]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.gitea/actions/toolchain
+      - name: Run the suite
+        run: python3 tools/check_all.py --runtime ${{ matrix.runtime }} --baseline tools/known_failures.txt --json test-results-${{ matrix.runtime }}.json
+      - name: Upload the result summary
+        if: ${{ always() }}
+        uses: christopherhx/gitea-upload-artifact@62ac910c5d3dfa85c7cb2df15afe2e342b2407c2 # untagged head
+        with:
+          name: test-results-${{ matrix.runtime }}
+          path: test-results-${{ matrix.runtime }}.json
+          if-no-files-found: ignore
+
+  # Build the package exactly as a release would, check it, prove it is what the real BigWigs packager makes, and
+  # keep the zip as an artifact so it can be installed and tried before anything is tagged.
+  package:
+    name: Release package
+    needs: [static]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./.gitea/actions/toolchain
+      - name: Release notes for the package (generated; a tagged release uses docs/release/notes)
+        run: python3 tools/release_notes.py --tag "ci-alpha-${GITHUB_SHA::7}" --target curseforge --out CHANGELOG.md
+      - name: Build and check the package
+        run: python3 tools/package_release.py --check --out dist
+      - name: Compare with the BigWigs packager
+        run: python3 tools/package_release.py --parity
+      - name: Upload the package
+        uses: christopherhx/gitea-upload-artifact@62ac910c5d3dfa85c7cb2df15afe2e342b2407c2 # untagged head
+        with:
+          name: RotationMaster-${{ github.sha }}
+          path: dist/*.zip
+          if-no-files-found: error

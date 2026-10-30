@@ -1,0 +1,75 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Mists of Pandaria Classic Arms Warrior, levels 10-90 (the recommended variant): simulator' Phase 5 order in
+-- wowtbc.gg's simpler shape. Selected in the Arms specialization (71) from level 10 (RM stores MoP
+-- rotations per talent group, so the switch reads the specialization). Colossus Smash is the window: refreshed when it is
+-- missing or about to end, Mortal Strike, Storm Bolt with it, Dragon Roar and Bladestorm outside it; below
+-- 20% Execute in the window, at 100 rage or to keep Sudden Execute, Overpower on Taste for Blood; otherwise
+-- Slam in the window, Overpower at four stacks, Slam at 100 rage, Overpower, Slam as the filler. Two or more
+-- engaged enemies add Sweeping Strikes, Thunder Clap for Deep Wounds, Bladestorm and Dragon Roar. Before
+-- Colossus Smash (81) every window test reads "not up", so the same list is the levelling order. Shared parts:
+-- mop/blocks.lua. The Icy Veins variant pools rage for the window instead of Slamming outside it.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function rage(op,n)return{type='POWER',unit='player',operator=op,value=n}end
+local function enemies(op,n)return{type='THREAT_COUNT',threat=1,operator=op,value=n}end
+local function target(op,n)return{type='HEALTHPCT',unit='target',operator=op,value=n}end
+local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
+local smashed={type='DEBUFF',unit='target',spell=86346,owndebuff=true}
+local taste=BuiltinConditions.ownBuff(60503)
+-- Long fights only: an elite or boss, or a target forecast to live 15 s.
+local worth=BuiltinConditions.any(BuiltinConditions.classified('worldboss'),BuiltinConditions.classified('elite'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=15})
+local burst=BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(BuiltinConditions.negate({type='SPELL_KNOWN',spell=86346}),smashed),worth)
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.arms',revision=8,
+ blocks={['mop.warrior.boundaries']=4,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR'},
+ tags={'arms','dps','melee','leveling','endgame','wowtbc'},
+ sources={
+ {url='https://wowtbc.gg/mop/class-guides/arms-warrior/',title='wowtbc.gg: Arms Warrior (MoP Classic)',reviewedAt='2026-10-23'},
+ {url='https://www.icy-veins.com/mists-of-pandaria-classic/arms-warrior-leveling',title='Icy Veins: Arms Warrior leveling (MoP Classic)',reviewedAt='2026-10-23',revision='2025-12-05'},
+ {url='https://www.method.gg/mop-classic/arms-warrior-class-guide-mop-classic',title='Method: Arms Warrior guide (MoP Classic)',reviewedAt='2026-10-23',revision='2025-07-22'}},
+ body={priority=30,specs={71},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ cooldowns={block('mop.warrior.dps-upkeep','warrior-'),
+  BuiltinConditions.spell('warrior-arms-berserker-rage',18499,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate({type='BUFF',unit='player',spell=12880}),BuiltinConditions.any(smashed,{type='SPELL_AVAIL',spell=118000},BuiltinConditions.ownBuff(46924)))),
+  BuiltinConditions.spell('warrior-arms-recklessness',1719,burst),
+  BuiltinConditions.spell('warrior-arms-avatar',107574,burst),
+  BuiltinConditions.spell('warrior-arms-bloodbath',12292,burst),
+  BuiltinConditions.spell('warrior-arms-heroic-strike',78,BuiltinConditions.all(BuiltinConditions.combat(),enemies('LESSTHAN',2),BuiltinConditions.any(rage('GREATERTHANOREQUALS',110),
+   BuiltinConditions.all(target('GREATERTHANOREQUALS',.2),BuiltinConditions.any(rage('GREATERTHANOREQUALS',100),BuiltinConditions.all(smashed,rage('GREATERTHANOREQUALS',50))))))),
+  BuiltinConditions.spell('warrior-arms-cleave',845,BuiltinConditions.all(BuiltinConditions.combat(),enemies('GREATERTHANOREQUALS',2),BuiltinConditions.ownBuff(12328),BuiltinConditions.negate(smashed),rage('GREATERTHANOREQUALS',100))),
+ },
+ rotation={
+ block('mop.warrior.boundaries','warrior-'),
+ block('mop.warrior.gap','warrior-dps-'),
+ {id='warrior-arms-aoe',type='branch',conditions=enemies('GREATERTHANOREQUALS',2),onFalse={},onTrue={
+  BuiltinConditions.spell('warrior-arms-sweeping-strikes',12328,BuiltinConditions.negate(BuiltinConditions.ownBuff(12328))),
+  BuiltinConditions.spell('warrior-arms-thunder-clap',6343,BuiltinConditions.all(enemies('GREATERTHANOREQUALS',3),BuiltinConditions.any(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=115767,owndebuff=true}),
+   {type='DEBUFF_REMAIN',unit='target',spell=115767,owndebuff=true,operator='LESSTHAN',value=4}))),
+  BuiltinConditions.spell('warrior-arms-aoe-bladestorm',46924,enemies('GREATERTHANOREQUALS',3)),
+  BuiltinConditions.spell('warrior-arms-aoe-dragon-roar',118000,enemies('GREATERTHANOREQUALS',3)),
+  BuiltinConditions.spell('warrior-arms-aoe-smash',86346,BuiltinConditions.all(BuiltinConditions.negate(smashed),enemies('LESSTHANOREQUALS',6))),
+  BuiltinConditions.spell('warrior-arms-aoe-mortal-strike',12294),
+  BuiltinConditions.spell('warrior-arms-aoe-slam',1464,BuiltinConditions.all(BuiltinConditions.ownBuff(12328),BuiltinConditions.any(smashed,rage('GREATERTHANOREQUALS',50)))),
+  BuiltinConditions.spell('warrior-arms-whirlwind',1680,BuiltinConditions.all(enemies('GREATERTHANOREQUALS',5),rage('GREATERTHANOREQUALS',30))),
+ }},
+ BuiltinConditions.spell('warrior-arms-smash',86346,BuiltinConditions.any(BuiltinConditions.negate(smashed),{type='DEBUFF_REMAIN',unit='target',spell=86346,owndebuff=true,operator='LESSTHAN',value=1})),
+ BuiltinConditions.spell('warrior-arms-mortal-strike',12294),
+ BuiltinConditions.spell('warrior-arms-storm-bolt',107570,BuiltinConditions.any(smashed,{type='SPELL_COOLDOWN',spell=86346,operator='GREATERTHAN',value=1.5})),
+ BuiltinConditions.spell('warrior-arms-dragon-roar',118000,BuiltinConditions.negate(smashed)),
+ BuiltinConditions.spell('warrior-arms-bladestorm',46924,BuiltinConditions.all(BuiltinConditions.negate(smashed),BuiltinConditions.any(BuiltinConditions.negate({type='TALENT',layout='grid',value=17}),BuiltinConditions.ownBuff(12292),target('LESSTHAN',.2)))),
+ {id='warrior-arms-execute-phase',type='branch',conditions=target('LESSTHAN',.2),onTrue={
+  BuiltinConditions.spell('warrior-arms-execute-window',5308,BuiltinConditions.any(smashed,rage('GREATERTHANOREQUALS',100),BuiltinConditions.negate(BuiltinConditions.ownBuff(139958)))),
+  BuiltinConditions.spell('warrior-arms-execute-overpower',7384,taste),
+  BuiltinConditions.spell('warrior-arms-execute',5308),
+ },onFalse={
+  BuiltinConditions.spell('warrior-arms-slam-window',1464,smashed),
+  BuiltinConditions.spell('warrior-arms-overpower-stacked',7384,{type='BUFF_STACKS',unit='player',spell=60503,ownbuff=true,operator='GREATERTHANOREQUALS',value=4}),
+  BuiltinConditions.spell('warrior-arms-slam-rage',1464,rage('GREATERTHANOREQUALS',100)),
+  BuiltinConditions.spell('warrior-arms-overpower',7384,taste),
+  BuiltinConditions.spell('warrior-arms-slam',1464),
+ }},
+ {id='warrior-arms-shout-rage',type='branch',conditions=rage('LESSTHAN',30),onFalse={},onTrue={BuiltinConditions.spell('warrior-arms-commanding',469,BuiltinConditions.ownBuff(469)),BuiltinConditions.spell('warrior-arms-battle',6673)}},
+ BuiltinConditions.spell('warrior-arms-heroic-throw',57755),
+ }},
+}))

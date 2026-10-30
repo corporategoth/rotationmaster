@@ -1,19 +1,28 @@
-local _, addon = ...
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
-local AceGUI = LibStub("AceGUI-3.0")
+-- Shared builders for the Help/ files and the condition help callbacks: text blocks, picture and button rows, an
+-- indent and a gap, built from the condition widget set (addon:CreateCondition*). Exposed as addon.help_funcs.
+-- Loaded first of the Help/ files (RotationMaster.toc), after UI/ has defined the widget constructors; each helper
+-- must only build widgets when called, never at load. Help text itself lives in the locale tables, not here.
+local _, addon = ...
 
 local helpers = {}
 local color = color
 
+-- Builds a full-width group holding one wrapped label of help text.
+-- @param text string  The help text.
+-- @param font string|nil  A font object name, or a font file when fontheight is also given.
+-- @param fontheight number|nil  The font height; with it font is a font file.
+-- @return table  The group widget.
 function helpers.CreateText(text, font, fontheight)
-    local t = AceGUI:Create("SimpleGroup")
+    local t = addon:CreateConditionGroup()
     t:SetFullWidth(true)
     t:SetLayout("List")
 
-    local rv = AceGUI:Create("Label")
-    -- There is a bug in Table (I think) that doesn't handle SetFullWidth correctly
+    local rv = addon:CreateConditionLabel()
     rv:SetFullWidth(true)
     rv:SetText(text .. color.RESET)
+
     if font then
         if fontheight then
             rv:SetFont(font, fontheight)
@@ -26,13 +35,22 @@ function helpers.CreateText(text, font, fontheight)
     return t
 end
 
+-- Builds a two-column row with an icon at the left and help text at the right.
+-- @param texture string|number  The icon texture path or file ID.
+-- @param width number  The icon width (and the width of the left column).
+-- @param height number  The icon height.
+-- @param text string  The help text.
+-- @param font string|nil  A font object name, or a font file when fontheight is also given.
+-- @param fontheight number|nil  The font height; with it font is a font file.
+-- @param ... number  The optional texcoords passed on to the icon's SetImage.
+-- @return table  The row widget.
 function helpers.CreatePictureText(texture, width, height, text, font, fontheight, ...)
-    local group = AceGUI:Create("SimpleGroup")
+    local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
     group:SetLayout("Table")
     group:SetUserData("table", { columns = { width, 1 } })
 
-    local icon = AceGUI:Create("Icon")
+    local icon = addon:CreateConditionIcon()
     icon:SetImage(texture, ...)
     icon:SetImageSize(width, height)
     -- For some reason icon offset by +5 from the top, and the height is set to 10 + image size
@@ -44,13 +62,20 @@ function helpers.CreatePictureText(texture, width, height, text, font, fontheigh
     return group
 end
 
+-- Builds a two-column row with a button labeled like the real control at the left and its explanation at the right.
+-- @param name string  The button label.
+-- @param text string  The explanation.
+-- @param font string|nil  A font object name, or a font file when fontheight is also given.
+-- @param fontheight number|nil  The font height; with it font is a font file.
+-- @param ... any  Not used.
+-- @return table  The row widget.
 function helpers.CreateButtonText(name, text, font, fontheight, ...)
-    local group = AceGUI:Create("SimpleGroup")
+    local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
     group:SetLayout("Table")
     group:SetUserData("table", { columns = { 125, 1 } })
 
-    local icon = AceGUI:Create("Button")
+    local icon = addon:CreateConditionButton()
     icon:SetText(name)
     group:AddChild(icon)
 
@@ -59,13 +84,17 @@ function helpers.CreateButtonText(name, text, font, fontheight, ...)
     return group
 end
 
+-- Wraps a widget in a row with an empty left column of the given width, so it appears indented.
+-- @param size number  The width of the empty left column.
+-- @param target table  The widget to indent.
+-- @return table  The row widget.
 function helpers.Indent(size, target)
-    local group = AceGUI:Create("SimpleGroup")
+    local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
     group:SetLayout("Table")
     group:SetUserData("table", { columns = { size, 1 } })
 
-    local spacer = AceGUI:Create("Label")
+    local spacer = addon:CreateConditionLabel()
     spacer:SetText(nil)
     spacer:SetWidth(1)
     group:AddChild(spacer)
@@ -75,8 +104,10 @@ function helpers.Indent(size, target)
     return group
 end
 
+-- Builds a one-line blank label used as vertical spacing between help paragraphs.
+-- @return table  The label widget.
 function helpers.Gap()
-    local rv = AceGUI:Create("Label")
+    local rv = addon:CreateConditionLabel()
     rv:SetText(" ")
     return rv
 end

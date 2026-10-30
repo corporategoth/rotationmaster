@@ -1,0 +1,15 @@
+# Commands that take about 30 seconds or more, measured at the last full run (tools/check_all.py --json, one core, a lightly
+# loaded workstation, 936 commands in 53 minutes in all):
+#   2035 s  lua5.1 tests/default_corpus.lua       every pack of every module, five synthetic client families
+#    110 s  lua5.1 tests/builtin_composition.lua
+#     48 s  luajit tests/builtin_composition.lua
+#     37 s  lua5.1 tests/premade_style.lua
+#     30 s  python3 tests/test_check.py          runs `tools/check --static` in a scratch directory
+# `tools/check_all.py --skip-slow tools/slow_tests.txt` leaves them out (the rest of the suite takes about 15 minutes); the
+# pre-push hook does, CI and the release workflow run them. One command per line, as tools/check_all.py prints them.
+# Refresh with `tools/check_all.py --json out.json`: the slowest five are also printed at the end of every run.
+lua5.1 tests/default_corpus.lua
+lua5.1 tests/builtin_composition.lua
+luajit tests/builtin_composition.lua
+lua5.1 tests/premade_style.lua
+python3 tests/test_check.py

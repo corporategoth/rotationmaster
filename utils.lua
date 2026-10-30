@@ -1,14 +1,33 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- General helpers hung on the addon table: leveled chat output, popups and tooltips, small encoders, spell-spec
+-- lookups, the item-name/icon widget updaters, and the legacy addon.* names that saved custom source still calls (each
+-- one is a plain alias of a function owned by Functions/*.lua, never a second copy). Loaded from RotationMaster.toc
+-- right after the Functions modules it aliases, before profiler.lua and the Diagnostics files. It reads game data only
+-- through addon.Platform (the item updaters go through Platform:CanReadValue first). It ends with the generated block
+-- that lets saved custom source reach the aliased helpers as builtin:utils.lua:<name>: do not edit that block, and keep
+-- function bodies in this file exactly as they are (no comments or blank lines inside them), because saved copies
+-- bind to them.
+
 local addon_name, addon = ...
 
 local AceConsole = LibStub("AceConsole-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local libc = LibStub("LibCompress")
 
-local _G, tostring, tonumber, pairs, color, unpack, type, string = _G, tostring, tonumber, pairs, color, unpack, type, string
+local _G, tostring, tonumber, pairs, color, unpack, type, string =
+    _G, tostring, tonumber, pairs, color, unpack, type, string
+
 local random, floor = math.random, math.floor
 
-local operators = addon.operators
+-- ============================================================================
+-- Windows and popups
+-- ============================================================================
 
+-- Shows the shared ROTATIONMASTER_ERROR alert with a single Accept button.
+-- @param s string  The alert text.
+-- @param onaccept function|nil  Runs when the alert is accepted.
+--
+-- Reuses one dialog definition, so a second call replaces the text of an alert still on screen.
 addon.PopupError = function(s, onaccept)
     StaticPopupDialogs["ROTATIONMASTER_ERROR"] = {
         text = s,
@@ -17,542 +36,401 @@ addon.PopupError = function(s, onaccept)
         showAlert = 1,
         timeout = 0,
         whileDead = 1,
-        hideOnEscape = 1
+        hideOnEscape = 1,
     }
+
     StaticPopup_Show("ROTATIONMASTER_ERROR")
 end
 
+-- Makes a native window close on Escape.
+-- @param frame table  The widget table; frame.frame is its Blizzard frame.
+--
+-- Prefers the window registry (addon:RegisterWindowForEscape); if it is absent or declines, falls back to a keyboard
+-- handler on the frame that swallows Escape and passes every other key through to the game.
 addon.HideOnEscape = function(frame)
+    if addon.MakeWindowOpaque then
+        addon:MakeWindowOpaque(frame)
+    end
+
+    if addon.RegisterWindowForEscape and addon:RegisterWindowForEscape(frame) then
+        return
+    end
+
     frame.frame:EnableKeyboard(true)
     frame.frame:SetPropagateKeyboardInput(true)
-    frame.frame:SetScript("OnKeyDown", function (self, key)
+
+    frame.frame:SetScript("OnKeyDown", function(self, key)
         self:SetPropagateKeyboardInput(key ~= "ESCAPE")
+
         if key == "ESCAPE" then
             frame:Hide()
         end
     end)
 end
 
+-- ============================================================================
+-- Identifiers and legacy aliases
+-- ============================================================================
+
+-- Generates a random version-4 style UUID string.
+-- @return string  The UUID.
+-- @return number  The substitution count from string.gsub.
+--
+-- Uses math.random, so it is unique enough for record ids but not secure. Callable as addon.uuid() or addon:uuid().
 addon.uuid = function()
-    local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-    return string.gsub(template, '[xy]', function (c)
+    local template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+
+    return string.gsub(template, '[xy]', function(c)
         local v = (c == 'x') and random(0, 0xf) or random(8, 0xb)
         return string.format('%x', v)
     end)
 end
 
-addon.compare = function(operator, left, right)
-    if operator == "LESSTHAN" then
-        return left < right
-    elseif operator == "LESSTHANOREQUALS" then
-        return left <= right
-    elseif operator == "GREATERTHAN" then
-        return left > right
-    elseif operator == "GREATERTHANOREQUALS" then
-        return left >= right
-    elseif operator == "EQUALS" then
-        return left == right
-    elseif operator == "NOTEQUALS" then
-        return left ~= right
-    elseif operator == "DIVISIBLE" then
-        return (left % right) == 0
-    else
-        addon:warn("Invalid Operator %s", operator)
-    end
-end
+-- Compatibility API for saved custom source; Functions.values owns the body.
+addon.compare = addon.Functions.values.compare
 
-addon.nullable = function(value, default)
-    if value == nil then
-        if default ~= nil then
-            return color.RED .. default .. color.RESET
-        else
-            return color.RED .. L["<value>"] .. color.RESET
-        end
-    end
-    return value
-end
+-- Compatibility APIs for saved source; presentation owns these exact bodies.
+addon.nullable = addon.Functions.presentation.nullable
+addon.nullable_value = addon.Functions.presentation.nullable_value
+addon.playerize = addon.Functions.presentation.playerize
+addon.compareString = addon.Functions.presentation.compareString
 
-addon.nullable_value = function(value, array, default)
-    if value == nil or array == nil or type(array) ~= "table" then
-        if default ~= nil then
-            return color.RED .. default .. color.RESET
-        else
-            return color.RED .. L["<value>"] .. color.RESET
-        end
-    end
-    return addon.nullable(array[value], default)
-end
+-- Legacy addon.* names for the collection, value and text helpers below, kept because saved custom source calls them;
+-- the owners are Functions/collections.lua, Functions/values.lua and Functions/text.lua.
+addon.keys = addon.Functions.collections.keys
 
-addon.playerize = function(unit, player, nonplayer)
-    if (unit == "player") then
-        return player
-    else
-        return nonplayer
-    end
-end
+addon.spairs = addon.Functions.collections.spairs
 
-addon.compareString = function(operator, left, right)
-    return left .. " " .. addon.nullable(operators[operator], L["<operator>"]) .. " " .. right
-end
+addon.tomap = addon.Functions.collections.tomap
 
-addon.keys = function(array)
-    local rv = {}
-    for k,_ in pairs(array) do
-        table.insert(rv, k)
-    end
-    -- Sort the keys
-    table.sort(rv, function (lhs, rhs) return array[lhs] < array[rhs] end)
-    return rv
-end
+addon.index = addon.Functions.collections.index
 
-addon.spairs = function (t, order)
-    -- collect the keys
-    local keys = {}
-    for k in pairs(t) do keys[#keys+1] = k end
+-- Compatibility API for saved custom source; Functions.values owns the body.
+addon.isin = addon.Functions.values.isin
 
-    -- if order function given, sort by it by passing the table and keys a, b,
-    -- otherwise just sort the keys
-    if order then
-        table.sort(keys, function(a,b) return order(t, a, b) end)
-    else
-        table.sort(keys)
-    end
+addon.tablelength = addon.Functions.collections.tablelength
 
-    -- return the iterator function
-    local i = 0
-    return function()
-        i = i + 1
-        if keys[i] then
-            return keys[i], t[keys[i]]
-        end
-    end
-end
+addon.round = addon.Functions.values.round
 
-addon.tomap = function(array)
-    local rv = {}
-    for k,v in pairs(array) do
-        rv[tostring(k)] = v
-    end
-    return rv
-end
+addon.isint = addon.Functions.values.isint
 
-addon.index = function(array, value)
-    if not array then return nil end
+addon.starts_with = addon.Functions.text.starts_with
 
-    for idx,v in pairs(array) do
-        if (v == value) then
-            return idx
-        end
-    end
-end
+addon.ends_with = addon.Functions.text.ends_with
 
-addon.isin = function(array, value)
-    return array[value] ~= nil
-end
+addon.multiinsert = addon.Functions.collections.multiinsert
 
-addon.tablelength = function(T)
-    if T == nil then return 0 end
-    local count = 0
-    for _ in pairs(T) do count = count + 1 end
-    return count
-end
+addon.cleanArray = addon.Functions.collections.cleanArray
 
-addon.round = function (num, numDecimalPlaces)
-    local mult = 10^(numDecimalPlaces or 0)
-    return floor(num * mult + 0.5) / mult
-end
+addon.deepcopy = addon.Functions.collections.deepcopy
 
-addon.isint = function(num)
-    if type(num) == "number" then
-        return floor(num) == num
-    elseif type(num) == "string" then
-        local tmp = tonumber(num)
-        if tmp ~= nil then
-            return tostring(floor(tmp)) == num
-        end
-    end
-    return false
-end
+addon.compareArray = addon.Functions.collections.compareArray
 
-addon.starts_with = function(str, start)
-    return str:sub(1, #start) == start
-end
+-- Compatibility APIs for saved custom source; cache owns their shared state.
+addon.getCached = addon.Functions.cache.getCached
+addon.getRetryCached = addon.Functions.cache.getRetryCached
+addon.ReportCacheStats = addon.Functions.cache.ReportCacheStats
 
-addon.ends_with = function(str, ending)
-    return ending == "" or str:sub(-#ending) == ending
-end
+-- ============================================================================
+-- Spell specialization lookups
+-- ============================================================================
 
-addon.multiinsert = function(t, values)
-    for i,v in ipairs(values) do
-	    table.insert(t, i, v)
-    end
-end
-
-addon.cleanArray = function(array, except, invert)
-    if array == nil then
-        return
-    end
-    if invert == nil then
-        invert = false
-    end
-
-    for k,_ in pairs(array) do
-        local skip = invert
-        if except ~= nil then
-            for _,v2 in pairs(except) do
-                if (k == v2) then
-                    skip = not invert
-                    break
-                end
-            end
-        end
-        if not skip then
-            array[k] = nil
-        end
-    end
-end
-
-addon.deepcopy = function(array, except, invert)
-    if array == nil then
-        return nil
-    end
-    if invert == nil then
-        invert = false
-    end
-
-    local rv = {}
-    for k,v in pairs(array) do
-        local skip = invert
-        if except ~= nil then
-            for _,v2 in pairs(except) do
-                if (k == v2) then
-                    skip = not invert
-                    break
-                end
-            end
-        end
-        if not skip then
-            rv[k] = v
-        end
-    end
-    return rv
-end
-
-addon.compareArray = function(lhs, rhs)
-    for k,v in pairs(lhs) do
-        if rhs[k] ~= v then
-            return false
-        end
-    end
-    for k,v in pairs(rhs) do
-        if lhs[k] ~= v then
-            return false
-        end
-    end
-    return true
-end
-
-local cacheHits = 0
-local cacheMisses = 0
-
-local function getCachedInternal(cache, recordnil, func, ...)
-    if func == nil then
-        return
-    end
-    if cache == nil then
-        return func(...)
-    end
-
-    local args = { ... }
-    if cache[func] == nil then
-        cache[func] = {}
-    end
-
-    local hash = libc:fcs16init()
-    for i=1,#args do
-        hash = libc:fcs16update(hash, tostring(args[i]))
-    end
-    hash = libc:fcs16final(hash)
-    if cache[func][hash] ~= nil then
-        cacheHits = cacheHits + 1
-        return unpack(cache[func][hash])
-    end
-
-    cacheMisses = cacheMisses + 1
-    local result
-    if (type(func) == "function") then
-        result = { func(...) }
-    elseif type(func) == "string" then
-
-        result = { _G[func](...) }
-    else
-        return nil
-    end
-
-    if #result > 0 or recordnil then
-        cache[func][hash] = result
-    end
-    return unpack(result)
-end
-
-addon.getCached = function(cache, func, ...)
-    return getCachedInternal(cache, true, func, ...)
-end
-
-addon.getRetryCached = function(cache, func, ...)
-    return getCachedInternal(cache, false, func, ...)
-end
-
-function addon:ReportCacheStats()
-    addon:debug(L["Cache hit rate at %.02f%%"], (cacheHits / (cacheHits + cacheMisses)) * 100)
-    cacheHits = 0
-    cacheMisses = 0
-end
-
--- pass in the spec BOOKTYPE_PET ("pet") to get pet spells
+-- Tells whether a spell is in the cached spell set of a spec key.
+-- @param spec string|number|nil  The spec key (addon.specSpells, rebuilt by Core/spell_catalog from the spellbook);
+--   pass BOOKTYPE_PET ("pet") to get pet spells.
+-- @param spellid number|nil  The spell id.
+-- @return boolean  True when the spell is in the set; false when the spec or spell is unknown or nil.
 addon.isSpellOnSpec = function(spec, spellid)
     if spec ~= nil and spellid ~= nil and addon.specSpells[spec] ~= nil then
         return addon.specSpells[spec][spellid] ~= nil
     end
+
     return false
 end
 
+-- Tells whether a spell is in the player's pet spellbook right now.
+-- @param spellid number  The spell id.
+-- @return boolean  True when it is; a live client query, not the cached spec sets.
 addon.isActivePetSpell = function(spellid)
     return FindSpellBookSlotBySpellID(spellid, true) ~= nil
 end
 
--- pass in the spec BOOKTYPE_PET ("pet") to get pet spells
+-- Looks up the best spell id for a spell name in a spec key.
+-- @param spec string|number|nil  The spec key (addon.specSpellsReverse); pass BOOKTYPE_PET ("pet") to get pet spells.
+-- @param name string|nil  The spell name.
+-- @return number|nil  The spell id; nil when the name is unknown or its id is not in that spec's spell set.
 addon.getSpecSpellID = function(spec, name)
     if spec ~= nil and name ~= nil and addon.specSpellsReverse[spec] ~= nil then
         local spellid = addon.specSpellsReverse[spec][name]
+
         if addon.isSpellOnSpec(spec, spellid) then
             return spellid
         end
     end
+
     return nil
 end
 
+-- ============================================================================
+-- Chat output
+-- ============================================================================
+
+-- Reads the configured log level.
+-- @param self table  The addon, whose db supplies the profile.
+-- @return number  profile.loglevel (4 verbose, 3 debug, 2 info, 1 warn, 0 quiet); 2 when the database or profile is
+--   not available. Never writes the default back.
+local function getLogLevel(self)
+    -- AceDB removes default-valued fields during shutdown; events may still
+    -- arrive afterwards. Use the normal default without writing it back.
+    local profile = self.db and self.db.profile
+    return (profile and tonumber(profile.loglevel)) or 2
+end
+
+-- Prints a verbose (level 4) message.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
+--
+-- The leveled printers (verbose, debug, info, warn) prefix the addon name and print through AceConsole; each prints
+-- only at or above its level and does nothing otherwise. Verbose is level 4, the chattiest.
 function addon:verbose(message, ...)
-    if self.db.profile.loglevel >= 4 then
-        AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.DEBUG .. message .. color.RESET, ...)
+    if getLogLevel(self) >= 4 then
+        AceConsole:Printf(
+            color.WHITE
+                .. "["
+                .. color.CYAN
+                .. addon.pretty_name
+                .. color.WHITE
+                .. "] "
+                .. color.DEBUG
+                .. message
+                .. color.RESET,
+            ...
+        )
     end
 end
 
+-- Prints a debug (level 3) message.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
 function addon:debug(message, ...)
-    if self.db.profile.loglevel >= 3 then
-        AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.DEBUG .. message .. color.RESET, ...)
+    if getLogLevel(self) >= 3 then
+        AceConsole:Printf(
+            color.WHITE
+                .. "["
+                .. color.CYAN
+                .. addon.pretty_name
+                .. color.WHITE
+                .. "] "
+                .. color.DEBUG
+                .. message
+                .. color.RESET,
+            ...
+        )
     end
 end
 
+-- Prints an information (level 2, the default) message.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
 function addon:info(message, ...)
-    if self.db.profile.loglevel >= 2 then
-        AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.INFO .. message .. color.RESET, ...)
+    if getLogLevel(self) >= 2 then
+        AceConsole:Printf(
+            color.WHITE
+                .. "["
+                .. color.CYAN
+                .. addon.pretty_name
+                .. color.WHITE
+                .. "] "
+                .. color.INFO
+                .. message
+                .. color.RESET,
+            ...
+        )
     end
 end
 
+-- Prints a warning (level 1) message in the warning color.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
 function addon:warn(message, ...)
-    if self.db.profile.loglevel >= 1 then
-        AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.WARN .. message .. color.RESET, ...)
+    if getLogLevel(self) >= 1 then
+        AceConsole:Printf(
+            color.WHITE
+                .. "["
+                .. color.CYAN
+                .. addon.pretty_name
+                .. color.WHITE
+                .. "] "
+                .. color.WARN
+                .. message
+                .. color.RESET,
+            ...
+        )
     end
 end
 
+-- Prints command results the player asked for; ignores the log level.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
 function addon:print(message, ...)
-    AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.INFO .. message .. color.RESET, ...)
+    AceConsole:Printf(
+        color.WHITE
+            .. "["
+            .. color.CYAN
+            .. addon.pretty_name
+            .. color.WHITE
+            .. "] "
+            .. color.INFO
+            .. message
+            .. color.RESET,
+        ...
+    )
 end
 
+-- Prints a message in the announcement color; ignores the log level.
+-- @param message string  A string.format-style message.
+-- @param ... any  The format arguments.
 function addon:announce(message, ...)
-    AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.ANNOUNCE .. message .. color.RESET, ...)
+    AceConsole:Printf(
+        color.WHITE
+            .. "["
+            .. color.CYAN
+            .. addon.pretty_name
+            .. color.WHITE
+            .. "] "
+            .. color.ANNOUNCE
+            .. message
+            .. color.RESET,
+        ...
+    )
 end
 
--- character table string
-local b64_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+-- ============================================================================
+-- Encoders and text helpers
+-- ============================================================================
 
--- encoding
+-- The base64 alphabet shared by base64enc and base64dec.
+local b64_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+-- Encodes a byte string as padded base64 text.
+-- @param data string  The bytes to encode.
+-- @return string  The base64 text.
+--
+-- A global, not an addon field; nothing else in the addon calls it, the export format has its own encoder in
+-- Data/codec.lua.
 function base64enc(data)
     return ((data:gsub('.', function(x)
-        local r,b='',x:byte()
-        for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
-        return r;
-    end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-        if (#x < 6) then return '' end
-        local c=0
-        for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
-        return b64_chars:sub(c+1,c+1)
-    end)..({ '', '==', '=' })[#data%3+1])
+        local r, b = '', x:byte()
+
+        for i = 8, 1, -1 do
+            r = r .. (b % 2 ^ i - b % 2 ^ (i - 1) > 0 and '1' or '0')
+        end
+
+        return r
+    end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+        if (#x < 6) then
+            return ''
+        end
+
+        local c = 0
+
+        for i = 1, 6 do
+            c = c + (x:sub(i, i) == '1' and 2 ^ (6 - i) or 0)
+        end
+
+        return b64_chars:sub(c + 1, c + 1)
+    end) .. ({ '', '==', '=' })[#data % 3 + 1])
 end
 
--- decoding
+-- Decodes base64 text.
+-- @param data string  The base64 text; any character outside the alphabet and the padding sign is ignored.
+-- @return string  The bytes.
+--
+-- A global like base64enc, and likewise not called elsewhere in the addon.
 function base64dec(data)
-    data = string.gsub(data, '[^'..b64_chars..'=]', '')
+    data = string.gsub(data, '[^' .. b64_chars .. '=]', '')
+
     return (data:gsub('.', function(x)
-        if (x == '=') then return '' end
-        local r,f='',(b64_chars:find(x)-1)
-        for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
-        return r;
+        if (x == '=') then
+            return ''
+        end
+
+        local r, f = '', (b64_chars:find(x) - 1)
+
+        for i = 6, 1, -1 do
+            r = r .. (f % 2 ^ i - f % 2 ^ (i - 1) > 0 and '1' or '0')
+        end
+
+        return r
     end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
-        if (#x ~= 8) then return '' end
-        local c=0
-        for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
+        if (#x ~= 8) then
+            return ''
+        end
+
+        local c = 0
+
+        for i = 1, 8 do
+            c = c + (x:sub(i, i) == '1' and 2 ^ (8 - i) or 0)
+        end
+
         return string.char(c)
     end))
 end
 
+-- Breaks a string into lines of a fixed width.
+-- @param s string|nil  The string.
+-- @param sz number  The line length minus one: each line holds sz + 1 characters.
+-- @return string|nil  The lines joined with newlines; nil when s is nil.
+--
+-- Cuts at fixed offsets, not at word boundaries; addon.wrap is the word-aware one. A global, not called elsewhere in
+-- the addon.
 function width_split(s, sz)
     if s == nil then
         return nil
     end
 
     local rv = ""
-    local offs = 1;
+    local offs = 1
+
     while offs < s:len() do
         if (offs > 1) then
             rv = rv .. "\n"
         end
-        rv = rv .. s:sub(offs, offs+sz)
+
+        rv = rv .. s:sub(offs, offs + sz)
         offs = offs + sz + 1
     end
+
     return rv
 end
 
-function addon.split(inputstr, sep)
-    if sep == nil then
-        sep = "%s"
-    end
-    local t={}
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        table.insert(t, str)
-    end
-    return t
-end
+addon.split = addon.Functions.text.split
+addon.wrap = addon.Functions.text.wrap
+addon.trim = addon.Functions.text.trim
 
-function addon.wrap(str, limit)
-    limit = limit or 72
-    local here = 1
+-- Trend helpers for saved custom source; Functions/trends.lua owns the bodies. The old one looks at the damage done
+-- over damage_history and gives progressively more weight to more recent damage, so the figure adjusts when damage
+-- rises or falls.
+addon.calculate_trend_old = addon.Functions.trends.calculateOld
 
-    -- the "".. is there because :gsub returns multiple values
-    return ""..str:gsub("(%s+)()(%S+)()",
-            function(_, st, word, fi)
-                if fi-here > limit then
-                    here = st
-                    return "\n"..word
-                end
-            end)
-end
+addon.calculate_trend = addon.Functions.trends.calculate
 
-function addon.trim(s)
-    return (s:gsub("^%s*(.-)%s*$", "%1"))
-end
+-- ============================================================================
+-- Widget helpers
+-- ============================================================================
 
--- This will look at the damage done over damage_history, and gives progressively more weight
--- to more recent damage (so that theoretically if damage has decreased/increased it will adjust.)
-function addon.calculate_trend_old(health)
-    if not health then
-        return 0
-    end
-
-    local damage_history = addon.db.profile.damage_history
-    local now = GetTime()
-    local total, count, seconds = 0, 0, 0
-
-    local last_health, last_offs, last_max
-    local offs_total = 0
-    for _,v in ipairs(health) do
-        if v.value >= v.max or v.value == 0 then
-            break
-        end
-
-        if last_max ~= v.max then
-            last_health = nil
-            last_max = v.max
-        end
-
-        local offs = addon.round(now - v.time)
-        if last_health ~= nil then
-            offs_total = offs_total + (last_health - v.value)
-
-            if last_offs ~= offs then
-                local scale = damage_history - offs
-                count = count + scale
-                total = total + (offs_total * scale)
-                seconds = seconds + 1
-                offs_total = 0
-            end
-        end
-        last_health = v.value
-        last_offs = offs
-    end
-
-    if seconds then
-        return total / count, seconds
-    end
-    return 0
-end
-
-function addon.calculate_trend(history, window, noheals, nodmg)
-    if not history then
-        return 0
-    end
-
-    if not window then
-        window = addon.db.profile.damage_history
-    end
-
-    local now = GetTime()
-    local damage_total, damage_count, damage_seconds = 0, 0, 0
-    local heal_total, heal_count, heal_seconds = 0, 0, 0
-
-    local maxoffs, data = 0, {}
-    if not nodmg then
-        for _,v in ipairs(history.damage) do
-            local diff = now - v.time
-            local scale = window - diff
-            maxoffs = addon.round(diff)
-            if maxoffs > window then
-                break
-            end
-
-            if v.value then
-                data[maxoffs] = (data[maxoffs] or 0) + (v.value * scale)
-            end
-        end
-        damage_seconds = maxoffs
-        for i=0,maxoffs do
-            damage_total = damage_total + (data[i] or 0)
-            damage_count = damage_count + (window - i)
-        end
-    end
-
-    if not noheals then
-        maxoffs, data = 0, {}
-        for _,v in ipairs(history.heals) do
-            local diff = now - v.time
-            local scale = window - diff
-            maxoffs = addon.round(diff)
-            if maxoffs > window then
-                break
-            end
-
-            if v.value then
-                data[maxoffs] = (data[maxoffs] or 0) + (v.value * scale)
-            end
-        end
-        heal_seconds = maxoffs
-        for i=0,maxoffs do
-            heal_total = heal_total + (data[i] or 0)
-            heal_count = heal_count + (window - i)
-        end
-    end
-
-    return (((damage_count > 0) and (-damage_total / damage_count) or 0) +
-           ((heal_count > 0) and (heal_total / heal_count) or 0)),
-           (damage_seconds > heal_seconds and damage_seconds or heal_seconds)
-end
-
+-- Shows text in the game tooltip while the pointer is over a native widget.
+-- @param frame table  The widget table with SetCallback; frame.frame is the Blizzard frame it anchors to.
+-- @param text string  The tooltip text.
+--
+-- Hides the tooltip on leave only if this widget still owns it. Note the dot: called as addon.AddTooltip(widget, text),
+-- not as a method.
 function addon.AddTooltip(frame, text)
     frame:SetCallback("OnEnter", function()
         GameTooltip:SetOwner(frame.frame, "ANCHOR_BOTTOMRIGHT", 3)
         GameTooltip:SetText(text, 1, 1, 1, 1, true)
     end)
+
     frame:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(frame.frame) then
             GameTooltip:Hide()
@@ -560,7 +438,21 @@ function addon.AddTooltip(frame, text)
     end)
 end
 
+-- Configures a built widget tree.
+-- @param obj table  The widget (obj and its children are walked depth first).
+--
+-- Gives each node spell hyperlink support when addon:InstallSpellHyperlinks exists, then runs the node's configure
+-- callback if it set one. Children are configured before their parent.
 function addon:configure_frame(obj)
+    if self.InstallSpellHyperlinks then
+        if obj.label then
+            self:InstallSpellHyperlinks(obj.frame)
+        end
+        if obj.statustext and obj.statustext.GetParent then
+            self:InstallSpellHyperlinks(obj.statustext:GetParent())
+        end
+    end
+
     if obj.children ~= nil then
         for _, child in pairs(obj.children) do
             addon:configure_frame(child)
@@ -573,193 +465,243 @@ function addon:configure_frame(obj)
     end
 end
 
+-- Reads the player's rotation specialization index.
+-- @return number|nil  The index; nil when the platform cannot report one.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function addon:GetSpecialization()
-    if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
-        return GetSpecialization()
-    elseif LE_EXPANSION_LEVEL_CURRENT >= 2 then
-        return GetActiveTalentGroup()
+    local selection, reason = self.Platform:GetRotationSpecialization()
+
+    if not selection then
+        return nil, reason
+    end
+
+    return selection.index
+end
+
+-- ============================================================================
+-- Item name and icon widgets
+-- ============================================================================
+
+-- A delayed metadata retry belongs to a particular widget selection. Reusing
+-- either widget or clearing it invalidates all older scheduled retries.
+-- itemUpdates maps a text or icon widget to the ticket of the newest update that targets it (a retry whose ticket no
+-- longer matches stops); itemReleases remembers the OnRelease wrapper installed on a widget. Both are weak-keyed.
+local itemUpdates = setmetatable({}, { __mode = 'k' })
+local itemReleases = setmetatable({}, { __mode = 'k' })
+
+-- Wraps a widget's OnRelease once so that releasing the widget back to its pool drops its pending update ticket and
+-- restores the original handler.
+-- @param widget table|nil  The text or icon widget.
+--
+-- Calling it again on an already watched widget does nothing.
+local function watchItemRelease(widget)
+    if not widget or itemReleases[widget] == widget.OnRelease and widget.OnRelease ~= nil then
+        return
+    end
+
+    local original = widget.OnRelease
+    local release
+
+    release = function(self, ...)
+        itemUpdates[self] = nil
+        itemReleases[self] = nil
+
+        if self.OnRelease == release then
+            self.OnRelease = original
+        end
+
+        if original then
+            return original(self, ...)
+        end
+    end
+
+    itemReleases[widget] = release
+    widget.OnRelease = release
+end
+
+-- Reads a widget's current text.
+-- @param widget table|nil  The widget.
+-- @return string|nil  The text; nil when there is no widget or it has no GetText.
+local function itemText(widget)
+    if widget and type(widget.GetText) == 'function' then
+        return widget:GetText()
+    end
+end
+
+-- Keeps an item tooltip that is already open on the icon in step with the id just shown.
+-- @param icon table|nil  The icon widget.
+-- @param id number|nil  The item id shown; nil hides the tooltip.
+--
+-- Re-points the tooltip at the new item, or hides it when there is none. Opens nothing by itself.
+local function itemTooltip(icon, id)
+    if icon and GameTooltip and GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+        if id then
+            GameTooltip:SetHyperlink('item:' .. id)
+        else
+            GameTooltip:Hide()
+        end
+    end
+end
+
+-- Tells whether the text widget still shows what the ticket recorded at the last update.
+-- @param widget table  The text widget.
+-- @param ticket table  The update ticket.
+-- @return boolean  True when it does (compared by reference id when the widget has one, else by text), i.e. the
+--   player has not typed or picked something else since.
+local function sameItemText(widget, ticket)
+    if widget.GetReferenceID then
+        local current = widget:GetReferenceID()
+
+        if current ~= nil or ticket.referenceID ~= nil then
+            return current == ticket.referenceID
+        end
+    end
+
+    return itemText(widget) == ticket.text
+end
+
+-- Fills an editor's item text widget and icon widget from an item and retries while the client is still loading item
+-- data.
+-- @param self table  The addon; its Platform decides whether the item can be read.
+-- @param method string  The name of the public wrapper below, which the retry timer calls back.
+-- @param named boolean  True to show the item name (else the id) in the text widget.
+-- @param image boolean  True to set the icon as an image (else write the id into it).
+-- @param item number|string|nil  The item id, link or name.
+-- @param text table|nil  The text widget.
+-- @param icon table|nil  The icon widget.
+-- @param attempt number|nil  The attempt number; set by the retry timer.
+-- @param ticket table|nil  The update ticket; set by the retry timer.
+--
+-- Up to 4 attempts, 0.5 seconds apart; a retry is abandoned if the widgets were reused, released or edited since it
+-- was scheduled. An item the platform cannot read (restricted client) is shown as empty.
+local function updateItem(self, method, named, image, item, text, icon, attempt, ticket)
+    if not attempt then
+        attempt = 1
+        ticket = {}
+
+        if text then
+            watchItemRelease(text)
+            itemUpdates[text] = ticket
+        end
+
+        if icon then
+            watchItemRelease(icon)
+            itemUpdates[icon] = ticket
+        end
+    elseif
+        not ticket
+        or text and (itemUpdates[text] ~= ticket or not sameItemText(text, ticket))
+        or icon and (itemUpdates[icon] ~= ticket or icon.rmActionIconRevision ~= ticket.iconRevision)
+    then
+        return
+    end
+
+    if not self.Platform:CanReadValue(item) then
+        item = nil
+    end
+
+    local id = item and self.Platform:GetItemID(item)
+    local info = id and (named or image) and self.Platform:GetItemDisplayInfo(id)
+    local complete = id and (not named or info) and (not image or info and info.iconID ~= nil)
+
+    if text then
+        if text.rmSpellSearchActive and id then
+            text:SetText(id)
+        else
+            text:SetText(item and (named and (info and info.name or L['Item data loading']) or id) or nil)
+        end
+    end
+
+    if icon then
+        if image then
+            icon:SetImage(complete and info.iconID or nil)
+        else
+            icon:SetText(complete and id or nil)
+        end
+    end
+
+    itemTooltip(icon, complete and id)
+    ticket.text = itemText(text)
+    ticket.referenceID = text and text.GetReferenceID and text:GetReferenceID()
+    ticket.iconRevision = icon and icon.rmActionIconRevision
+
+    if item and not complete and attempt < 4 then
+        self:ScheduleTimer(method, 0.5, item, text, icon, attempt + 1, ticket)
+    end
+end
+
+-- Shows an item id in the text widget and an item id in the icon widget.
+-- @param item number|string|nil  The item id, link or name.
+-- @param text table|nil  The text widget.
+-- @param icon table|nil  The icon widget.
+-- @param attempt number|nil  The attempt number; belongs to the retry timer.
+-- @param ticket table|nil  The update ticket; belongs to the retry timer.
+--
+-- The four UpdateItem_* methods are the public entry points of updateItem: the first word is what the text widget
+-- shows (ID or Name), the second what the icon widget shows (ID or Image).
+function addon:UpdateItem_ID_ID(item, text, icon, attempt, ticket)
+    updateItem(self, 'UpdateItem_ID_ID', false, false, item, text, icon, attempt, ticket)
+end
+
+-- Shows an item id in the text widget and the item's image in the icon widget; see UpdateItem_ID_ID.
+-- @param item number|string|nil  The item id, link or name.
+-- @param text table|nil  The text widget.
+-- @param icon table|nil  The icon widget.
+-- @param attempt number|nil  The attempt number; belongs to the retry timer.
+-- @param ticket table|nil  The update ticket; belongs to the retry timer.
+function addon:UpdateItem_ID_Image(item, text, icon, attempt, ticket)
+    updateItem(self, 'UpdateItem_ID_Image', false, true, item, text, icon, attempt, ticket)
+end
+
+-- Shows the item's name in the text widget and its id in the icon widget; see UpdateItem_ID_ID.
+-- @param item number|string|nil  The item id, link or name.
+-- @param text table|nil  The text widget.
+-- @param icon table|nil  The icon widget.
+-- @param attempt number|nil  The attempt number; belongs to the retry timer.
+-- @param ticket table|nil  The update ticket; belongs to the retry timer.
+function addon:UpdateItem_Name_ID(item, text, icon, attempt, ticket)
+    updateItem(self, 'UpdateItem_Name_ID', true, false, item, text, icon, attempt, ticket)
+end
+
+-- Shows the item's name in the text widget and its image in the icon widget; see UpdateItem_ID_ID.
+-- @param item number|string|nil  The item id, link or name.
+-- @param text table|nil  The text widget.
+-- @param icon table|nil  The icon widget.
+-- @param attempt number|nil  The attempt number; belongs to the retry timer.
+-- @param ticket table|nil  The update ticket; belongs to the retry timer.
+function addon:UpdateItem_Name_Image(item, text, icon, attempt, ticket)
+    updateItem(self, 'UpdateItem_Name_Image', true, true, item, text, icon, attempt, ticket)
+end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="_G" then return _G end
+        if name=="cacheHits" then return addon.builtinSourceModules["Functions/cache.lua"]("cacheHits") end
+        if name=="cacheMisses" then return addon.builtinSourceModules["Functions/cache.lua"]("cacheMisses") end
+        if name=="cachedResult" then return addon.builtinSourceModules["Functions/cache.lua"]("cachedResult") end
+        if name=="color" then return color end
+        if name=="compare" then return addon.Functions.values.compare end
+        if name=="compareString" then return addon.Functions.presentation.compareString end
+        if name=="getCached" then return addon.Functions.cache.getCached end
+        if name=="getCachedInternal" then return addon.builtinSourceModules["Functions/cache.lua"]("getCachedInternal") end
+        if name=="getRetryCached" then return addon.Functions.cache.getRetryCached end
+        if name=="isin" then return addon.Functions.values.isin end
+        if name=="nilArgument" then return addon.builtinSourceModules["Functions/cache.lua"]("nilArgument") end
+        if name=="nullable" then return addon.Functions.presentation.nullable end
+        if name=="nullable_value" then return addon.Functions.presentation.nullable_value end
+        if name=="packResults" then return addon.builtinSourceModules["Functions/cache.lua"]("packResults") end
+        if name=="playerize" then return addon.Functions.presentation.playerize end
+        if name=="split" then return addon.Functions.text.split end
+        if name=="string" then return string end
+        if name=="trim" then return addon.Functions.text.trim end
+        if name=="wrap" then return addon.Functions.text.wrap end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("utils.lua", sourceGetter)
     else
-        return 0
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["utils.lua"]=sourceGetter
     end
 end
-
-function addon:UpdateItem_ID_ID(item, text, icon, attempt)
-    if not item then
-        if text then
-            text:SetText(nil)
-        end
-        if icon then
-            icon:SetText(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-        return
-    end
-
-    if not attempt then
-        attempt = 1
-        if text then
-            text:SetText(item)
-        end
-        if icon then
-            icon:SetText(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-    end
-
-    local itemid = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
-    if itemid then
-        if text then
-            text:SetText(itemid)
-        end
-        if icon then
-            icon:SetText(itemid)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:SetHyperlink("item:" .. itemid)
-            end
-        end
-    elseif attempt < 4 then
-        self:ScheduleTimer("UpdateItem_ID_ID", 0.5, item, text, icon, attempt + 1)
-    end
-end
-
-function addon:UpdateItem_ID_Image(item, text, icon, attempt)
-    if not item then
-        if text then
-            text:SetText(nil)
-        end
-        if icon then
-            icon:SetImage(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-        return
-    end
-
-    if not attempt then
-        attempt = 1
-        if text then
-            text:SetText(item)
-        end
-        if icon then
-            icon:SetImage(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-    end
-
-    local itemid, _, _, _, texture = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
-    if itemid then
-        if text then
-            text:SetText(itemid)
-        end
-        if icon then
-            icon:SetImage(texture)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:SetHyperlink("item:" .. itemid)
-            end
-        end
-    elseif attempt < 4 then
-        self:ScheduleTimer("UpdateItem_ID_Image", 0.5, item, text, icon, attempt + 1)
-    end
-end
-
-function addon:UpdateItem_Name_ID(item, text, icon, attempt)
-    if not item then
-        if text then
-            text:SetText(nil)
-        end
-        if icon then
-            icon:SetText(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-        return
-    end
-
-    if not attempt then
-        attempt = 1
-        if text then
-            text:SetText(item)
-        end
-        if icon then
-            icon:SetText(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-    end
-
-    local itemid = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
-    local name
-    if itemid then
-        name = self.getRetryCached(addon.longtermCache, GetItemInfo, itemid)
-    end
-    if itemid and name then
-        if text then
-            text:SetText(name)
-        end
-        if icon then
-            icon:SetText(itemid)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:SetHyperlink("item:" .. itemid)
-            end
-        end
-    elseif attempt < 4 then
-        self:ScheduleTimer("UpdateItem_Name_ID", 0.5, item, text, icon, attempt + 1)
-    end
-end
-
-function addon:UpdateItem_Name_Image(item, text, icon, attempt)
-    if not item then
-        if text then
-            text:SetText(nil)
-        end
-        if icon then
-            icon:SetImage(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-        return
-    end
-
-    if not attempt then
-        attempt = 1
-        if text then
-            text:SetText(item)
-        end
-        if icon then
-            icon:SetImage(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-    end
-
-    local itemid = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
-    local name, texture, _
-    if itemid then
-        name = self.getRetryCached(addon.longtermCache, GetItemInfo, itemid)
-        texture = select(10, self.getRetryCached(addon.longtermCache, GetItemInfo, itemid))
-    end
-    if name then
-        if text then
-            text:SetText(name)
-        end
-        if icon then
-            icon:SetImage(texture)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:SetHyperlink("item:" .. itemid)
-            end
-        end
-    elseif attempt < 4 then
-        self:ScheduleTimer("UpdateItem_Name_Image", 0.5, item, text, icon, attempt + 1)
-    end
-end
+-- END GENERATED RM SOURCE BINDINGS

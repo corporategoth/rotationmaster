@@ -1,0 +1,28 @@
+{
+  "repository": "https://github.com/R41z0r/LuaWorkbench",
+  "commit": "9abc82050f70fca204a19965a717abc6e1eae952",
+  "upstream_sources": {
+    "Localization.lua": "60ee566bd8ae0d7485e486e7781956820ece9620b53f7a4e6e0432903256041e",
+    "BufferedPaste.lua": "ad6e57a7ad1986a576e987d6d13cd7fefa6fa05d228dada69f2f85814b65bccd",
+    "LuaEditor.lua": "944f3422866c6ea121472490e4327b37807575650e5104618a14e11ae9b73f74",
+    "Analysis.lua": "33e6cc883ae62f5ef04395ab72d263b5ab3bfcfbdf7e7bc3370531a961a9c3a0",
+    "LuaConsole.lua": "70ba2a71b07e7976e9e73bcbd330860df3755800a8c411e5090f937d69bad761",
+    "UI.lua": "54ddb4fc8bf8f7161526a16b2b318581bd69777154557962a289e755e314f201",
+    "Search.lua": "7dd156ccb6dd88c8715807919b7f879c7dda986eca02d1468fb3c0530161f231",
+    "Organization.lua": "0ab787369ceb3257d7f7c6433da6cabb5157400ad08dab4ab9953da6c62191c8",
+    "Helpers.lua": "2269d0d867f354ef9e64f6a140a822843905f38eb6de1759dc59f9b45fd59af4",
+    "Navigation.lua": "9089a750bdeac7c8022d53e7bc6140e2dd2e2af9f66ea827059154fb4847bd40",
+    "DebugProbe.lua": "1d023fda211a15ffc8de046bdb44b3154e0093734ca0737b2149566092298081",
+    "DebugCompiler.lua": "446ad6422ad6eaaeee52bbaf9d69ad0afda1b607f2797dfcc2d41e622c0b6559",
+    "Debugger.lua": "f5d83f178e093158073545ec76046d6ed9718409e9788c5b63df22d778e487e0",
+    "DebugUI.lua": "320e7c0d72eda52962c1fd6122c3a2616504b4318e30edb5ec337495359625d7",
+    "APIHelp.lua": "b0448cf7c766bb86d7409c7329dd9b0a3ac21ac69c050d6dbd61fbb351328b2c",
+    "KnowledgeBase.lua": "d2dc335a118f91ce9c392be74cccb99c9acdd3fc7d78807492ec7c8eb64336bc",
+    "Inspector.lua": "383283c3935014a7a36cd5b00352e24216772455dcb988a8a76819779bb9d4f2",
+    "Autocomplete.lua": "19db85fb3036a32d3a887122c41a1120452e04c71013668177bf9aa3ee41ecf2",
+    "EditorActions.lua": "97b26ac729748277c9ed145069f25483a3f6127d96de719099d0f596e938e643",
+    "Snippets.lua": "88af9edd1584c618c7e587ee9626066be3e9c901a15d9a7ee4527e5b780be8c2",
+    "Automation.lua": "4bd7cb6e4a55132319a4acb0dad5d45dd4b80db685fcb48599c09db2c6554350"
+  },
+  "generated_sha256": "d61120344ab0131455ea2db8628c2749d6fab38a068dcdb2fcfc31f58ec69d40"
+}

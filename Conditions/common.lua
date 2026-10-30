@@ -1,53 +1,98 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Shared editor widgets for the Built In conditions: the spell, item, operator and rank pickers that the other
+-- Conditions/ files call as addon:Widget_*. Each builds a condition editor group bound to a field of the saved `value`
+-- table and calls update() after every change, so the caller re-validates and re-prints the condition.
+-- Loaded first of the Conditions/ block in RotationMaster.toc, after the UI widget set it builds on. It reads no game
+-- values (spell and item data come through SpellCatalog and Platform), and every function here is part of the saved
+-- custom-condition bindings: never edit inside a function body, and leave the generated block at the end alone.
 local addon_name, addon = ...
 
-local AceGUI = LibStub("AceGUI-3.0")
-local SpellData = LibStub("AceGUI-3.0-SpellLoader")
+local SpellData = addon.SpellCatalog
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- ============================================================================
+-- Spell widgets
+-- ============================================================================
+
+-- True for a positive whole-number spell ID.
+-- @param value any  The value to test.
+-- @return boolean  True when value is a number greater than 0, below math.huge, with no fractional part.
+--
+-- Portable condition fields contain ordinary saved data, never live secrets.
+function addon.IsConditionSpellID(value)
+    return type(value) == "number" and value > 0 and value < math.huge and value % 1 == 0
+end
+
+-- Tooltip text shared by every rank checkbox.
+local RANK_TIP = L["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."]
+
+-- Resolves a saved spell value to an ID for display.
+-- @param spellid number|string|nil  The saved spell ID, or a spell name saved before IDs existed.
+-- @param ranked boolean|nil  True when the saved condition matches an exact spell rank.
+-- @return number|string|nil  On non-Retail clients when not ranked, the spell catalog's canonical ID, or nil when the
+--     catalog cannot answer; otherwise spellid unchanged.
+-- @return string|nil  The reason code when the catalog cannot answer ("spell-data-unavailable" if it gave none); nil
+--     otherwise.
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         if not ranked then
-            spellid = SpellData:GetSpellId(spellid)
+            local resolved, reason = SpellData:GetSpellId(spellid)
+            return resolved, reason or (not resolved and "spell-data-unavailable" or nil)
         end
     end
     return spellid
 end
 
+-- Builds a chat link, or a plain label, for a saved spell value.
+-- @param spellid number|string|nil  The saved spell ID or name; nil means no spell.
+-- @param ranked boolean|nil  True to append the spell's rank to the link when one is known.
+-- @return string|nil  The spell link with the rank appended when ranked and known, or a plain spell label when no link
+--     exists; nil when spellid is nil.
 function addon:Widget_GetSpellLink(spellid, ranked)
     if spellid ~= nil then
         if ranked then
             local rank = SpellData:SpellRank(spellid)
+
             if rank then
-               return SpellData:SpellLink(spellid) .. "|cFF888888 (" .. rank .. ")|r"
+                return (SpellData:SpellLink(spellid) or self:SpellLabel(spellid)) .. "|cFF888888 (" .. rank .. ")|r"
             end
         else
             spellid = self:Widget_GetSpellId(spellid, ranked)
         end
-        return SpellData:SpellLink(spellid)
+
+        return SpellData:SpellLink(spellid) or self:SpellLabel(spellid)
     end
 
     return nil
 end
 
+-- Builds the spell picker: an icon box and a name edit box, plus an exact-rank checkbox on clients with ranks, that
+-- write value.spell as a spell ID.
+-- @param spec any  The editing context: the pet book type ("pet") selects the pet spell icon, anything else the player
+--     spell icon.
+-- @param editbox string  The kind of edit box to create (for example "Spell_EditBox").
+-- @param value table  The saved condition fields; spell, ranked and disabled are read and spell and ranked are written.
+-- @param nametoid function  Called as nametoid(text) to convert typed non-numeric text to a spell ID (nil when it
+--     matches none).
+-- @param isvalid function  Called as isvalid(id) to accept or reject a spell ID; returns a boolean.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @return table  The condition group holding the icon, the edit box and, when shown, the rank checkbox.
 function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, update)
-    local spell_group = AceGUI:Create("SimpleGroup")
-    spell_group:SetLayout("Table")
+    local spell_group = addon:CreateConditionGroup()
+    spell_group:SetLayout('RM-SpellField')
+    local rankChoice
 
-    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and spec ~= BOOKTYPE_PET) then
-        spell_group:SetUserData("table", { columns = { 44, 30, 1 } })
-    else
-        spell_group:SetUserData("table", { columns = { 44, 1 } })
-    end
-
-    local spell = AceGUI:Create(editbox)
-    local spellIcon = AceGUI:Create(spec == BOOKTYPE_PET and "ActionSlotPetAction" or "ActionSlotSpell")
+    local spell = addon:CreateSpellEditBox(editbox,value.spell)
+    local initialSpell=type(value.spell)=="string" and SpellData:GetSpellId(value.spell) or value.spell
+    local spellIcon = addon:CreateSpellActionIcon(spec == (BOOKTYPE_PET or "pet") and "pet" or "spell",initialSpell,isvalid)
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
     spellIcon:SetText(value.spell)
-    spellIcon.text:Hide()
     spellIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
-        if isvalid(v) then
+        if v and isvalid(v) then
             value.spell = v
             spellIcon:SetText(v)
             spell:SetText(SpellData:SpellName(value.spell, not value.ranked))
@@ -55,6 +100,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
         else
+            value.spell = nil
             spellIcon:SetText(nil)
             spell:SetText(nil)
             if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
@@ -77,24 +123,10 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     spellIcon:SetDisabled(value.disabled)
     spell_group:AddChild(spellIcon)
 
-    if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and spec ~= BOOKTYPE_PET then
-        local ranked = AceGUI:Create("SimpleGroup")
-        ranked:SetFullWidth(true)
-        ranked:SetLayout("Table")
-        ranked:SetUserData("table", { columns = { 1 } })
-        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
-
-        local nr_label = AceGUI:Create("Label")
-        nr_label:SetText(L["Rank"])
-        if value.disabled then
-            nr_label:SetColor(0.5, 0.5, 0.5)
-        else
-            nr_label:SetColor(1.0, 0.82, 0.0)
-        end
-        ranked:AddChild(nr_label)
-
-        local nr_button = AceGUI:Create("CheckBox")
-        nr_button:SetLabel(nil)
+    if addon:ClientHasSpellRanks() and spec ~= (BOOKTYPE_PET or "pet") then
+        local nr_button = addon:CreateConditionCheckBox()
+        nr_button:SetLabel(L["Use this exact spell rank"])
+        nr_button.button.tooltip = RANK_TIP
         nr_button:SetValue(value.ranked or false)
         nr_button:SetCallback("OnValueChanged", function(_, _, val)
             value.ranked = val
@@ -103,13 +135,11 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
             update()
         end)
         nr_button:SetDisabled(value.disabled)
-        ranked:AddChild(nr_button)
-
-        spell_group:AddChild(ranked)
+        rankChoice=nr_button
     end
 
     spell:SetFullWidth(true)
-    spell:SetLabel(L["Spell"])
+    spell:SetLabel('')
     spell:SetText(value.spell and SpellData:SpellName(value.spell, not value.ranked))
     spell:SetUserData("norank", not value.ranked)
     spell:SetUserData("spec", spec)
@@ -131,131 +161,301 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     end)
     spell:SetDisabled(value.disabled)
     spell_group:AddChild(spell)
+    if rankChoice then
+        rankChoice.frame.GetFontString=function() return rankChoice.button:GetFontString() end
+        spell_group:AddChild(rankChoice)
+    end
 
     return spell_group
 end
 
-function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
-    local spell_group = AceGUI:Create("SimpleGroup")
+-- Builds a spell picker like Widget_SpellWidget, but with a labeled field and no rank checkbox.
+-- @param spec any  The editing context: the pet book type ("pet") selects the pet spell icon, anything else the player
+--     spell icon.
+-- @param editbox string  The kind of edit box to create (for example "Spell_EditBox").
+-- @param value table  The saved condition fields; spell and disabled are read and spell is written.
+-- @param isvalid function  Called as isvalid(id) to accept or reject a spell ID; returns a boolean.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @param storeId boolean|nil  True to store the spell ID in value.spell; otherwise the spell name is stored.
+-- @return table  The condition group holding the icon and the labeled edit box.
+function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, storeId)
+    local spell_group = addon:CreateConditionGroup()
     spell_group:SetLayout("Table")
     spell_group:SetUserData("table", { columns = { 44, 1 } })
 
-    local spell = AceGUI:Create(editbox)
-    local spellIcon = AceGUI:Create(spec == BOOKTYPE_PET and "ActionSlotPetAction" or "ActionSlotSpell")
+    local spell = addon:CreateSpellEditBox(editbox, value.spell)
+    local initialSpell = type(value.spell) == "string" and SpellData:GetSpellId(value.spell) or value.spell
+
+    local spellIcon = addon:CreateSpellActionIcon(
+        spec == (BOOKTYPE_PET or "pet") and "pet" or "spell",
+        initialSpell,
+        isvalid
+    )
+
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
+
     if value.spell then
-        spellIcon:SetText(SpellData:GetSpellId(value.spell))
+        spellIcon:SetText(initialSpell)
     end
-    spellIcon.text:Hide()
+
+    -- Handles Enter in the icon box: stores the typed spell (as its ID or its name, per storeId) and refreshes the box
+    -- and tooltip, or clears the spell when the text is not a valid spell ID. Then calls update().
+    -- @param _ table  The icon widget; unused.
+    -- @param _ string  The event name; unused.
+    -- @param v any  The typed text, read as a spell ID.
     spellIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
-        if isvalid(v) then
-            local name = SpellData:GetSpellName(v, true)
-            value.spell = name
+
+        if v and isvalid(v) then
+            local name = SpellData:SpellName(v, not storeId)
+            value.spell = storeId and v or name
             spellIcon:SetText(v)
-            spell:SetText(name)
+            spell:SetText(storeId and v or name)
+
             if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
         else
+            value.spell = nil
             spellIcon:SetText(nil)
             spell:SetText(nil)
+
             if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:Hide()
             end
         end
+
         update()
     end)
+
     spellIcon:SetCallback("OnEnter", function()
-        if value.spell then
+        local id = spellIcon:GetUserData("spell")
+
+        if id then
             GameTooltip:SetOwner(spellIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
-            GameTooltip:SetHyperlink("spell:" .. value.spell)
+            GameTooltip:SetHyperlink("spell:" .. id)
         end
     end)
+
     spellIcon:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(spellIcon.frame) then
             GameTooltip:Hide()
         end
     end)
+
     spellIcon:SetDisabled(value.disabled)
     spell_group:AddChild(spellIcon)
 
     spell:SetFullWidth(true)
     spell:SetLabel(L["Spell"])
     spell:SetText(value.spell)
-    spell:SetUserData("norank", not value.ranked)
+    spell:SetUserData("norank", not (storeId or value.ranked))
     spell:SetUserData("spec", spec)
+
+    -- Handles Enter in the name box: resolves the typed text to a spell, stores it (as its ID or its name, per storeId)
+    -- and refreshes the icon, or clears the spell when it is not valid. Then calls update().
+    -- @param _ table  The edit box widget; unused.
+    -- @param _ string  The event name; unused.
+    -- @param v any  The typed text, resolved with SpellData:ResolveSelection.
     spell:SetCallback("OnEnterPressed", function(_, _, v)
-        local spellid = SpellData:GetSpellId(v)
-        local name = SpellData:SpellName(spellid, true)
+        local spellid = SpellData:ResolveSelection(v)
+        local name = SpellData:SpellName(spellid, not storeId)
 
         if isvalid(spellid) then
-            value.spell = name
-            spell:SetText(name)
+            value.spell = storeId and spellid or name
+            spell:SetText(storeId and spellid or name)
             spellIcon:SetText(spellid)
         else
             value.spell = nil
             spell:SetText(nil)
             spellIcon:SetText(nil)
         end
+
         update()
     end)
+
     spell:SetDisabled(value.disabled)
     spell_group:AddChild(spell)
 
     return spell_group
 end
 
+-- Builds the rank choice for an aura picked by ID.
+-- @param value table  The saved condition fields; anyrank and disabled are read and anyrank is written.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @return table|nil  The checkbox, or nil on clients without spell ranks (the stored value still applies there).
+--
+-- The checkbox reads "Use this exact spell rank" like every other rank option, so it is the inverse of the stored
+-- `anyrank`: unticked (anyrank=true) matches every rank, ticked (anyrank unset, the meaning of every saved condition)
+-- matches only the chosen ID.
+function addon:Widget_AuraRankWidget(value, update)
+    if not self:ClientHasSpellRanks() then
+        return nil
+    end
+
+    local check = self:CreateConditionCheckBox()
+    check:SetLabel(L["Use this exact spell rank"])
+    check:SetWidth(170)
+    check:SetValue(value.anyrank ~= true)
+    check:SetDisabled(value.disabled)
+    check.button.tooltip = RANK_TIP
+
+    check:SetCallback('OnValueChanged', function(_, _, exact)
+        value.anyrank = (not exact) and true or nil
+        update()
+    end)
+
+    return check
+end
+
+-- Builds the exact-rank choice for a spell picked by ID where any rank matches by default (casts, channels).
+-- @param value table  The saved condition fields; ranked and disabled are read and ranked is written.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @return table|nil  The checkbox, or nil on clients without spell ranks.
+function addon:Widget_SpellRankWidget(value, update)
+    if not self:ClientHasSpellRanks() then
+        return nil
+    end
+
+    local check = self:CreateConditionCheckBox()
+    check:SetLabel(L["Use this exact spell rank"])
+    check:SetValue(value.ranked == true)
+    check:SetDisabled(value.disabled)
+    check.button.tooltip = RANK_TIP
+
+    check:SetCallback('OnValueChanged', function(_, _, enabled)
+        value.ranked = enabled and true or nil
+        update()
+    end)
+
+    return check
+end
+
+-- ============================================================================
+-- Item widgets
+-- ============================================================================
+
+-- Builds the item set picker: an icon, a dropdown of item sets (or Custom) and an edit button that opens the item list
+-- popup.
+-- @param top table|nil  The owning condition window, hidden while the popup is open; nil when the widget is not inside
+--     one.
+-- @param editbox string  The kind of edit box the item list popup uses (for example "Inventory_EditBox").
+-- @param value table  The saved condition fields; item and disabled are read and item is written, as an item set name
+--     or as a list of items.
+-- @param isvalid function  Called as isvalid(item) to accept or reject an item; returns a boolean.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @return table  The condition group holding the icon, the dropdown and the edit button.
+--
+-- The popup callbacks check that this widget and the saved tables are still the live ones before writing, since either
+-- can be released while the popup is open.
 function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
 
-    local item_group = AceGUI:Create("SimpleGroup")
+    local item_group = addon:CreateConditionGroup()
+    local lease = item_group.rmLease
+    local profile, global = addon.db.profile, addon.db.global
+
+    -- True while this item picker is still the live widget for the current profile.
+    -- @return boolean  True when the group is active, not releasing, still holds its original lease, and the profile
+    --     and global tables are the ones it started with.
+    local function ownerAlive()
+        return item_group.rmActive
+            and item_group.rmLease == lease
+            and not item_group:IsReleasing()
+            and addon.db.profile == profile
+            and addon.db.global == global
+    end
+
+    -- Releases the item list popup and brings the owning condition window back.
+    -- @param widget table  The popup widget to release.
+    --
+    -- Does nothing more when the picker is not inside a condition window (top is nil); the window is resumed through
+    -- its rmResumeFromChild when it has one, otherwise re-laid out and shown while the owner is alive.
+    local function closePopup(widget)
+        addon:ReleaseConditionWidget(widget)
+
+        if top then
+            if type(top.rmResumeFromChild) == 'function' then
+                top.rmResumeFromChild()
+            elseif ownerAlive() then
+                addon.LayoutConditionFrame(top)
+                top:Show()
+            end
+        end
+    end
+
     item_group:SetLayout("Table")
     item_group:SetUserData("table", { columns = { 44, 1, 24 } })
 
-    local itemIcon = AceGUI:Create("Icon")
+    local itemIcon = addon:CreateConditionIcon()
+
+    -- Refreshes the icon with the first item of the saved item set or item list, or clears it when there is none.
     local update_action_image = function()
         if value.item ~= nil then
             if type(value.item) == "string" then
-                local itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(value.item)
+                local itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(
+                    value.item
+                )
+
                 addon:UpdateItem_ID_Image(itemid, nil, itemIcon)
-            elseif value.item ~= nil and #value.item > 0 then
-                local itemid = addon:FindFirstItemOfItems({}, value.item, true) or addon:FindFirstItemInItems(value.item)
+            elseif #value.item > 0 then
+                local itemid = addon:FindFirstItemOfItems({}, value.item, true) or addon:FindFirstItemInItems(
+                    value.item
+                )
+
                 addon:UpdateItem_ID_Image(itemid, nil, itemIcon)
+            else
+                addon:UpdateItem_ID_Image(nil, nil, itemIcon)
             end
         else
-            itemIcon:SetImage(nil)
+            addon:UpdateItem_ID_Image(nil, nil, itemIcon)
         end
     end
+
     update_action_image()
     itemIcon:SetImageSize(36, 36)
+
     itemIcon:SetCallback("OnEnter", function()
         local itemid
+
         if type(value.item) == "string" then
             itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(value.item)
         else
             itemid = addon:FindFirstItemOfItems({}, value.item, true) or addon:FindFirstItemInItems(value.item)
         end
+
         if itemid then
             GameTooltip:SetOwner(itemIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
             GameTooltip:SetHyperlink("item:" .. itemid)
         end
     end)
+
     itemIcon:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(itemIcon.frame) then
             GameTooltip:Hide()
         end
     end)
+
     itemIcon:SetDisabled(value.disabled)
     item_group:AddChild(itemIcon)
 
-    local edit_button = AceGUI:Create("Icon")
+    local edit_button = addon:CreateConditionIcon()
 
-    local item = AceGUI:Create("Dropdown")
+    local item = addon:CreateConditionDropdown()
     item:SetFullWidth(true)
     item:SetLabel(L["Item Set"])
+
+    -- Handles a choice in the item set dropdown: saves the chosen set name in value.item, an empty list for Custom, or
+    -- nil for no choice; enables or disables the edit button to match, refreshes the icon and calls update().
+    -- @param _ table  The dropdown widget; unused.
+    -- @param _ string  The event name; unused.
+    -- @param val string|nil  The chosen item set name, "" for Custom, or nil when nothing is chosen.
     item:SetCallback("OnValueChanged", function(_, _, val)
         if val ~= nil then
             if val == "" then
@@ -263,6 +463,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             else
                 value.item = val
             end
+
             edit_button:SetDisabled(false)
             edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
         else
@@ -270,13 +471,18 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             edit_button:SetDisabled(true)
             edit_button:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Large-Disabled")
         end
+
         update_action_image()
         update()
     end)
+
     item:SetDisabled(value.disabled)
+
+    -- Fills the dropdown with the item set list and selects the saved item set (or Custom for an item list).
     item.configure = function()
         local selects, sorted = addon:get_item_list(L["Custom"])
         item:SetList(selects, sorted)
+
         if value.item then
             if type(value.item) == "string" then
                 item:SetValue(value.item)
@@ -285,12 +491,14 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             end
         end
     end
+
     item_group:AddChild(item)
 
     edit_button:SetImageSize(24, 24)
     edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
     edit_button:SetUserData("cell", { alignV = "bottom" })
     addon.AddTooltip(edit_button, EDIT)
+
     if value.item == nil or value.disabled then
         edit_button:SetDisabled(true)
         edit_button:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Large-Disabled")
@@ -298,17 +506,37 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
         edit_button:SetDisabled(false)
         edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
     end
+
     edit_button:SetUserData("cell", { alignV = "bottom" })
+
+    -- Handles a click on the edit button: hides the owning condition window and opens the item list popup for the
+    -- chosen item set (profile sets before global ones) or for the custom item list. Does nothing when the owner is
+    -- gone.
     edit_button:SetCallback("OnClick", function()
+        if not ownerAlive() then
+            return
+        end
+
+        -- Refreshes the icon and any bound button after the popup edited the items, then calls update().
+        --
+        -- Does nothing when the owner is no longer alive.
         local edit_callback = function()
+            if not ownerAlive() then
+                return
+            end
+
             update_action_image()
+
             if type(value.item) == "string" then
                 addon:UpdateBoundButton(value.item)
             end
+
             update()
         end
+
         if type(value.item) == "string" then
             local itemset
+
             if itemsets[value.item] ~= nil then
                 itemset = itemsets[value.item]
             elseif global_itemsets[value.item] ~= nil then
@@ -320,91 +548,144 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
                     top:SetCallback("OnClose", function() end)
                     top:Hide()
                 end
-                addon:item_list_popup(itemset.name, editbox, itemset.items, isvalid, edit_callback, top and function(widget)
-                    AceGUI:Release(widget)
-                    addon.LayoutConditionFrame(top)
-                    top:Show()
-                end)
+
+                local selected, expected, items = value.item, itemset, itemset.items
+
+                -- True while the item set the popup is editing is still the live one.
+                -- @return boolean  True when the owner is alive, the selected item set and its items table are
+                --     unchanged, and the stored entry is the same table.
+                local function current()
+                    if not ownerAlive() or value.item ~= selected or expected.items ~= items then
+                        return false
+                    end
+
+                    local personal = addon.db.profile.itemsets
+                    local shared = addon.db.global.itemsets
+                    local entry = type(personal) == 'table' and personal[selected]
+
+                    if entry == nil then
+                        entry = type(shared) == 'table' and shared[selected]
+                    end
+
+                    return entry == expected
+                end
+
+                addon:item_list_popup(itemset.name, editbox, items, isvalid, edit_callback, top and closePopup or nil, {
+                    valid = current,
+                })
             end
         else
             if top then
                 top:SetCallback("OnClose", function() end)
                 top:Hide()
             end
-            addon:item_list_popup(L["Custom"], editbox, value.item, isvalid, edit_callback, top and function(widget)
-                AceGUI:Release(widget)
-                addon.LayoutConditionFrame(top)
-                top:Show()
-            end)
+
+            local items = value.item
+
+            addon:item_list_popup(L["Custom"], editbox, items, isvalid, edit_callback, top and closePopup or nil, {
+                valid = function() return ownerAlive() and value.item == items end,
+            })
         end
     end)
+
     item_group:AddChild(edit_button)
 
     return item_group
 end
 
+-- Builds the single item picker: an icon box and a name edit box that write one item ID or name to value.item.
+-- @param spec any  The editing context, stored as the edit box's "spec" user data.
+-- @param editbox string  The kind of edit box to create (for example "Glyph_EditBox").
+-- @param value table  The saved condition fields; item and disabled are read and item is written.
+-- @param isvalid function  Called as isvalid(item) to accept or reject an item ID or typed text; returns a boolean.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @return table  The condition group holding the icon and the edit box.
 function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
-    local item_group = AceGUI:Create("SimpleGroup")
+    local item_group = addon:CreateConditionGroup()
     item_group:SetLayout("Table")
 
     item_group:SetUserData("table", { columns = { 44, 1 } })
 
-    local item = AceGUI:Create(editbox)
-    local itemIcon = AceGUI:Create("ActionSlotItem")
+    local item = addon:CreateItemEditBox(editbox, value.item)
+    local itemIcon = addon:CreateItemActionIcon(value.item, isvalid)
     itemIcon:SetWidth(44)
     itemIcon:SetHeight(44)
-    itemIcon.text:Hide()
+
+    -- Handles Enter in the icon box: stores the typed item ID in value.item, or clears it when the text is not a valid
+    -- item ID. Then refreshes the name box and calls update().
+    -- @param _ table  The icon widget; unused.
+    -- @param _ string  The event name; unused.
+    -- @param v any  The typed text, read as an item ID.
     itemIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
-        if isvalid(v) then
+
+        if v and isvalid(v) then
             value.item = v
+
             if GameTooltip:IsOwned(itemIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("item:" .. v)
             end
         else
             value.item = nil
+
             if GameTooltip:IsOwned(itemIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:Hide()
             end
         end
-        addon:UpdateItem_Name_ID(v, item, itemIcon)
+
+        addon:UpdateItem_Name_ID(value.item, item, itemIcon)
         update()
     end)
+
     itemIcon:SetCallback("OnEnter", function()
         if value.item then
-            local itemid = addon.getRetryCached(addon.longtermCache, GetItemInfoInstant, value.item)
+            local itemid = addon.Platform:GetItemID(value.item)
+
             if itemid then
                 GameTooltip:SetOwner(itemIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
                 GameTooltip:SetHyperlink("item:" .. itemid)
             end
         end
     end)
+
     itemIcon:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(itemIcon.frame) then
             GameTooltip:Hide()
         end
     end)
+
     itemIcon:SetDisabled(value.disabled)
     item_group:AddChild(itemIcon)
 
     item:SetFullWidth(true)
     item:SetLabel(L["Item"])
     item:SetUserData("spec", spec)
+
+    -- Handles Enter in the name box: resolves the typed item name or ID and stores it in value.item, or clears it when
+    -- it is not valid. Then refreshes the icon and calls update().
+    -- @param _ table  The edit box widget; unused.
+    -- @param _ string  The event name; unused.
+    -- @param v any  The typed item name or ID.
     item:SetCallback("OnEnterPressed", function(_, _, v)
         local itemid
-        if not addon.isint(v) then
-            itemid = addon.getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
+
+        if not addon.Functions.values.isint(v) then
+            itemid = addon.Platform:GetItemID(v)
         else
             itemid = tonumber(v)
         end
+
         if isvalid(itemid or v) then
             value.item = itemid or v
         else
             value.item = nil
         end
+
         addon:UpdateItem_Name_ID(value.item, item, itemIcon)
         update()
     end)
+
     item:SetDisabled(value.disabled)
     item_group:AddChild(item)
 
@@ -413,91 +694,135 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     return item_group
 end
 
+-- ============================================================================
+-- Operator widgets
+-- ============================================================================
+
+-- Builds an operator dropdown plus a numeric edit box.
+-- @param value table  The saved condition fields; the operator and number fields are read and written.
+-- @param name string  The label of the numeric edit box.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @param op_field string|nil  The value field that holds the operator; nil means "operator".
+-- @param val_field string|nil  The value field that holds the number; nil means "value".
+-- @return table  The condition group, which has a Refresh() function for callers that fill the fields themselves.
 function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
-    local operator_group = AceGUI:Create("SimpleGroup")
+    local operator_group = addon:CreateConditionGroup()
     operator_group:SetLayout("Table")
     operator_group:SetUserData("table", { columns = { 0, 75 } })
 
-    local operator = AceGUI:Create("Dropdown")
+    local operator = addon:CreateConditionDropdown()
     operator:SetFullWidth(true)
     operator:SetLabel(L["Operator"])
+
     operator:SetCallback("OnValueChanged", function(_, _, v)
         value[op_field or "operator"] = v
         update()
     end)
+
     operator:SetDisabled(value.disabled)
+
+    -- Fills the operator dropdown with the comparison operators and selects the saved one.
     operator.configure = function()
-        operator:SetList(addon.operators, addon.keys(addon.operators))
+        operator:SetList(addon.operators, addon.Functions.collections.keys(addon.operators))
         operator:SetValue(value[op_field or "operator"])
     end
+
     operator_group:AddChild(operator)
 
-    local edit = AceGUI:Create("EditBox")
+    local edit = addon:CreateConditionEditBox()
     edit:SetFullWidth(true)
     edit:SetLabel(name)
     edit:SetText(value[val_field or "value"])
+
     edit:SetCallback("OnEnterPressed", function(_, _, v)
         value[val_field or "value"] = tonumber(v)
         update()
     end)
+
     edit:SetDisabled(value.disabled)
     operator_group:AddChild(edit)
+
+    -- Redraws the operator dropdown and the number box from the saved fields.
+    --
+    -- A caller that fills in the operator and value itself (picking a talent supplies a default comparison) shows them
+    -- with this.
+    operator_group.Refresh = function()
+        operator.configure()
+        edit:SetText(value[val_field or "value"])
+    end
 
     return operator_group
 end
 
+-- Builds an operator dropdown plus a 0 to 100 percent slider, stored as a 0 to 1 fraction.
+-- @param value table  The saved condition fields; the operator and fraction fields are read and written.
+-- @param name string  The label of the slider.
+-- @param update function  Called with no arguments after every change so the caller re-validates and re-prints the
+--     condition.
+-- @param op_field string|nil  The value field that holds the operator; nil means "operator".
+-- @param val_field string|nil  The value field that holds the fraction; nil means "value".
+-- @return table  The condition group holding the dropdown and the slider.
 function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_field)
-    local operator_group = AceGUI:Create("SimpleGroup")
+    local operator_group = addon:CreateConditionGroup()
     operator_group:SetLayout("Table")
     operator_group:SetUserData("table", { columns = { 0, 150 } })
 
-    local operator = AceGUI:Create("Dropdown")
+    local operator = addon:CreateConditionDropdown()
     operator:SetFullWidth(true)
     operator:SetLabel(L["Operator"])
+
     operator:SetCallback("OnValueChanged", function(_, _, v)
         value[op_field or "operator"] = v
         update()
     end)
+
     operator:SetDisabled(value.disabled)
+
+    -- Fills the operator dropdown with the comparison operators and selects the saved one.
     operator.configure = function()
-        operator:SetList(addon.operators, addon.keys(addon.operators))
+        operator:SetList(addon.operators, addon.Functions.collections.keys(addon.operators))
         operator:SetValue(value[op_field or "operator"])
     end
+
     operator_group:AddChild(operator)
 
-    local edit = AceGUI:Create("Slider")
+    local edit = addon:CreateConditionSlider()
     edit:SetFullWidth(true)
     edit:SetLabel(name)
+
     if (value[val_field or "value"] ~= nil) then
         edit:SetValue(value[val_field or "value"])
     end
+
     edit:SetSliderValues(0, 1, 0.01)
     edit:SetIsPercent(true)
+
     edit:SetCallback("OnValueChanged", function(_, _, v)
         value[val_field or "value"] = tonumber(v)
         update()
     end)
+
     edit:SetDisabled(value.disabled)
     operator_group:AddChild(edit)
 
     return operator_group
 end
 
-function addon:Widget_UnitWidget(value, units, update, field)
-    if field == nil then
-        field = "unit"
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="RANK_TIP" then return RANK_TIP end
+        if name=="SpellData" then return SpellData end
+        if name=="Widget_GetSpellId" then return addon.Widget_GetSpellId end
+        if name=="Widget_SpellWidget" then return addon.Widget_SpellWidget end
+        if name=="Widget_UnitWidget" then return addon.Widget_UnitWidget end
     end
-    local unit = AceGUI:Create("Dropdown")
-    unit:SetLabel(L["Unit"])
-    unit:SetCallback("OnValueChanged", function(_, _, v)
-        value[field] = v
-        update()
-    end)
-    unit:SetDisabled(value.disabled)
-    unit.configure = function()
-        unit:SetList(units, addon.keys(units))
-        unit:SetValue(value[field])
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/common.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/common.lua"]=sourceGetter
     end
-
-    return unit
 end
+-- END GENERATED RM SOURCE BINDINGS

@@ -1,0 +1,30 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Retail (Midnight 12.x) Blood Death Knight, Blizzard Assisted (recommended): the rotation is
+-- Blizzard's Assisted Combat suggestion, the one rotation input an addon can still read in combat.
+-- Around it, highlights for what Assisted Combat leaves to you: Vampiric Blood, Raise Dead, Mind
+-- Freeze, Icebound Fortitude and racial cooldowns.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood',revision=6,
+ blocks={['retail.deathknight.boundaries']=3,['retail.deathknight.utility']=2},
+ applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT'},
+ tags={'blood','tank','assisted-combat'},
+ sources={
+  {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/assisted_combat/deathknight_blood.simc',title='SimulationCraft model of Blizzard Assisted Combat: Blood',reviewedAt='2026-10-23',revision='c5fea93f',notes='Its cooldowns list (Vampiric Blood, Raise Dead, racials) is what Assisted Combat leaves out.'},
+  {url='https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua',title='Blizzard API documentation: C_AssistedCombat (12.1.5.70529)',reviewedAt='2026-10-23',revision='e7aa82019d'},
+  {url='https://github.com/kaminaris/MaxDps-DeathKnight',title='MaxDps Death Knight (Midnight)',reviewedAt='2026-10-23',revision='95faf1ba',notes='Assisted Combat spell plus interrupt, defensive and cooldown glows.'},
+ },
+ body={priority=20,specs={250},
+  cooldowns={
+   BuiltinConditions.block('blood-utility','retail.deathknight.utility','blood-'),
+   BuiltinConditions.spell('blood-vampiric-blood',55233,BuiltinConditions.combat()),
+   BuiltinConditions.spell('blood-raise-dead',46585,BuiltinConditions.combat()),
+  },
+  rotation={
+   BuiltinConditions.block('blood-boundaries','retail.deathknight.boundaries','blood-'),
+   {id='blood-assisted',type='assisted',conditions={}},
+  },
+ },
+}))

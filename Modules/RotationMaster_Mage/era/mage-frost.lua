@@ -1,0 +1,60 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Classic Era Mage Frost, levels 1–60, and the Mage default (lowest priority): Frost and Arcane
+-- builds play Frostbolt, as every Era source has them do. Fireball until Frostbolt (level 4);
+-- Frost Nova when a mob reaches you; Arcane Missiles in melee with Improved Arcane Missiles;
+-- Cone of Cold, Arcane Explosion and Blizzard when three or more enemies are engaged; Fire Blast
+-- and the wand finish ordinary mobs. Blink, kiting, Polymorph and Ice Block stay with the player.
+-- Optional (disabled): the Shatter Flamestrike and rank-1 Frostbolt to stack Winter's Chill.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function near(n)return{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=n}end
+local function talent(tree,index,v)return{type='TALENT',layout='tree',tree=tree,talent=index,operator='GREATERTHANOREQUALS',value=v or 1}end
+local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
+local P='mage-frost-'
+local onMe={type='THREAT',unit='target',threat=3}
+local frozen={type='DEBUFF',unit='target',spell=122,anyrank=true}
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.frost',revision=5,
+ blocks={['era.mage.boundaries']=3,['era.mage.frostbolt']=1,['era.mage.moving']=2,['era.mage.nova']=1,['era.mage.execute']=2,
+  ['era.mage.wand-finish']=2,['era.mage.armor']=1,['era.mage.upkeep']=1},
+ applicability={families={'era'},actionContext='player',class='MAGE'},
+ tags={'frost','arcane','leveling','raid','single-target','aoe'},
+ sources={
+  {url='https://www.icy-veins.com/wow-classic/mage-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Mage DPS rotation',reviewedAt='2026-10-23',revision='2024-11-17'},
+  {url='https://www.icy-veins.com/wow-classic/single-target-frost-mage-leveling-talent-build-from-1-to-60',title='Icy Veins: single-target Frost Mage leveling',reviewedAt='2026-10-23',revision='2026-07-18'},
+  {url='https://www.icy-veins.com/wow-classic/arcane-mage-leveling-talent-build-from-1-to-60',title='Icy Veins: Arcane Mage leveling',reviewedAt='2026-10-23',revision='2026-07-18'},
+  {url='https://www.wowhead.com/classic/guide/classes/mage/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Mage DPS rotation',reviewedAt='2026-10-23',revision='2025-03-20'},
+  {url='https://www.wowhead.com/classic/guide/classes/mage/frost/leveling-tips',title='Wowhead: Classic Frost Mage leveling',reviewedAt='2026-10-23',revision='2024-11-18'},
+  {url='https://www.wowhead.com/classic/guide/classes/mage/arcane/leveling-tips',title='Wowhead: Classic Arcane Mage leveling',reviewedAt='2026-10-23',revision='2024-11-20'},
+  {url='https://www.warcrafttavern.com/wow-classic/guides/pve-frost-mage-rotations-cooldowns/',title='Warcraft Tavern: Classic Frost Mage PvE',reviewedAt='2026-10-23'},
+  {url='https://www.warcrafttavern.com/wow-classic/guides/pve-arcane-mage-rotations-cooldowns/',title='Warcraft Tavern: Classic Arcane Mage PvE',reviewedAt='2026-10-23'},
+  {url='https://www.warcrafttavern.com/wow-classic/guides/mage-leveling-guide/',title='Warcraft Tavern: Classic Mage leveling',reviewedAt='2026-10-23'},
+  {url='https://github.com/kaminaris/MaxDps-Mage/tree/886c8e27f48e38e0f9b8c22cf56b5e625dfce3f0/Specialization/Classic',title='MaxDps-Mage Classic Frost and Arcane modules',reviewedAt='2026-10-23',revision='886c8e2'},
+
+ },
+ body={
+  priority=1,
+  cooldowns={BuiltinConditions.block(P..'armor','era.mage.armor',P),BuiltinConditions.block(P..'upkeep','era.mage.upkeep',P)},
+  rotation={
+   BuiltinConditions.block(P..'boundaries','era.mage.boundaries',P),
+   {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
+    BuiltinConditions.block(P..'pull-filler','era.mage.frostbolt',P..'pull-'),stop(P..'pull-stop')}},
+   BuiltinConditions.block(P..'moving','era.mage.moving',P),
+   BuiltinConditions.block(P..'nova','era.mage.nova',P),
+   -- Arcane leveling: channel Missiles once an enemy reaches you (Improved Arcane Missiles stops pushback).
+   BuiltinConditions.spell(P..'arcane-missiles',5143,BuiltinConditions.all(talent(1,3,3),near(1),onMe)),
+   {id=P..'aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
+    BuiltinConditions.spell(P..'aoe-cone',120,near(2)),
+    BuiltinConditions.spell(P..'aoe-explosion',1449,near(3)),
+    {id=P..'aoe-shatter-flamestrike',type='spell',action=2120,ranked=false,disabled=true,conditions=BuiltinConditions.all(frozen,talent(3,13))},
+    BuiltinConditions.spell(P..'aoe-blizzard',10)}},
+   BuiltinConditions.block(P..'execute','era.mage.execute',P),
+   -- Optional raid opener: rank-1 Frostbolt stacks Winter's Chill cheaply to five.
+   {id=P..'winters-chill',type='spell',action=116,ranked=true,disabled=true,conditions=BuiltinConditions.all(talent(3,16),
+    BuiltinConditions.negate({type='DEBUFF_STACKS',unit='target',spell=12579,operator='GREATERTHANOREQUALS',value=5}))},
+   BuiltinConditions.block(P..'filler','era.mage.frostbolt',P),
+   BuiltinConditions.block(P..'finish','era.mage.wand-finish',P),
+  },
+ },
+}))

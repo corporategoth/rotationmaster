@@ -1,0 +1,22 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+## Interface: 11509
+## Title: Rotation Master - Warrior
+## Notes: Rotation Master's Built In Warrior rotations. Rotation Master loads this itself, only for a Warrior, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT + Attribution
+
+bind.lua
+locales.xml
+era/blocks.lua
+era/warrior-protection.lua
+era/warrior-protection-icyveins.lua
+era/warrior-dps.lua
+era/sod-warrior-tank.lua
+era/sod-warrior-dps.lua
+era/sod-warrior-dps-wowhead.lua
+era/sod-warrior-dps-icyveins.lua

@@ -1,0 +1,64 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- WoW Forever ranged Hunter (Beast Mastery, Marksmanship, and Survival before Strider Kick),
+-- levels 1–60; the Hunter catch-all (lowest priority). Wowhead's level-30 Hawk cycle: Hunter's Mark,
+-- own Serpent Sting, Summon Hawk, Summon Hawk, Arcane Shot on their shared cooldown, Aimed Shot
+-- (Multi-Shot on two or more enemies, as they share a cooldown). Sniper Shot while Rapid Killing
+-- lasts or on elites; Explosive Trap and Volley on packs. Uses no mana or health reading: Forever
+-- hides both, so Hunter's Mark and Serpent Sting go on every target. Pet commands stay with the
+-- player.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function enemies(n)return{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=n}end
+local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
+local elite=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
+local arcaneTurn=BuiltinConditions.all({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN',value=7},
+ BuiltinConditions.negate({type='SPELL_HISTORY_TIME',spell=3044,operator='LESSTHAN',value=17}))
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=6,
+ blocks={['forever.hunter.boundaries']=4,['forever.hunter.deadzone']=3,['forever.hunter.pull']=3,['forever.hunter.moving']=2,
+  ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=2,['forever.hunter.burst']=1},
+ applicability={families={'forever'},actionContext='player',class='HUNTER'},
+ tags={'beast-mastery','marksmanship','ranged','leveling','single-target','aoe','wowhead'},
+ sources={
+  {url='https://www.wowhead.com/forever/guide/classes/hunter/beast-mastery/level-30-dps-overview',title='Wowhead: Forever level 30 Beast Mastery Hunter',reviewedAt='2026-10-23',revision='2026-10-11'},
+  {url='https://www.wowhead.com/forever/guide/classes/hunter/marksmanship/level-30-dps-overview',title='Wowhead: Forever level 30 Marksmanship Hunter',reviewedAt='2026-10-23',revision='2026-10-11'},
+  {url='https://www.icy-veins.com/wow-forever/beast-mastery-hunter-ranged-dps-pve-guide',title='Icy Veins: Forever Beast Mastery Hunter PvE',reviewedAt='2026-10-23',revision='2026-10-17',notes='Explosive Trap, Volley and elite-only cooldowns.'},
+  {url='https://www.icy-veins.com/wow-forever/marksmanship-hunter-leveling',title='Icy Veins: Forever Marksmanship Hunter leveling',reviewedAt='2026-10-23',revision='2026-10-17',notes='Sniper Shot under Rapid Killing.'},
+  {url='https://worldofwarcraft.blizzard.com/en-us/news/24301515',title='Blizzard: Forever class deep dive, Hunter and Druid',reviewedAt='2026-10-23',revision='2026-09-30',notes='Shared cooldowns and talents; no priority.'},
+  {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/hunter.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and cooldown categories only.'},
+ },
+ body={priority=10,
+  cooldowns={
+   BuiltinConditions.block('ranged-aspects','forever.hunter.aspects-ranged','ranged-'),
+   BuiltinConditions.spell('ranged-trueshot-aura',1299346,BuiltinConditions.negate({type='BUFF',unit='player',spell=1299346,anyrank=true})),
+   BuiltinConditions.block('ranged-pet-care','forever.hunter.pet-care','ranged-'),
+   BuiltinConditions.block('ranged-burst','forever.hunter.burst','ranged-'),
+   BuiltinConditions.spell('ranged-intimidation',19577,BuiltinConditions.all(BuiltinConditions.combat(),{type='THREAT',unit='target',threat=3})),
+   {id='ranged-feign-death',type='spell',action=5384,ranked=false,disabled=true,conditions=BuiltinConditions.all(BuiltinConditions.combat(),{type='GROUP'},{type='THREAT',unit='target',threat=3})},
+  },
+  rotation={
+   BuiltinConditions.block('ranged-boundaries','forever.hunter.boundaries','ranged-'),
+   BuiltinConditions.block('ranged-deadzone','forever.hunter.deadzone','ranged-'),
+   BuiltinConditions.block('ranged-pull','forever.hunter.pull','ranged-'),
+   -- Optional (off): solo, hold shots until the pet has the mob's attention.
+   {id='ranged-pet-threat',type='stop',suppress_attack=true,disabled=true,conditions=BuiltinConditions.all({type='PET'},BuiltinConditions.negate({type='GROUP'}),
+    BuiltinConditions.negate({type='ISSAME',unit='targettarget',otherunit='pet'}),{type='TIME_IN_COMBAT',operator='LESSTHAN',value=2})},
+   BuiltinConditions.block('ranged-moving','forever.hunter.moving','ranged-'),
+   BuiltinConditions.spell('ranged-auto-shot',75,BuiltinConditions.negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})),
+   BuiltinConditions.spell('ranged-mark',1130,BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1130,anyrank=true})),
+   {id='ranged-aoe',type='branch',conditions=engaged(2),onFalse={},onTrue={
+    BuiltinConditions.spell('ranged-explosive-trap',13813,enemies(3)),
+    BuiltinConditions.spell('ranged-aoe-hawk',1293241,BuiltinConditions.negate(arcaneTurn)),
+    BuiltinConditions.spell('ranged-multi-shot',2643),
+    BuiltinConditions.spell('ranged-volley',1510,engaged(5))}},
+   BuiltinConditions.spell('ranged-serpent-sting',1978,BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
+    BuiltinConditions.negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}))),
+   BuiltinConditions.spell('ranged-hawk',1293241,BuiltinConditions.negate(arcaneTurn)),
+   BuiltinConditions.spell('ranged-arcane-shot',3044,BuiltinConditions.any(BuiltinConditions.negate({type='SPELL_KNOWN',spell=1293241}),arcaneTurn)),
+   BuiltinConditions.spell('ranged-sniper-shot',1310687,BuiltinConditions.any({type='BUFF',unit='player',spell=415407},elite)),
+   BuiltinConditions.spell('ranged-aimed-shot',19434),
+   BuiltinConditions.stop('ranged-done'),
+  },
+ },
+}))

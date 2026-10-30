@@ -1,0 +1,51 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Season of Discovery Druid Restoration: chosen when Lifebloom is engraved, or Restoration is the
+-- primary tree with no other legs rune. After Icy Veins (Warcraft Tavern for the procs): acts on the
+-- current friendly target. Instant Healing Touch on Nature's Swiftness or Fury of Stormrage, Wild
+-- Growth on a hurt group, Swiftmend for Efflorescence or an emergency, three Lifebloom stacks,
+-- Rejuvenation, Regrowth, Nourish, rank 4 Healing Touch. Tree of Life and Survival Instincts are
+-- reminders for heavy moments. On an enemy: Sunfire, Moonfire, Wrath.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
+local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,ownbuff=true}end
+local function hp(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
+local function hurt(health,count)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=30,healthoperator='LESSTHAN',health=health,operator='GREATERTHANOREQUALS',value=count}end
+local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.restoration',revision=6,
+ blocks={['era.druid.boundaries']=4,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=2},
+ applicability={families={'era'},actionContext='player',class='DRUID',rulesets={'season:2'}},
+ tags={'season-of-discovery','leveling','endgame','restoration','healer','group','icy-veins','warcraft-tavern'},
+ sources={
+  {url='https://www.icy-veins.com/wow-classic/restoration-druid-healer-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Restoration Druid rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
+  {url='https://www.warcrafttavern.com/wow-classic-sod/guides/druid-healer/',title='Warcraft Tavern: SoD Druid healer (Phase 4)',reviewedAt='2026-10-23'},
+ },
+ body={priority=130,switch=BuiltinConditions.any(rune(409824),BuiltinConditions.all(BuiltinConditions.negate(rune(407988)),BuiltinConditions.negate(rune(417157)),{type='PRIMARY_TALENT_TREE',tree=3})),
+  cooldowns={
+   BuiltinConditions.block('sod-resto-upkeep','era.druid.upkeep','sod-resto-'),BuiltinConditions.block('sod-resto-cooldowns','era.druid.heal-cooldowns','sod-resto-'),
+   spell('sod-resto-tree-of-life',439733,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(BuiltinConditions.ownBuff(439733)),hurt(.7,3)),true),
+   spell('sod-resto-survival-instincts',408024,BuiltinConditions.all(BuiltinConditions.combat(),hurt(.8,2)),true),
+   spell('sod-resto-revive',437138,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.combat()),{type='FRIENDLY',unit='target'},{type='DEAD',unit='target'}),true),
+  },
+  rotation={
+   BuiltinConditions.block('sod-resto-boundaries','era.druid.boundaries','sod-resto-'),
+   {id='sod-resto-feral-form',type='stop',conditions=BuiltinConditions.any(BuiltinConditions.form(768),BuiltinConditions.form(5487),BuiltinConditions.form(9634))},
+   {id='sod-resto-heal',type='branch',conditions=BuiltinConditions.all({type='FRIENDLY',unit='target'},BuiltinConditions.negate({type='DEAD',unit='target'})),onFalse={},onTrue={
+    spell('sod-resto-instant-touch',5185,BuiltinConditions.any(BuiltinConditions.ownBuff(17116),{type='BUFF',unit='player',spell=414800,anyrank=true})),
+    spell('sod-resto-wild-growth',408120,hurt(.9,2),true),
+    spell('sod-resto-swiftmend',18562,BuiltinConditions.all(BuiltinConditions.any(hot(774),hot(8936)),BuiltinConditions.any(hurt(.9,3),hp(.4)))),
+    spell('sod-resto-lifebloom',408124,BuiltinConditions.all(BuiltinConditions.any(BuiltinConditions.negate(hot(408124)),{type='BUFF_STACKS',unit='target',spell=408124,anyrank=true,ownbuff=true,operator='LESSTHAN',value=3},
+     {type='BUFF_REMAIN',unit='target',spell=408124,anyrank=true,ownbuff=true,operator='LESSTHANOREQUALS',value=1}),BuiltinConditions.any(BuiltinConditions.combat(),hp(.98))),true),
+    spell('sod-resto-rejuvenation',774,BuiltinConditions.all(BuiltinConditions.negate(hot(774)),hp(.9))),
+    spell('sod-resto-regrowth',8936,BuiltinConditions.all(BuiltinConditions.negate(hot(8936)),hp(.6))),
+    spell('sod-resto-nourish',408247,hp(.85),true),
+    spell('sod-resto-touch-rank4',5188,hp(.85),true),
+    spell('sod-resto-touch',5185,hp(.85)),
+    {id='sod-resto-heal-stop',type='stop',suppress_attack=true,conditions={}}}},
+   BuiltinConditions.block('sod-resto-damage','era.druid.resto-damage','sod-resto-enemy-'),
+   {id='sod-resto-stop',type='stop',suppress_attack=true,conditions={}},
+  },
+ },
+}))

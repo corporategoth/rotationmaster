@@ -1,0 +1,21 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+## Interface: 50504
+## Title: Rotation Master - Priest
+## Notes: Rotation Master's Built In Priest rotations. Rotation Master loads this itself, only for a Priest, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT + Attribution
+
+bind.lua
+locales.xml
+mop/blocks.lua
+mop/priest-shadow.lua
+mop/priest-shadow-warcrafttavern.lua
+mop/priest-discipline.lua
+mop/priest-holy.lua
+mop/priest-holy-icyveins.lua
+mop/priest-unspecialized.lua

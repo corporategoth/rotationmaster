@@ -1,0 +1,63 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Season of Discovery Rogue melee DPS, levels 1–60 (the recommended SoD premade and the SoD
+-- catch-all). simulator/sod Phase 6 presets with Icy Veins and Zockify Phase 8: on three engaged
+-- enemies Blunderbuss, Crimson Tempest and Fan of Knives first; Ambush on a Cutthroat proc; Saber
+-- Slash stacks kept; Poisoned Knife at four poison stacks; Slice and Dice from two points,
+-- refreshed from four in its last two seconds (not with Cut to the Chase, whose finishers refresh
+-- it); Expose Armor duty; with the Carnage rune a bleed (Crimson Tempest, else Rupture, none with
+-- Saber Slash); Envenom (Eviscerate before it is engraved) at five; builder by glove rune. Runes
+-- are read as engraved, passive ones too (Vanish for Master of Subtlety). Shared parts: era/blocks.lua.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
+local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
+local function owned(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
+local function stacks(id,n)return{type='DEBUFF_STACKS',unit='target',spell=id,anyrank=true,owndebuff=true,operator='GREATERTHANOREQUALS',value=n}end
+local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
+local sliced={type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}
+local big=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'})
+local lasting=BuiltinConditions.any(big,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.35})
+-- Four of your Occult Poison I/II or Deadly Poison stacks on the target.
+local poisoned=BuiltinConditions.any(stacks(458820,4),stacks(1214170,4),stacks(2818,4))
+-- Passive runes: Carnage (bleeds pay), Cut to the Chase (finishers refresh Slice and Dice).
+local carnage,chase=rune(432276),rune(432271)
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=6,
+ blocks={['era.rogue.boundaries']=3,['era.rogue.sod-opener']=4,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3,['era.rogue.expose-armor']=2},
+ applicability={families={'era'},actionContext='player',class='ROGUE',rulesets={'season:2'}},
+ tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','icy-veins','zockify'},
+ sources={
+ {url='https://www.icy-veins.com/wow-classic/assassination-rogue-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Assassination Rogue DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
+ {url='https://www.icy-veins.com/wow-classic/subtlety-rogue-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Subtlety Rogue DPS rotation (area damage)',reviewedAt='2026-10-23',revision='2025-04-08'},
+ {url='https://www.icy-veins.com/wow-classic/assassination-rogue-dps-season-of-discovery-leveling',title='Icy Veins: SoD Assassination Rogue leveling',reviewedAt='2026-10-23',revision='2025-04-08'},
+ {url='https://www.zockify.com/wowclassic/rogue/dps/',title='Zockify: SoD DPS Rogue (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-07'}},
+ body={priority=50,
+ cooldowns={block('era.rogue.sod-upkeep','rogue-')},
+ rotation={
+ block('era.rogue.boundaries','rogue-'),
+ {id='rogue-stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={block('era.rogue.sod-opener','rogue-stealth-')}},
+ {id='rogue-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
+  BuiltinConditions.spell('rogue-aoe-blunderbuss',436564),
+  BuiltinConditions.spell('rogue-aoe-crimson-tempest',412096,BuiltinConditions.all(points('GREATERTHANOREQUALS',3),BuiltinConditions.negate(owned(436611)))),
+  BuiltinConditions.spell('rogue-aoe-fan-of-knives',409240),
+ }},
+ BuiltinConditions.spell('rogue-cutthroat-ambush',8676,BuiltinConditions.all({type='WEAPON_TYPE',slot='mainhand',subclass=15},{type='BUFF',unit='player',spell=462707})),
+ BuiltinConditions.spell('rogue-saber-upkeep',424785,BuiltinConditions.all(points('LESSTHAN',4),BuiltinConditions.any(BuiltinConditions.negate(stacks(424785,3)),
+  {type='DEBUFF_REMAIN',unit='target',spell=424785,owndebuff=true,operator='LESSTHAN',value=2}))),
+ BuiltinConditions.spell('rogue-poisoned-knife',425012,BuiltinConditions.all(points('LESSTHAN',5),{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=80},poisoned)),
+ BuiltinConditions.spell('rogue-slice',5171,BuiltinConditions.all(points('GREATERTHANOREQUALS',2),BuiltinConditions.negate(sliced),lasting)),
+ block('era.rogue.expose-armor','rogue-'),
+ BuiltinConditions.spell('rogue-slice-refresh',5171,BuiltinConditions.all(points('GREATERTHANOREQUALS',4),BuiltinConditions.negate(chase),{type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=2})),
+ BuiltinConditions.spell('rogue-crimson-tempest',412096,BuiltinConditions.all(carnage,points('GREATERTHANOREQUALS',4),BuiltinConditions.negate(owned(436611)),lasting)),
+ BuiltinConditions.spell('rogue-rupture',1943,BuiltinConditions.all(carnage,points('GREATERTHANOREQUALS',3),BuiltinConditions.negate(rune(412096)),BuiltinConditions.negate(rune(424785)),BuiltinConditions.negate(owned(1943)),lasting)),
+ BuiltinConditions.spell('rogue-kill-envenom',399963,BuiltinConditions.all(points('GREATERTHANOREQUALS',3),BuiltinConditions.lifetime('LESSTHAN',4))),
+ BuiltinConditions.spell('rogue-kill-eviscerate',2098,BuiltinConditions.all(points('GREATERTHANOREQUALS',3),BuiltinConditions.negate(rune(399963)),BuiltinConditions.lifetime('LESSTHAN',4))),
+ {id='rogue-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
+  BuiltinConditions.spell('rogue-envenom',399963),
+  BuiltinConditions.spell('rogue-eviscerate',2098,BuiltinConditions.negate(rune(399963))),
+  {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
+ }},
+ block('era.rogue.sod-builders','rogue-'),
+ }},
+}))

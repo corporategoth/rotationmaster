@@ -1,0 +1,45 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Mists of Pandaria Classic Fire Mage, levels 10–90, in the Fire specialization (63).
+-- simulator' proc handling (Wowhead's Phase 5 page and Hekili agree): Pyroblast! at once unless
+-- Combustion is less than 5 s away, then pooled with Fireball until Heating Up; Inferno Blast on
+-- Heating Up; Fireball filler, Scorch on the move. Combustion right after a Pyroblast while Ignite and
+-- the Pyroblast DoT are up, because RM cannot read Ignite's size. Icy Veins' always-hold rule is
+-- rm.mop.mage.fire.icyveins.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
+local function off(id,action,conditions)local step=BuiltinConditions.spell(id,action,conditions);step.disabled=true;return step end
+local PYRO,HEAT,ALTER=48108,48107,110909
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.fire',revision=7,
+ blocks={['mop.mage.boundaries']=3,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1,['mop.mage.bombs']=1,['mop.mage.fire-open']=3,['mop.mage.fire-spend']=1,['mop.mage.fire-filler']=2},
+ applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE'},
+ tags={'fire','leveling','single-target','aoe','wowhead'},
+ sources={
+
+  {url='https://www.wowhead.com/mop-classic/guide/classes/mage/fire/dps-rotation-cooldowns-abilities-pve',title='Wowhead: MoP Classic Fire Mage rotation (Phase 5)',reviewedAt='2026-10-23',revision='2026-06-20'},
+  {url='https://github.com/Smufrik/Hekili/blob/0750b5dd98005481baf828cce26149b9abca875b/MistsOfPandaria/Priorities/MageFire.simc',title='Hekili (MoP Classic fork): Fire Mage priority',reviewedAt='2026-10-23',revision='0750b5dd98'},
+  {url='https://www.icy-veins.com/mists-of-pandaria-classic/fire-mage-pve-rotation-cooldowns-abilities',title='Icy Veins: MoP Classic Fire Mage rotation',reviewedAt='2026-10-23',revision='2025-06-17',notes='Inferno Blast spreading, AoE, talent rows.'},
+ },
+ body={priority=30,specs={63},switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+  cooldowns={
+   BuiltinConditions.block('fire-armor','mop.mage.armor-molten','fire-'),
+   BuiltinConditions.block('fire-upkeep','mop.mage.upkeep','fire-'),
+   {id='fire-mana-gem',type='item',action={36799,81901},conditions=BuiltinConditions.all(BuiltinConditions.combat(),mana('LESSTHAN',.84),BuiltinConditions.negate(BuiltinConditions.buff(ALTER)))},
+   BuiltinConditions.spell('fire-presence-of-mind',12043,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.negate(BuiltinConditions.buff(ALTER)),BuiltinConditions.negate(BuiltinConditions.buff(PYRO)))),
+   BuiltinConditions.spell('fire-alter-time',108978,BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.buff(PYRO),BuiltinConditions.buff(HEAT),BuiltinConditions.negate(BuiltinConditions.buff(ALTER)))),
+   off('fire-dragons-breath',31661,BuiltinConditions.all(BuiltinConditions.negate({type='GROUP'}),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2})),
+  },
+  rotation={
+   BuiltinConditions.block('fire-boundaries','mop.mage.boundaries','fire-'),
+   BuiltinConditions.block('fire-open','mop.mage.fire-open','fire-'),
+   BuiltinConditions.block('fire-bombs','mop.mage.bombs','fire-'),
+   BuiltinConditions.spell('fire-pyroblast-proc',11366,BuiltinConditions.all(BuiltinConditions.buff(PYRO),BuiltinConditions.any(BuiltinConditions.negate({type='SPELL_KNOWN',spell=11129}),{type='SPELL_COOLDOWN',spell=11129,operator='GREATERTHANOREQUALS',value=5},
+    BuiltinConditions.negate({type='DEBUFF',unit='target',spell=11366,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=11366,owndebuff=true,operator='LESSTHAN',value=2},{type='BUFF_REMAIN',unit='player',spell=PYRO,operator='LESSTHAN',value=3}))),
+   BuiltinConditions.block('fire-spend','mop.mage.fire-spend','fire-'),
+   BuiltinConditions.spell('fire-pyroblast-pooled',11366,BuiltinConditions.all(BuiltinConditions.buff(PYRO),BuiltinConditions.buff(HEAT))),
+   BuiltinConditions.block('fire-filler','mop.mage.fire-filler','fire-'),
+  },
+ },
+}))

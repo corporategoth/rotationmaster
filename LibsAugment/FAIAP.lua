@@ -33,6 +33,7 @@
 -- (The documentation IS the code)
 
 local lib = {}
+local defaultTabWidth = 2
 
 local stringlen = string.len
 local stringformat = string.format
@@ -954,7 +955,6 @@ function lib.padWithLinebreaks(code)
 
 end
 
-local defaultTabWidth = 2
 local defaultColorTable
 
 -- Data tables
@@ -1245,19 +1245,6 @@ defaultColorTable["not"] = logicColor2
 
 defaultColorTable[0] = "|r"
 
--- Add the edit box type.
-local AceGUI = LibStub("AceGUI-3.0")
-do
-	local Type = "LuaEditBox"
-	local Version = 1
-
-	-- I know theres a better way of doing this than this, but not sure for the time being, works fine though!
-	local function Constructor()
-		local self = AceGUI:Create("MultiLineEditBox")
-		self.editBox:SetScript("OnTextSet", nil)
-		lib.enable(self.editBox, nil, 4)
-		return self
-	end
-
-	AceGUI:RegisterWidgetType(Type, Constructor, Version)
-end
+-- Native controls share the same indentation engine without AceGUI layout.
+local _,rmAddon=...
+if type(rmAddon)=="table" then rmAddon.LuaSyntax=lib end

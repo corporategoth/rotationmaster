@@ -1,0 +1,40 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Classic Era Priest damage after Warcraft Tavern's wand economy, levels 1–60; same switch as
+-- rm.era.priest.dps at a lower priority, for players who pick it. Solo: Mind Blast opens, Shadow
+-- Word: Pain once per target, Mind Blast again only above 30% target health, and the wand between
+-- Mind Blasts instead of Smite or Mind Flay; no automatic shield before pulls (Tavern shields
+-- every other mob, which stays with you). In a group: Tavern's Shadow raid order, Pain, Mind
+-- Blast, Mind Flay.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
+local P='priest-wct-'
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=6,
+ blocks={['era.priest.dps-boundaries']=2,['era.priest.shadowform']=1,['era.priest.moving']=2,
+  ['era.priest.filler']=2,['era.priest.wand-fallback']=2,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1},
+ applicability={families={'era'},actionContext='player',class='PRIEST'},
+ tags={'shadow','damage','leveling','single-target','warcraft-tavern'},
+ sources={
+  {url='https://www.warcrafttavern.com/wow-classic/guides/priest-leveling-guide/',title='Warcraft Tavern: Classic Priest leveling',reviewedAt='2026-10-23'},
+  {url='https://www.warcrafttavern.com/wow-classic/guides/shadow-priest-pve/',title='Warcraft Tavern: Classic Shadow Priest PvE',reviewedAt='2026-10-23'},
+ },
+ body={
+  priority=5,disabled=true,
+  cooldowns={BuiltinConditions.block(P..'upkeep','era.priest.upkeep',P),BuiltinConditions.block(P..'dps-upkeep','era.priest.dps-upkeep',P)},
+  rotation={
+   BuiltinConditions.block(P..'boundaries','era.priest.dps-boundaries',P),
+   BuiltinConditions.block(P..'form','era.priest.shadowform',P),
+   {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
+    BuiltinConditions.spell(P..'pull-blast',8092),BuiltinConditions.spell(P..'pull-smite',585),BuiltinConditions.stop(P..'pull-stop')}},
+   BuiltinConditions.block(P..'moving','era.priest.moving',P),
+   BuiltinConditions.spell(P..'pain',589,BuiltinConditions.negate(own(589))),
+   BuiltinConditions.spell(P..'blast',8092,BuiltinConditions.any({type='GROUP'},{type='HEALTHPCT',unit='target',operator='GREATERTHANOREQUALS',value=.3})),
+   {id=P..'solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
+    BuiltinConditions.stop(P..'solo-wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),BuiltinConditions.spell(P..'solo-shoot',5019)}},
+   BuiltinConditions.block(P..'filler','era.priest.filler',P),
+   BuiltinConditions.block(P..'wand','era.priest.wand-fallback',P),
+  },
+ },
+}))

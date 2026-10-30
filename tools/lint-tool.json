@@ -1,0 +1,27 @@
+{
+  "name": "wowlua-ls",
+  "version": "0.35.0",
+  "source": "https://github.com/TradeSkillMaster/wowlua-ls",
+  "files": {
+    "linux-x86_64": {
+      "name": "wowlua_ls-x86_64-unknown-linux-gnu",
+      "url": "https://github.com/TradeSkillMaster/wowlua-ls/releases/download/v0.35.0/wowlua_ls-x86_64-unknown-linux-gnu",
+      "sha256": "564b012f2a3f1553385da4535dff5e2a7df05a0bc7d4acee27b4285f51f24162"
+    },
+    "darwin-x86_64": {
+      "name": "wowlua_ls-x86_64-apple-darwin",
+      "url": "https://github.com/TradeSkillMaster/wowlua-ls/releases/download/v0.35.0/wowlua_ls-x86_64-apple-darwin",
+      "sha256": "025cb5e5c8877e0cb443a4a89a6c667dba5f28bb102f9f2c1827cc22c7318c5c"
+    },
+    "darwin-aarch64": {
+      "name": "wowlua_ls-aarch64-apple-darwin",
+      "url": "https://github.com/TradeSkillMaster/wowlua-ls/releases/download/v0.35.0/wowlua_ls-aarch64-apple-darwin",
+      "sha256": "fac8699c86af88ec692cd6f2a26cca9f56f21687fef7a5076f7d274c205ed364"
+    },
+    "win32-x86_64": {
+      "name": "wowlua_ls-x86_64-pc-windows-msvc.exe",
+      "url": "https://github.com/TradeSkillMaster/wowlua-ls/releases/download/v0.35.0/wowlua_ls-x86_64-pc-windows-msvc.exe",
+      "sha256": "562d998d9ee59cfa039e7dbb9bbbcf7960fdf620e0df312687c514b4e45e9c3f"
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "_comment": "Text bundles: translations kept out of the main locale table because nothing reads them while the game is loading. Each is a load-on-demand add-on under Modules/ holding enUS.lua and the ten translations; Core/text_bundles.lua loads it the first time one of its keys is read. A key lives in exactly one catalog. tools/locales.py reads this file.",
+  "bundles": [
+    {
+      "id": "help",
+      "module": "RotationMaster_HelpText",
+      "title": "Help text",
+      "notes": "The Help articles and tooltips."
+    },
+    {
+      "id": "conditions",
+      "module": "RotationMaster_ConditionText",
+      "title": "Condition text",
+      "notes": "The wording of conditions: summaries, help and choices."
+    },
+    {
+      "id": "diagnostics",
+      "module": "RotationMaster_DiagnosticsText",
+      "title": "Diagnostics text",
+      "notes": "The performance, memory, analytics and error report windows and their commands."
+    },
+    {
+      "id": "integrations",
+      "module": "RotationMaster_IntegrationsText",
+      "title": "Integrations text",
+      "notes": "The Integrations page: addons Rotation Master can use and what each adds."
+    },
+    {
+      "id": "class-deathknight",
+      "module": "RotationMaster_DeathKnight",
+      "title": "DeathKnight Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-demonhunter",
+      "module": "RotationMaster_DemonHunter",
+      "title": "DemonHunter Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-druid",
+      "module": "RotationMaster_Druid",
+      "title": "Druid Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-evoker",
+      "module": "RotationMaster_Evoker",
+      "title": "Evoker Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-hunter",
+      "module": "RotationMaster_Hunter",
+      "title": "Hunter Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-mage",
+      "module": "RotationMaster_Mage",
+      "title": "Mage Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-monk",
+      "module": "RotationMaster_Monk",
+      "title": "Monk Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-paladin",
+      "module": "RotationMaster_Paladin",
+      "title": "Paladin Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-priest",
+      "module": "RotationMaster_Priest",
+      "title": "Priest Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-rogue",
+      "module": "RotationMaster_Rogue",
+      "title": "Rogue Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-shaman",
+      "module": "RotationMaster_Shaman",
+      "title": "Shaman Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-warlock",
+      "module": "RotationMaster_Warlock",
+      "title": "Warlock Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    },
+    {
+      "id": "class-warrior",
+      "module": "RotationMaster_Warrior",
+      "title": "Warrior Built In rotations",
+      "notes": "Names and descriptions of this class’s Built In rotations.",
+      "kind": "builtin"
+    }
+  ]
+}

@@ -1,0 +1,2945 @@
+{
+  "scope": "Heuristic long raw-string candidates, not a complete translation inventory; review fragments and dynamic keys separately.",
+  "candidates": [
+    {
+      "file": "Conditions/buffs.lua",
+      "line": 77,
+      "text": "Should this condition only consider buffs that you have applied."
+    },
+    {
+      "file": "Conditions/buffs.lua",
+      "line": 145,
+      "text": "Should this condition only consider buffs that you have applied."
+    },
+    {
+      "file": "Conditions/buffs.lua",
+      "line": 150,
+      "text": "The number of seconds remaining on a buff applied to the "
+    },
+    {
+      "file": "Conditions/buffs.lua",
+      "line": 151,
+      "text": ".  If the buff is not present, this condition will not be successful (regardless "
+    },
+    {
+      "file": "Conditions/buffs.lua",
+      "line": 217,
+      "text": "Should this condition only consider buffs that you have applied."
+    },
+    {
+      "file": "Conditions/buffs.lua",
+      "line": 223,
+      "text": ".  If the buff is not present, this condition will not be successful (regardless "
+    },
+    {
+      "file": "Conditions/casting.lua",
+      "line": 112,
+      "text": "The number of seconds before the current spell being cast by "
+    },
+    {
+      "file": "Conditions/casting.lua",
+      "line": 114,
+      "text": "not currently casting, this condition will not be successful (regardless of the "
+    },
+    {
+      "file": "Conditions/channeling.lua",
+      "line": 112,
+      "text": "The number of seconds remaining in the current spell being channeled by "
+    },
+    {
+      "file": "Conditions/channeling.lua",
+      "line": 114,
+      "text": "not currently channeling, this condition will not be successful (regardless of the "
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 168,
+      "text": "Number of party or raid members of the desired class."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 223,
+      "text": "A talent you have enabled in your specialization.  If you are currently in the same spec "
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 224,
+      "text": "as the rotation you are configuring (or have switched specializations without reloading "
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 225,
+      "text": "your user interface), this will show the talents.  Otherwise, this will simply show the "
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 226,
+      "text": "level and selection numbers (this is a restriction imposed by the game itself.)"
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 278,
+      "text": "Designed to keep the attention and take most of the hits from enemies.  aka. Meat Shields."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 280,
+      "text": "The primary damage dealers against enemies, and lovers of standing in fire."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 282,
+      "text": "Those who keep everyone else alive by healing them.  Thank them!"
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 423,
+      "text": "The tree that the talent this condition is testing is from."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 473,
+      "text": "Designed to keep the attention and take most of the hits from enemies.  aka. Meat Shields."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 475,
+      "text": "The primary damage dealers against enemies, and lovers of standing in fire."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 477,
+      "text": "Those who keep everyone else alive by healing them.  Thank them!"
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 575,
+      "text": "can be used to create conditions that are restricted by creature type (eg. Banish)."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 624,
+      "text": "can be used to create conditions only apply to certain unit addon.classifications (eg. bosses)."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 679,
+      "text": "Should the level be relative to the player's or absolute."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 716,
+      "text": "Check to see if we are in a raid, instead of just a party (note that with ."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 717,
+      "text": "this option off, this condition will be true if you are in a part OR a raid)."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 749,
+      "text": "This condition uses data from the MobInfo2 addon.  As such "
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 750,
+      "text": "it relies on previous interactions with the type of mob in question, which may be inaccurate. "
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 751,
+      "text": "Additionally, until you encounter the mob at least once, this condition will always be false."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 816,
+      "text": "This condition uses data from the MobInfo2 addon.  As such "
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 817,
+      "text": "it relies on previous interactions with the type of mob in question, which may be inaccurate. "
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 818,
+      "text": "Additionally, until you encounter the mob at least once, this condition will always be false."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 883,
+      "text": "Allow partial immunity (ie. the mob is only sometimes immune to this type of magic) to count."
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 885,
+      "text": "This condition uses data from the MobInfo2 addon.  As such "
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 886,
+      "text": "it relies on previous interactions with the type of mob in question, which may be inaccurate. "
+    },
+    {
+      "file": "Conditions/character.lua",
+      "line": 887,
+      "text": "Additionally, until you encounter the mob at least once, this condition will always be false."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 303,
+      "text": "condition will not be successful if you have no threat whatsoever (ie. are not considered in combat "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 306,
+      "text": "You are not in danger of taking threat away from whoever has threat."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 308,
+      "text": "You are in danger of pulling threat away from the current tank, and should reduce the amount of "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 309,
+      "text": "threat generated (by using threat-reducing abilities or ceasing DPS or Healing) immediately."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 312,
+      "text": "you are not at the top of the threat table, and thus are at risk of them switching targets "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 316,
+      "text": "not at risk of them switching targets at the moment."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 367,
+      "text": "The minimum amount of threat you have with other units."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 369,
+      "text": "You are not in danger of taking threat away from whoever has threat."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 371,
+      "text": "You are in danger of pulling threat away from the current tank, and should reduce the amount of "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 372,
+      "text": "threat generated (by using threat-reducing abilities or ceasing DPS or Healing) immediately."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 374,
+      "text": "You are currently tanking, however you are not at the top of the threat table, and thus are at "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 377,
+      "text": "You are currently tanking  and are not at risk of them switching targets at the moment."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 382,
+      "text": "Threat is measured only on units within a maximum measurable range. The maximum "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 383,
+      "text": " range is set using Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 478,
+      "text": "You are shapeshifted into a different form.  This includes stances for warriors and stealth.  "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 479,
+      "text": " can be used to indicate you are NOT shapeshifted."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 595,
+      "text": "The kind of combat action to look for (Hit, Miss, Parried, etc)."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 599,
+      "text": " (by count).  A value of 1 means the last combat action, 2 means two combat actions ago, etc.  "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 600,
+      "text": "Each combat action treated separately.  Any combat action more than the setting of "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 661,
+      "text": "The kind of combat action to look for (Hit, Miss, Parried, etc)."
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 665,
+      "text": " (by time).  A value of 1 means the last combat action, 2 means two combat actions ago, etc.  "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 666,
+      "text": "Each combat action treated separately.  Any combat action more than the setting of "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 701,
+      "text": "This condition checks how long you've been in combat. For example, if the operator is set to 'is less than' and the "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 702,
+      "text": "value is set to 5, this condition will only be true if you have been in combat for less than 5 seconds, or if the "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 703,
+      "text": "operator is set to 'is greater than' and the value is set to 10, the condition will only be true if you have been in "
+    },
+    {
+      "file": "Conditions/combat.lua",
+      "line": 704,
+      "text": "combat for more than 10 seconds. This is very useful for adjusting rotation priorities for openers vs. normal rotation"
+    },
+    {
+      "file": "Conditions/debuffs.lua",
+      "line": 71,
+      "text": "Should this condition only consider debuffs that you have applied."
+    },
+    {
+      "file": "Conditions/debuffs.lua",
+      "line": 140,
+      "text": "Should this condition only consider debuffs that you have applied."
+    },
+    {
+      "file": "Conditions/debuffs.lua",
+      "line": 145,
+      "text": "The number of seconds remaining on a debuff applied to the "
+    },
+    {
+      "file": "Conditions/debuffs.lua",
+      "line": 146,
+      "text": ".  If the debuff is not present, this condition will not be successful (regardless "
+    },
+    {
+      "file": "Conditions/debuffs.lua",
+      "line": 213,
+      "text": "Should this condition only consider debuffs that you have applied."
+    },
+    {
+      "file": "Conditions/debuffs.lua",
+      "line": 219,
+      "text": ".  If the deuff is not present, this condition will not be successful (regardless "
+    },
+    {
+      "file": "Conditions/debuffs.lua",
+      "line": 304,
+      "text": "Should this condition only consider debuffs that you have applied."
+    },
+    {
+      "file": "Conditions/debuffs.lua",
+      "line": 307,
+      "text": "Should this condition only consider debuffs that you can dispell."
+    },
+    {
+      "file": "Conditions/item.lua",
+      "line": 199,
+      "text": "Check the availability of the first item in the item set as if you were carrying it, even "
+    },
+    {
+      "file": "Conditions/item.lua",
+      "line": 249,
+      "text": "Check the availability of the first item in the item set as if you were carrying it, even "
+    },
+    {
+      "file": "Conditions/item.lua",
+      "line": 312,
+      "text": "The number of seconds before you can use the top item found in "
+    },
+    {
+      "file": "Conditions/item.lua",
+      "line": 313,
+      "text": ".  If you are not carrying any item in the item set, this condition will not be "
+    },
+    {
+      "file": "Conditions/item.lua",
+      "line": 317,
+      "text": "Check the availability of the first item in the item set as if you were carrying it, even "
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 114,
+      "text": "You are in an arena.  PVP is enabled in this area, but reset on exit."
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 116,
+      "text": "This area is controlled by your faction.  You will not enter PVP in this region, however "
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 117,
+      "text": "opposing factions will be automatically flagged for PVP upon entering."
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 119,
+      "text": "This area is contested, You will not automatically be flagged for PVP (on a PvE server), "
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 120,
+      "text": "however you may attack the opposing faction, flagging for PVP."
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 122,
+      "text": "This area is controlled by the opposing faction.  You will be automatically flagged for "
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 123,
+      "text": "PVP, however opposing faction players may not be (if on a PvE server) unless they choose to."
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 127,
+      "text": "This is a combat zone (eg. a battleground), all players will be automatically flagged as PVP."
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 176,
+      "text": "You are not in an instance (this does not necessarily mean you are outdoors, just not in any "
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 179,
+      "text": "You are in a battleground (an ad-hoc instance where the opponant is the opposing faction.)"
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 181,
+      "text": "A close quarters fight with the opposing faction, where death is a loss."
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 183,
+      "text": "A five-person dungeon, where your opponants are all NPCs."
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 185,
+      "text": "An instance that accommodates more than five people, where your opponants are all NPCs."
+    },
+    {
+      "file": "Conditions/misc.lua",
+      "line": 187,
+      "text": "A single-person instance, similar to a dungeon but completed solo."
+    },
+    {
+      "file": "Conditions/petspell.lua",
+      "line": 314,
+      "text": "How far back in your spell history to look for a casting of "
+    },
+    {
+      "file": "Conditions/petspell.lua",
+      "line": 315,
+      "text": " (by count).  A value of 1 means your last spell cast, 2 means two spells ago, etc.  "
+    },
+    {
+      "file": "Conditions/petspell.lua",
+      "line": 316,
+      "text": "Each instance of a the same spell cast is treated separately.  Any spell cast more than the setting "
+    },
+    {
+      "file": "Conditions/petspell.lua",
+      "line": 318,
+      "text": "Master configuration screen ago will not be available."
+    },
+    {
+      "file": "Conditions/petspell.lua",
+      "line": 367,
+      "text": "How far back in your spell history to look for a casting of "
+    },
+    {
+      "file": "Conditions/petspell.lua",
+      "line": 368,
+      "text": " (by time).  Any spell cast more than the setting of "
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 166,
+      "text": "The number of allies whose proximity is measured in relation to "
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 167,
+      "text": ".  This will only measure the proximity of allies you are in a party or raid with."
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 170,
+      "text": "The distance (in yards) allies are measured against."
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 178,
+      "text": "This will only work for yourself if you are inside "
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 179,
+      "text": "of an instance, and it will be less accurate than outside of an instance."
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 224,
+      "text": "There are significant restrictions on how accurately distances can be measured, and all distances "
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 225,
+      "text": "are within a range.  This will assume the unit is at the maximum of the measurable range.  Only "
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 226,
+      "text": "distances less than or equal to 40 yards can be measured."
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 301,
+      "text": "The addon.units you are checking the distance of are enemies."
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 304,
+      "text": "The number of enemies or allies whose proximity is measured in relation to you."
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 307,
+      "text": "This distance enemies or allies must be within, in yards.  There are significant restrictions "
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 308,
+      "text": "on how accurately distances can be measured, and all distances are within a range.  This will "
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 309,
+      "text": "assume all addon.units are at their maximum of the measurable range.  The maximum range is set using "
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 310,
+      "text": "Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."
+    },
+    {
+      "file": "Conditions/spatial.lua",
+      "line": 357,
+      "text": "Use the SubZone text instead of Zone text (eg. Valley of Strength instead of Orgrimmar)"
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 101,
+      "text": "The value that is the sum of all values divided my the number of values"
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 107,
+      "text": "If this number is negative, it means the health deficit (from max health)."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 110,
+      "text": "The distance (in yards) allies are measured against."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 118,
+      "text": "This will only work for yourself if you are inside "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 119,
+      "text": "of an instance, and it will be less accurate than outside of an instance."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 190,
+      "text": "If this number is negative, it means the health deficit (from max health)."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 192,
+      "text": "The number of allies whose proximity is measured in relation to "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 193,
+      "text": ".  This will only measure the proximity of allies you are in a party or raid with."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 196,
+      "text": "The distance (in yards) allies are measured against."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 204,
+      "text": "This will only work for yourself if you are inside "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 205,
+      "text": "of an instance, and it will be less accurate than outside of an instance."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 290,
+      "text": "The value that is the sum of all values divided my the number of values"
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 299,
+      "text": "The distance (in yards) allies are measured against."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 307,
+      "text": "This will only work for yourself if you are inside "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 308,
+      "text": "of an instance, and it will be less accurate than outside of an instance."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 375,
+      "text": "The number of allies whose proximity is measured in relation to "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 376,
+      "text": ".  This will only measure the proximity of allies you are in a party or raid with."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 379,
+      "text": "The distance (in yards) allies are measured against."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 387,
+      "text": "This will only work for yourself if you are inside "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 388,
+      "text": "of an instance, and it will be less accurate than outside of an instance."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 476,
+      "text": "The value that is the sum of all values divided my the number of values"
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 482,
+      "text": "If this number is negative, it means the mana deficit (from max mana)."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 485,
+      "text": "The distance (in yards) allies are measured against."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 493,
+      "text": "This will only work for yourself if you are inside "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 494,
+      "text": "of an instance, and it will be less accurate than outside of an instance."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 565,
+      "text": "If this number is negative, it means the mana deficit (from max mana)."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 567,
+      "text": "The number of allies whose proximity is measured in relation to "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 568,
+      "text": ".  This will only measure the proximity of allies you are in a party or raid with."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 571,
+      "text": "The distance (in yards) allies are measured against."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 579,
+      "text": "This will only work for yourself if you are inside "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 580,
+      "text": "of an instance, and it will be less accurate than outside of an instance."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 665,
+      "text": "The value that is the sum of all values divided my the number of values"
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 674,
+      "text": "The distance (in yards) allies are measured against."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 682,
+      "text": "This will only work for yourself if you are inside "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 683,
+      "text": "of an instance, and it will be less accurate than outside of an instance."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 751,
+      "text": "The number of allies whose proximity is measured in relation to "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 752,
+      "text": ".  This will only measure the proximity of allies you are in a party or raid with."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 755,
+      "text": "The distance (in yards) allies are measured against."
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 763,
+      "text": "This will only work for yourself if you are inside "
+    },
+    {
+      "file": "Conditions/spatial_stats.lua",
+      "line": 764,
+      "text": "of an instance, and it will be less accurate than outside of an instance."
+    },
+    {
+      "file": "Conditions/spell.lua",
+      "line": 313,
+      "text": "How far back in your spell history to look for a casting of "
+    },
+    {
+      "file": "Conditions/spell.lua",
+      "line": 314,
+      "text": " (by count).  A value of 1 means your last spell cast, 2 means two spells ago, etc.  "
+    },
+    {
+      "file": "Conditions/spell.lua",
+      "line": 315,
+      "text": "Each instance of a the same spell cast is treated separately.  Any spell cast more than the setting "
+    },
+    {
+      "file": "Conditions/spell.lua",
+      "line": 317,
+      "text": "Master configuration screen ago will not be available."
+    },
+    {
+      "file": "Conditions/spell.lua",
+      "line": 366,
+      "text": "How far back in your spell history to look for a casting of "
+    },
+    {
+      "file": "Conditions/spell.lua",
+      "line": 367,
+      "text": " (by time).  Any spell cast more than the setting of "
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 52,
+      "text": "If this number is negative, it means the health deficit (from max health)."
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 143,
+      "text": "If this number is negative, it means the mana deficit (from max mana)."
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 241,
+      "text": "that is class (and sometimes spec or form) specific (eg. Warriors have Rage). "
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 242,
+      "text": "If this number is negative, it means the power deficit (from max power)."
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 291,
+      "text": "total power.  Power is a statistic that is class (and sometimes spec or form) specific (eg. Warriors "
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 351,
+      "text": "Combo points are a statistic that is class (and sometimes spec or form) specific (eg. Mages have "
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 353,
+      "text": "If this number is negative, it means the point deficit (from max points)."
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 579,
+      "text": "If this number is negative, it means the health deficit (from max health)."
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 582,
+      "text": "How many seconds (estimated) until the target health is acehived on  "
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 586,
+      "text": "How the burn rate should be calculated, which is used to estimate the time to target health."
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 589,
+      "text": "into the 'burn rate' (essentially mitigating damage with heals for a realistic burn rate)"
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 592,
+      "text": "'burn rate', which will cause some spikes in time-to-target if they are healed."
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 595,
+      "text": "'burn rate', essentially pretending they are not being hit at all."
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 709,
+      "text": "How the burn rate should be calculated, which is used to estimate the time to target health."
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 712,
+      "text": "into the 'burn rate' (essentially mitigating damage with heals for a realistic burn rate)"
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 715,
+      "text": "'burn rate', which will cause some spikes in time-to-target if they are healed."
+    },
+    {
+      "file": "Conditions/stats.lua",
+      "line": 718,
+      "text": "'burn rate', essentially pretending they are not being hit at all."
+    },
+    {
+      "file": "Conditions/totem.lua",
+      "line": 44,
+      "text": "The style of totem that must be placed (Fire, Wind, Water or Earth.)"
+    },
+    {
+      "file": "Conditions/totem.lua",
+      "line": 82,
+      "text": "The specific totem (by name) to check to ensure it is placed."
+    },
+    {
+      "file": "Conditions/totem.lua",
+      "line": 131,
+      "text": "The style of totem that must be placed (Fire, Wind, Water or Earth.)"
+    },
+    {
+      "file": "Conditions/totem.lua",
+      "line": 180,
+      "text": "The specific totem (by name) to check to ensure it is placed."
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 41,
+      "text": "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect "
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 42,
+      "text": "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 87,
+      "text": "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect "
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 88,
+      "text": "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 92,
+      "text": "The amount of time (in seconds) your weapon buff has left before it expires.  If there is no buff "
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 93,
+      "text": "on your weapon, this condition will not be successful (regardless of the "
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 138,
+      "text": "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect "
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 139,
+      "text": "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 143,
+      "text": "The number of stacks of a buff applied to your weapon.  If there is no buff on your weapon, this "
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 144,
+      "text": "condition will not be successful (regardless of the "
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 187,
+      "text": "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect "
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 188,
+      "text": "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 192,
+      "text": "The amount of time (in seconds) between swing times for your weapon."
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 238,
+      "text": "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect "
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 239,
+      "text": "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."
+    },
+    {
+      "file": "Conditions/weapon.lua",
+      "line": 243,
+      "text": "The amount of time (in seconds) until your next weapon swing."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 14,
+      "text": "Announces allow you to announce when you cast certain spells or use certain items.  These announcements "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 15,
+      "text": "can be customized and the destination for these announcmeents can be of your choosing.  These "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 16,
+      "text": "announcements have no relation to any rotation, and this feature is merely a convenience feature to "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 17,
+      "text": "save you from creating macros for each spell.  Additionally these announcements work well with items (and "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 27,
+      "text": "You have cast a spell.  This must be a spell YOU can cast, NOT a pet's spell."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 29,
+      "text": "Your pet has cast a spell.  This must be a spell your pet can cast."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 31,
+      "text": "You have used an item in an item set (either a pre-defined one or custom item set.)"
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 35,
+      "text": "The spell that will trigger the announcement. You may drag this spell from your spell book or action "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 36,
+      "text": "bars into the input field or spell icon to set this value.  This input field has prediction enabled, "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 37,
+      "text": "so you do not have to type the full spell name, just select from the prediction frame when it appears."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 41,
+      "text": "This is a list of items that will trigger the announcement.  Using ANY item in this list will "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 42,
+      "text": "trigger the announcement.  This differs from how item sets are used in either rotations or when "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 43,
+      "text": "put onto your action bars, where only the top entry in the list that you have (in your bags or "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 44,
+      "text": "are wearing) will be used, regardless of if you are carrying other items in the list."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 45,
+      "text": "You can choose from either a pre-defined Item Set, by picking it by name from the "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 48,
+      "text": "item set available to all your characters, otherwise they are available to this character only.  "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 49,
+      "text": "If you do not want to setup a reusable item set, you can select "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 55,
+      "text": "Edit the contents of the item set.  If you have selected a "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 56,
+      "text": "pre-defind item set, you will be editing that item set, which may effect other usages of that "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 57,
+      "text": "item set (including on your other characters if it is a global item set."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 63,
+      "text": "You have begun to cast the spell or use the item.  This happens at the beginning of the cast, and "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 64,
+      "text": "does not factor in if this cast was successful or not."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 66,
+      "text": "The casting of the spell or usage of the item has completed.  Regardless of the method of completion "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 67,
+      "text": "(which could mean it failed, was interruped, or was successful.)  This is most useful for channeling "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 70,
+      "text": "The cast of the spell or item use was successful.  If this is a channeled spell, this will be "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 71,
+      "text": "triggered when the spell begins channeling.  This is the default and most common."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 73,
+      "text": "The cast of the spell or use of the item was interruped.  This could be interrupted by you (ie. "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 74,
+      "text": "aborting your cast) or by having your cast being interrupted by being attacked."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 86,
+      "text": "Announce to all memebers of your raid or party (detected automatically)."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 88,
+      "text": "Announce to all party only, even if you are in a raid."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 90,
+      "text": "Announce to the raid as a raid warning (usually shows up in the middle of everyone's screen)."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 92,
+      "text": "Announce using /emote (showing up as an action you are performing)"
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 94,
+      "text": "Announce only to your chat frame (nobody else will see it)."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 98,
+      "text": "The text of the announcement you wish to make.  Certain substitutions may be used to augment your "
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 105,
+      "text": "The event (as identified above) that has happened."
+    },
+    {
+      "file": "Help/announce.lua",
+      "line": 107,
+      "text": "Your current target's name, or your own name if you do not have a target selected."
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 13,
+      "text": "This condition is only evaluated successfully if ALL of the sub-conditions "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 14,
+      "text": "are themselves successfully evaluated.  If this condition has no sub-conditions, it will evaluate "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 18,
+      "text": "Sub-conditions will each have these to the left on their condition icons:"
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 21,
+      "text": "This will move the sub-condition up to the previous slot in the sub-condition list."
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 24,
+      "text": "This will move the sub-condition down to the next slot in the sub-condition list."
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 33,
+      "text": "Sub-conditions will each have these to the left on their condition icons:"
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 36,
+      "text": "This will move the sub-condition up to the previous slot in the sub-condition list."
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 39,
+      "text": "This will move the sub-condition down to the next slot in the sub-condition list."
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 45,
+      "text": "This condition will negate it's sub-condition.  Meaning that if the sub-condition "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 46,
+      "text": "evaluates successfully, then this condition will NOT evaluate successfully, and vice versa."
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 53,
+      "text": "The icon next to the spell name will automatically update to display the spell that is currently "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 54,
+      "text": "selected.  You can drag a new spell from your spell book or action bars into this icon slot to "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 60,
+      "text": "If enabled, use a specific rank of the spell in question.  This is normally only used for "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 66,
+      "text": "This is a specific spell used in this condition.  You may drag this spell from your spell book or "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 67,
+      "text": "action bars into the input field or spell icon to set this value.  This input field has prediction "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 68,
+      "text": "enabled, so you do not have to type the full spell name, just select from the prediction frame when it "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 76,
+      "text": "The icon next to the spell name will automatically update to display the spell that is currently "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 77,
+      "text": "selected.  You can drag a new spell from your spell book or action bars into this icon slot to "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 82,
+      "text": "This is a specific spell used in this condition.  You may drag this spell from your spell book or "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 83,
+      "text": "action bars into the input field or spell icon to set this value.  This input field has prediction "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 84,
+      "text": "enabled, so you do not have to type the full spell name, just select from the prediction frame when it "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 92,
+      "text": "This is a list of items to look for in your inventory.  This list is ordered, the top found item "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 93,
+      "text": "in the list that you are carrying or wearing is what will be used in this condition.  NOTE: "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 94,
+      "text": "this will NOT search for ANY item in the list that matches this condition, only the first item "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 96,
+      "text": "You can choose from either a pre-defined Item Set, by picking it by name from the "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 99,
+      "text": "item set available to all your characters, otherwise they are available to this character only.  "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 100,
+      "text": "If you do not want to setup a reusable item set, you can select "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 106,
+      "text": "Edit the contents of the item set.  If you have selected a "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 107,
+      "text": "pre-defind item set, you will be editing that item set, which may effect other usages of that "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 108,
+      "text": "item set (including on your other characters if it is a global item set.  An item set must have "
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 109,
+      "text": "at least one item in it for this condition to be considered valid."
+    },
+    {
+      "file": "Help/conditional.lua",
+      "line": 138,
+      "text": "The unit this condition uses as the target of comparison."
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 15,
+      "text": "Conditions are used to decide when a rotation step or cooldown will be active.  There are many "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 16,
+      "text": "conditions deployed with Rotation Master, serving a wide variety of purposes.  They can be grouped "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 17,
+      "text": "in many ways.  They can also be enabled as switch conditions (ie. used to aid in automatic "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 25,
+      "text": "Select which condition group you wish to modify.  You can create a new condition group by "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 27,
+      "text": " will display all conditions that are known to Rotation Master, regardless "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 29,
+      "text": "conditions that are used for switching rotations. The "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 30,
+      "text": " group shows all conditions that are not associated with other condition groups."
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 35,
+      "text": "This will move the current condition group to the first slot in the list."
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 40,
+      "text": "This will move the current condition group up to the previous slot in the list."
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 45,
+      "text": "This will move the current condition group down to the next slot in the list."
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 50,
+      "text": "This will move the current condition to the last slot in the list."
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 55,
+      "text": "This will open up a window that can be used to both export "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 56,
+      "text": "your current condition group and import one created by someone else."
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 61,
+      "text": "Delete this condition group.  All conditions within will show up under the "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 66,
+      "text": "Filter the conditions displayed to only ones that contain the search string.  This makes it "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 67,
+      "text": "much easier to find conditions as the number of conditions grow."
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 71,
+      "text": "If this is checked, the condition will show up in the list of conditions that can be used "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 76,
+      "text": "This condition should not show up in the condition selection box (for the "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 77,
+      "text": " group).  A condition that is in another group will still "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 78,
+      "text": "show up in the condition selection box (including "
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 92,
+      "text": "Change the order of the selected condition, moving it in the direction indicated by the arrow."
+    },
+    {
+      "file": "Help/conditions.lua",
+      "line": 96,
+      "text": "Move the selected condition to another condition group.  You cannot move a condition to the "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 14,
+      "text": "Conditions are used to decide when a rotation step or cooldown will be active.  Custom Conditions "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 15,
+      "text": "should be treated with care, as they use raw LUA code, which can do almost anything."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 22,
+      "text": "The icon to use for quick identification of the condition in question.  This icon iself has no real "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 23,
+      "text": "meaning, and is simply used to make conditions more visually distinguishable."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 27,
+      "text": "The key that is used to uniquely identify a condition.  This should have no spaces or special "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 28,
+      "text": "characters other than an underscore, and must be unique."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 32,
+      "text": "The description text used to describe this condition.  This is what will show up in the list of "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 37,
+      "text": "The function used to validate whether the condition itself is valid (ie. all the required fields "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 38,
+      "text": "are set to valid values).  This function takes the form of "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 41,
+      "text": " is the talent specification in use for this condition, where multiple specifications are available."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 43,
+      "text": " is a vartiable that stores all parameters for this condition."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 44,
+      "text": "This function returns true if this condition is valid, false otherwise."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 48,
+      "text": "The function used to evaluate this condition in real time."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 50,
+      "text": " is a vartiable that stores all parameters for this condition."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 52,
+      "text": " is a cache that is used to store the results of WoW API calls, such that they do not need "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 53,
+      "text": "to be evaluated more than once.  This cache is reset every time the rotation steps are evaluated."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 56,
+      "text": "You can also use addon.combatCache which is reset when you enter "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 57,
+      "text": " or exit combat, or addon.longtermCache which is reset when you learn new abilities."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 58,
+      "text": "This function returns true if this condition is currently true."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 62,
+      "text": "The function used to give a string representation of this condition.  This is joined with other "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 63,
+      "text": "condition strings to allow for a complete description of the conditions controlling a rotation step "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 66,
+      "text": " is the talent specification in use for this condition, where multiple specifications are available."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 68,
+      "text": " is a vartiable that stores all parameters for this condition."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 69,
+      "text": "This function returns a string that describes this condition, including any parameters."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 73,
+      "text": "The function used to edit this condition with the condition editor as part of a rotation or cooldown.  "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 74,
+      "text": "This should provide UI components for entering any parameters."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 76,
+      "text": " is the UI container when any widgets for this condition should be added to."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 78,
+      "text": " is the talent specification in use for this condition, where multiple specifications are available."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 80,
+      "text": " is a vartiable that stores all parameters for this condition."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 84,
+      "text": "The function used to provide help information or users of this condition.  This help is displayed when "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 85,
+      "text": "a user clicks the standard help question mark in the condition editor for your condition."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 87,
+      "text": " is the UI container that your help messages should be added to."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 93,
+      "text": "This will open up a window that can be used to both export "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 94,
+      "text": "your current custom condition and import one created by someone else."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 98,
+      "text": "Add a new custom condition.  You can only do this when you have specified a key, "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 99,
+      "text": "description, and do not have any outstanding edits on any of the function texts."
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 101,
+      "text": "Save a custom condition.  You can only do this when you have specified a "
+    },
+    {
+      "file": "Help/custom_condition.lua",
+      "line": 102,
+      "text": "description, and do not have any outstanding edits on any of the function texts."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 14,
+      "text": "Effects are the various methods of highlighting action bar icons.  Cooldowns may have individual "
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 15,
+      "text": "effects per cooldown, however all rotation steps will be highlighted using the effect defined in "
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 16,
+      "text": "the primary Rotation Master configuration settings.  You may define as many different effect styles "
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 17,
+      "text": "as you wish.  Effects are shared across all characters."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 24,
+      "text": "The type of effect being configured.  A new effect may be added by defining it's type at the end "
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 27,
+      "text": "A texture file in game data files (or available via. an addon) overlayed on top of the action icon."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 29,
+      "text": "Lines marching around the border of the action icon."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 31,
+      "text": "A glow resembling pixels swarming around the action icon."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 33,
+      "text": "A standard Blizzard frame glow (like rays shining from the button)."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 35,
+      "text": "Create a sequence of textures to be overlayed in a loop."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 37,
+      "text": "Create a sequence of colors to change the overlayed texture to in a loop."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 39,
+      "text": "Create a sequence of magnifications to change the overlayed texture to in a loop."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 43,
+      "text": "Create a custom sequence specifying texture, color, magnification and rotation for each step."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 47,
+      "text": "The name of this specific effect configuration.  This be in the list of effects in both the primary "
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 48,
+      "text": "Rotation Master configuration screen and when configuring cooldowns."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 53,
+      "text": "The name of the texture to overlay on top of action icons."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 58,
+      "text": "How many lines should be drawn around the action icon."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 60,
+      "text": "How quickly should those lines move around the action icon."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 62,
+      "text": "How long should each line drawn around the action icon be."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 64,
+      "text": "How thichk should each line drawn around the action icons be."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 69,
+      "text": "How many particles are swarming around the action item"
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 71,
+      "text": "How quickly should the particles move around the action icon."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 73,
+      "text": "How big should each paritcle around the action icon be."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 90,
+      "text": "The name of the texture to overlay on top of action icons."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 92,
+      "text": "How quickly should the we change the texture color."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 99,
+      "text": "The name of the texture to overlay on top of action icons."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 101,
+      "text": "How quickly should the we change the texture size."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 103,
+      "text": "The list of magnifications to change to, in order."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 108,
+      "text": "The name of the texture to overlay on top of action icons."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 110,
+      "text": "How quickly should the we change the texture angle."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 112,
+      "text": "How many 'steps' around the circular path should we animate."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 121,
+      "text": "The list of steps to perform (which includes overlay texture, color, magnification and angle), in order."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 127,
+      "text": "This will open up a window that can be used to both export "
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 128,
+      "text": "your the effect set and import one created by someone else."
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 134,
+      "text": "Permanently delete this effect.  No checks will be made to check if this effect is in use (either in "
+    },
+    {
+      "file": "Help/effects.lua",
+      "line": 135,
+      "text": "the primary Rotation Master settings or cooldowns for any rotation on any character.)"
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 15,
+      "text": "Rotation Master is a mod that will try and help you know what the optimal action bar button to "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 16,
+      "text": "press is in combat situations.  It allows for you to create situationally distinct rotations, "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 17,
+      "text": "rotations that are different for different rotations, and supports item sets (lists of items "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 18,
+      "text": "in priority order, for things such as mana potions, etc)."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 25,
+      "text": "Allow Rotation Master to perform it's function.  Unckecking this will remove all highlighting, "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 26,
+      "text": "prevent rotation switching and no longer update bound item sets."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 30,
+      "text": "How often should Rotation Master check all cooldowns and rotation steps in the currently active "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 31,
+      "text": "rotation to adjust which cooldowns should be highlighted and which rotation step should be active.  "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 32,
+      "text": "The lower this value, the more frequent updates will be made, but also the higher the performance "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 33,
+      "text": "impact will be.  As human response time is generally not much better than 0.25 seconds, setting this "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 38,
+      "text": "Prevent Rotation Master from automatically switching to a different rotation based on it's switch "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 39,
+      "text": "conditions.  This can also be achieved by manually switching to a rotation with the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 40,
+      "text": " command, however this option is persistent through UI reloads."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 44,
+      "text": "How often should we check cooldown or rotation step conditions (while the configuration menu is "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 46,
+      "text": " message to allow for easier condition editing.  If "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 47,
+      "text": "this is set to 0, updaing this condition status will be disabled."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 51,
+      "text": "Should a Rotation Master icon be added to the border of the minimap.  Left-clicking the minimap icon "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 52,
+      "text": "will open the Rotation Master settings.  Right-clicking will give a mini-menu that allows both enabling "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 53,
+      "text": "and disabling Rotation Master, and switching rotations"
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 57,
+      "text": "Some conditions use spell cast history as part of their evaluation.  This adjusts how long to remember "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 62,
+      "text": "As conditions are evaluated for cooldowns or rotation steps Rotation Master will check to ensure you "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 63,
+      "text": "currently have enough mana to cast the spell in question.  If not, that cooldown will not be active or "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 64,
+      "text": "rotation step will be skipped.  Enabling this option will skip the mana check and allow the spell to "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 65,
+      "text": "be highlighted even if you currently do not have enough mana to cast it."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 69,
+      "text": "Some conditions use combat history as part of their evaluation (eg. if you were parried, hit, etc).  "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 70,
+      "text": "This adjusts how long to remember your combat history for."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 74,
+      "text": "While evaluating rotation steps, Rotation Master will check to ensure your target is in range of the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 75,
+      "text": "rotation spell.  Enabling this option will skip this check and allow highlighting the spell even if "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 80,
+      "text": "How long to remember the heals and damage for units in your vacinity.  This is used in the burn rate "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 81,
+      "text": "calculation (ie. dps or hps) on a unit, which is in turn used for Time to Die style calculations.  "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 82,
+      "text": "Newer DPS or heals are given more weight than older DPS or heals in a burn rate calculation."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 86,
+      "text": "Do not highlight the active rotation on your action bars.  If you wish to use the preview window "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 87,
+      "text": "exclusively check this, however if this is checked and the preview spells is 0, you will not be "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 88,
+      "text": "able to see rotation steps at all!  This does not effect cooldown highlighting (at the moment)."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 92,
+      "text": "The number of spells to preview in a separate window.  If this is 0 (the default) the preview "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 93,
+      "text": "window is not displayed.  The preview window attempts to predict a number of spells in advance, "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 94,
+      "text": "however this is not accurate and will change as current combat circumstances change."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 98,
+      "text": "How a rotation step should be highlighted (and the default for cooldowns).  This selection can be "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 103,
+      "text": "How much bigger or smaller than the spell action icon should the cooldown or rotation step highlight "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 104,
+      "text": "be.  This value is simply multiplied by the size of the action icon.  So a 1.0 value would be the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 109,
+      "text": "The color and alpha value (ie. opacity) to apply to the rotation step highlight."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 113,
+      "text": "The anchor position on the spell action icon for the highlight.  This is only valid if the highlight "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 115,
+      "text": "what type of highlight the effect is.)  The highlight is always anchored at it's center"
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 128,
+      "text": "For texture glows, this will offset the anchor point of the highlight.  Left and Right arrows will "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 129,
+      "text": "offset the X axis, and Up and Down arrows will offset the Y axis.  The center button will reset the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 130,
+      "text": "offset back to the anchor point.  For non-texture highlights, which don't have an anchor point, this "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 131,
+      "text": "functions somewhat like magnification, controlling how much wider (X axis) or taller (Y axis) the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 132,
+      "text": "highlight will appear compared to the action icon."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 137,
+      "text": "A display for the X and Y axis offsets controlled by the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 143,
+      "text": "The name we use for your primary specialization (as shown in the tabs for in the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 146,
+      "text": "The name we use for your secondary specialization (as shown in the tabs for in the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 152,
+      "text": "The of information that Rotation Master will put into your chat text box."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 156,
+      "text": "Normal output about when Rotation Master switches rotation profiles."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 158,
+      "text": "Some information about runtime statistics and when certain trigger events happen."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 160,
+      "text": "Detailed information about evaluation of conditions for highlighting buttons."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 164,
+      "text": "Should the profiling statistics (visible in debug mode) contain extra information about "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 165,
+      "text": "components of evaluating rotation settings (as opposed to just the overall statistics)."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 172,
+      "text": "A rotation is a set of cooldown and step-by-step rotation spells that can encompass a specific style "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 173,
+      "text": "of play (for example single target vs. area of effect DPS) that can be activated either automaatically "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 178,
+      "text": "Rotations are separated by specializations.  A rotation will only be available when in the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 179,
+      "text": "specialization in which it is defined.  You can modify rotations from other specializations "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 188,
+      "text": "Select which rotation you wish to work on from the drop down menu.  You can create a new rotation by "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 190,
+      "text": " always exists and is used when no other rotation can be automatically switched to."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 194,
+      "text": "The name to use to identify your rotation.  This is is used both aesthetically (ie. in the drop down and "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 195,
+      "text": "the message informing you of what rotation has been selected) and in the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 196,
+      "text": " command.  You can not configure a rotation without a name, so "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 204,
+      "text": "Delete this rotation permanently.  You will be prompted to ensure "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 205,
+      "text": "this was not performed by accident.  However if confirmed, this action can not be undone."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 211,
+      "text": "This will open up a window that can be used to both export "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 212,
+      "text": "your current roation and import one created by someone else.  Imported rotations are not checked for "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 213,
+      "text": "their suitability, but will fail to import if they are not valid.  If there is a name conflict with the "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 214,
+      "text": "imported rotation, it will be named by the date and time of import."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 218,
+      "text": "A human readable versions of the conditions that control when this rotation will be automatically "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 220,
+      "text": "can be defined, it will be selected when no other rotation's switch condition is satisfied.  "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 221,
+      "text": "Any disabled rotation that has a valid switch condition will show "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 222,
+      "text": " will be displayed after the human readable version of the condition."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 227,
+      "text": "Open up a window to allow editing of the switch condition for this rotation."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 231,
+      "text": "Rotation Master will not automatically switch to this rotation.  Click this to enable "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 236,
+      "text": "Rotation Master cannot automatically switch to this rotation as the switch condition "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 237,
+      "text": "is not valid. Click this to disable auto-switching for this rotation explicitly."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 241,
+      "text": "Rotation Master will automatically switch to this rotation.  Click this to disable "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 246,
+      "text": "A list of cooldowns that can be highlighted while this rotation is active.  While the cooldowns are "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 247,
+      "text": "numbered, any or all of them may be highlighted at once.  A cooldown will be colored "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 249,
+      "text": "is incomplete.  The name in the list is set in the cooldown details."
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 255,
+      "text": "A list of rotation setps that can be highlighted while this rotation is active.  These are evaluated "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 256,
+      "text": "in order, and only one rotation step can be active at once (the highest numbered step).  A rotation "
+    },
+    {
+      "file": "Help/general.lua",
+      "line": 258,
+      "text": " if it is incomplete.  The name in the list is set in the rotation step details."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 14,
+      "text": "An item you may be carrying or wearing.  Items may be added by name (auto completion will occur "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 15,
+      "text": "for any item you are currently carrying), by item ID (if you know it from a place such as WowHead), "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 16,
+      "text": "or by dragging the item from your bags into the input box or the icon field to the left of it.  "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 17,
+      "text": "Clearing the item field will implicitly delete it from the list.  The item's icon will not show "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 18,
+      "text": "if the item is entered by name and you are noit currently carrying it, however the item is still "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 19,
+      "text": "a valid part of the item set and will work if picked up at a later time."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 24,
+      "text": "This will move the current item to the first slot in the item list."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 29,
+      "text": "This will move the current item up to the previous slot in the item list."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 34,
+      "text": "This will move the current item down to the next slot in the item list."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 39,
+      "text": "This will move the current item to the last slot in the item list."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 44,
+      "text": "Removes this item from the item list entirely.  This action is permanent."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 52,
+      "text": "Item Sets are ordered lists of items that, when used, are checked against your current inventory "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 53,
+      "text": "and what you have equipped.  The first item found is then used (for example checked aginst item-based "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 54,
+      "text": "conditions, or highliged on yor action bars.  Once an item is found, Rotation Master does not check "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 55,
+      "text": "for any remaining items.  This is useful to keep lists of 'mostly equivalent' items that come in "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 56,
+      "text": "slightly different strengths or varieties (eg. mana potions, conjured food, etc).  Item sets can "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 57,
+      "text": "be bound directly to your action bars, and will be automatically updated as you acquire or use items "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 65,
+      "text": "Select which item set you wish to work on from the drop down menu.  You can create a new item set by "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 67,
+      "text": "Item Sets configuration menu is to create a new set."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 71,
+      "text": "The icon next to the item set name will automatically update to display the item that is currently "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 72,
+      "text": "selected by this item set.  Click this icon to pick it up so it can be dragged onto your action bars. "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 73,
+      "text": "When you bind an item set to your action bars, it will be updated automatically based on the "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 78,
+      "text": "The name for this item set.  This name will be used in any dropdown menu listing item sets.  An item "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 83,
+      "text": "If set, this item set will be availbale on all of your characters.  Otherwise is is character "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 90,
+      "text": "Reset this item set to the default one that comes with Rotation Master."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 96,
+      "text": "This will open up a window that can be used to both export "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 97,
+      "text": "your current item set and import one created by someone else."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 103,
+      "text": "Duplicates this item set putting the duplicate immediately after the duplicated entry."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 109,
+      "text": "Delete this item set permanently.  If this item set is in use by "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 110,
+      "text": "any rotation on this character, you will be prompted to ensure this was nor performed in error."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 119,
+      "text": "Item sets can be used in other contexts.  A number of hidden buttons are created "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 120,
+      "text": "that can be accessed (for example inside a macro) using "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 121,
+      "text": ".  The name of these hidden buttons is 'RM_' concatinated with the name of the "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 122,
+      "text": "item set (with all non-alphanumeric character stripped out) concatinated with '_<target>'.  "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 123,
+      "text": "So the item 'Mana Potions' would have names like RM_ManaPotions_player."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 126,
+      "text": "For an item set called Bandages, the hidden buttons would be:"
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 128,
+      "text": " This will use the highest level item in the item set on yourself."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 130,
+      "text": " This will use the highest level item in the item set on your pet."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 132,
+      "text": " This will use the highest level item in the item set on your target."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 135,
+      "text": " This will use the highest level item in the item set on your focus target."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 138,
+      "text": " This will use the highest level item in the item set on the character or unit frame your mouse "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 141,
+      "text": " This will use the highest level item in the item set on your pet's target."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 143,
+      "text": " This will use the highest level item in the item set on your target's target."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 146,
+      "text": " This will use the highest level item in the item set on your focus target's target."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 149,
+      "text": " This will use the highest level item in the item set on the character or unit frame your mouse "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 153,
+      "text": "An example usage of this might be to create a macro like this:"
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 156,
+      "text": "In the above example, the macro is 'checking' that your mouseover target "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 157,
+      "text": "is not dead and is an ally, and if so, invoking the hidden button that calls /use on the first "
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 158,
+      "text": "found item in the item set with a target of your mouseover target."
+    },
+    {
+      "file": "Help/itemsets.lua",
+      "line": 161,
+      "text": "This functionaliy is not related to action bar bindings."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 13,
+      "text": "This field is activated by the checkbox immediately preceeding it.  This field is aesthetic only "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 15,
+      "text": " name will be set to the name of the spell or item set or first item "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 16,
+      "text": "in a custom item set automatically, and will change automatically as they do."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 41,
+      "text": ", putting the duplicate immediately after the duplicated entry."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 51,
+      "text": " should be highlighted.  This selection can be updated in the "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 53,
+      "text": " will use the highlight style set in the primary Rotation Master settings."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 57,
+      "text": "How much bigger or smaller than the spell action icon should the "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 58,
+      "text": "This value is simply multiplied by the size of the action icon.  So a 1.0 value would be the same "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 59,
+      "text": "size as the action icon.  If this is set to the same value as the primary Rotation Master setting "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 64,
+      "text": "The color and alpha value (ie. opacity) to apply to the "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 69,
+      "text": "The anchor position on the spell action icon for the highlight.  This is only valid if the highlight "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 71,
+      "text": "what type of highlight the effect is.)  The highlight is always anchored at it's center"
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 84,
+      "text": "For texture glows, this will offset the anchor point of the highlight.  Left and Right arrows will "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 85,
+      "text": "offset the X axis, and Up and Down arrows will offset the Y axis.  The center button will reset the "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 86,
+      "text": "offset back to the anchor point.  For non-texture highlights, which don't have an anchor point, this "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 87,
+      "text": "functions somewhat like magnification, controlling how much wider (X axis) or taller (Y axis) the "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 88,
+      "text": "highlight will appear compared to the action icon."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 93,
+      "text": "A display for the X and Y axis offsets controlled by the "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 99,
+      "text": "The type of action to highlight on your action bars."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 102,
+      "text": "This will limit the avalable options to only spells you can cast (ie. what is in your spell book) "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 103,
+      "text": "for your specialization.  Often spells you crrently can not cast (eg. those for another a different "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 104,
+      "text": "specialization, or that require talnts) are hidden.  This is a restriction imposed by the game."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 106,
+      "text": "This will limit the avalable options to only spells your pets cast (ie. what is in your pet spell book). "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 107,
+      "text": "Often spells you crrently can not cast (eg. those for a different different pet than the one you "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 108,
+      "text": "have summoned) are hidden.  This is a restriction imposed by the game."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 110,
+      "text": "This is similar to Spell, however it is not limited to spells you can cast.  This is rarely needed, "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 111,
+      "text": "but could be used for spells you have not yet learned."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 113,
+      "text": "An item you are carrying OR wearing.  Only items that have a USE ability will be available."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 115,
+      "text": "No action.  This can be used to suspend the rotation under certain circumstances (eg. that one "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 121,
+      "text": "If enabled, use a specific rank of the spell in question.  This is normally only used for "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 122,
+      "text": "things like downranking spells.  Note that this requires that specific rank of the spell in "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 123,
+      "text": "question being on your action bars (as opposed to any rank if this is disabled.)"
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 128,
+      "text": "The spell to highlight on your action bars.  If this spell is not on your action bars, then this "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 129,
+      "text": " will be skipped entirely.  You may drag this spell from your spell book or action bars "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 130,
+      "text": "into the input field or spell icon to set this value.  This input field has prediction enabled, "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 131,
+      "text": "so you do not have to type the full spell name, just select from the prediction frame when it appears."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 135,
+      "text": "This is a list of items to look for on your action bars.  This list is ordered, the top found item "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 136,
+      "text": "in the list that you are carrying or wearing is what will be looked for on your action bars.  NOTE: "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 137,
+      "text": "this will NOT highlight the first one in the list that is on your action bars, so if you are carring "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 138,
+      "text": "something higher on the list in your bags, but have not put it on your action bars, the item that "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 139,
+      "text": "is on your action bars (but lower down the list) will NOT be highlighted."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 140,
+      "text": "You can choose from either a pre-defined Item Set, by picking it by name from the "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 143,
+      "text": "item set available to all your characters, otherwise they are available to this character only.  "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 144,
+      "text": "If you do not want to setup a reusable item set, you can select "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 150,
+      "text": "Edit the contents of the item set.  If you have selected a "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 151,
+      "text": "pre-defind item set, you will be editing that item set, which may effect other usages of that "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 152,
+      "text": "item set (including on your other characters if it is a global item set.  An item set must have "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 159,
+      "text": "A human readable version of the conditions that control if this "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 160,
+      "text": "not.  If this condition fails, it will be skipped.  If you have live updating enabled in the "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 161,
+      "text": "primary Rotation Master settings, you will see either "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 163,
+      "text": "human readable version of this condition for any non-disabed condition.  Any disabled condition "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 169,
+      "text": "Open up a window to allow editing of the condition for this "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 173,
+      "text": " is disabled, and will be excluded from the rotation.  Click "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 178,
+      "text": " is disabled, and will be excluded from the rotation.  Click "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 183,
+      "text": " step's conditions are currently satisfied by game conditions. "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 188,
+      "text": " step's conditions are not currently satisfied by game conditions. "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 193,
+      "text": " step's conditions cannot be evaluated due to it being for a "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 200,
+      "text": "Cooldowns are used to highlight spells or items that can be activated at any time during your "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 201,
+      "text": "rotation, but are not necessarily part of it.  This is ideal for things such as spells with "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 202,
+      "text": "long cooldowns that should be activated only at crutial parts of a fight, or mana/health potions "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 203,
+      "text": "that should be used when you are critically low. Unlike rotation spells, the order of cooldowns "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 204,
+      "text": "makes no difference.  Any amount of your cooldowns (including zero or all) can be active at "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 221,
+      "text": "This will announce that your cooldown is available in the manner you specify.  The cooldown is "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 222,
+      "text": "only announced when it becomes available after previously not being available."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 226,
+      "text": "Announce to all memebers of your raid or party (detected automatically)."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 228,
+      "text": "Announce to all party only, even if you are in a raid."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 230,
+      "text": "Announce to the raid as a raid warning (usually shows up in the middle of everyone's screen)."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 232,
+      "text": "Announce using /emote (showing up as an action you are performing)"
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 234,
+      "text": "Announce only to your chat frame (nobody else will see it)."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 237,
+      "text": "This will make an audible alert when your cooldown becomes available.  The cooldown is "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 238,
+      "text": "only alerted when it becomes available after previously not being available."
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 248,
+      "text": "Rotations are used to highlight spells or items in order of priority (ie. the higher up the rotation "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 249,
+      "text": "it is, the more preferential it is to highlight it).  This highlighting is subject to both the "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 250,
+      "text": "conditions present with each rotation, and the usability of the spell or item (including taking "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 251,
+      "text": "into account available mana and range to target unless these are disabled in the primary Rotation "
+    },
+    {
+      "file": "Help/rotations.lua",
+      "line": 252,
+      "text": "Master settings.)  A maximum of one rotation highlight may be active at any time."
+    },
+    {
+      "file": "Options/custom_condition.lua",
+      "line": 26,
+      "text": "-- Call this when the condition is registered (could initialize some data or something).\n-- Params:\n--    tag - The tag (aka. type) this condition is registered as\n"
+    },
+    {
+      "file": "Options/custom_condition.lua",
+      "line": 31,
+      "text": "-- Call this when the condition is unregistered (could destroy some data or something).\n-- Params:\n--    tag - The tag (aka. type) this condition was registered as\n"
+    },
+    {
+      "file": "Options/custom_condition.lua",
+      "line": 36,
+      "text": "-- Validate that the condition has all required values set and they are in\n-- acceptable bounds.  This does not indicate if the condition is true or not.\n-- Params:\n--    spec - The talent specialization in use (as a number).\n--    value - The storage for this condition (ie. where it's parameters are stored).\n-- Return: true if the condition is valid\n\nreturn true\n"
+    },
+    {
+      "file": "Options/custom_condition.lua",
+      "line": 46,
+      "text": "-- Evaluate the condition at runtime, and let us know if the current situation\n-- makes this condition pass.\n-- Params:\n--    value - The storage for this condition (ie. where it's parameters are stored).\n--    cache - A cache for this evaluation run (it is reset every evaluation cycle).\n--            You can also use addon.combatCache (only reset when going out of combat)\n--            or addon.longtermCache (only reset when your skills are updated).\n--    evalStart - The timestamp (GetTime()) of when this evaluation cycle started.\n-- Return: true if the condition passes\n\nreturn true\n"
+    },
+    {
+      "file": "Options/custom_condition.lua",
+      "line": 59,
+      "text": "-- Create a printable string that describes this condition in words.\n-- Params:\n--    spec - The talent specialization in use (as a number).\n--    value - The storage for this condition (ie. where it's parameters are stored).\n-- Return: A string that describes this condition\n\nreturn ''\n"
+    },
+    {
+      "file": "Options/custom_condition.lua",
+      "line": 68,
+      "text": "-- Create the widgets required to configure this condition.\n-- Params:\n--    parent - A bounding box that will contain this condition's widgets.\n--    spec - The talent specialization in use (as a number).\n--    value - The storage for this condition (ie. where it's parameters are stored).\nlocal AceGUI = LibStub(\"AceGUI-3.0\")\nlocal top = parent:GetUserData(\"top\")\nlocal root = top:GetUserData(\"root\")\nlocal funcs = top:GetUserData(\"funcs\")\n\n"
+    },
+    {
+      "file": "Options/custom_condition.lua",
+      "line": 80,
+      "text": "-- Create the required help information for this condition\n-- Params:\n--    frame - The frame the help widgets will be layed out in.\nlocal helpers = addon.help_funcs\n\n"
+    },
+    {
+      "file": "Options/custom_condition.lua",
+      "line": 265,
+      "text": "Importing custom functions contains raw LUA code that can be DANGEROUS.\n"
+    },
+    {
+      "file": "Options/custom_condition.lua",
+      "line": 266,
+      "text": "Do not import if you do not trust the provider of this code.\n"
+    },
+    {
+      "file": "Options/custom_condition.lua",
+      "line": 301,
+      "text": "_G.%s.funcDeserialize[\"%s\"] = %s\nlocal addon = _G.%s\nlocal L = LibStub(\"AceLocale-3.0\"):GetLocale(\"%s\")\n%s\nend\n"
+    },
+    {
+      "file": "validate.lua",
+      "line": 347,
+      "text": "Condition %s.%s has data of the wrong type (got %s)"
+    },
+    {
+      "file": "validate.lua",
+      "line": 355,
+      "text": "Condition %s.%s has data of the wrong type (got %s)"
+    },
+    {
+      "file": "validate.lua",
+      "line": 362,
+      "text": "Condition %s.%s provides a table where an array is required"
+    },
+    {
+      "file": "validate.lua",
+      "line": 372,
+      "text": "Condition %s.%s[%d] has data of the wrong type (expected %s, got %s)"
+    },
+    {
+      "file": "validate.lua",
+      "line": 381,
+      "text": "Condition %s.%s[%d] has data of the wrong type (expected %s, got %s)"
+    },
+    {
+      "file": "validate.lua",
+      "line": 387,
+      "text": "Unknown field type used in field spec for array on %s:%s"
+    },
+    {
+      "file": "validate.lua",
+      "line": 391,
+      "text": "Condition %s.%s has data of the wrong type (expected %s, got %s)"
+    }
+  ]
+}

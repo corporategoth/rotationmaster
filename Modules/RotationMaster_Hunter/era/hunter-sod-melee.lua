@@ -1,0 +1,80 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Season of Discovery melee (Survival) Hunter, dual-wield or two-hander, levels 1–60 (Phase 8
+-- runes). Chosen once a melee rune is engraved (Flanking Strike, Wyvern Strike or Carve) and no
+-- ranged hands rune (Chimera or Explosive Shot) is. Keeps the Flanking Strike buff up, Mongoose Bite
+-- at four Raptor Fury stacks, Raptor Strike on every reset, Wyvern Strike on Clever Strikes,
+-- Immolation Trap and Wing Clip only in empty gaps; Carve and Explosive Trap on packs; shots while
+-- out of melee (Wowhead P8 melee guide, simulator P8 melee builds). Falcon (Hawk before 60), Viper
+-- below 5% mana; no pet reminders with Lone Wolf engraved. Left manual: positioning, pet commands,
+-- Feed Pet and Tranquilizing Shot.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
+local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
+local function stacks(id,op,n)return{type='BUFF_STACKS',unit='player',spell=id,operator=op,value=n}end
+local function recharge(id,op,n)return{type='SPELL_COOLDOWN',spell=id,ranked=false,operator=op,value=n}end
+local function mana(op,n)return{type='MANAPCT',unit='player',operator=op,value=n}end
+local function stop(id,attack)return{id=id,type='stop',suppress_attack=not attack,conditions={}}end
+local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
+local standing=BuiltinConditions.negate({type='MOVING'})
+local unmarked=BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1130,anyrank=true})
+local stingless=BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
+ BuiltinConditions.negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=3034,anyrank=true,owndebuff=true}))
+local flankingLeft={type='BUFF_REMAIN',unit='player',spell=415320,operator='GREATERTHAN',value=1.5}
+local worth=BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(BuiltinConditions.classified('worldboss'),BuiltinConditions.classified('elite'),BuiltinConditions.classified('rareelite'),{type='INSTANCE',value='party'},{type='INSTANCE',value='raid'},
+ {type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=20}))
+local noAspect=BuiltinConditions.all(BuiltinConditions.negate(buff(415423)),BuiltinConditions.negate(buff(13163)),BuiltinConditions.negate(buff(5118)),BuiltinConditions.negate(buff(13159)),BuiltinConditions.negate(buff(13161)),BuiltinConditions.negate(buff(20043)))
+local viperLow=BuiltinConditions.all(mana('LESSTHAN',.5),BuiltinConditions.any(buff(415423),BuiltinConditions.all(BuiltinConditions.known(415423),mana('LESSTHAN',.05))))
+local rapid=buff(3045)
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=6,
+ blocks={['era.hunter.boundaries']=3,['sod.hunter.upkeep']=1},
+ applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
+ tags={'dps','melee','survival','leveling','endgame','season-of-discovery','wowhead'},
+ sources={
+  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/melee-dps-rotation-cooldowns-abilities-pve',title='Wowhead: Melee Hunter rotation, Season of Discovery',reviewedAt='2026-10-23',revision='2025-08-20'},
+
+
+ },
+ body={priority=110,switch=BuiltinConditions.all(BuiltinConditions.any(rune(415320),rune(458479),rune(425711)),BuiltinConditions.negate(rune(409433)),BuiltinConditions.negate(rune(409552))),
+ cooldowns={block('sod.hunter.upkeep','hunter-'),
+  BuiltinConditions.spell('hunter-falcon',469145,BuiltinConditions.all(BuiltinConditions.negate(buff(469145)),BuiltinConditions.negate(viperLow),BuiltinConditions.any(BuiltinConditions.combat(),noAspect))),
+  BuiltinConditions.spell('hunter-hawk',13165,BuiltinConditions.all(BuiltinConditions.negate(BuiltinConditions.known(469145)),BuiltinConditions.negate(buff(13165)),BuiltinConditions.negate(viperLow),BuiltinConditions.any(BuiltinConditions.combat(),noAspect))),
+  BuiltinConditions.spell('hunter-viper',415423,BuiltinConditions.all(BuiltinConditions.combat(),mana('LESSTHAN',.05),BuiltinConditions.negate(buff(415423)))),
+  BuiltinConditions.spell('hunter-rapid-fire',3045,BuiltinConditions.all(worth,BuiltinConditions.negate(rapid),BuiltinConditions.any(stacks(415320,'GREATERTHANOREQUALS',2),{type='TIME_IN_COMBAT',operator='GREATERTHANOREQUALS',value=10}))),
+  BuiltinConditions.spell('hunter-berserking',20554,BuiltinConditions.all(worth,rapid)),
+  BuiltinConditions.spell('hunter-blood-fury',20572,BuiltinConditions.all(worth,rapid)),
+  BuiltinConditions.spell('hunter-bestial-wrath',19574,BuiltinConditions.all(worth,{type='PET'}))},
+ rotation={
+  block('era.hunter.boundaries','hunter-'),
+  {id='hunter-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+   BuiltinConditions.spell('hunter-pull-mark',1130,unmarked),
+   BuiltinConditions.spell('hunter-pull-serpent-sting',1978,BuiltinConditions.all(stingless,{type='BEYOND_MELEE',unit='target'})),
+   stop('hunter-pull-stop',true),
+  }},
+  {id='hunter-ranged',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onFalse={},onTrue={
+   BuiltinConditions.spell('hunter-ranged-serpent-sting',1978,stingless),
+   BuiltinConditions.spell('hunter-ranged-multi-shot',2643),
+   BuiltinConditions.spell('hunter-ranged-arcane-shot',3044),
+   {id='hunter-ranged-auto-shot',type='spell',action=75,ranked=true,conditions=BuiltinConditions.all(BuiltinConditions.negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true}),standing)},
+   stop('hunter-ranged-stop'),
+  }},
+  {id='hunter-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
+   BuiltinConditions.spell('hunter-aoe-carve',425711),
+   BuiltinConditions.spell('hunter-aoe-explosive-trap',13813),
+  }},
+  BuiltinConditions.spell('hunter-flanking-refresh',415320,BuiltinConditions.all(stacks(415320,'GREATERTHANOREQUALS',1),{type='BUFF_REMAIN',unit='player',spell=415320,operator='LESSTHANOREQUALS',value=2})),
+  BuiltinConditions.spell('hunter-flanking-stack',415320,BuiltinConditions.all(BuiltinConditions.negate(stacks(415320,'GREATERTHANOREQUALS',3)),BuiltinConditions.negate(buff(415358)))),
+  BuiltinConditions.spell('hunter-clever-wyvern-strike',458436,buff(467331)),
+  BuiltinConditions.spell('hunter-fury-mongoose-bite',1495,stacks(415358,'GREATERTHANOREQUALS',4)),
+  BuiltinConditions.spell('hunter-raptor-strike',2973,BuiltinConditions.negate({type='SPELL_ACTIVE',spell=2973,ranked=false})),
+  BuiltinConditions.spell('hunter-mongoose-bite',1495),
+  BuiltinConditions.spell('hunter-wyvern-strike',458436),
+  BuiltinConditions.spell('hunter-flanking-strike',415320),
+  BuiltinConditions.spell('hunter-carve',425711),
+  BuiltinConditions.spell('hunter-immolation-trap',13795,BuiltinConditions.all(recharge(2973,'GREATERTHAN',1.5),recharge(1495,'GREATERTHAN',1.5),flankingLeft)),
+  BuiltinConditions.spell('hunter-wing-clip',2974,BuiltinConditions.all(recharge(2973,'GREATERTHAN',1.5),recharge(1495,'GREATERTHAN',1.5),flankingLeft)),
+  stop('hunter-wait',true),
+ }},
+}))

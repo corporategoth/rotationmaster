@@ -1,10 +1,12 @@
-## Interface: 90207
-## Interface-Classic: 11403
-## Interface-BCC: 20504
-## Interface-Wrath: 30400
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+## Interface: 11509, 20506, 30405, 38002, 40402, 50504, 120105, 16001
+## Interface-Classic: 11509
+## Interface-BCC: 20506
+## Interface-Wrath: 30405
 ## Title: Rotation Master
 ## Version: @project-version@
-## Author: Makiel
+## Author: PreZ
+## X-Discord: https://discord.gg/4aKZSpUMet
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@neuromancy.net
 ## X-Website: https://github.com/corporategoth/rotationmaster/wiki
@@ -16,37 +18,277 @@
 ## X-Project-Revision: @project-revision@
 ## X-ReleaseDate: @project-date-iso@
 ## SavedVariables: RotationMasterDB
-## OptionalDeps: Ace3, LibAboutPanel-2.0, LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations
-## X-Embeds: AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox
+## OptionalDeps: LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations, LibRangeCheck-3.0, Masque
 ## X-Credits: None
-## X-License: MIT
+## X-License: MIT + Attribution
 ## X-Author-Server: Atiesh
 ## X-Author-Faction: Horde
 
 globals.lua
+Core/dependency_revisions.lua
+Platform/client.lua
+Platform/rotation_owner.lua
+Platform/groups.lua
+Platform/focus_unit.lua
+Platform/group_units.lua
+Platform/raid_marks.lua
+Platform/raid_mark_actions.lua
+Platform/announcement_recipient.lua
+Platform/roster_class.lua
+Platform/role.lua
+Platform/mobinfo2.lua
+Platform/casting.lua
+Platform/unit_health.lua
+Platform/unit_stat.lua
+Platform/health_forecast.lua
+Platform/unit_level.lua
+Platform/unit_power.lua
+Platform/player_movement.lua
+Platform/unit_attackability.lua
+Platform/unit_flags.lua
+Platform/unit_states.lua
+Platform/player_flags.lua
+Platform/form.lua
+Platform/points.lua
+Platform/runes.lua
+Platform/unit_identity.lua
+Platform/unit_metadata.lua
+Platform/creature_type.lua
+Platform/unit_presence.lua
+Platform/pet.lua
+Platform/threat.lua
+Platform/instance.lua
+Platform/world_state.lua
+Platform/edition_state.lua
+Platform/zone_pvp.lua
+Platform/loss_of_control.lua
+Platform/specializations.lua
+Platform/talents.lua
+Platform/talent_tree.lua
+Platform/engraving.lua
+Platform/spells.lua
+Platform/assisted_combat.lua
+Platform/items.lua
+Platform/glyphs.lua
+Platform/macros.lua
+Platform/communication.lua
+Platform/inventory.lua
+Platform/totems.lua
+Platform/actions.lua
+Platform/spellbook.lua
+Platform/auras.lua
+Platform/range.lua
+compat.lua
 embeds.xml
 locales.xml
+Data/text_bundle_index.lua
+Core/text_bundles.lua
 constants.lua
+Core/raid_mark_units.lua
+Data/artwork.lua
+Data/talent_trees.lua
+Functions/values.lua
+Functions/presentation.lua
+Functions/text.lua
+Functions/collections.lua
+Functions/cache.lua
+Diagnostics/cache_mode.lua
+Functions/trends.lua
+Functions/forecast.lua
 utils.lua
 profiler.lua
+Diagnostics/errors.lua
+Diagnostics/cpu.lua
+Diagnostics/cpu_runtime.lua
+Diagnostics/memory.lua
+Core/conditions.lua
+Core/condition_support.lua
+Core/condition_runtime.lua
+Core/condition_catalog.lua
+Core/item_conditions.lua
+Core/level_conditions.lua
+Core/point_conditions.lua
+Core/class_group_conditions.lua
+Core/creature_conditions.lua
+Core/health_forecast_conditions.lua
+Core/threat_count_conditions.lua
+Core/itemset_services.lua
+Core/raid_mark_buttons.lua
+Core/rotation_references.lua
+Core/item_sets.lua
+Core/inventory.lua
+Core/build_context.lua
+Core/presentation.lua
+Core/custom_condition_owner.lua
+Core/action_policy.lua
+Core/spell_catalog.lua
+Core/spell_search.lua
+Core/reference_catalog.lua
+Core/category_data.lua
+Core/announcement_data.lua
+Core/announcements.lua
+Core/macro_announcements.lua
+Analytics/replay.lua
+Analytics/capture.lua
+Platform/analytics_casts.lua
+Core/profile_data.lua
+Core/collection_data.lua
+Core/custom_condition_data.lua
+Core/functions.lua
+Data/builtin_sources.lua
+Core/builtin_sources.lua
+Core/custom_authoring.lua
+Core/custom_condition_services.lua
+Core/lua_symbols.lua
+Core/function_data.lua
+Core/schema_authoring.lua
+Core/schema_canvas.lua
+Core/aura_conditions.lua
+Data/plain.lua
+Data/rotation_revision.lua
+Data/tags.lua
+Data/rotation_tree.lua
+Data/condition_draft.lua
+Data/rotation_draft.lua
+Data/export_text.lua
+Data/codec.lua
+Data/validation.lua
+Data/catalog.lua
+Data/diff.lua
+Data/visual_comparison.lua
+Data/import_session.lua
+Data/rotation_store.lua
+Core/rotation_active.lua
+Core/rotation_choice_preferences.lua
+Core/rotation_library.lua
+Core/builtin_modules.lua
+Core/rotation_scope.lua
+Core/rotation_migration.lua
+Core/legacy_archive.lua
+Core/group_unit_resolution.lua
+Core/rotation_lifecycle.lua
+Core/rotation_tags.lua
+Core/imports.lua
+Core/condition_editor.lua
+Core/unsaved_changes.lua
+Core/rotation_editor.lua
+Core/rotation_workspace.lua
+Core/condition_canvas.lua
+Core/condition_description.lua
+Core/rotation_canvas.lua
+Core/rotation_sequence.lua
+Core/rotation_selection.lua
+Core/active_runtime_plan.lua
 main.lua
 buttons.lua
+Diagnostics/glow.lua
+Diagnostics/talents.lua
+Diagnostics/timeline.lua
+Diagnostics/raid_marks.lua
+Core/unit_state_conditions.lua
+Core/assisted_highlight.lua
+Core/tooltips.lua
 init.lua
 validate.lua
+UI/controls.lua
+UI/drag_presentation.lua
+UI/unsaved.lua
+UI/condition_widgets.lua
+UI/condition_observation.lua
+UI/condition_icon.lua
+UI/condition_position.lua
+UI/condition_display.lua
+UI/selector.lua
+UI/checkbox.lua
+UI/condition_inputs.lua
+UI/condition_layout.lua
+UI/condition_table.lua
+UI/condition_unit.lua
+UI/icon_picker.lua
+UI/window.lua
+UI/help.lua
+UI/spell_search.lua
+UI/spell_icon.lua
+UI/talent_popup.lua
+UI/errors.lua
+UI/cpu_profile.lua
+UI/analytics_capture.lua
+UI/settings_launcher.lua
+UI/settings_setup.lua
+UI/settings_roster_order.lua
+UI/settings_layout.lua
+UI/settings_ordered.lua
+UI/settings_draft.lua
+UI/settings_history.lua
+UI/settings_unsaved.lua
+UI/settings_form.lua
+UI/item_list_popup.lua
+UI/settings_transfer.lua
+UI/custom_condition_transfer.lua
+UI/settings_general.lua
+UI/settings_integrations.lua
+UI/settings_profiles.lua
+UI/collection_compare.lua
+UI/transfer_review.lua
+UI/draft_changes.lua
+UI/draft_change_controls.lua
+UI/settings_collections.lua
+UI/settings_announces.lua
+UI/settings_effects.lua
+UI/settings_items.lua
+UI/item_set_binding.lua
+UI/settings_conditions.lua
+UI/settings_functions.lua
+UI/function_bindings.lua
+UI/function_source_pane.lua
+UI/function_bundle_transfer.lua
+UI/config.lua
+UI/rotation_browser.lua
+UI/condition_picker.lua
+UI/condition_cards.lua
+UI/condition_canvas.lua
+UI/condition_editor.lua
+UI/condition_text.lua
+UI/rotation_cards.lua
+UI/rotation_canvas.lua
+UI/color_picker.lua
+UI/tag_picker.lua
+UI/rotation_effect_fields.lua
+UI/rotation_mark_fields.lua
+UI/rotation_fields.lua
+UI/rotation_navigation.lua
+UI/rotation_metadata.lua
+UI/rotation_view.lua
+UI/rotation_editor.lua
+UI/preview.lua
+UI/rotation_reference.lua
+UI/defaults.lua
+UI/rotation_comparison.lua
+UI/transfer.lua
+UI/rotation_adoption.lua
+UI/legacy_archive_banner.lua
 
-Widgets/help.lua
-Widgets/directional.lua
-Widgets/disable_inline.lua
 
-# Configuration UI
-Options/general.lua
-Options/effects.lua
-Options/announce.lua
-Options/itemset.lua
-Options/rotations.lua
-Options/custom_condition.lua
-Options/conditions.lua
-Options/conditional.lua
+# Code authoring UI
+UI/lua_input_probe.lua
+UI/lua_input_diagnostics.lua
+Libs/LuaWorkbench-Embed/modules.lua
+UI/lua_debug_output.lua
+Integrations/lua_workbench.lua
+UI/lua_completion.lua
+UI/line_numbers.lua
+UI/lua_editor.lua
+Integrations/questie.lua
+Integrations/encounters.lua
+Integrations/masque.lua
+Integrations/catalog.lua
+UI/schema_cards.lua
+UI/schema_editor.lua
+UI/custom_source_fields.lua
+UI/custom_condition_editor.lua
+UI/condition_source_preview.lua
+UI/condition_source_pane.lua
+UI/condition_entrypoints.lua
 
 # Help Files
 Help/common.lua
@@ -62,19 +304,37 @@ Help/conditional.lua
 # Conditions
 Conditions/common.lua
 Conditions/character.lua
+Conditions/talent.lua
+Conditions/engraving.lua
+Conditions/specialization.lua
 Conditions/stats.lua
 Conditions/ext_stats.lua
 Conditions/spell.lua
 Conditions/anyspell.lua
+Conditions/assisted.lua
+Conditions/known_spell.lua
 Conditions/petspell.lua
 Conditions/buffs.lua
 Conditions/debuffs.lua
 Conditions/totem.lua
 Conditions/item.lua
 Conditions/combat.lua
+Conditions/unit_states.lua
 Conditions/casting.lua
 Conditions/channeling.lua
 Conditions/spatial.lua
+Conditions/range.lua
 Conditions/spatial_stats.lua
 Conditions/weapon.lua
+Conditions/equipment.lua
+Conditions/build.lua
 Conditions/misc.lua
+Conditions/bossmod.lua
+Conditions/player_state.lua
+Conditions/encounter_state.lua
+Conditions/group_state.lua
+Conditions/hero_talent.lua
+Conditions/proc_glow.lua
+Conditions/edition_state.lua
+Conditions/world_seed.lua
+Conditions/raid_marks.lua

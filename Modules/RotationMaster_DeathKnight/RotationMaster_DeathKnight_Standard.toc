@@ -1,0 +1,25 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+## Interface: 120105
+## Title: Rotation Master - Death Knight
+## Notes: Rotation Master's Built In Death Knight rotations. Rotation Master loads this itself, only for a Death Knight, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT + Attribution
+
+bind.lua
+locales.xml
+retail/blocks.lua
+retail/death-knight-initial.lua
+retail/death-knight-blood.lua
+retail/death-knight-blood-guide.lua
+retail/death-knight-blood-simc.lua
+retail/death-knight-frost.lua
+retail/death-knight-frost-guide.lua
+retail/death-knight-frost-wowhead.lua
+retail/death-knight-unholy.lua
+retail/death-knight-unholy-guide.lua
+retail/death-knight-unholy-simc.lua

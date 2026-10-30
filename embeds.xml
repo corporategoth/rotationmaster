@@ -1,37 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details. -->
 <Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.blizzard.com/wow/ui/" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
 
 <Script file="Libs\LibStub\LibStub.lua" />
 <Include file="Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml" />
 <Include file="Libs\AceAddon-3.0\AceAddon-3.0.xml" />
-<Include file="Libs\AceGUI-3.0\AceGUI-3.0.xml" />
-<Include file="Libs\AceConfig-3.0\AceConfig-3.0.xml" />
 <Include file="Libs\AceConsole-3.0\AceConsole-3.0.xml" />
 <Include file="Libs\AceDB-3.0\AceDB-3.0.xml" />
-<Include file="Libs\AceDBOptions-3.0\AceDBOptions-3.0.xml" />
 <Include file="Libs\AceEvent-3.0\AceEvent-3.0.xml" />
 <Include file="Libs\AceTimer-3.0\AceTimer-3.0.xml" />
 <Include file="Libs\AceLocale-3.0\AceLocale-3.0.xml" />
 <Include file="Libs\AceSerializer-3.0\AceSerializer-3.0.xml" />
 <Include file="Libs\AceComm-3.0\AceComm-3.0.xml" />
 <Include file="Libs\AceBucket-3.0\AceBucket-3.0.xml" />
-<Include file="Libs\AceGUI-3.0-Spell-EditBox\AceGUI-3.0-Spell-EditBox.xml" />
-<Include file="Libs\AceGUI-3.0-Item-EditBox\AceGUI-3.0-Item-EditBox.xml" />
-<Include file="Libs\LibAboutPanel-2.0\lib.xml" />
 <Include file="Libs\LibCompress\lib.xml" />
-<Script file="LibsAugment\Spec-EditBox.lua" />
-<Script file="LibsAugment\Totem-EditBox.lua" />
-<Script file="LibsAugment\Glyph-EditBox.lua" />
-<Include file="Libs\AceGUI-3.0-ActionSlotWidgets\widget.xml" />
 <Include file="Libs\LibSharedMedia-3.0\lib.xml" />
-<Include file="Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml" />
 <Script file="Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua" />
 <Include file="Libs\LibDBIcon-1.0\lib.xml" />
 <Include file="Libs\LibCustomGlow-1.0\LibCustomGlow-1.0.xml" />
 <Include file="Libs\ThreatClassic-1.0\lib.xml" />
 <Include file="Libs\LibClassicDurations\LibClassicDurations.xml" />
-<Script file="Libs\LibRangeCheck-2.0\LibRangeCheck-2.0.lua" />
+<Script file="Libs\LibRangeCheck-3.0\LibRangeCheck-3.0.lua" />
 <Script file="LibsAugment\FAIAP.lua" />
 
 </Ui>

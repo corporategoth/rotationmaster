@@ -1,98 +1,89 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Help document for the Conditions settings page: condition categories, ordering, switch and announcement
+-- availability, hiding, and the Import/Export and Move To controls, as title and sentence pairs, with the renderer that
+-- lays them out in a help frame.
+-- Loaded from RotationMaster.toc with the other Help/ files, after Help/common.lua (addon.help_funcs) and UI/. The
+-- sentences are L[...] literals and are translated as written; keep them whole.
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI = LibStub("AceGUI-3.0")
 local color = color
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, Gap =
-    helpers.CreateText, helpers.CreatePictureText, helpers.Gap
+local CreateText, CreatePictureText, Gap = helpers.CreateText, helpers.CreatePictureText, helpers.Gap
 
+-- Returns the Conditions page help entries, in the order the controls appear on the page.
+-- @return table[]  The entries, each {title=string, text=string}.
+function addon:GetDocument_layout_conditions_options_help()
+    return {
+        {
+            title = L["Category"],
+            text = L["Use All, Built In or Custom to choose the condition source, then filter by Switch, Other or a named category. Search above these controls narrows the visible list without changing assignments."],
+        },
+        {
+            title = L["Manage categories"],
+            text = L["Open Manage categories below the list for category maintenance. Manage conditions returns to individual condition settings."],
+        },
+        {
+            title = L["Name"],
+            text = L["Rename the selected category in Manage categories. Built-in categories cannot be renamed or deleted."],
+        },
+        {
+            title = L["Add category"],
+            text = L["Add an empty named category from the category-management list. Move To in condition settings assigns a condition to it."],
+        },
+        {
+            title = L["Move Up"],
+            text = L["In Manage categories, move the selected category earlier in the category list."],
+        },
+        {
+            title = L["Move Down"],
+            text = L["In Manage categories, move the selected category later in the category list."],
+        },
+        {
+            title = L["Delete category"],
+            text = L["Delete a named category after confirmation. Its conditions remain available under Other; their definitions are preserved."],
+        },
+        {
+            title = L["Import/Export"],
+            text = L["Below the condition list, Import/Export opens the selected custom definition for transfer and code review; it is disabled for built-in conditions. In Manage categories, transfer a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent."],
+        },
+        {
+            title = L["Search"],
+            text = L["Filter the visible condition list by name or identifier. The category filter still applies."],
+        },
+        {
+            title = L["Switch Condition"],
+            text = L["Allow this condition type to be used when automatically selecting a rotation."],
+        },
+        {
+            title = L["Announcement Condition"],
+            text = L["Offer this condition type when editing announcement conditions. This flag is independent of Switch Condition and does not remove or invalidate conditions already saved in announcements."],
+        },
+        {
+            title = L["Hidden"],
+            text = L["Hide this condition from the Other picker category. Explicit named-category and Switch membership remain available."],
+        },
+        {
+            title = L["Condition order"],
+            text = L["The condition ordering controls are arrows and draggable rows in the sidebar of the selected category. In Manage categories, the same controls order the categories themselves."],
+        },
+        {
+            title = L["Move To"],
+            text = L["Choose a named category or Other, then use Apply beside the destination to stage the move. Page Apply saves all pending changes. Use Switch Condition separately for automatic-switch availability."],
+        },
+    }
+end
+
+-- Lays the Conditions help document out in a frame as a yellow title followed by its text, one gap between each.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_conditions_options_help(frame)
-    local group = frame
+    for _, entry in ipairs(addon:GetDocument_layout_conditions_options_help()) do
+        frame:AddChild(Gap())
 
-    group:AddChild(CreateText(
-            "Conditions are used to decide when a rotation step or cooldown will be active.  There are many " ..
-            "conditions deployed with Rotation Master, serving a wide variety of purposes.  They can be grouped " ..
-            "in many ways.  They can also be enabled as switch conditions (ie. used to aid in automatic " ..
-            "switching rotations)."))
-
-    group:AddChild(Gap())
-    group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
-
-    group:AddChild(Gap())
-    group:AddChild(CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
-            "Select which condition group you wish to modify.  You can create a new condition group by " ..
-            "selecting " .. color.GREEN .. NEW .. color.RESET .. ".  The special group " .. color.GREEN ..
-            ALL .. color.RESET .. " will display all conditions that are known to Rotation Master, regardless " ..
-            "of it's use.  The " .. color.CYAN .. L["Switch"] .. color.RESET .. " group shows you all " ..
-            "conditions that are used for switching rotations. The " .. color.GREEN .. L["Other"] .. color.RESET ..
-            " group shows all conditions that are not associated with other condition groups."))
-
-    group:AddChild(CreatePictureText(
-            "Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
-            color.BLIZ_YELLOW .. L["Move to Top"] .. color.RESET .. " - " ..
-                    "This will move the current condition group to the first slot in the list."))
-
-    group:AddChild(CreatePictureText(
-            "Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up", 24, 24,
-            color.BLIZ_YELLOW .. L["Move Up"] .. color.RESET .. " - " ..
-                    "This will move the current condition group up to the previous slot in the list."))
-
-    group:AddChild(CreatePictureText(
-            "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", 24, 24,
-            color.BLIZ_YELLOW .. L["Move Down"] .. color.RESET .. " - " ..
-                    "This will move the current condition group down to the next slot in the list."))
-
-    group:AddChild(CreatePictureText(
-            "Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", 24, 24,
-            color.BLIZ_YELLOW .. L["Move to Bottom"] .. color.RESET .. " - " ..
-                    "This will move the current condition to the last slot in the list."))
-
-    group:AddChild(CreatePictureText(
-            "Interface\\FriendsFrame\\UI-FriendsList-Small-Up", 24, 24,
-            color.BLIZ_YELLOW .. L["Import/Export"] .. color.RESET .. " - " ..
-                    "This will open up a window that can be used to both export " ..
-                    "your current condition group and import one created by someone else."))
-
-    group:AddChild(CreatePictureText(
-            "Interface\\Buttons\\UI-Panel-MinimizeButton-Up", 24, 24,
-            color.BLIZ_YELLOW .. DELETE .. color.RESET .. " - " ..
-                    "Delete this condition group.  All conditions within will show up under the " ..
-                    color.GREEN .. L["Other"] .. color.RESET .. " group when selecting conditions."))
-
-    group:AddChild(Gap())
-    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Search"] .. color.RESET .. " - " ..
-            "Filter the conditions displayed to only ones that contain the search string.  This makes it " ..
-            "much easier to find conditions as the number of conditions grow."))
-
-    group:AddChild(Gap())
-    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Switch Condition"] .. color.RESET .. " - " ..
-            "If this is checked, the condition will show up in the list of conditions that can be used " ..
-            "when switching rotations."))
-
-    group:AddChild(Gap())
-    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Hidden"] .. color.RESET .. " - " ..
-            "This condition should not show up in the condition selection box (for the " .. color.GREEN ..
-            L["Other"] .. color.RESET .. " group).  A condition that is in another group will still " ..
-            "show up in the condition selection box (including " .. color.CYAN .. L["Switch"] .. color.RESET ..
-            " conditions)."))
-
-    group:AddChild(Gap())
-    local directional_group = AceGUI:Create("SimpleGroup")
-    directional_group:SetFullWidth(true)
-    directional_group:SetLayout("Table")
-    directional_group:SetUserData("table", { columns = { 50, 1 } })
-    group:AddChild(directional_group)
-
-    local directional = AceGUI:Create("Directional")
-    directional_group:AddChild(directional)
-
-    directional_group:AddChild(CreateText(color.BLIZ_YELLOW .. "Order" .. color.RESET .. " - " ..
-            "Change the order of the selected condition, moving it in the direction indicated by the arrow."))
-
-    group:AddChild(Gap())
-    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Move To"] .. color.RESET .. " - " ..
-            "Move the selected condition to another condition group.  You cannot move a condition to the " ..
-            color.GREEN .. ALL .. color.RESET .. " or " .. color.CYAN .. L["Switch"] .. color.RESET .. " groups."))
+        frame:AddChild(CreateText(
+            (entry.title ~= '' and color.BLIZ_YELLOW .. entry.title .. color.RESET .. ' - ' or '') .. entry.text
+        ))
+    end
 end

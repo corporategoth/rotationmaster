@@ -1,0 +1,13 @@
+# Test commands that are allowed to fail, one per line exactly as tools/check_all.py prints them
+# ("lua5.1 tests/x.lua", "python3 tests/y.py"). `tools/check_all.py --baseline tools/known_failures.txt` lets
+# these fail without failing the run; any other failure still does. CI's push and pull-request workflow
+# (.gitea/workflows/test.yml) and the pre-push hook read this file; the release workflow does not, so a release
+# is green or it does not happen (unless allow_known_failures is chosen by hand).
+#
+# The list is EMPTY: the whole suite is green and has to stay that way. The mechanism stays for a day a regression
+# lands on a branch before its fix does. Rules for using it:
+#   * Add a line only to record a failure you are about to fix on the same branch, with the reason in this header.
+#   * Remove the line the moment its command is green again; never add one to hide a regression you just made.
+#   * A line that names a command tools/check no longer runs is itself an error (tools/test_devtools.py).
+# lua5.1 tests/default_corpus.lua passes (81 tests) but takes about 35 minutes on one core of a loaded workstation;
+# see docs/dev/running-things.md and tools/slow_tests.txt.

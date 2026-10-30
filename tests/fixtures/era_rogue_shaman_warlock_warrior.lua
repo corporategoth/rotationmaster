@@ -1,0 +1,998 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Shared world model for the Classic Era and Season of Discovery Rogue, Shaman, Warlock and
+-- Warrior premade scenario tests. The client is the real 'era' family (probe policy), so the
+-- packs auto-select as in game. Native WoW observations are modeled here (talent trees, the
+-- active season, temporary weapon enchants, totems, pets, instances); the real platform,
+-- conditions, build context, catalog, composition, sequence executor, readiness and initialized
+-- publisher run on top. Rank families below are scenario samples, not a trainer schedule.
+local F = dofile('tests/fixtures/addon.lua')
+local M = { F = F }
+local power = { WARRIOR = 1, ROGUE = 3, SHAMAN = 0, WARLOCK = 0 }
+
+local families = {
+    [1752] = { 1752, 1757, 1758, 1759, 1760, 8621, 11293, 11294 },
+    [2098] = {2098, 6760, 6761, 6762, 8623, 8624, 11299, 11300, 31016},
+    [5171] = { 5171, 6774 },
+    [403] = {403, 529, 548, 915, 943, 6041, 10391, 10392, 15207, 15208},
+    [686] = {686, 695, 705, 1088, 1106, 7641, 11659, 11660, 11661, 25307},
+    [78] = {78, 284, 285, 1608, 11564, 11565, 11566, 11567, 25286},
+}
+
+-- Equipment records {itemID, item class, subclass, equip location} for WEAPON_TYPE (s.gear[slot]).
+M.GEAR = {
+    DAGGER = { 7001, 2, 15, 'INVTYPE_WEAPON' },
+    SWORD = { 7002, 2, 7, 'INVTYPE_WEAPON' },
+    AXE2H = { 7003, 2, 1, 'INVTYPE_2HWEAPON' },
+    SHIELD = { 7004, 4, 6, 'INVTYPE_SHIELD' },
+    STAFF = { 7005, 2, 10, 'INVTYPE_2HWEAPON' },
+    OFFHAND = { 7006, 4, 0, 'INVTYPE_HOLDABLE' },
+}
+
+local function packs(class)
+    return dofile('tools/builtin_modules.lua').paths({ family = 'era', class = class })
+end
+
+M.packs = packs
+
+-- Every spell an action or a condition of the class's premades names, collected from the expanded bodies.
+local function collect(a, class)
+    local spells, actions, seen = {}, {}, {}
+
+    local function condition(c)
+        if type(c) ~= 'table' then
+            return
+        end
+
+        if type(c.spell) == 'number' and c.type ~= 'TOTEM' then
+            spells[c.spell] = true
+        end
+
+        if c.type == 'AND' or c.type == 'OR' then
+            for _, v in ipairs(c.value) do
+                condition(v)
+            end
+        elseif c.type == 'NOT' then
+            condition(c.value)
+        end
+    end
+
+    local function steps(list)
+        for _, step in ipairs(list or {}) do
+            condition(step.conditions)
+
+            if step.type == 'spell' and type(step.action) == 'number' then
+                spells[step.action] = true
+
+                if not seen[step.action] then
+                    seen[step.action] = true
+                    actions[#actions + 1] = step.action
+                end
+            end
+
+            steps(step.onTrue)
+            steps(step.onFalse)
+        end
+    end
+
+    for _, row in ipairs(a:ListDefaultRotations(0)) do
+        if row.applicability.class == class then
+            local body = a:GetDefaultRotation(row.id).envelope.body
+            condition(body.switch)
+            steps(body.rotation)
+            steps(body.cooldowns)
+        end
+    end
+
+    return spells, actions
+end
+
+function M.fixture(class, options)
+    options = options or {}
+    local f = F.new(2, 0, class)
+    local a, e = f.addon, f.env
+    a.db.profile = options.profile or { rotations = {}, itemsets = {} }
+    a.db.global.effects = {}
+
+    local s = {
+        class = class,
+        level = options.level or 60,
+        combat = true,
+        targetCombat = true,
+        exists = true,
+        hostile = true,
+        friend = false,
+        dead = false,
+        moving = false,
+        known = {},
+        usable = {},
+        nopower = {},
+        range = {},
+        cooldown = {},
+        mapped = {},
+        buffs = {},
+        debuffs = {},
+        targetBuffs = {},
+        petBuffs = {},
+        items = {},
+        totems = {},
+        health = 100,
+        targetHealth = 100,
+        power = class == 'ROGUE' and 100 or 0,
+        maxPower = 100,
+        mana = 100,
+        targetMana = 0,
+        points = 0,
+        stealth = false,
+        cast = false,
+        channel = false,
+        targetCast = nil,
+        targetInterruptible = true,
+        form = 1,
+        group = false,
+        classification = 'normal',
+        creature = 7,
+        targetLevel = nil,
+        targettarget = 'player',
+        threat = nil,
+        enemies = {},
+        autorepeat = false,
+        active = {},
+        mainEnchant = false,
+        offEnchant = false,
+        offSpeed = nil,
+        pet = false,
+        petDead = false,
+        petHealth = 100,
+        petMana = 100,
+        ttd = nil,
+        talents = { 0, 0, 0 },
+        talent = {},
+        season = nil,
+        hardcore = false,
+        instance = nil,
+        history = {},
+        runes = {},
+        bar = {},
+        gear = {},
+        channelSpell = nil,
+        channelStart = 99,
+        channelEnd = 101,
+    }
+
+    -- FORM by spell: s.bar lists the stance-bar spells in slot order (a Warrior's three stances by default),
+    -- s.form the active slot; s.shift(id) activates a form by spell. Default gear: a Warrior sword and shield,
+    -- a Rogue main-hand dagger.
+    if class == 'WARRIOR' then
+        s.bar = { 2457, 71, 2458 }
+        s.gear = { [16] = M.GEAR.SWORD, [17] = M.GEAR.SHIELD }
+    end
+
+    if class == 'ROGUE' then
+        s.gear = { [16] = M.GEAR.DAGGER }
+    end
+    if class ~= 'WARRIOR' then
+        s.form = 0
+    end
+
+    s.shift = function(id)
+        if id == 0 then
+            s.form = 0
+            return
+        end
+
+        for index, known in ipairs(s.bar) do
+            if known == id then
+                s.form = index
+                return
+            end
+        end
+
+        s.bar[#s.bar + 1] = id
+        s.form = #s.bar
+    end
+
+    local names, ranks = {}, {}
+
+    local function highest(name)
+        for base, list in pairs(families) do
+            if name == 'Spell ' .. base then
+                for i = #list, 1, -1 do
+                    if s.known[list[i]] then
+                        return list[i]
+                    end
+                end
+
+                return nil
+            end
+        end
+
+        local id = tonumber(name:match('^Spell (%d+)$'))
+        return id and s.known[id] and id or nil
+    end
+
+    local function aura(list, index)
+        local x = list[index]
+
+        if not x then
+            return
+        end
+
+        return {
+            spellId = x.id,
+            name = names[x.id] or ('Spell ' .. x.id),
+            sourceUnit = x.source == nil and 'player' or x.source or nil,
+            expirationTime = x.expires or 0,
+            duration = x.duration or 0,
+            applications = x.stacks or 0,
+            dispelName = x.dispel,
+        }
+    end
+
+    e.Enum.PowerType.ComboPoints = 4
+
+    e.UnitExists = function(unit)
+        if unit == 'player' then
+            return true
+        elseif unit == 'target' then
+            return s.exists
+        elseif unit == 'pet' then
+            return s.pet
+        elseif unit == 'targettarget' then
+            return s.exists and s.targettarget ~= nil
+        elseif unit:match('^nameplate%d+$') then
+            return s.enemies[tonumber(unit:match('%d+'))] ~= nil
+        end
+
+        return false
+    end
+
+    e.UnitIsUnit = function(x, y)
+        if x == 'targettarget' and y == 'player' then
+            return s.targettarget == 'player'
+        end
+
+        return x == y
+    end
+
+    e.UnitGUID = function(unit)
+        local n = unit:match('^nameplate(%d+)$')
+
+        if n then
+            return 'Creature-' .. n
+        end
+
+        return unit == 'player' and 'Player-test' or 'Creature-target'
+    end
+
+    e.UnitIsEnemy = function(_, unit)
+        if unit == 'target' then
+            return s.hostile
+        end
+
+        return unit ~= 'player' and unit ~= 'pet'
+    end
+
+    e.UnitIsFriend = function(_, unit)
+        if unit == 'target' then
+            return s.friend
+        end
+
+        return unit == 'player' or unit == 'pet'
+    end
+
+    e.UnitLevel = function(unit)
+        if unit == 'target' then
+            return s.targetLevel or s.level
+        end
+
+        return s.level
+    end
+
+    e.UnitClassification = function() return s.classification end
+    e.UnitCreatureType = function() return 'Creature', s.creature end
+
+    e.UnitAffectingCombat = function(unit)
+        if unit == 'player' then
+            return s.combat
+        end
+
+        return s.targetCombat
+    end
+
+    e.UnitCanAttack = function() return s.hostile end
+    e.UnitIsDead = function() return s.dead end
+
+    e.UnitIsDeadOrGhost = function(unit)
+        if unit == 'pet' then
+            return s.petDead
+        end
+
+        return unit == 'target' and s.dead or false
+    end
+
+    e.UnitHasVehicleUI = function() return false end
+    e.GetUnitSpeed = function() return s.moving and 7 or 0 end
+
+    e.UnitHealth = function(unit)
+        if unit == 'target' then
+            return s.targetHealth
+        elseif unit == 'pet' then
+            return s.petHealth
+        end
+
+        return s.health
+    end
+
+    e.UnitHealthMax = function() return 100 end
+
+    e.UnitPowerType = function(unit)
+        if unit == 'target' then
+            return 0
+        end
+
+        return power[class]
+    end
+
+    e.UnitPower = function(unit, kind)
+        if unit == 'target' then
+            return kind == 0 and s.targetMana or 0
+        end
+        if unit == 'pet' then
+            return s.petMana
+        end
+
+        if kind == 4 then
+            return s.points
+        elseif kind == 0 then
+            return s.mana
+        end
+
+        return s.power
+    end
+
+    e.UnitPowerMax = function(unit, kind)
+        if kind == 4 then
+            return 5
+        end
+
+        return 100
+    end
+
+    e.GetComboPoints = function() return s.points end
+    e.IsStealthed = function() return s.stealth end
+    e.GetShapeshiftForm = function() return s.form end
+    e.GetNumShapeshiftForms = function() return #s.bar end
+
+    e.GetShapeshiftFormInfo = function(index)
+        local id = s.bar[index]
+
+        if id then
+            return 136000, index == s.form, true, id
+        end
+    end
+
+    e.GetInventoryItemID = function(_, slot)
+        local item = s.gear[slot]
+        return item and item[1]
+    end
+
+    e.GetInventoryItemLink = function(_, slot)
+        local item = s.gear[slot]
+        return item and ('|Hitem:' .. item[1] .. ':0:0:0:0:0:0|h')
+    end
+
+    e.GetItemInfoInstant = function(id)
+        for _, item in pairs(s.gear) do
+            if item[1] == id then
+                return id, 'Type', 'Subtype', item[4], 1, item[2], item[3]
+            end
+        end
+    end
+
+    e.GetInventorySlotInfo = function(name)
+        assert(name == 'RANGEDSLOT')
+        return 18
+    end
+
+    e.IsInGroup = function() return s.group end
+    e.IsInRaid = function() return false end
+    e.GetUnitName = function() return 'Pet' end
+
+    e.UnitCastingInfo = function(unit)
+        if unit == 'player' then
+            if s.cast then
+                return 'Cast in progress', nil, nil, 99000, 101000
+            end
+
+            return
+        end
+
+        if unit == 'target' and s.targetCast then
+            return s.targetCast, nil, nil, 99000, 101000, false, 'cast', not s.targetInterruptible
+        end
+    end
+
+    -- Channel identity and progress: s.channelSpell, running s.channelStart..s.channelEnd (GetTime is 100).
+    e.UnitChannelInfo = function(unit)
+        if unit == 'player' and s.channel then
+            return s.channelSpell and (names[s.channelSpell] or 'Spell ' .. s.channelSpell) or 'Channel in progress',
+                nil,
+                nil,
+                s.channelStart * 1000,
+                s.channelEnd * 1000,
+                false,
+                false,
+                s.channelSpell
+        end
+    end
+
+    -- A weapon enchant is false (none), true (an unidentified enchant) or its enchant ID.
+    local function enchant(v)
+        if v == false or v == nil then
+            return false, nil
+        end
+
+        return true, v == true and 1 or v
+    end
+
+    e.GetWeaponEnchantInfo = function()
+        local m, mid = enchant(s.mainEnchant)
+        local o, oid = enchant(s.offEnchant)
+        return m, 1000, 0, mid, o, 1000, 0, oid
+    end
+
+    e.UnitAttackSpeed = function() return 2.6, s.offSpeed end
+    -- Totem slots 1 Fire, 2 Earth, 3 Water, 4 Air: an entry is the remaining duration.
+    e.GetNumTotemSlots = function() return 4 end
+
+    -- An entry is the remaining duration, or {left,spell} to name the totem's spell.
+    e.GetTotemInfo = function(slot)
+        local v = s.totems[slot]
+
+        if not v then
+            return false, '', 0, 0, 0
+        end
+        if type(v) == 'table' then
+            return true, names[v[2]] or ('Spell ' .. v[2]), 100, v[1], 136000
+        end
+
+        return true, 'Totem', 100, v, 136000
+    end
+
+    -- Talent trees: s.talents[tree] points spent; s.talent['tree:index'] a talent's rank.
+    e.GetNumTalentTabs = function() return 3 end
+
+    e.C_SpecializationInfo = {
+        GetSpecializationInfo = function(index)
+            return 100 + index,
+                'Tree ' .. index,
+                'Description',
+                136048,
+                nil,
+                nil,
+                s.talents[index],
+                'Background',
+                99,
+                true
+        end,
+    }
+
+    e.GetTalentInfo = function(tree, index)
+        local rank = s.talent[tree .. ':' .. index] or 0
+        return 'Talent ' .. tree .. ':' .. index, 136048, 1, 1, rank, 5, nil, nil, nil, nil, nil, tree * 100 + index
+    end
+
+    -- The realm's season (nil standard, 2 Season of Discovery, 3 Hardcore) and game rules.
+    e.Enum.SeasonID = { NoSeason = 0, SeasonOfMastery = 1, SeasonOfDiscovery = 2, Hardcore = 3 }
+    e.C_Seasons = { GetActiveSeason = function() return s.season end }
+
+    e.C_GameRules = {
+        IsHardcoreActive = function() return s.hardcore end,
+        IsSelfFoundActive = function() return false end,
+        IsSelfFoundAllowed = function() return false end,
+        GetCurrentGameModeRecordID = function() return nil end,
+    }
+
+    -- Season of Discovery engraving (C_Engraving, enabled on SoD realms only): s.runes holds the spells whose
+    -- runes are engraved, one equipment slot each in spell ID order; each rune teaches its one spell.
+    -- s.runesPending models the rune list not loaded yet after login (engraving unavailable).
+    local function engraved()
+        local list = {}
+
+        for id in pairs(s.runes) do
+            list[#list + 1] = id
+        end
+
+        table.sort(list)
+        return list
+    end
+
+    e.C_Engraving = {
+        IsEngravingEnabled = function() return s.season == 2 end,
+        GetNumRunesKnown = function()
+            if s.runesPending then
+                return 0, 0
+            end
+
+            return #engraved(), 20
+        end,
+        IsEquipmentSlotEngravable = function() return true end,
+        GetRuneForEquipmentSlot = function(slot)
+            local id = engraved()[slot]
+
+            if id then
+                return {
+                    skillLineAbilityID = id,
+                    itemEnchantmentID = id,
+                    name = 'Rune ' .. id,
+                    iconTexture = 1,
+                    equipmentSlot = slot,
+                    level = 1,
+                    learnedAbilitySpellIDs = { id },
+                }
+            end
+        end,
+    }
+
+    e.IsInInstance = function() return s.instance ~= nil, s.instance or 'none' end
+    e.GetItemCount = function(id) return s.items[id] or 0 end
+
+    -- One backpack whose slots hold the modeled item stacks (item ID -> count).
+    local function stacks()
+        local list = {}
+
+        for id, count in pairs(s.items) do
+            if count > 0 then
+                list[#list + 1] = { itemID = id, stackCount = count }
+            end
+        end
+
+        table.sort(list, function(x, y) return x.itemID < y.itemID end)
+        return list
+    end
+
+    e.NUM_BAG_SLOTS, e.NUM_TOTAL_EQUIPPED_BAG_SLOTS = 0, 0
+
+    e.C_Container = {
+        GetContainerNumSlots = function(bag) return bag == 0 and 16 or 0 end,
+        GetContainerItemInfo = function(bag, slot)
+            if bag == 0 then
+                return stacks()[slot]
+            end
+        end,
+    }
+
+    -- Enemies with nameplates: each entry is that enemy's native threat status for you (false = not on its table).
+    e.UnitThreatSituation = function(_, unit)
+        if unit == 'target' then
+            return s.threat
+        end
+
+        local n = tonumber(unit:match('^nameplate(%d+)$') or '')
+        local v = n and s.enemies[n]
+
+        if v == false then
+            return nil
+        end
+
+        return v
+    end
+
+    e.IsSpellKnown = function(id) return s.known[id] == true end
+
+    e.C_Spell = {
+        GetSpellInfo = function(id)
+            if type(id) == 'string' then
+                local hit = highest(id)
+                return hit and { name = names[hit], spellID = hit, subtext = ranks[hit] } or nil
+            end
+
+            return { name = names[id] or ('Spell ' .. id), spellID = id, subtext = ranks[id] or '' }
+        end,
+        IsCurrentSpell = function(id) return s.active[id] == true end,
+        SpellHasRange = function(id) return s.range[id] ~= nil end,
+        IsSpellInRange = function(id)
+            if id == 6603 then
+                return s.range[6603] ~= false
+            end
+
+            return s.range[id] ~= false
+        end,
+        IsSpellUsable = function(id) return s.usable[id] ~= false and not s.nopower[id], s.nopower[id] == true end,
+        IsAutoRepeatSpell = function(id) return s.autorepeat and id == 5019 end,
+        GetSpellCooldown = function(id)
+            return s.cooldown[id] or { startTime = 0, duration = 0, isEnabled = true, modRate = 1 }
+        end,
+    }
+
+    e.C_UnitAuras = {
+        GetAuraDataByIndex = function(unit, index, filter)
+            if unit == 'pet' then
+                return aura(s.petBuffs, index)
+            end
+
+            if unit == 'target' then
+                if filter == 'HELPFUL' then
+                    return aura(s.targetBuffs, index)
+                end
+
+                return aura(s.debuffs, index)
+            end
+
+            if filter == 'HELPFUL' then
+                return aura(s.buffs, index)
+            end
+
+            return nil
+        end,
+    }
+
+    -- The shipped error boundary wraps condition callbacks (as in game).
+    for _, path in ipairs({
+        'Diagnostics/errors.lua', 'Platform/unit_states.lua', 'Platform/spells.lua', 'Platform/auras.lua',
+        'Platform/range.lua', 'Platform/actions.lua', 'Platform/totems.lua', 'Core/action_policy.lua',
+        'Core/conditions.lua', 'Core/aura_conditions.lua', 'Core/unit_state_conditions.lua', 'Data/plain.lua',
+        'Data/tags.lua', 'Data/rotation_tree.lua', 'Data/validation.lua', 'Data/catalog.lua', 'Data/diff.lua',
+        'Core/rotation_library.lua', 'Core/rotation_tags.lua', 'Conditions/common.lua', 'Conditions/spell.lua',
+        'Conditions/known_spell.lua', 'Conditions/character.lua', 'Conditions/buffs.lua', 'Conditions/debuffs.lua',
+        'Conditions/combat.lua', 'Conditions/casting.lua', 'Conditions/channeling.lua', 'Conditions/stats.lua',
+        'Conditions/range.lua', 'Conditions/spatial.lua', 'Conditions/spatial_stats.lua', 'Conditions/weapon.lua',
+        'Conditions/unit_states.lua', 'Conditions/totem.lua', 'Platform/inventory.lua', 'Conditions/item.lua',
+        'Platform/talents.lua', 'Conditions/talent.lua', 'Core/build_context.lua', 'Conditions/build.lua',
+        'Conditions/misc.lua', 'Conditions/petspell.lua', 'Platform/engraving.lua', 'Conditions/engraving.lua',
+        'Conditions/equipment.lua'
+    }) do
+        f.load(path)
+    end
+
+    assert(a.Platform:GetClientInfo().family == 'era' and a.Platform:GetCombatDataPolicy() == 'probe')
+
+    for _, path in ipairs(options.packs or packs(class)) do
+        f.load(path)
+    end
+
+    e.BOOKTYPE_SPELL, e.BOOKTYPE_PET = 'spell', 'pet'  -- No client has a GetAddOnMetadata global any more; metadata comes from C_AddOns.
+
+    e.C_AddOns = {
+        GetAddOnMetadata = function() return 'Rotation Master test' end,
+        IsAddOnLoaded = function() return false end,
+    }
+
+    f.libraries['AceAddon-3.0'] = { NewAddon = function(_, object) return object end }
+    f.libraries['AceEvent-3.0'] = {}
+    f.libraries['LibDBIcon-1.0'] = {}
+    f.libraries['LibSharedMedia-3.0'] = {}
+    f.libraries['LibDataBroker-1.1'] = { NewDataObject = function(_, _, object) return object end }
+    f.libraries['ThreatClassic-1.0'] = { Disable = function() end }
+    f.libraries['LibClassicDurations'].Register = function() end
+    f.load('Core/rotation_sequence.lua')
+    f.load('Core/rotation_selection.lua')
+    f.load('main.lua')
+    a.spellHistory = {}
+
+    a.GetConditionHealthForecast = function(_, unit, health)
+        assert(unit == 'target' and health == 0)
+
+        if s.ttd == nil then
+            return false
+        end
+
+        return s.ttd
+    end
+
+    assert(a:InitializeRotationLibrary())
+    local spells, actions = collect(a, class)
+    spells[6603] = true
+
+    for id in pairs(spells) do
+        names[id] = 'Spell ' .. id
+        ranks[id] = 'Rank 1'
+        s.known[id] = false
+    end
+
+    for base, list in pairs(families) do
+        for rank, id in ipairs(list) do
+            names[id] = 'Spell ' .. base
+            ranks[id] = 'Rank ' .. rank
+
+            if s.known[id] == nil then
+                s.known[id] = false
+            end
+        end
+    end
+
+    for id in pairs(names) do
+        a.SpellCatalog:UpdateSpell(id)
+    end
+
+    local function sync()
+        a.spellHistory = {}
+
+        for i, h in ipairs(s.history) do
+            a.spellHistory[i] = { spell = h[1], time = 100 - h[2] }
+        end
+
+        a.longtermCache = {}
+
+        if a.InvalidateBuildContext then
+            a:InvalidateBuildContext()
+        end
+
+        a.unitsInRange = {}
+
+        for n in pairs(s.enemies) do
+            a.unitsInRange['Creature-' .. n] = { unit = 'nameplate' .. n }
+        end
+    end
+
+    f.sync = sync
+    f.actions = actions
+    f.families = families
+    return f, s, names
+end
+
+function M.body(a, id)
+    local view = assert(a:GetDefaultRotation(id), 'missing ' .. id)
+    return view.envelope.body
+end
+
+-- The real sequence executor with real predicates and readiness; returns the first ready mapped action.
+function M.first(f, s, id)
+    local a = f.addon
+    f.sync()
+    local ready = a:NewActionReadiness(100)
+    local selected
+
+    local result = a:EvaluateRotationSequence(
+        M.body(a, id),
+        function(c, ctx) return a:evaluateConditionResult(c, ctx) end,
+        function(step)
+            if a:evaluateCondition(step.conditions) then
+                for _, spell in ipairs(a:GetSpellIds(step)) do
+                    if s.mapped[spell] ~= false and ready(step.type, spell) then
+                        selected = spell
+                        return false
+                    end
+                end
+            end
+        end
+    )
+
+    return selected, result
+end
+
+-- Independent reminders that would highlight: step ID -> action (items: condition only). Disabled steps never highlight.
+function M.upkeep(f, s, id)
+    local a = f.addon
+    f.sync()
+    local ready = a:NewActionReadiness(100)
+    local out = {}
+
+    for _, step in ipairs(M.body(a, id).cooldowns) do
+        if not step.disabled and a:evaluateCondition(step.conditions) then
+            if step.type == 'item' then
+                out[step.id] = true
+            else
+                for _, spell in ipairs(a:GetSpellIds(step)) do
+                    if s.mapped[spell] ~= false and ready(step.type, spell) then
+                        out[step.id] = spell
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    return out
+end
+
+function M.switches(f, id)
+    f.sync()
+    return f.addon:evaluateCondition(M.body(f.addon, id).switch) == true
+end
+
+function M.know(s, ...)
+    for _, id in ipairs({ ... }) do
+        s.known[id] = true
+    end
+end
+
+-- Engraves runes (Season of Discovery realms read them); a rune also teaches its spell.
+function M.engrave(s, ...)
+    for _, id in ipairs({ ... }) do
+        s.runes[id] = true
+        s.known[id] = true
+    end
+end
+
+function M.unengrave(s, ...)
+    for _, id in ipairs({ ... }) do
+        s.runes[id] = nil
+        s.known[id] = false
+    end
+end
+
+-- The pack the real auto-switch would pick: built-in order by priority, first matching switch wins.
+function M.selected(f, s)
+    local a = f.addon
+    f.sync()
+    local rows = a:GetRuntimeRotations(0)
+    local byKey = {}
+
+    for _, row in ipairs(a:ListDefaultRotations(0)) do
+        byKey[row.runtimeKey] = row.id
+    end
+
+    for _, key in ipairs(a:GetOrderedAutoSwitchRotations(0, rows)) do
+        if a:evaluateConditionResult(rows[key].switch).status == 'match' then
+            return byKey[key]
+        end
+    end
+end
+
+-- A premade's catalog row (eligibility, reason, validation).
+function M.row(f, id)
+    f.sync()
+
+    for _, row in ipairs(f.addon:ListDefaultRotations(0)) do
+        if row.id == id then
+            return row
+        end
+    end
+end
+
+-- Real initialized publisher, auto-switch and bar discovery (as the existing pack suites do).
+function M.publisher(f, s)
+    local a, e = f.addon, f.env
+    e.OFF = 'Off'
+    e.securecallfunction = function(fn, ...) return fn(...) end
+    e.UnitFactionGroup = function() return 'Horde' end
+    e.GetLocale = function() return 'enUS' end
+    e.UnitRace = function() return 'Orc', 'Orc' end
+    e.GetRealmName = function() return 'Premade Realm' end
+    e.UnitNameUnmodified = function() return 'Premade Character' end
+    e.GetCurrentRegionName = function() return 'US' end
+    e.GetCurrentRegion = function() return 1 end
+    e.strlenutf8 = function(text) return #text end
+    e.GetItemInfo = function() end
+    local create = e.CreateFrame
+
+    e.CreateFrame = function(...)
+        local frame = create(...)
+        frame.RegisterEvent = function() end
+        return frame
+    end
+
+    local fallback = e.LibStub
+    e.LibStub = false
+    f.load('Libs/LibStub/LibStub.lua')
+    f.load('Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua')
+    f.load('Libs/AceDB-3.0/AceDB-3.0.lua')
+    local real = e.LibStub
+
+    setmetatable(real, {
+        __call = function(self, name, silent)
+            if self.libs[name] then
+                return self:GetLibrary(name, silent)
+            end
+
+            return fallback(name, silent)
+        end,
+    })
+
+    f.libraries['AceConsole-3.0'].RegisterChatCommand = function() end
+    f.libraries['AceConsole-3.0'].Printf = function() end
+    f.libraries['LibDBIcon-1.0'].Register = function() end
+    f.load('Core/itemset_services.lua')
+    f.load('init.lua')
+    f.load('validate.lua')
+    f.load('profiler.lua')
+    local saved = a.db.profile
+    assert(a:OnInitialize(), 'real publisher initialization failed')
+    a.currentSpec = 0
+    -- AceDB installs a fresh profile; carry the modeled saved rotations and library state into it.
+    a.db.profile.rotations, a.db.profile.rotationLibrary = saved.rotations, saved.rotationLibrary
+    assert(a:InitializeRotationLibrary())
+    e.tinsert, e.tremove = table.insert, table.remove
+
+    f.libraries['LibCustomGlow-1.0'] = {
+        PixelGlow_Stop = function() end,
+        AutoCastGlow_Stop = function() end,
+        ButtonGlow_Stop = function() end,
+    }
+
+    -- One button per action across the five default Blizzard bars (60 slots); rank families share their base button.
+    local actions = {}
+
+    for _, id in ipairs(f.actions) do
+        actions[#actions + 1] = id
+    end
+
+    for _, list in pairs(f.families) do
+        for _, id in ipairs(list) do
+            if s.known[id] and id ~= list[1] then
+                actions[#actions + 1] = id
+            end
+        end
+    end
+
+    assert(#actions <= 60, 'more modeled actions than default bar slots: ' .. #actions)
+    local bars = { 'Action', 'MultiBarBottomLeft', 'MultiBarBottomRight', 'MultiBarRight', 'MultiBarLeft' }
+
+    for slot, id in ipairs(actions) do
+        local button = { id = id }
+
+        function button:GetAttribute(key)
+            if key == 'type' then
+                return 'action'
+            elseif key == 'action' then
+                return slot
+            end
+        end
+
+        e[bars[math.floor((slot - 1) / 12) + 1] .. 'Button' .. ((slot - 1) % 12 + 1)] = button
+    end
+
+    e.HasAction = function(slot) return actions[slot] ~= nil and s.mapped[actions[slot]] ~= false end
+    e.GetActionInfo = function(slot) return 'spell', actions[slot] end
+    e.C_AddOns.IsAddOnLoaded = function() return false end
+    e.GetTime = function() return 100 end
+    e.UnitName = function(unit) return unit end
+    f.load('Platform/macros.lua')
+    f.load('Core/presentation.lua')
+    f.load('buttons.lua')
+    local glow, messages = {}, {}
+
+    a.Glow = function(_, button, kind)
+        glow[#glow + 1] = { button.id, kind }
+    end
+
+    a.HideGlow = function() end
+    a.verbose = function() end
+    a.debug = function() end
+    a.info = function() end
+    a.db.profile.effect = 'premade-test'
+    a.db.global.effects['premade-test'] = { type = 'texture' }
+    a.currentRotation = nil
+    a:Fetch()
+    a.db.profile.spell_history, a.db.profile.combat_history, a.db.profile.damage_history = 10, 10, 10
+    a.db.profile.preview_spells = 0
+    a.currentSpec = 0
+    a.inCombat = false
+    a.combatHistory = {}
+    a.damageHistory = {}
+    a.avail_announced = {}
+    a.announced = {}
+    a.skipAnnounce = true
+    a.lastCacheReport = 100
+    a.db.profile.disable_buttons = false
+    a.db.profile.disable_autoswitch = false
+    a.manualRotation = false
+    f.load('profiler.lua')
+    a.evaluationProfile = a:ProfiledCode()
+
+    f.libraries['AceEvent-3.0'].SendMessage = function(_, kind, ...)
+        messages[#messages + 1] = { kind, ... }
+    end
+
+    a.DispatchAnnouncement = function() end
+    a.ScheduleRepeatingTimer = function() return 'modeled-publisher-timer' end
+    a.CancelTimer = function() end
+
+    local function poll()
+        f.sync()
+        a:UpdateAutoSwitch()
+        a:SwitchRotation()
+        a:EvaluateNextActionInternal()
+    end
+
+    local function selected()
+        local key = a.currentRotation
+        return key and key:match('^RM%-BUILTIN:(.+)$') or key
+    end
+
+    return poll, selected, glow, messages
+end
+
+return M

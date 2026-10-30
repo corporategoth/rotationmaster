@@ -1,0 +1,48 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- TBC Mage Frost, levels 1–70, and the default for an unspecced Mage (lowest priority, so the
+-- talent-specific Mage premades win when their tree is primary). Adapts by learned spells:
+-- Fireball until Frostbolt, Ice Lance from 66, talents as learned. Enemy count is the number of
+-- enemies you are engaged with (THREAT_COUNT), because TBC range checks cannot tell 8 from 20
+-- yards in combat. Blink, kiting, Ice Block and positioning stay with the player.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
+local frozen=BuiltinConditions.any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=33395},{type='DEBUFF',unit='target',spell=12494})
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.frost',revision=5,
+ blocks={['tbc.mage.boundaries']=3,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=2,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
+ applicability={families={'tbc'},actionContext='player',class='MAGE'},
+ tags={'frost','leveling','raid','single-target','aoe'},
+ sources={
+  {url='https://www.icy-veins.com/tbc-classic/frost-single-target-mage-leveling-guide',title='Icy Veins: Frost single-target Mage leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
+  {url='https://www.icy-veins.com/tbc-classic/frost-aoe-mage-leveling-guide',title='Icy Veins: Frost AoE Mage leveling',reviewedAt='2026-10-23',revision='2026-01-12'},
+  {url='https://www.icy-veins.com/tbc-classic/frost-mage-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Frost Mage rotation',reviewedAt='2026-10-23',revision='2026-01-12'},
+  {url='https://www.wowhead.com/tbc/guide/classes/mage/frost/leveling-tips',title='Wowhead: Frost Mage leveling',reviewedAt='2026-10-23',revision='2026-01-04'},
+  {url='https://www.wowhead.com/tbc/guide/frost-aoe-mage-leveling-outland-farming-guide-burning-crusade-classic',title='Wowhead: Frost AoE grinding',reviewedAt='2026-10-23',revision='2026-01-08'},
+  {url='https://www.warcrafttavern.com/tbc/guides/pve-frost-mage-rotation-cooldowns-abilities/',title='Warcraft Tavern: Frost Mage PvE rotation',reviewedAt='2026-10-23'},
+  {url='https://github.com/kaminaris/MaxDps-Mage/tree/886c8e27f48e38e0f9b8c22cf56b5e625dfce3f0/Specialization/TBC',title='MaxDps-Mage TBC Frost module',reviewedAt='2026-10-23',revision='886c8e2'},
+
+ },
+ body={
+  switch={type='SPELL_KNOWN',spell=133},
+  cooldowns={BuiltinConditions.block('mage-frost-armor','tbc.mage.armor','mage-frost-'),BuiltinConditions.block('mage-frost-upkeep','tbc.mage.upkeep','mage-frost-')},
+  rotation={
+   BuiltinConditions.block('mage-frost-boundaries','tbc.mage.boundaries','mage-frost-'),
+   {id='mage-frost-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
+    BuiltinConditions.block('mage-frost-pull-filler','tbc.mage.frostbolt','mage-frost-pull-'),stop('mage-frost-pull-stop')}},
+   {id='mage-frost-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
+    BuiltinConditions.spell('mage-frost-moving-ice-lance',30455),BuiltinConditions.spell('mage-frost-moving-fire-blast',2136),stop('mage-frost-moving-stop')}},
+   -- Something is hitting you: Frost Nova it off (bosses are root-immune).
+   BuiltinConditions.spell('mage-frost-nova',122,{type='AND',value={{type='THREAT_COUNT',threat=3,operator='GREATERTHANOREQUALS',value=1},
+    BuiltinConditions.negate({type='CLASSIFICATION',unit='target',value='worldboss'})}}),
+   {id='mage-frost-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
+    BuiltinConditions.spell('mage-frost-cone',120),
+    {id='mage-frost-aoe-frozen',type='branch',conditions=frozen,
+     onTrue={BuiltinConditions.spell('mage-frost-blizzard',10)},onFalse={BuiltinConditions.spell('mage-frost-explosion',1449)}}}},
+   BuiltinConditions.spell('mage-frost-ice-lance',30455,frozen),
+   BuiltinConditions.block('mage-frost-filler','tbc.mage.frostbolt','mage-frost-'),
+   BuiltinConditions.block('mage-frost-finish','tbc.mage.wand-finish','mage-frost-'),
+  },
+ },
+}))

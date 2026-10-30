@@ -1,0 +1,50 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+# The tools every Rotation Master job needs: Lua 5.1 and LuaJIT (the two interpreters the suite runs on),
+# zip (the packager), and the pinned WoW static checker (downloaded and checksum-verified by tools/setup_lint.py).
+#
+# Assumes a Debian or Ubuntu runner image (the ubuntu-latest label, docker.gitea.com/runner-images) with apt
+# and network access, running as root or with sudo. Nothing is cached: the install is a few seconds and the
+# runner's cache service has been unreliable (see the other repositories' setup-uv-with-retry notes).
+name: Toolchain
+description: Lua 5.1, LuaJIT, zip, the pinned WoW static checker and, optionally, pre-commit.
+
+inputs:
+  pre-commit:
+    description: "'true' to create .venv-ci with pre-commit and put it on PATH."
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Install interpreters and packaging tools
+      shell: bash
+      run: |
+        set -euo pipefail
+        SUDO=""
+        if [ "$(id -u)" -ne 0 ]; then
+          command -v sudo >/dev/null || { echo "::error::not root and no sudo: cannot apt-get install"; exit 1; }
+          SUDO="sudo"
+        fi
+        $SUDO apt-get update -qq
+        $SUDO apt-get install -y -qq --no-install-recommends lua5.1 lua-bitop luajit zip unzip jq curl git ca-certificates python3 python3-venv
+        lua5.1 -v
+        lua5.1 -e 'assert(require("bit"))'
+        luac5.1 -v
+        luajit -v | head -n 1
+        python3 --version
+
+    - name: Install the pinned WoW static checker
+      shell: bash
+      run: python3 tools/setup_lint.py
+
+    - name: Install pre-commit
+      if: ${{ inputs.pre-commit == 'true' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        python3 -m venv .venv-ci
+        .venv-ci/bin/pip install --quiet --disable-pip-version-check pre-commit==4.0.1
+        echo "${GITHUB_WORKSPACE}/.venv-ci/bin" >> "${GITHUB_PATH}"
+        .venv-ci/bin/pre-commit --version

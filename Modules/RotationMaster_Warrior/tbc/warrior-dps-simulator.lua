@@ -1,0 +1,39 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- TBC Warrior melee DPS, levels 1–70, simulator/Wowhead order (the recommended DPS variant).
+-- Arms and Fury share one priority: talents decide Mortal Strike vs Bloodthirst by spell known.
+-- Execute is a filler after Bloodthirst/Mortal Strike/Whirlwind, as simulator measured and Wowhead
+-- says TBC changed; the Icy Veins variant keeps Execute first. Boundaries, reminders, the
+-- multi-target arm, the pre-talent leveling arm and Sunder are shared blocks (Defaults/blocks/warrior.lua).
+-- Left manual: the 2H Slam-after-swing loop (no time-since-swing condition), stance dancing,
+-- Berserker Rage, raid Sunder assignment, consumables and pulls other than Charge.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.simulator',revision=5,
+ blocks={['tbc.warrior.boundaries']=4,['tbc.warrior.upkeep']=1,['tbc.warrior.dps-upkeep']=1,['tbc.warrior.dps-opening']=1,['tbc.warrior.dps-leveling']=1,['tbc.warrior.sunder']=1},
+ applicability={families={'tbc'},actionContext='player',class='WARRIOR'},
+ tags={'dps','melee','leveling','endgame','aoe','wowhead'},
+ sources={
+ {url='https://www.wowhead.com/tbc/guide/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: TBC Warrior DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2026-06-11'},
+ {url='https://www.wowhead.com/tbc/guide/classes/warrior/leveling-tips',title='Wowhead: TBC Warrior leveling',reviewedAt='2026-10-23',revision='2026-01-17'},
+ {url='https://www.icy-veins.com/tbc-classic/arms-warrior-leveling-guide',title='Icy Veins: Arms Warrior leveling (shared pre-talent arm)',reviewedAt='2026-10-23',revision='2026-01-12'}},
+ body={priority=10,
+ cooldowns={block('tbc.warrior.upkeep','warrior-dps-'),block('tbc.warrior.dps-upkeep','warrior-dps-')},
+ rotation={
+ block('tbc.warrior.boundaries','warrior-dps-'),
+ block('tbc.warrior.dps-opening','warrior-dps-'),
+ {id='warrior-dps-kit',type='branch',conditions={type='OR',value={BuiltinConditions.known(23881),BuiltinConditions.known(12294)}},onTrue={
+  BuiltinConditions.spell('warrior-dps-bloodthirst',23881),
+  BuiltinConditions.spell('warrior-dps-mortal-strike',12294),
+  BuiltinConditions.spell('warrior-dps-whirlwind-spare',1680,{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=55}),
+  BuiltinConditions.spell('warrior-dps-execute',5308,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2}),
+  BuiltinConditions.spell('warrior-dps-overpower',7384),
+ },onFalse={block('tbc.warrior.dps-leveling','warrior-dps-leveling-')}},
+ {id='warrior-dps-spare-rage',type='branch',conditions={type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=50},onFalse={},onTrue={
+  block('tbc.warrior.sunder','warrior-dps-filler-'),
+ }},
+ BuiltinConditions.spell('warrior-dps-hamstring',1715,{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=75}),
+ }},
+}))

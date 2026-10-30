@@ -1,0 +1,1583 @@
+[
+  {
+    "name": "combat",
+    "source_sha256": "a91040632dd08b6edd11e18bc20e3148adb179b952bfb0978df70537d6474d77",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 881482,
+      "opaque_pixels": 1427,
+      "partial_alpha_pixels": 689607,
+      "transparent_percent": 56.06,
+      "nonzero_alpha_bounds": [
+        0,
+        17,
+        1212,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 2092,
+        "opaque_pixels": 236,
+        "partial_alpha_pixels": 1768,
+        "transparent_percent": 51.07,
+        "nonzero_alpha_bounds": [
+          3,
+          4,
+          61,
+          59
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 9463,
+        "opaque_pixels": 552,
+        "partial_alpha_pixels": 6369,
+        "transparent_percent": 57.76,
+        "nonzero_alpha_bounds": [
+          8,
+          10,
+          120,
+          117
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "character",
+    "source_sha256": "56dc9e27699f9607d24310dda49211032e3882c73af133bd5901d64de97398f5",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 892917,
+      "opaque_pixels": 225,
+      "partial_alpha_pixels": 679374,
+      "transparent_percent": 56.78,
+      "nonzero_alpha_bounds": [
+        81,
+        0,
+        1186,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 2420,
+        "opaque_pixels": 90,
+        "partial_alpha_pixels": 1586,
+        "transparent_percent": 59.08,
+        "nonzero_alpha_bounds": [
+          10,
+          3,
+          54,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 10207,
+        "opaque_pixels": 204,
+        "partial_alpha_pixels": 5973,
+        "transparent_percent": 62.3,
+        "nonzero_alpha_bounds": [
+          22,
+          6,
+          106,
+          122
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "spell",
+    "source_sha256": "153f1e70a95d3735e714de113ec4eabbd2509e641c8524730b918197a1a2bdeb",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 1114587,
+      "opaque_pixels": 933,
+      "partial_alpha_pixels": 456996,
+      "transparent_percent": 70.88,
+      "nonzero_alpha_bounds": [
+        17,
+        6,
+        1240,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 2822,
+        "opaque_pixels": 116,
+        "partial_alpha_pixels": 1158,
+        "transparent_percent": 68.9,
+        "nonzero_alpha_bounds": [
+          12,
+          3,
+          54,
+          60
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 11860,
+        "opaque_pixels": 296,
+        "partial_alpha_pixels": 4228,
+        "transparent_percent": 72.39,
+        "nonzero_alpha_bounds": [
+          27,
+          6,
+          106,
+          121
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "buff",
+    "source_sha256": "a97891f7d414b1c17ab7f937e010ef5c1d519c9d359f9d6fb3e9c5e21beaf96c",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 634770,
+      "opaque_pixels": 234,
+      "partial_alpha_pixels": 937512,
+      "transparent_percent": 40.37,
+      "nonzero_alpha_bounds": [
+        0,
+        23,
+        1234,
+        1236
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 1816,
+        "opaque_pixels": 139,
+        "partial_alpha_pixels": 2141,
+        "transparent_percent": 44.34,
+        "nonzero_alpha_bounds": [
+          4,
+          3,
+          61,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 7887,
+        "opaque_pixels": 377,
+        "partial_alpha_pixels": 8120,
+        "transparent_percent": 48.14,
+        "nonzero_alpha_bounds": [
+          11,
+          6,
+          121,
+          121
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "debuff",
+    "source_sha256": "643a0e1de8c55fedff7a24ff4a1e31bcd4d8e4d1308672fba7d4400953a22527",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 909797,
+      "opaque_pixels": 526,
+      "partial_alpha_pixels": 662193,
+      "transparent_percent": 57.86,
+      "nonzero_alpha_bounds": [
+        0,
+        5,
+        1228,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 2387,
+        "opaque_pixels": 188,
+        "partial_alpha_pixels": 1521,
+        "transparent_percent": 58.28,
+        "nonzero_alpha_bounds": [
+          6,
+          3,
+          61,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 10126,
+        "opaque_pixels": 443,
+        "partial_alpha_pixels": 5815,
+        "transparent_percent": 61.8,
+        "nonzero_alpha_bounds": [
+          14,
+          6,
+          120,
+          122
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "item",
+    "source_sha256": "1a01e2f450173703a4bd55d7a0d5c5493d947c53314dc8682bf36a6887f0add0",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 814839,
+      "opaque_pixels": 207,
+      "partial_alpha_pixels": 757470,
+      "transparent_percent": 51.82,
+      "nonzero_alpha_bounds": [
+        25,
+        17,
+        1230,
+        1239
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 2253,
+        "opaque_pixels": 96,
+        "partial_alpha_pixels": 1747,
+        "transparent_percent": 55.0,
+        "nonzero_alpha_bounds": [
+          6,
+          3,
+          58,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 9479,
+        "opaque_pixels": 217,
+        "partial_alpha_pixels": 6688,
+        "transparent_percent": 57.86,
+        "nonzero_alpha_bounds": [
+          15,
+          6,
+          113,
+          122
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "weapon",
+    "source_sha256": "4d5a3537455faa1cd2b2c20dae18a3a6ac12361b02b26da62aef01aa74eecf9f",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 1202248,
+      "opaque_pixels": 635,
+      "partial_alpha_pixels": 369633,
+      "transparent_percent": 76.45,
+      "nonzero_alpha_bounds": [
+        29,
+        26,
+        1253,
+        1232
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 3028,
+        "opaque_pixels": 125,
+        "partial_alpha_pixels": 943,
+        "transparent_percent": 73.93,
+        "nonzero_alpha_bounds": [
+          3,
+          3,
+          61,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 12690,
+        "opaque_pixels": 284,
+        "partial_alpha_pixels": 3410,
+        "transparent_percent": 77.45,
+        "nonzero_alpha_bounds": [
+          8,
+          6,
+          122,
+          122
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "spatial",
+    "source_sha256": "981abd11e5c2a4fa8462771378b54b93e4867d7140815261d095023b0be6a0bf",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 804138,
+      "opaque_pixels": 939,
+      "partial_alpha_pixels": 767439,
+      "transparent_percent": 51.14,
+      "nonzero_alpha_bounds": [
+        0,
+        0,
+        1204,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 2197,
+        "opaque_pixels": 107,
+        "partial_alpha_pixels": 1792,
+        "transparent_percent": 53.64,
+        "nonzero_alpha_bounds": [
+          3,
+          3,
+          61,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 9353,
+        "opaque_pixels": 250,
+        "partial_alpha_pixels": 6781,
+        "transparent_percent": 57.09,
+        "nonzero_alpha_bounds": [
+          8,
+          6,
+          119,
+          122
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "resources",
+    "source_sha256": "e80d8a6f96d0f2a3139dffc2b979679149e33bdfeddf9cadb447155484603a78",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 629658,
+      "opaque_pixels": 436,
+      "partial_alpha_pixels": 942422,
+      "transparent_percent": 40.04,
+      "nonzero_alpha_bounds": [
+        0,
+        33,
+        1251,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 1769,
+        "opaque_pixels": 181,
+        "partial_alpha_pixels": 2146,
+        "transparent_percent": 43.19,
+        "nonzero_alpha_bounds": [
+          3,
+          3,
+          61,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 7759,
+        "opaque_pixels": 403,
+        "partial_alpha_pixels": 8222,
+        "transparent_percent": 47.36,
+        "nonzero_alpha_bounds": [
+          7,
+          8,
+          122,
+          120
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "pet",
+    "source_sha256": "92184ee39cc22ec03ddf230501b8205d3a55dd9cc8b6f36bc50f7f2ba13cd62c",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 718735,
+      "opaque_pixels": 877,
+      "partial_alpha_pixels": 852904,
+      "transparent_percent": 45.71,
+      "nonzero_alpha_bounds": [
+        0,
+        9,
+        1224,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 1985,
+        "opaque_pixels": 105,
+        "partial_alpha_pixels": 2006,
+        "transparent_percent": 48.46,
+        "nonzero_alpha_bounds": [
+          5,
+          3,
+          59,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 8541,
+        "opaque_pixels": 242,
+        "partial_alpha_pixels": 7601,
+        "transparent_percent": 52.13,
+        "nonzero_alpha_bounds": [
+          11,
+          6,
+          116,
+          122
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "talent",
+    "source_sha256": "735d1c7d8d2e50844cd24656a97a2614b76c1d592f5631dafc17538ea053e58f",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 662362,
+      "opaque_pixels": 419,
+      "partial_alpha_pixels": 909735,
+      "transparent_percent": 42.12,
+      "nonzero_alpha_bounds": [
+        0,
+        16,
+        1253,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 1917,
+        "opaque_pixels": 135,
+        "partial_alpha_pixels": 2044,
+        "transparent_percent": 46.8,
+        "nonzero_alpha_bounds": [
+          3,
+          4,
+          61,
+          59
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 8145,
+        "opaque_pixels": 274,
+        "partial_alpha_pixels": 7965,
+        "transparent_percent": 49.71,
+        "nonzero_alpha_bounds": [
+          6,
+          8,
+          122,
+          116
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "casting",
+    "source_sha256": "39d63288647c01e1f642d5e96817ccef21ebf98724db4606cc365bf4da4dacff",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 770435,
+      "opaque_pixels": 876,
+      "partial_alpha_pixels": 801205,
+      "transparent_percent": 48.99,
+      "nonzero_alpha_bounds": [
+        0,
+        0,
+        1238,
+        1254
+      ],
+      "corner_alpha": [
+        1,
+        0,
+        1,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 2074,
+        "opaque_pixels": 125,
+        "partial_alpha_pixels": 1897,
+        "transparent_percent": 50.63,
+        "nonzero_alpha_bounds": [
+          3,
+          3,
+          61,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 8909,
+        "opaque_pixels": 307,
+        "partial_alpha_pixels": 7168,
+        "transparent_percent": 54.38,
+        "nonzero_alpha_bounds": [
+          9,
+          6,
+          120,
+          122
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "logic",
+    "source_sha256": "20a0c3a98a735ff2bd666da8303f67b8ebf8ba23e7e1a4e05a56a9224c080df9",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 783657,
+      "opaque_pixels": 2345,
+      "partial_alpha_pixels": 786514,
+      "transparent_percent": 49.83,
+      "nonzero_alpha_bounds": [
+        0,
+        79,
+        1234,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 2119,
+        "opaque_pixels": 227,
+        "partial_alpha_pixels": 1750,
+        "transparent_percent": 51.73,
+        "nonzero_alpha_bounds": [
+          4,
+          4,
+          60,
+          60
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 9055,
+        "opaque_pixels": 446,
+        "partial_alpha_pixels": 6883,
+        "transparent_percent": 55.27,
+        "nonzero_alpha_bounds": [
+          10,
+          11,
+          118,
+          117
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "totem",
+    "source_sha256": "343837a46727e7a9386a871bba6ddeca82cb2f33f0d23550f62d8f78505e0661",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 627617,
+      "opaque_pixels": 1039,
+      "partial_alpha_pixels": 943860,
+      "transparent_percent": 39.91,
+      "nonzero_alpha_bounds": [
+        0,
+        0,
+        1222,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 1682,
+        "opaque_pixels": 205,
+        "partial_alpha_pixels": 2209,
+        "transparent_percent": 41.06,
+        "nonzero_alpha_bounds": [
+          3,
+          3,
+          61,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 7520,
+        "opaque_pixels": 413,
+        "partial_alpha_pixels": 8451,
+        "transparent_percent": 45.9,
+        "nonzero_alpha_bounds": [
+          8,
+          6,
+          121,
+          122
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "environment",
+    "source_sha256": "75d05d9bf7a8810c7d4956e9a678e7db9dd75c83c0bfb1feed06cf592d4b6e6b",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 667942,
+      "opaque_pixels": 485,
+      "partial_alpha_pixels": 904089,
+      "transparent_percent": 42.48,
+      "nonzero_alpha_bounds": [
+        0,
+        20,
+        1240,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 1831,
+        "opaque_pixels": 156,
+        "partial_alpha_pixels": 2109,
+        "transparent_percent": 44.7,
+        "nonzero_alpha_bounds": [
+          3,
+          3,
+          61,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 7988,
+        "opaque_pixels": 404,
+        "partial_alpha_pixels": 7992,
+        "transparent_percent": 48.75,
+        "nonzero_alpha_bounds": [
+          9,
+          7,
+          119,
+          122
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "time",
+    "source_sha256": "801500f494949f0d1effdf604d9ddc76668ea2eadf8cc7f4542946a090645b32",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 808926,
+      "opaque_pixels": 1504,
+      "partial_alpha_pixels": 762086,
+      "transparent_percent": 51.44,
+      "nonzero_alpha_bounds": [
+        0,
+        20,
+        1248,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 2127,
+        "opaque_pixels": 185,
+        "partial_alpha_pixels": 1784,
+        "transparent_percent": 51.93,
+        "nonzero_alpha_bounds": [
+          10,
+          3,
+          54,
+          61
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 9209,
+        "opaque_pixels": 394,
+        "partial_alpha_pixels": 6781,
+        "transparent_percent": 56.21,
+        "nonzero_alpha_bounds": [
+          14,
+          7,
+          106,
+          121
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  },
+  {
+    "name": "stop",
+    "source_sha256": "031d276e4b2a0fe68fe86f86a36d779ceb845c5d0e3a5c153bae97011e8ba1d8",
+    "source": {
+      "mode": "RGBA",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_pixels": 502708,
+      "opaque_pixels": 390,
+      "partial_alpha_pixels": 1069418,
+      "transparent_percent": 31.97,
+      "nonzero_alpha_bounds": [
+        33,
+        49,
+        1226,
+        1254
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "exports": {
+      "64": {
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 1568,
+        "opaque_pixels": 136,
+        "partial_alpha_pixels": 2392,
+        "transparent_percent": 38.28,
+        "nonzero_alpha_bounds": [
+          3,
+          3,
+          61,
+          60
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      },
+      "128": {
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 6789,
+        "opaque_pixels": 255,
+        "partial_alpha_pixels": 9340,
+        "transparent_percent": 41.44,
+        "nonzero_alpha_bounds": [
+          8,
+          9,
+          120,
+          118
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tga_type": 2,
+        "bits_per_pixel": 32,
+        "alpha_bits": 8
+      }
+    }
+  }
+]

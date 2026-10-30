@@ -1,9 +1,0 @@
-- Stringify and 'export' all default built-in conditions, to serve as examples / starting points.
-
-- Undo for condition editing?
-
-- OnSwitch actions (allowing you to, for example, switch totem profiles, UI profiles, etc).
-
-- Add 'macro' to action type (ie. not just spell / item) to look for buttons by macro name - requires major rewrite of highlighting code
-
-- Default rotations for all classes

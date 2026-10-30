@@ -1,0 +1,106 @@
+# Storage scopes
+
+This documents the current persistence boundary, including profile-contained Class and Character rotation ownership and preserved legacy recovery data.
+
+## Current behavior
+
+RM stores one account SavedVariables table per client installation, using AceDB's `profile`, `char` and `global` sections. It does not currently use AceDB's class or realm sections. A profile name is a sharing choice, not proof of class or character ownership. New characters use the shared `Default` profile unless their profile selection says otherwise.
+
+| Data | Current scope |
+| --- | --- |
+| Rotations, fallback rotation, clone/import lineage and comparisons | Selected profile, then Class or Character owner, specialization key and rotation ID (the key now only places the record and its namespace's fallback; see Specializations) |
+| Built In rotation definitions | Immutable packaged assets with class/client applicability |
+| Built In enable preferences | Selected profile |
+| Desired manual rotation choice | Selected profile, character, edition family, class, specialization and action context |
+| Announcement rules, personal item sets | Selected profile; personal currently means profile, not character |
+| Condition categories, picker visibility/order, tag colors | Selected profile |
+| General, editor, preview and minimap preferences | Selected profile; configuration scale is global |
+| Effects, custom conditions/functions and source import provenance | Global reusable libraries |
+| Global item sets | Global; a same-ID profile set takes precedence |
+| Condition Test samples | Global, keyed by condition identifier; restored samples do not authorize debugging |
+| Observation-cache choice (`diagnosticCacheBypass`) | Global; absent defaults to direct, explicit false selects cached and true selects direct; selected after database initialization and takes effect on reload |
+| Item-set action-bar bindings and optional specialization labels | Character |
+| Which profile is selected | Character, managed by AceDB |
+| Observation caches, compiled registries, combat histories, editor drafts/camera/undo and diagnostics | Runtime only |
+
+Declared class applicability is a hard gate for packaged/sourced rotation candidates, normal Built In lists and direct Built In cloning. Other eligibility constraints can still broaden candidate discovery within that class. Explicit reference/cleanup access retains old definitions and saved bodies. Ordinary custom storage uses the scoped coordinator. Legacy bodies without authoritative ownership remain preserved for explicit recovery/adoption; packaged-definition filtering alone is not ownership evidence.
+
+“Global” means shared by characters using that account's SavedVariables store. It does not imply sharing across accounts, client installations or game editions. No current data requires realm-only storage. The `realm` field in rotation metadata is attribution, not an ownership key.
+
+Profile Copy/Reset/Import affects the profile domain, including every Class and Character rotation partition in that profile, not just the owner currently visible in the browser. It does not copy/reset global source libraries or character bindings. Profile export includes the scoped rotation store and its lineage, but excludes those separate global/character domains; it is consequently not a complete backup of referenced global effects, item sets, custom conditions or custom functions.
+
+## Rotation ownership
+
+New custom rotations default to Class, with Character as an explicit alternative. Packaged Built Ins require either a declared class or explicit `applicability.universal=true`; Universal and class cannot both be set. Classless legacy portable envelopes remain readable without being reinterpreted as newly packaged Universal definitions. Cloning a Universal Built In restricts the new custom manifest to the current class and preserves the original Universal lineage baseline. Visibility, automatic/manual candidates, tags, comparisons and direct editing must use the same ownership policy.
+
+Ownership needs real partitions behind one storage facade. Adding a class tag to the existing map cannot separate its single `DEFAULT` key into distinct class/character fallbacks. Profile selection and ownership are separate axes. The chosen design retains partitions within each profile, preserving current profile operations. Character fallback takes precedence over Class fallback; both remain separately addressable.
+
+A scope change must be staged until Apply and move body, origins, imports and comparison mappings atomically. Workspace identities and concurrency guards must include the partition. Reuse AceDB's character keys rather than inventing a name/realm format. Owner identity is distinct from source applicability and user-entered author metadata.
+
+`Data/rotation_store.lua` provides the pure foundation for the integrated coordinator: full scoped addresses, detached reads with validity diagnostics, explicit fallback selection, and guarded plans for create/replace/delete/move/adoption. A record carries its body and source/comparison sidecars together. The migration planner only proposes an unclaimed archive; it never guesses an owner or writes to a live profile. Production workspace, browser, runtime, transfer and adoption paths use the scoped coordinator and `profile.rotationStore`; invalid or unclaimed legacy evidence remains preserved rather than silently assigned.
+
+Owned reads use a validated structural index and inspect only the requested records. External container, membership, record-identity or Character-class changes require explicit `Refresh`; successful refresh retires old plans/tokens, and failed refresh publishes no index. Full inventory and every commit still validate the entire store, including cross-owner aliases. Tests keep Get/ListVisible work constant with 100 versus 1,000 unrelated records. Public APIs return detached copies; source-owned runtime/header readers and guarded workspace transactions provide the internal integration. Loading the module writes no persistence root. Profile transport accepts the optional scoped root without activating it, canonicalizes specialization keys only at the declared structural maps, preserves all owners/lineage/unclaimed evidence, and rejects unsafe aliases or key collisions. Safe incomplete scoped bodies remain repairable; aggregate profile codec limits still apply.
+
+## Specializations
+
+A rotation's specializations are its own property, `body.specs` (docs/rotation-editor.md). Records stay where they were saved, under their specialization key, but that key no longer decides where a rotation applies: the owner's reader (`Data/rotation_store.lua` `ListOwned`) lists every partition of the class and character owners, and the coordinator filters by `body.specs` against the character's specialization value. Only the fallback stays tied to its partition: each specialization key keeps its own fallback, and a fallback from another key is neither listed nor resolved. References keep their full address (with the key they were saved under), so remembered manual choices, comparisons and lineage are unchanged; runtime keys were already opaque per reference. A new rotation is saved under the namespace the list reads (the specialization shown, where keys are specialization values; else the one being played) and gets that specialization in `body.specs` unless the list shows all of them. Moving a record between keys is never needed.
+
+The one-time profile migration (`MoveRotationSpecsToProperty`, flag `rotationSpecsMigrated`) gave each non-fallback record saved under a specialization-valued key (Retail specialization IDs, Wrath/Cataclysm talent groups) that value, so nothing became visible where it was not before. Era and TBC keep one key (0) per class, Forever one per class (its specialization API names one per class) and Mists keys by talent group while its values are specialization IDs, so no key there says which specialization a record was for; their records start as any specialization, except Mists records whose switch named one in a recognized shape.
+
+## Migration safety
+
+Legacy ordinary bodies have no authoritative class/character owner. Profile names, numeric spec keys and spell contents are insufficient evidence. Valid source manifests can establish declared class applicability, while unknown records need preserved recovery/adoption rather than assignment to whichever character logs in first. Independent class/character fallback collisions must remain separate; no silent merge or replacement is acceptable.
+
+After the upgrade every rotation saved by a release before 2.0, the fallback included, is in the unassigned archive and runs only once adopted. `Core/legacy_archive.lua` tells the player: one chat message per profile on the first world entry while something waits (`legacyArchiveNoticed`), and a banner under the settings tabs (`UI/legacy_archive_banner.lua`) until it is dismissed (`legacyArchiveBannerDismissed`) or the archive is empty. The Recover window adopts one record, or all of them, or all of one specialization key, for the owner chosen under Applies to (`addon:AdoptAllUnassignedRotations`). A bulk adoption is a loop over the single-record `PlanRotationAdoption` / `ApplyRotationAdoption`, so every ownership rule applies unchanged and a refused record stays in the archive. The older data formats (cooldown effects stored by name, `pet` steps and `PETSPELL_*` conditions, rune names, bare item ids) are upgraded inside archived bodies of every profile and in character roots, by the same passes that upgrade the active data (`init.lua`, `updateRotationData`), in one walk per body. Owned records are 2.0 data and are never touched (`pet` is a current step type and `PETSPELL_*` current conditions). `global.legacyBodyUpgrade` records the walk (upgrade version and archive body count), so a settled archive is skipped at later logins and a changed count walks again; an effect name that matches no effect is left as it was.
+
+Migration must cover inactive profiles and offline character records, preserve source baselines/IDs, version the new domain and portable schema, and remain idempotent. It must not execute saved source or use Repair as a cleanup step. AceDB strips defaults at logout, so absent raw versions/values must not be mistaken for missing data or ownership evidence.
+
+Repair recognizes current custom bindings, parameter aliases, requirements, schema/order and numeric icons without compiling saved source. Invalid semantic metadata is retained and the condition disabled; a matching active custom definition is also disabled and its registry version invalidated without running registration hooks. Read-only Check never performs those writes.
+
+Repair also retains valid item-announcement references, numeric effect textures, current pet/any spell steps and their exact-rank/appearance fields, optional minimap state, global import provenance and offline character legacy roots. Unknown effect types are reported and preserved. These corrections do not move data between scopes or perform legacy adoption. Optional library fields are validator schema rather than manufactured saved defaults.
+
+## Retired desired-stock targets
+
+The desired-stock feature (Item Sets > Stock) has been removed. A profile may still hold a saved `stockTargets` map from it; that map is inert: nothing reads it, and profile repair, copy, import and export carry it unchanged as plain data rather than stripping or rejecting it.
+
+## Remembered manual selection
+
+Explicit chat/menu selection remembers a detached stable Built In ID or complete
+Class/Character reference in optional `rotationChoicePreferences` version1.
+The bounded dense list has at most256 unique domains; numeric specialization0
+is a value, so profile transport requires no additional numeric-key conversion.
+No entry means Auto. Old profiles are not seeded from transient active IDs.
+Profile copy/import transfers desired data, while reset removes it. Existing
+closed transfer validation rejects extra fields, aliases and foreign reference
+ownership before copying; no runtime handle or native observation is saved.
+
+Restoration is cold on initialization/profile/spec/context notifications and
+managed rotation publications. Ordinary selection calls check only private
+cache/profile/root/spec/character/context-method authority; they do not rescan preferences or query the
+context. The active coordinator resolves the exact reference and fresh runtime
+eligibility, then uses the same chat/menu cleanup/commit/timer/message sequence.
+Manual selection bypasses only the automatic switch predicate. Unavailable
+choices remain saved and suspend, permitting the existing Auto fallback or no
+advice; the broker tooltip reports suspension. Restoration does not clear
+initialization or advice diagnostic stops. Bare custom records gain no inferred
+vehicle applicability: each saved action context is a separate domain.
+
+Successful exact ownership moves retarget only that reference; exact deletion
+removes it, preventing reused IDs from restoring a deleted entity. A consumed
+source-owned cold prepare/finish pair in the scoped coordinator performs these
+changes after Store success, before existing post-save copying, without public
+notification, copy or native callbacks. Finalization checks the live coordinator,
+profile, store root, preference root, private choice generation and unchanged
+prepared data. Newer choices or profile/root replacement win. Failed Store
+commits leave preferences untouched, and unrelated malformed preferences cannot
+block rotation Move/Delete.
+
+A custom Store transport may recursively move/delete the newly saved target
+before returning. If the exact target no longer exists, completion removes only
+the still-matching old desired choice; it does not infer the newest address in a
+chain. One private cold token also detects nested successful scoped publication,
+including deletion followed by exact-ID reuse. Failed writes do not advance it.
+Direct custom Store transports bypassing Scope do not confer chained choice
+ownership. This conservative boundary avoids resurrecting a missing target. It is
+not a move-history registry. Automatic/Single-target/AoE strategy declarations,
+new context-specific packs and target-count rules remain separate work.

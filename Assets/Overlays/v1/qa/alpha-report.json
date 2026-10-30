@@ -1,0 +1,803 @@
+[
+  {
+    "key": "arcane-ring",
+    "name": "arcane-ring-r2",
+    "source_sha256": "81e86d1e34a54f447bbc4e35f2092bcbd6567b909ed41cfc1feb17e0e919b419",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 1063660,
+      "opaque": 45,
+      "partial": 508811,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        13,
+        1253,
+        1254
+      ]
+    },
+    "exports": {
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 11560,
+        "opaque": 202,
+        "partial": 4622,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          6,
+          5,
+          124,
+          122
+        ],
+        "path": "arcane-ring-r2-128.tga",
+        "sha256": "a8bff802ee836f60e27a7ef2adcf3d1a04d5f682c2d765fbe07e9196749c61ff"
+      },
+      "256": {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 45973,
+        "opaque": 220,
+        "partial": 19343,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          7,
+          7,
+          248,
+          248
+        ],
+        "path": "arcane-ring-r2.tga",
+        "sha256": "ba7e4256a0889d3033c3bf4ef9b9e2067bd10591e509a2eaf42f1e58e6c38c2e"
+      }
+    }
+  },
+  {
+    "key": "ember-corners",
+    "name": "ember-corners",
+    "source_sha256": "f7ffc14b432c999bd41012fdb39ea23a787622a3052f3e3b66a4a76dddc5b49d",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        254
+      ],
+      "transparent": 692109,
+      "opaque": 0,
+      "partial": 880407,
+      "corners": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "bounds": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 8030,
+        "opaque": 338,
+        "partial": 8016,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "ember-corners-128.tga",
+        "sha256": "eea29e42d4a74822a28f761a852cfc9cb2edede1e30c6a2dc3c4a67d94918a28"
+      },
+      "256": {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 31325,
+        "opaque": 281,
+        "partial": 33930,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          4,
+          4,
+          252,
+          252
+        ],
+        "path": "ember-corners.tga",
+        "sha256": "54c48f4d2ec28802d7931b5ce410d48ab8df507d023d3c1d2ad1d602c4ac0b5c"
+      }
+    }
+  },
+  {
+    "key": "frost-shards",
+    "name": "frost-shards",
+    "source_sha256": "f12baeb325a664c7b7a3477449c9ab376dc9ef37e300edeccfbc75b2bdbf2e55",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 598841,
+      "opaque": 34,
+      "partial": 973641,
+      "corners": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "bounds": [
+        0,
+        2,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7595,
+        "opaque": 384,
+        "partial": 8405,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          3,
+          126,
+          126
+        ],
+        "path": "frost-shards-128.tga",
+        "sha256": "d5bd5e37e81a8889a6fd3b94702dffb37c0ea9b5704aa9b6daa6cf63c91aa479"
+      },
+      "256": {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 28708,
+        "opaque": 554,
+        "partial": 36274,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          4,
+          6,
+          252,
+          252
+        ],
+        "path": "frost-shards.tga",
+        "sha256": "6b2b37a9e55c7353647484e4438934c692d8a8facba5b0479f4f790026a42af1"
+      }
+    }
+  },
+  {
+    "key": "nature-vines",
+    "name": "nature-vines",
+    "source_sha256": "e3345317a19df6d1e42b6ad13a922b9f27b40b53f28571616eb5f7b2e4c2219d",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 553902,
+      "opaque": 21,
+      "partial": 1018593,
+      "corners": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "bounds": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6831,
+        "opaque": 550,
+        "partial": 9003,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "nature-vines-128.tga",
+        "sha256": "fef10b58bd8a978cc8a15ffe657919858b2b0fea233e48a45de513189e44dc66"
+      },
+      "256": {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 26388,
+        "opaque": 803,
+        "partial": 38345,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          4,
+          4,
+          252,
+          252
+        ],
+        "path": "nature-vines.tga",
+        "sha256": "e40f2bec906b05e0d5e3382bfc3267d70596c34a4a64c1fff183abb9fb11fbb0"
+      }
+    }
+  },
+  {
+    "key": "lightning-sweep",
+    "name": "lightning-sweep",
+    "source_sha256": "bcab8860afc280899160d36d9a891b01baadd5cf3c0c8612d4cea784ffe677a4",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 769782,
+      "opaque": 29,
+      "partial": 802705,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        3,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 8945,
+        "opaque": 222,
+        "partial": 7217,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "lightning-sweep-128.tga",
+        "sha256": "42a75fce75e21d2a72537df84666ec9296ea9978e23185a3f71a69db97c0c364"
+      },
+      "256": {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 34705,
+        "opaque": 257,
+        "partial": 30574,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          4,
+          5,
+          252,
+          252
+        ],
+        "path": "lightning-sweep.tga",
+        "sha256": "2f09e534c5737c1112bd3f11da680d2a06f2487d567396fe2f78aa1a1ff6a3f6"
+      }
+    }
+  },
+  {
+    "key": "holy-rays",
+    "name": "holy-rays",
+    "source_sha256": "f8f612fddaeeb4437a002e8454c602bf351a9c5e29f02a0904933a013b25727d",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        253
+      ],
+      "transparent": 676270,
+      "opaque": 0,
+      "partial": 896246,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7888,
+        "opaque": 113,
+        "partial": 8383,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "holy-rays-128.tga",
+        "sha256": "49202e2bf52ca2351e5f3417ac74d354315bacbca13e1e57e74b33adbf6b7901"
+      },
+      "256": {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 30747,
+        "opaque": 60,
+        "partial": 34729,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          4,
+          4,
+          252,
+          252
+        ],
+        "path": "holy-rays.tga",
+        "sha256": "b1870e7b61f8e84b563a3beed3c1d34c690facecfd5d9e3b4f7f04404073fbad"
+      }
+    }
+  },
+  {
+    "key": "shadow-claws",
+    "name": "shadow-claws",
+    "source_sha256": "6a8f20a3dab00ebe952b7c3e6fc3135330f094ee36a049514b62df0fc66d0a4f",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        254
+      ],
+      "transparent": 515864,
+      "opaque": 0,
+      "partial": 1056652,
+      "corners": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "bounds": [
+        0,
+        4,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6576,
+        "opaque": 366,
+        "partial": 9442,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          3,
+          4,
+          126,
+          126
+        ],
+        "path": "shadow-claws-128.tga",
+        "sha256": "55fc7636a3212c4df741e90e96d9607b5610ccf01665ac0b95168314e69b27b9"
+      },
+      "256": {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 25086,
+        "opaque": 250,
+        "partial": 40200,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          4,
+          6,
+          252,
+          252
+        ],
+        "path": "shadow-claws.tga",
+        "sha256": "66730caf2c937d0137b0704d1176b8609f0d96b1643817937e9bbd3497684e6e"
+      }
+    }
+  },
+  {
+    "key": "rune-diamond",
+    "name": "rune-diamond",
+    "source_sha256": "7fb63ecd320b637e710477783a5ce5f9f7b8dc3d34f5a0325e85ff4a803e2b02",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 1108478,
+      "opaque": 65,
+      "partial": 463973,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        19,
+        1238,
+        1254
+      ]
+    },
+    "exports": {
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 11854,
+        "opaque": 267,
+        "partial": 4263,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          3,
+          2,
+          125,
+          125
+        ],
+        "path": "rune-diamond-128.tga",
+        "sha256": "e14ae667ba70c38a32689a57f65c626bf03a62f7c6967f8c311431b3ffc7e0fe"
+      },
+      "256": {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 47747,
+        "opaque": 365,
+        "partial": 17424,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          7,
+          7,
+          248,
+          250
+        ],
+        "path": "rune-diamond.tga",
+        "sha256": "d3fb89f8114f14e0176f6ffe6d44554cf889fb71f264efb4e17c8df20f66e58f"
+      }
+    }
+  },
+  {
+    "key": "arcane-ring-neutral",
+    "name": "arcane-ring-neutral",
+    "source_sha256": "1140997fb2f2912124d0c3e4c12f62a0ca8bb5eb22738873c43c3a271915796f",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 941352,
+      "opaque": 33,
+      "partial": 631131,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1253,
+        1254
+      ]
+    },
+    "exports": {
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 10414,
+        "opaque": 205,
+        "partial": 5765,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          4,
+          2,
+          123,
+          124
+        ],
+        "path": "arcane-ring-neutral-128.tga",
+        "sha256": "45bdebd5000d0984ca8ea317518a325ef7aa81b634e21729f002724095afccf5"
+      },
+      "256": {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 41172,
+        "opaque": 221,
+        "partial": 24143,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          9,
+          4,
+          247,
+          249
+        ],
+        "path": "arcane-ring-neutral.tga",
+        "sha256": "187cdc454ece7bc211bc04cf75c2e06fa96fc0b4ef4cbfd008e7f30508fae05d"
+      }
+    }
+  }
+]

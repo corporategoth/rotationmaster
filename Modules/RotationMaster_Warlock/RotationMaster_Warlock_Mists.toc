@@ -1,0 +1,21 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+## Interface: 50504
+## Title: Rotation Master - Warlock
+## Notes: Rotation Master's Built In Warlock rotations. Rotation Master loads this itself, only for a Warlock, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT + Attribution
+
+bind.lua
+locales.xml
+mop/blocks.lua
+mop/warlock-affliction.lua
+mop/warlock-affliction-warcrafttavern.lua
+mop/warlock-demonology.lua
+mop/warlock-demonology-guide.lua
+mop/warlock-destruction.lua
+mop/warlock-unspecialized.lua

@@ -1,0 +1,47 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Season of Discovery Mage Arcane damage (Icy Veins, with the current five-stack Balefire rule),
+-- levels 10–60 with Arcane as the main tree and the Arcane Blast rune engraved. Arcane Missiles on Missile
+-- Barrage; Arcane Barrage at four Arcane Blast stacks; Balefire Bolt when safe (never at four of its
+-- stacks); Living Flame on cooldown; Arcane Blast filler. Arcane Barrage and Fire Blast while moving;
+-- Living Flame and Arcane Explosion on packs. Arcane Power, Presence of Mind and Icy Veins are reminders.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function class(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
+local function stop(id)return{id=id,type='stop',suppress_attack=true,conditions={}}end
+local P='mage-sarcane-'
+local combat={type='COMBAT',unit='player'}
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=6,
+ blocks={['era.mage.boundaries']=3,['era.mage.wand-finish']=2,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
+ applicability={families={'era'},actionContext='player',class='MAGE',rulesets={'season:2'}},
+ tags={'arcane','raid','single-target','aoe','season-of-discovery','icy-veins'},
+ sources={
+  {url='https://www.icy-veins.com/wow-classic/arcane-mage-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Arcane Mage rotation (Phase 4)',reviewedAt='2026-10-23',revision='2025-04-08'},
+
+ },
+ body={
+  priority=104,
+  -- The engraved rune first, so a character with no talent points is a clean no-match.
+  switch=BuiltinConditions.all({type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},{type='RUNE_ENGRAVED',spell=400574},{type='PRIMARY_TALENT_TREE',tree=1}),
+  cooldowns={BuiltinConditions.block(P..'armor','sod.mage.armor',P),
+   BuiltinConditions.spell(P..'arcane-power',12042,BuiltinConditions.all(combat,BuiltinConditions.any(class('elite'),class('rareelite'),class('worldboss'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=15}))),
+   BuiltinConditions.spell(P..'presence-of-mind',12043,BuiltinConditions.all(combat,BuiltinConditions.any({type='BUFF',unit='player',spell=12042},{type='MOVING'}))),
+   BuiltinConditions.block(P..'upkeep','sod.mage.upkeep',P)},
+  rotation={
+   BuiltinConditions.block(P..'boundaries','era.mage.boundaries',P),
+   {id=P..'pull',type='branch',conditions=combat,onTrue={},onFalse={BuiltinConditions.spell(P..'pull-arcane-blast',400574),stop(P..'pull-stop')}},
+   {id=P..'moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
+    BuiltinConditions.spell(P..'moving-barrage',400610),BuiltinConditions.spell(P..'moving-fire-blast',2136),stop(P..'moving-stop')}},
+   {id=P..'aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
+    BuiltinConditions.spell(P..'aoe-living-flame',401556),
+    BuiltinConditions.spell(P..'aoe-explosion',1449,{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3})}},
+   BuiltinConditions.spell(P..'missile-barrage',5143,{type='BUFF',unit='player',spell=400589}),
+   BuiltinConditions.spell(P..'barrage',400610,{type='BUFF_STACKS',unit='player',spell=400573,operator='GREATERTHANOREQUALS',value=4}),
+   BuiltinConditions.block(P..'balefire','sod.mage.balefire',P),
+   BuiltinConditions.spell(P..'living-flame',401556),
+   BuiltinConditions.spell(P..'arcane-blast',400574),
+   BuiltinConditions.block(P..'finish','era.mage.wand-finish',P),
+  },
+ },
+}))

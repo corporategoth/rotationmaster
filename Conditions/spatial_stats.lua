@@ -1,66 +1,213 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Built In conditions that aggregate or count health and mana over the group members near a unit: PROXIMITY_HEALTH,
+-- PROXIMITY_HEALTH_COUNT, PROXIMITY_HEALTHPCT, PROXIMITY_HEALTHPCT_COUNT and the four PROXIMITY_MANA* twins. Which
+-- members are near the unit comes from addon.proximity_eval and addon.proximity_widgets (Conditions/spatial.lua,
+-- loaded earlier); this file only reads each member's health or mana and reduces the numbers. Restricted clients
+-- (Retail, Forever): health, and mana unless it is flagged never secret, are secret while restrictions apply, so
+-- Core/condition_support.lua declares these conditions unsupported there (docs/restricted-clients.md); any value that
+-- is read still passes platform:CanReadValue. Loaded from RotationMaster.toc after Conditions/range.lua and before
+-- Conditions/weapon.lua. Callback and helper bodies are recorded by tools/generate_builtin_sources.py and saved copies
+-- bind to their exact text.
 local addon_name, addon = ...
 
-local AceGUI = LibStub("AceGUI-3.0")
+-- ============================================================================
+-- Shared setup
+-- ============================================================================
+
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, pairs = color, pairs
 local helpers = addon.help_funcs
 
-local function avg(t)
-    local sum = 0
-    for _,v in pairs(t) do -- Get the sum of all numbers in t
-        sum = sum + v
-    end
-    return sum / #t
+-- BEGIN SPATIAL STATS CALLBACK NAMESPACE
+-- Explicit callback leaves; retain native statistic helper closures.
+local Functions = {
+    values = { isin = addon.Functions.values.isin, compare = addon.Functions.values.compare },
+    presentation = {
+        nullable = addon.Functions.presentation.nullable,
+        phrase = addon.Functions.presentation.phrase,
+        predicate = addon.Functions.presentation.predicate,
+    },
+    collections = { keys = addon.Functions.collections.keys },
+}
+
+addon.builtinCallbackBindings = addon.builtinCallbackBindings or {}
+
+addon.builtinCallbackBindings["Conditions/spatial_stats.lua"] = {
+    ["Functions.values.isin"] = "builtin:utils.lua:isin",
+    ["Functions.values.compare"] = "builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"] = "builtin:utils.lua:nullable",
+    ["Functions.presentation.phrase"] = "builtin:Functions/presentation.lua:phrase",
+    ["Functions.presentation.predicate"] = "builtin:Functions/presentation.lua:predicate",
+    ["Functions.collections.keys"] = "builtin:Functions/collections.lua:keys",
+}
+
+-- END SPATIAL STATS CALLBACK NAMESPACE
+
+-- ============================================================================
+-- Shared readers
+-- ============================================================================
+
+-- Reads one number for a unit by calling a native statistic API through the evaluation cache.
+-- @param cache table  The per-pass memo table the read is cached in.
+-- @param method function|nil  The native API to call (UnitHealth, UnitHealthMax, UnitPower or UnitPowerMax).
+-- @param unit string  The unit token to read.
+-- @param power boolean|nil  True to pass the Mana power type as a second argument.
+-- @return number|nil  The reading; nil when it cannot be read.
+-- @return string|nil  The reason code when the first value is nil ("missing-api", "api-error" when the call threw,
+--     "restricted-value" for a secret, or "statistic-unavailable" when it is not a finite, non-negative number); nil
+--     otherwise.
+local function observation(cache, method, unit, power)
+    if type(method)~="function" then return nil,"missing-api" end
+    local ok,current
+    if power then ok,current=pcall(addon.getCached,cache,method,unit,Enum.PowerType.Mana)
+    else ok,current=pcall(addon.getCached,cache,method,unit) end
+    if not ok then return nil,"api-error" end
+    if not addon.Platform:CanReadValue(current) then return nil,"restricted-value" end
+    if type(current)~="number" or current~=current or current<0 or current==math.huge then return nil,"statistic-unavailable" end
+    return current
 end
 
+-- Reads a unit's health (or mana) in the form a condition compares.
+-- @param cache table  The per-pass memo table the reads are cached in.
+-- @param unit string  The unit token to read.
+-- @param mana boolean|nil  True to read mana instead of health.
+-- @param percentage boolean|nil  True for the current value as 0 to 100 of the maximum (which must be positive); wins
+--     over deficit when both are set.
+-- @param deficit boolean|nil  True for the maximum minus the current value.
+-- @return number|nil  The current value, percentage or deficit; nil when a read fails.
+-- @return string|nil  The reason code when the first value is nil (the reason from observation, or
+--     "statistic-unavailable"); nil otherwise.
+local function statistic(cache, unit, mana, percentage, deficit)
+    local method=UnitHealth;if mana then method=UnitPower end
+    local current,reason=observation(cache,method,unit,mana)
+    if current==nil then return nil,reason end
+    if percentage or deficit then
+        local maximumMethod=UnitHealthMax;if mana then maximumMethod=UnitPowerMax end
+        local maximum,why=observation(cache,maximumMethod,unit,mana)
+        if maximum==nil then return nil,why end
+        if percentage then
+            if maximum==0 then return nil,"statistic-unavailable" end
+            local percent=current/maximum*100
+            if percent~=percent or percent==math.huge then return nil,"statistic-unavailable" end
+            return percent
+        end
+        return maximum-current
+    end
+    return current
+end
+
+-- Reduces the numbers collected for the members in range to one.
+-- @param values number[]  The readings, one per member in range.
+-- @param operation string  "average", "minimum" or "maximum".
+-- @return number|nil  The reduced number; nil when it cannot be computed.
+-- @return string|nil  The reason code when the first value is nil ("no-units-in-range" for an empty list,
+--     "statistic-unavailable" when the sum is not finite, or "invalid-operation" for any other operation); nil
+--     otherwise.
+local function aggregate(values, operation)
+    if #values==0 then return nil,"no-units-in-range" end
+    local value=values[1]
+    if operation=="average" then
+        local sum=0;for _,current in ipairs(values) do sum=sum+current end
+        if sum==math.huge or sum==-math.huge or sum~=sum then return nil,"statistic-unavailable" end
+        return sum/#values
+    elseif operation=="minimum" or operation=="maximum" then
+        for index=2,#values do
+            if operation=="minimum" then value=math.min(value,values[index])
+            else value=math.max(value,values[index]) end
+        end
+        return value
+    end
+    return nil,"invalid-operation"
+end
+
+-- ============================================================================
+-- Health within range
+-- ============================================================================
+
+-- PROXIMITY_HEALTH: reduces the raw health of the members within `distance` yards of the unit (operation: average,
+-- minimum or maximum) and compares the result with the saved amount; a negative amount works on the deficit from
+-- maximum health instead. Returns nil and a reason when the scan is incomplete or uncertain, a read fails, or no member
+-- is in range ("no-units-in-range"). Stores unit, operation, operator, value, distance, samegroup and includepets.
 addon:RegisterCondition("PROXIMITY_HEALTH", {
     description = L["Health Within Range"],
-    icon = "Interface\\Icons\\inv_potion_52",
-    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    icon = addon.Artwork.condition["PROXIMITY_HEALTH"],
+    fields = {
+        unit = "string",
+        operation = "string",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
+    -- Checks that the saved fields of the PROXIMITY_HEALTH condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
+    -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and type(value.value) == "number" and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Reduces the raw health of the members within the configured distance of the unit (average, minimum or maximum)
+    -- and compares it with the configured amount.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
+    -- Collects one health reading per member in range (addon.proximity_eval drives the scan), aggregates them and
+    -- compares. Unavailable if the scan did not complete, any reading failed, or the list is empty.
     evaluate = function(value, cache)
         local values = {}
-        addon.proximity_eval(value, cache, function(c, unit)
-                    local cur = addon.getCached(c, UnitHealth, unit)
-                    if value.value < 0 then
-                        local max = addon.getCached(c, UnitHealthMax, unit)
-                        cur = (max-cur)
-                    end
-                    table.insert(values, cur)
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,false,false,value.value<0)
+            if cur==nil then return nil,why end
+            table.insert(values, cur)
         end)
+        if not complete then return nil,reason end
 
-        local v
-        if value.operation == "minimum" then
-            v = math.min(values)
-        elseif value.operation == "average" then
-            v = avg(values)
-        elseif value.operation == "maximum" then
-            v = math.max(values)
-        end
-        return addon.compare(value.operator, v, math.abs(value.value))
+        local v,aggregateReason=aggregate(values,value.operation)
+        if v==nil then return nil,aggregateReason end
+        return Functions.values.compare(value.operator, v, math.abs(value.value))
     end,
+    -- Builds the readable rule summary for the PROXIMITY_HEALTH condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
+    -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
+    -- as a deficit where the condition accepts one.
     print = function(_, value)
-        local conditionstr = string.format(
-                ((value.value ~= nil and value.value < 0) and
-                        L["The %s health defecit of %s members%s within %d yards of %s"] or
-                        L["The %s health of %s members%s within %d yards of %s"]),
-                addon.nullable(value.operation, L["<operation>"]),
-                (value.samegroup and PARTY or L["Raid or Party"]),
-                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                addon.nullable(value.distance, L["<distance>"]),
-                addon.nullable(addon.units[value.unit], L["<unit>"]))
-        if value.value ~= nil and value.value < 0 then
-            return addon.compareString(value.operator, conditionstr, -value.value)
-        else
-            return addon.compareString(value.operator, conditionstr, addon.nullable(value.value))
-        end
+        local threshold = value.value
+        local deficit = threshold ~= nil and threshold < 0
+        if deficit then threshold = -threshold end
+        return Functions.presentation.phrase(
+                (deficit and L["The {operation} health deficit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] or
+                L["The {operation} health of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"]),
+                {
+                    operation = Functions.presentation.nullable(addon.math_operations_prose[value.operation], L["<operation>"]),
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                })
     end,
+    -- Builds the editor controls for the PROXIMITY_HEALTH condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
+    -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
+    -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -70,14 +217,14 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local operation = AceGUI:Create("Dropdown")
+        local operation = addon:CreateConditionDropdown()
         operation:SetLabel(L["Operation"])
         operation:SetCallback("OnValueChanged", function(_, _, v)
             value.operation = v
             top:SetStatusText(funcs:print(root, spec))
         end)
         operation.configure = function()
-            operation:SetList(addon.math_operations, addon.keys(addon.math_operations))
+            operation:SetList(addon.math_operations, Functions.collections.keys(addon.math_operations))
             if (value.operation ~= nil) then
                 operation:SetValue(value.operation)
             end
@@ -88,8 +235,13 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_HEALTH condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
+    -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
+    -- note on when the whole condition is unavailable.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -98,71 +250,114 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Minimum"] .. color.RESET .. " - " ..
                 "The lowest value")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Average"] .. color.RESET .. " - " ..
-                "The value that is the sum of all values divided my the number of values")))
+                "The value that is the sum of all values divided by the number of values")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Maximum"] .. color.RESET .. " - " ..
                 "The highest value")))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Health"], L["Health"],
-                "The raw health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
-                        "If this number is negative, it means the health deficit (from max health).")
+        addon.layout_condition_operatorwidget_help(frame, L["Health Within Range"], L["Health"],
+                "The health value the " .. color.BLIZ_YELLOW .. L["Operation"] .. color.RESET .. " result is compared with: " ..
+                        "the lowest, average or highest health of the allies counted.  " ..
+                        "If this number is negative, it compares their health deficit (from max health) instead.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
-    end
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
+    end,
 })
 
+-- PROXIMITY_HEALTH_COUNT: counts the members within `distance` yards of the unit whose raw health passes the health
+-- comparison (a negative health compares each member's deficit from maximum) and compares that count with the saved
+-- count. Returns nil and a reason when the scan is incomplete or uncertain or a read fails; an empty range counts 0.
+-- Stores unit, healthoperator, health, operator, value (the count), distance, samegroup and includepets.
 addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
     description = L["Health Count Within Range"],
-    icon = "Interface\\Icons\\inv_potion_54",
-    fields = { unit = "string", healthoperator = "string", health = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    icon = addon.Artwork.condition["PROXIMITY_HEALTH_COUNT"],
+    fields = {
+        unit = "string",
+        healthoperator = "string",
+        health = "number",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
+    -- Checks that the saved fields of the PROXIMITY_HEALTH_COUNT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
+    -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.healthoperator ~= nil and addon.isin(addon.operators, value.healthoperator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.healthoperator ~= nil and Functions.values.isin(addon.operators, value.healthoperator) and
                 value.health ~= nil and type(value.health) == "number" and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Counts the members within the configured distance of the unit whose raw health passes the health comparison, and
+    -- compares the count with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
+    -- Counts members in range whose health passes the health comparison (addon.proximity_eval drives the scan), then
+    -- compares the count. Unavailable if the scan did not complete or any reading failed.
     evaluate = function(value, cache)
         local count = 0
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitHealth, unit)
-            if value.value < 0 then
-                local max = addon.getCached(c, UnitHealthMax, unit)
-                cur = (max-cur)
-            end
-            if addon.compare(value.healthoperator, cur, math.abs(value.health)) then
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,false,false,value.health<0)
+            if cur==nil then return nil,why end
+            if Functions.values.compare(value.healthoperator, cur, math.abs(value.health)) then
                 count = count + 1
             end
         end)
+        if not complete then return nil,reason end
 
-        return addon.compare(value.operator, count, value.value)
+        return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_HEALTH_COUNT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
+    -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
+    -- as a deficit where the condition accepts one.
     print = function(_, value)
-        local conditionstr
-        if value.health ~= nil and value.health < 0 then
-            conditionstr = addon.compareString(value.healthoperator, L["%s health defecit"], -value.health)
-        else
-            conditionstr = addon.compareString(value.healthoperator, L["%s health"], addon.nullable(value.health))
-        end
-        return addon.compareString(value.operator,
-                string.format(conditionstr,
-                        string.format(L["The number %s members%s within %d yards of %s whose"],
-                                (value.samegroup and PARTY or L["Raid or Party"]),
-                                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                addon.nullable(value.distance, L["<distance>"]),
-                                addon.nullable(addon.units[value.unit], L["<unit>"]))),
-                addon.nullable(value.value))
+        local threshold = value.health
+        local deficit = threshold ~= nil and threshold < 0
+        if deficit then threshold = -threshold end
+        return Functions.presentation.phrase(
+                (deficit and L["The number of {members} members{pets} within {distance} yards of {unit} whose health deficit {qualifier} {threshold} {comparison} {value}"] or
+                L["The number of {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}"]),
+                {
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                    qualifier = Functions.presentation.predicate(value.healthoperator),
+                    value = Functions.presentation.nullable(value.value),
+                })
     end,
+    -- Builds the editor controls for the PROXIMITY_HEALTH_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
+    -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
+    -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -180,76 +375,120 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_HEALTH_COUNT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
+    -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
+    -- note on when the whole condition is unavailable.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Health"], L["Health"],
-                "The raw health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
-                        "If this number is negative, it means the health deficit (from max health).")
-        addon.layout_condition_operatorwidget_help(frame, L["Allies Within Range"], L["Count"],
-                "The number of allies whose proximity is measured in relation to " .. color.BLIZ_YELLOW .. L["Unit"] ..
-                        ".  This will only measure the proximity of allies you are in a party or raid with.")
+                "The health each ally within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is compared with.  " ..
+                        "If this number is negative, it compares each ally's health deficit (from max health) instead.")
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Health Count Within Range"], L["Count"],
+                "The number of allies within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " whose health passes that comparison.  " ..
+                        "This only counts allies you are in a party or raid with.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
-    end
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
+    end,
 })
 
+-- PROXIMITY_HEALTHPCT: reduces the health percentage of the members within `distance` yards of the unit (operation:
+-- average, minimum or maximum) and compares the result with the saved fraction (0 to 1, compared as percent). Returns
+-- nil and a reason when the scan is incomplete or uncertain, a read fails, a maximum is not positive, or no member is
+-- in range. Stores unit, operation, operator, value, distance, samegroup and includepets.
 addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
     description = L["Health Percentage Within Range"],
-    icon = "Interface\\Icons\\inv_potion_51",
-    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    icon = addon.Artwork.condition["PROXIMITY_HEALTHPCT"],
+    fields = {
+        unit = "string",
+        operation = "string",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
+    -- Checks that the saved fields of the PROXIMITY_HEALTHPCT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
+    -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Reduces the health percentage of the members within the configured distance of the unit (average, minimum or
+    -- maximum) and compares it with the configured fraction.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
+    -- Collects one health percentage per member in range (addon.proximity_eval drives the scan), aggregates them and
+    -- compares. Unavailable if the scan did not complete, any reading failed, or the list is empty.
     evaluate = function(value, cache)
         local values = {}
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitHealth, unit)
-            local max = addon.getCached(c, UnitHealthMax, unit)
-            table.insert(values, cur / max * 100)
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,false,true,false)
+            if cur==nil then return nil,why end
+            table.insert(values, cur)
         end)
+        if not complete then return nil,reason end
 
-        local v
-        if value.operation == "minimum" then
-            v = math.min(values)
-        elseif value.operation == "average" then
-            v = avg(values)
-        elseif value.operation == "maximum" then
-            v = math.max(values)
-        end
-        return addon.compare(value.operator, v, value.value * 100)
+        local v,aggregateReason=aggregate(values,value.operation)
+        if v==nil then return nil,aggregateReason end
+        return Functions.values.compare(value.operator, v, value.value * 100)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_HEALTHPCT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
+    -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
+    -- as a deficit where the condition accepts one.
     print = function(_, value)
-        local v = value.value
-        if v ~= nil then
-            v = v * 100
-        end
-        return addon.compareString(value.operator,
-                string.format(
-                        L["The %s health percentage of %s members%s within %d yards of %s"],
-                        addon.nullable(value.operation, L["<operation>"]),
-                        (value.samegroup and PARTY or L["Raid or Party"]),
-                        (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                        addon.nullable(value.distance, L["<distance>"]),
-                        addon.nullable(addon.units[value.unit], L["<unit>"])),
-                addon.nullable(v) .. '%')
+        local threshold = value.value
+        if threshold ~= nil then threshold = threshold * 100 end
+        return Functions.presentation.phrase(
+                L["The {operation} health percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%"],
+                {
+                    operation = Functions.presentation.nullable(addon.math_operations_prose[value.operation], L["<operation>"]),
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                })
     end,
+    -- Builds the editor controls for the PROXIMITY_HEALTHPCT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
+    -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
+    -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -259,14 +498,14 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local operation = AceGUI:Create("Dropdown")
+        local operation = addon:CreateConditionDropdown()
         operation:SetLabel(L["Operation"])
         operation:SetCallback("OnValueChanged", function(_, _, v)
             value.operation = v
             top:SetStatusText(funcs:print(root, spec))
         end)
         operation.configure = function()
-            operation:SetList(addon.math_operations, addon.keys(addon.math_operations))
+            operation:SetList(addon.math_operations, Functions.collections.keys(addon.math_operations))
             if (value.operation ~= nil) then
                 operation:SetValue(value.operation)
             end
@@ -277,8 +516,13 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_HEALTHPCT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
+    -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
+    -- note on when the whole condition is unavailable.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -287,66 +531,111 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Minimum"] .. color.RESET .. " - " ..
                 "The lowest value")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Average"] .. color.RESET .. " - " ..
-                "The value that is the sum of all values divided my the number of values")))
+                "The value that is the sum of all values divided by the number of values")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Maximum"] .. color.RESET .. " - " ..
                 "The highest value")))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Health Percentage"], L["Health"],
-                "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
-                        "total health.")
+        addon.layout_condition_operatorwidget_help(frame, L["Health Percentage Within Range"], L["Health"],
+                "The health percentage the " .. color.BLIZ_YELLOW .. L["Operation"] .. color.RESET .. " result is compared with: " ..
+                        "the lowest, average or highest health of the allies counted, each as a percentage of their total health.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
-    end
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
+    end,
 })
 
+-- PROXIMITY_HEALTHPCT_COUNT: counts the members within `distance` yards of the unit whose health percentage passes the
+-- comparison with the saved fraction (0 to 1, compared as percent) and compares that count with the saved count.
+-- Returns nil and a reason when the scan is incomplete or uncertain, a read fails or a maximum is not positive; an
+-- empty range counts 0. Stores unit, healthoperator, health (the fraction), operator, value (the count), distance,
+-- samegroup and includepets.
 addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
     description = L["Health Percentage Count Within Range"],
-    icon = "Interface\\Icons\\inv_potion_53",
-    fields = { unit = "string", healthoperator = "string", health = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    icon = addon.Artwork.condition["PROXIMITY_HEALTHPCT_COUNT"],
+    fields = {
+        unit = "string",
+        healthoperator = "string",
+        health = "number",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
+    -- Checks that the saved fields of the PROXIMITY_HEALTHPCT_COUNT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
+    -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.healthoperator ~= nil and addon.isin(addon.operators, value.healthoperator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.healthoperator ~= nil and Functions.values.isin(addon.operators, value.healthoperator) and
                 value.health ~= nil and value.health >= 0.00 and value.health <= 1.00 and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Counts the members within the configured distance of the unit whose health percentage passes the comparison, and
+    -- compares the count with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
+    -- Counts members in range whose health percentage passes the comparison (addon.proximity_eval drives the scan),
+    -- then compares the count. Unavailable if the scan did not complete or any reading failed.
     evaluate = function(value, cache)
         local count = 0
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitHealth, unit)
-            local max = addon.getCached(c, UnitHealthMax, unit)
-            if addon.compare(value.healthoperator, cur / max * 100, value.value * 100) then
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,false,true,false)
+            if cur==nil then return nil,why end
+            if Functions.values.compare(value.healthoperator, cur, value.health * 100) then
                 count = count + 1
             end
         end)
-        return addon.compare(value.operator, count, value.value)
+        if not complete then return nil,reason end
+        return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_HEALTHPCT_COUNT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
+    -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
+    -- as a deficit where the condition accepts one.
     print = function(_, value)
-        local v = value.health
-        if v ~= nil then
-            v = v * 100
-        end
-        return addon.compareString(value.operator,
-                addon.compareString(value.healthoperator,
-                        string.format(L["The number %s members%s within %d yards of %s whose health percentage"],
-                                (value.samegroup and PARTY or L["Raid or Party"]),
-                                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                addon.nullable(value.distance, L["<distance>"]),
-                                addon.nullable(addon.units[value.unit], L["<unit>"])),
-                        addon.nullable(v) .. "%"),
-                addon.nullable(value.value))
+        local threshold = value.health
+        if threshold ~= nil then threshold = threshold * 100 end
+        return Functions.presentation.phrase(
+                L["The number of {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}"],
+                {
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                    qualifier = Functions.presentation.predicate(value.healthoperator),
+                    value = Functions.presentation.nullable(value.value),
+                })
     end,
+    -- Builds the editor controls for the PROXIMITY_HEALTHPCT_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
+    -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
+    -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -364,78 +653,125 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_HEALTHPCT_COUNT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
+    -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
+    -- note on when the whole condition is unavailable.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Health Percentage"], L["Health"],
-                "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
-                        "total health.")
-        addon.layout_condition_operatorwidget_help(frame, L["Allies Within Range"], L["Count"],
-                "The number of allies whose proximity is measured in relation to " .. color.BLIZ_YELLOW .. L["Unit"] ..
-                        ".  This will only measure the proximity of allies you are in a party or raid with.")
+                "The health percentage each ally within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is compared with, as a percentage of their total health.")
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Health Percentage Count Within Range"], L["Count"],
+                "The number of allies within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " whose health percentage passes that comparison.  " ..
+                        "This only counts allies you are in a party or raid with.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
-    end
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
+    end,
 })
+
+-- ============================================================================
+-- Mana within range
+-- ============================================================================
+
+-- PROXIMITY_MANA: reduces the raw mana of the members within `distance` yards of the unit (operation: average,
+-- minimum or maximum) and compares the result with the saved amount; a negative amount works on the deficit from
+-- maximum mana instead. Returns nil and a reason when the scan is incomplete or uncertain, a read fails, or no member
+-- is in range ("no-units-in-range"). Stores unit, operation, operator, value, distance, samegroup and includepets.
 addon:RegisterCondition("PROXIMITY_MANA", {
     description = L["Mana Within Range"],
-    icon = "Interface\\Icons\\inv_potion_73",
-    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    icon = addon.Artwork.condition["PROXIMITY_MANA"],
+    fields = {
+        unit = "string",
+        operation = "string",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
+    -- Checks that the saved fields of the PROXIMITY_MANA condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
+    -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and type(value.value) == "number" and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Reduces the raw mana of the members within the configured distance of the unit (average, minimum or maximum) and
+    -- compares it with the configured amount.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
+    -- Collects one mana reading per member in range (addon.proximity_eval drives the scan), aggregates them and
+    -- compares. Unavailable if the scan did not complete, any reading failed, or the list is empty.
     evaluate = function(value, cache)
         local values = {}
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitPower, unit, Enum.PowerType.Mana)
-            if value.value < 0 then
-                local max = addon.getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
-                cur = (max-cur)
-            end
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,true,false,value.value<0)
+            if cur==nil then return nil,why end
             table.insert(values, cur)
         end)
+        if not complete then return nil,reason end
 
-        local v
-        if value.operation == "minimum" then
-            v = math.min(values)
-        elseif value.operation == "average" then
-            v = avg(values)
-        elseif value.operation == "maximum" then
-            v = math.max(values)
-        end
-        return addon.compare(value.operator, v, math.abs(value.value))
+        local v,aggregateReason=aggregate(values,value.operation)
+        if v==nil then return nil,aggregateReason end
+        return Functions.values.compare(value.operator, v, math.abs(value.value))
     end,
+    -- Builds the readable rule summary for the PROXIMITY_MANA condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
+    -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
+    -- as a deficit where the condition accepts one.
     print = function(_, value)
-        local conditionstr = string.format(
-                ((value.value ~= nil and value.value < 0) and
-                        L["The %s mana defecit of %s members%s within %d yards of %s"] or
-                        L["The %s mana of %s members%s within %d yards of %s"]),
-                addon.nullable(value.operation, L["<operation>"]),
-                (value.samegroup and PARTY or L["Raid or Party"]),
-                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                addon.nullable(value.distance, L["<distance>"]),
-                addon.nullable(addon.units[value.unit], L["<unit>"]))
-        if value.value ~= nil and value.value < 0 then
-            return addon.compareString(value.operator, conditionstr, -value.value)
-        else
-            return addon.compareString(value.operator, conditionstr, addon.nullable(value.value))
-        end
+        local threshold = value.value
+        local deficit = threshold ~= nil and threshold < 0
+        if deficit then threshold = -threshold end
+        return Functions.presentation.phrase(
+                (deficit and L["The {operation} mana deficit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] or
+                L["The {operation} mana of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"]),
+                {
+                    operation = Functions.presentation.nullable(addon.math_operations_prose[value.operation], L["<operation>"]),
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                })
     end,
+    -- Builds the editor controls for the PROXIMITY_MANA condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
+    -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
+    -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -445,14 +781,14 @@ addon:RegisterCondition("PROXIMITY_MANA", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local operation = AceGUI:Create("Dropdown")
+        local operation = addon:CreateConditionDropdown()
         operation:SetLabel(L["Operation"])
         operation:SetCallback("OnValueChanged", function(_, _, v)
             value.operation = v
             top:SetStatusText(funcs:print(root, spec))
         end)
         operation.configure = function()
-            operation:SetList(addon.math_operations, addon.keys(addon.math_operations))
+            operation:SetList(addon.math_operations, Functions.collections.keys(addon.math_operations))
             if (value.operation ~= nil) then
                 operation:SetValue(value.operation)
             end
@@ -463,8 +799,13 @@ addon:RegisterCondition("PROXIMITY_MANA", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_MANA condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
+    -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
+    -- note on when the whole condition is unavailable.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -473,71 +814,114 @@ addon:RegisterCondition("PROXIMITY_MANA", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Minimum"] .. color.RESET .. " - " ..
                 "The lowest value")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Average"] .. color.RESET .. " - " ..
-                "The value that is the sum of all values divided my the number of values")))
+                "The value that is the sum of all values divided by the number of values")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Maximum"] .. color.RESET .. " - " ..
                 "The highest value")))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Mana"], L["Mana"],
-                "The raw mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
-                        "If this number is negative, it means the mana deficit (from max mana).")
+        addon.layout_condition_operatorwidget_help(frame, L["Mana Within Range"], L["Mana"],
+                "The mana value the " .. color.BLIZ_YELLOW .. L["Operation"] .. color.RESET .. " result is compared with: " ..
+                        "the lowest, average or highest mana of the allies counted.  " ..
+                        "If this number is negative, it compares their mana deficit (from max mana) instead.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
-    end
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
+    end,
 })
 
+-- PROXIMITY_MANA_COUNT: counts the members within `distance` yards of the unit whose raw mana passes the mana
+-- comparison (a negative mana compares each member's deficit from maximum) and compares that count with the saved
+-- count. Returns nil and a reason when the scan is incomplete or uncertain or a read fails; an empty range counts 0.
+-- Stores unit, manaoperator, mana, operator, value (the count), distance, samegroup and includepets.
 addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
     description = L["Mana Count Within Range"],
-    icon = "Interface\\Icons\\inv_potion_72",
-    fields = { unit = "string", manaoperator = "string", mana = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    icon = addon.Artwork.condition["PROXIMITY_MANA_COUNT"],
+    fields = {
+        unit = "string",
+        manaoperator = "string",
+        mana = "number",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
+    -- Checks that the saved fields of the PROXIMITY_MANA_COUNT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
+    -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.manaoperator ~= nil and addon.isin(addon.operators, value.manaoperator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.manaoperator ~= nil and Functions.values.isin(addon.operators, value.manaoperator) and
                 value.mana ~= nil and type(value.mana) == "number" and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Counts the members within the configured distance of the unit whose raw mana passes the mana comparison, and
+    -- compares the count with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
+    -- Counts members in range whose mana passes the mana comparison (addon.proximity_eval drives the scan), then
+    -- compares the count. Unavailable if the scan did not complete or any reading failed.
     evaluate = function(value, cache)
         local count = 0
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitPower, unit, Enum.PowerType.Mana)
-            if value.mana < 0 then
-                local max = addon.getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
-                cur = (max-cur)
-            end
-            if addon.compare(value.manaoperator, cur, math.abs(value.mana)) then
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,true,false,value.mana<0)
+            if cur==nil then return nil,why end
+            if Functions.values.compare(value.manaoperator, cur, math.abs(value.mana)) then
                 count = count + 1
             end
         end)
+        if not complete then return nil,reason end
 
-        return addon.compare(value.operator, count, value.value)
+        return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_MANA_COUNT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
+    -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
+    -- as a deficit where the condition accepts one.
     print = function(_, value)
-        local conditionstr
-        if value.mana ~= nil and value.mana < 0 then
-            conditionstr = addon.compareString(value.manaoperator, L["%s mana defecit"], -value.mana)
-        else
-            conditionstr = addon.compareString(value.manaoperator, L["%s mana"], addon.nullable(value.mana))
-        end
-        return addon.compareString(value.operator,
-                string.format(conditionstr,
-                        string.format(L["The number %s members%s within %d yards of %s whose"],
-                                (value.samegroup and PARTY or L["Raid or Party"]),
-                                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                addon.nullable(value.distance, L["<distance>"]),
-                                addon.nullable(addon.units[value.unit], L["<unit>"]))),
-                addon.nullable(value.value))
+        local threshold = value.mana
+        local deficit = threshold ~= nil and threshold < 0
+        if deficit then threshold = -threshold end
+        return Functions.presentation.phrase(
+                (deficit and L["The number of {members} members{pets} within {distance} yards of {unit} whose mana deficit {qualifier} {threshold} {comparison} {value}"] or
+                L["The number of {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}"]),
+                {
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                    qualifier = Functions.presentation.predicate(value.manaoperator),
+                    value = Functions.presentation.nullable(value.value),
+                })
     end,
+    -- Builds the editor controls for the PROXIMITY_MANA_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
+    -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
+    -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -555,76 +939,120 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_MANA_COUNT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
+    -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
+    -- note on when the whole condition is unavailable.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Mana"], L["Mana"],
-                "The raw mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
-                        "If this number is negative, it means the mana deficit (from max mana).")
-        addon.layout_condition_operatorwidget_help(frame, L["Allies Within Range"], L["Count"],
-                "The number of allies whose proximity is measured in relation to " .. color.BLIZ_YELLOW .. L["Unit"] ..
-                        ".  This will only measure the proximity of allies you are in a party or raid with.")
+                "The mana each ally within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is compared with.  " ..
+                        "If this number is negative, it compares each ally's mana deficit (from max mana) instead.")
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Mana Count Within Range"], L["Count"],
+                "The number of allies within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " whose mana passes that comparison.  " ..
+                        "This only counts allies you are in a party or raid with.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
-    end
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
+    end,
 })
 
+-- PROXIMITY_MANAPCT: reduces the mana percentage of the members within `distance` yards of the unit (operation:
+-- average, minimum or maximum) and compares the result with the saved fraction (0 to 1, compared as percent). Returns
+-- nil and a reason when the scan is incomplete or uncertain, a read fails, a maximum is not positive, or no member is
+-- in range. Stores unit, operation, operator, value, distance, samegroup and includepets.
 addon:RegisterCondition("PROXIMITY_MANAPCT", {
     description = L["Mana Percentage Within Range"],
-    icon = "Interface\\Icons\\inv_potion_75",
-    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    icon = addon.Artwork.condition["PROXIMITY_MANAPCT"],
+    fields = {
+        unit = "string",
+        operation = "string",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
+    -- Checks that the saved fields of the PROXIMITY_MANAPCT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
+    -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Reduces the mana percentage of the members within the configured distance of the unit (average, minimum or
+    -- maximum) and compares it with the configured fraction.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
+    -- Collects one mana percentage per member in range (addon.proximity_eval drives the scan), aggregates them and
+    -- compares. Unavailable if the scan did not complete, any reading failed, or the list is empty.
     evaluate = function(value, cache)
         local values = {}
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitPower, unit, Enum.PowerType.Mana)
-            local max = addon.getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
-            table.insert(values, cur / max * 100)
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,true,true,false)
+            if cur==nil then return nil,why end
+            table.insert(values, cur)
         end)
+        if not complete then return nil,reason end
 
-        local v
-        if value.operation == "minimum" then
-            v = math.min(values)
-        elseif value.operation == "average" then
-            v = avg(values)
-        elseif value.operation == "maximum" then
-            v = math.max(values)
-        end
-        return addon.compare(value.operator, v, value.value * 100)
+        local v,aggregateReason=aggregate(values,value.operation)
+        if v==nil then return nil,aggregateReason end
+        return Functions.values.compare(value.operator, v, value.value * 100)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_MANAPCT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
+    -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
+    -- as a deficit where the condition accepts one.
     print = function(_, value)
-        local v = value.value
-        if v ~= nil then
-            v = v * 100
-        end
-        return addon.compareString(value.operator,
-                string.format(
-                        L["The %s mana percentage of %s members%s within %d yards of %s"],
-                        addon.nullable(value.operation, L["<operation>"]),
-                        (value.samegroup and PARTY or L["Raid or Party"]),
-                        (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                        addon.nullable(value.distance, L["<distance>"]),
-                        addon.nullable(addon.units[value.unit], L["<unit>"])),
-                addon.nullable(v) .. '%')
+        local threshold = value.value
+        if threshold ~= nil then threshold = threshold * 100 end
+        return Functions.presentation.phrase(
+                L["The {operation} mana percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%"],
+                {
+                    operation = Functions.presentation.nullable(addon.math_operations_prose[value.operation], L["<operation>"]),
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                })
     end,
+    -- Builds the editor controls for the PROXIMITY_MANAPCT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
+    -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
+    -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -634,14 +1062,14 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local operation = AceGUI:Create("Dropdown")
+        local operation = addon:CreateConditionDropdown()
         operation:SetLabel(L["Operation"])
         operation:SetCallback("OnValueChanged", function(_, _, v)
             value.operation = v
             top:SetStatusText(funcs:print(root, spec))
         end)
         operation.configure = function()
-            operation:SetList(addon.math_operations, addon.keys(addon.math_operations))
+            operation:SetList(addon.math_operations, Functions.collections.keys(addon.math_operations))
             if (value.operation ~= nil) then
                 operation:SetValue(value.operation)
             end
@@ -652,8 +1080,13 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_MANAPCT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
+    -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
+    -- note on when the whole condition is unavailable.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -662,66 +1095,111 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Minimum"] .. color.RESET .. " - " ..
                 "The lowest value")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Average"] .. color.RESET .. " - " ..
-                "The value that is the sum of all values divided my the number of values")))
+                "The value that is the sum of all values divided by the number of values")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Maximum"] .. color.RESET .. " - " ..
                 "The highest value")))
         frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorwidget_help(frame, L["Mana Percentage"], L["Mana"],
-                "The mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
-                        "total mana.")
+        addon.layout_condition_operatorwidget_help(frame, L["Mana Percentage Within Range"], L["Mana"],
+                "The mana percentage the " .. color.BLIZ_YELLOW .. L["Operation"] .. color.RESET .. " result is compared with: " ..
+                        "the lowest, average or highest mana of the allies counted, each as a percentage of their total mana.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
-    end
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
+    end,
 })
 
+-- PROXIMITY_MANAPCT_COUNT: counts the members within `distance` yards of the unit whose mana percentage passes the
+-- comparison with the saved fraction (0 to 1, compared as percent) and compares that count with the saved count.
+-- Returns nil and a reason when the scan is incomplete or uncertain, a read fails or a maximum is not positive; an
+-- empty range counts 0. Stores unit, manaoperator, mana (the fraction), operator, value (the count), distance,
+-- samegroup and includepets.
 addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
     description = L["Mana Percentage Count Within Range"],
-    icon = "Interface\\Icons\\inv_potion_74",
-    fields = { unit = "string", manaoperator = "string", mana = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
+    icon = addon.Artwork.condition["PROXIMITY_MANAPCT_COUNT"],
+    fields = {
+        unit = "string",
+        manaoperator = "string",
+        mana = "number",
+        operator = "string",
+        value = "number",
+        distance = "number",
+        samegroup = "boolean",
+        includepets = "boolean",
+    },
+    -- Checks that the saved fields of the PROXIMITY_MANAPCT_COUNT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
+    -- Configuration check: every saved field must be present and in range for this condition.
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.manaoperator ~= nil and addon.isin(addon.operators, value.manaoperator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.manaoperator ~= nil and Functions.values.isin(addon.operators, value.manaoperator) and
                 value.mana ~= nil and value.mana >= 0.00 and value.mana <= 1.00 and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
+    -- Counts the members within the configured distance of the unit whose mana percentage passes the comparison, and
+    -- compares the count with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
+    -- Counts members in range whose mana percentage passes the comparison (addon.proximity_eval drives the scan), then
+    -- compares the count. Unavailable if the scan did not complete or any reading failed.
     evaluate = function(value, cache)
         local count = 0
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitPower, unit, Enum.PowerType.Mana)
-            local max = addon.getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
-            if addon.compare(value.manaoperator, cur / max * 100, value.value * 100) then
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,true,true,false)
+            if cur==nil then return nil,why end
+            if Functions.values.compare(value.manaoperator, cur, value.mana * 100) then
                 count = count + 1
             end
         end)
-        return addon.compare(value.operator, count, value.value)
+        if not complete then return nil,reason end
+        return Functions.values.compare(value.operator, count, value.value)
     end,
+    -- Builds the readable rule summary for the PROXIMITY_MANAPCT_COUNT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
+    -- Rule summary from a localized phrase; fields that are not yet set show placeholders. A negative amount is worded
+    -- as a deficit where the condition accepts one.
     print = function(_, value)
-        local v = value.mana
-        if v ~= nil then
-            v = v * 100
-        end
-        return addon.compareString(value.operator,
-                addon.compareString(value.manaoperator,
-                        string.format(L["The number %s members%s within %d yards of %s whose mana percentage"],
-                                (value.samegroup and PARTY or L["Raid or Party"]),
-                                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                addon.nullable(value.distance, L["<distance>"]),
-                                addon.nullable(addon.units[value.unit], L["<unit>"])),
-                        addon.nullable(v) .. "%"),
-                addon.nullable(value.value))
+        local threshold = value.mana
+        if threshold ~= nil then threshold = threshold * 100 end
+        return Functions.presentation.phrase(
+                L["The number of {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}"],
+                {
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                    qualifier = Functions.presentation.predicate(value.manaoperator),
+                    value = Functions.presentation.nullable(value.value),
+                })
     end,
+    -- Builds the editor controls for the PROXIMITY_MANAPCT_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
+    -- Editor controls: the unit selector, this condition's own comparison controls, then the shared distance, same
+    -- group and include pets controls from addon.proximity_widgets.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
@@ -739,28 +1217,52 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
+    -- Builds the help page for the PROXIMITY_MANAPCT_COUNT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
+    -- Help page: the unit, this condition's own fields, the shared distance, same group and include pets text, and the
+    -- note on when the whole condition is unavailable.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Mana Percentage"], L["Mana"],
-                "The mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
-                        "total mana.")
-        addon.layout_condition_operatorwidget_help(frame, L["Allies Within Range"], L["Count"],
-                "The number of allies whose proximity is measured in relation to " .. color.BLIZ_YELLOW .. L["Unit"] ..
-                        ".  This will only measure the proximity of allies you are in a party or raid with.")
+                "The mana percentage each ally within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is compared with, as a percentage of their total mana.")
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Mana Percentage Count Within Range"], L["Count"],
+                "The number of allies within " .. color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " of " ..
+                        color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " whose mana percentage passes that comparison.  " ..
+                        "This only counts allies you are in a party or raid with.")
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count addon.units in the same raid group."))
+                "Only count units in the same raid group."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
-    end
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
+    end,
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="aggregate" then return aggregate end
+        if name=="color" then return color end
+        if name=="helpers" then return helpers end
+        if name=="observation" then return observation end
+        if name=="statistic" then return statistic end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/spatial_stats.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/spatial_stats.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

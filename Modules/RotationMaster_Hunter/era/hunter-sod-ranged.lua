@@ -1,0 +1,115 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Season of Discovery Hunter ranged DPS, levels 1–60 (Phase 8 runes), and the SoD Hunter default.
+-- Runes join as they are engraved. With the Kill Shot legs rune: Trick Shots
+-- Multi-Shot, Kill Shot in Rapid Fire and in execute, Chimera Shot, traps and Arcane Shot as
+-- Multi-Shot allows (simulator P8, Wowhead Trick Shooter). Without it (Lock and Load / Sniper
+-- Training / leveling): Chimera Shot, Aimed Shot at two Sniper Training stacks (without that rune,
+-- after an Auto Shot), traps as Chimera comes back (Frost Trap only to feed Lock and Load), Explosive
+-- and Steady Shot, Multi-Shot, Arcane Shot. Serpent Sting always up, refreshed by Chimera Shot. With
+-- Lock and Load engraved a Frost Trap before the pull; with Lone Wolf no pet reminders. Left manual:
+-- melee weaving, positioning, Feed Pet and Tranquilizing Shot.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
+local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
+local function stacks(id,op,n)return{type='BUFF_STACKS',unit='player',spell=id,operator=op,value=n}end
+local function recharge(id,op,n)return{type='SPELL_COOLDOWN',spell=id,ranked=false,operator=op,value=n}end
+local function mana(op,n)return{type='MANAPCT',unit='player',operator=op,value=n}end
+local function stop(id,attack)return{id=id,type='stop',suppress_attack=not attack,conditions={}}end
+local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
+local standing=BuiltinConditions.negate({type='MOVING'})
+local unmarked=BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1130,anyrank=true})
+local stingless=BuiltinConditions.all(BuiltinConditions.negate({type='DEBUFF',unit='target',spell=1978,anyrank=true,owndebuff=true}),
+ BuiltinConditions.negate({type='DEBUFF',unit='target',spell=3043,anyrank=true,owndebuff=true}),BuiltinConditions.negate({type='DEBUFF',unit='target',spell=3034,anyrank=true,owndebuff=true}))
+local afterAuto={type='SPELL_HISTORY_TIME',spell=75,ranked=true,operator='LESSTHANOREQUALS',value=.5}
+local killShot=BuiltinConditions.any(rune(409593),rune(1218240))
+local lockAndLoad,sniperTraining=rune(415413),rune(415399)
+local rapid=buff(3045)
+local worth=BuiltinConditions.all(BuiltinConditions.combat(),BuiltinConditions.any(BuiltinConditions.classified('worldboss'),BuiltinConditions.classified('elite'),BuiltinConditions.classified('rareelite'),{type='INSTANCE',value='party'},{type='INSTANCE',value='raid'},
+ {type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=20}))
+local viperLow=BuiltinConditions.all(mana('LESSTHAN',.5),BuiltinConditions.any(buff(415423),BuiltinConditions.all({type='SPELL_KNOWN',spell=415423},mana('LESSTHAN',.1))))
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.ranged',revision=6,
+ blocks={['era.hunter.boundaries']=3,['sod.hunter.upkeep']=1},
+ applicability={families={'era'},actionContext='player',class='HUNTER',rulesets={'season:2'}},
+ tags={'dps','ranged','leveling','endgame','season-of-discovery','wowhead'},
+ sources={
+
+
+  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/ranged/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Ranged Hunter rotation, Season of Discovery',reviewedAt='2026-10-23',revision='2025-04-28'},
+  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/hunter/dps-leveling-tips',title='Wowhead: Ranged Hunter leveling tips, Season of Discovery',reviewedAt='2026-10-23',revision='2025-02-07'},
+ },
+ body={priority=100,
+ cooldowns={block('sod.hunter.upkeep','hunter-'),
+  BuiltinConditions.spell('hunter-viper',415423,BuiltinConditions.all(BuiltinConditions.combat(),mana('LESSTHAN',.1),BuiltinConditions.negate(buff(415423)))),
+  BuiltinConditions.spell('hunter-hawk',13165,BuiltinConditions.all(BuiltinConditions.negate(buff(13165)),BuiltinConditions.negate(viperLow),BuiltinConditions.any(BuiltinConditions.combat(),BuiltinConditions.all(BuiltinConditions.negate(buff(415423)),BuiltinConditions.negate(buff(13163)),BuiltinConditions.negate(buff(5118)),BuiltinConditions.negate(buff(13159)),BuiltinConditions.negate(buff(13161)),BuiltinConditions.negate(buff(20043)))))),
+  BuiltinConditions.spell('hunter-heart-of-the-lion',409580,BuiltinConditions.negate(buff(409580))),
+  BuiltinConditions.spell('hunter-focus-fire',428726,BuiltinConditions.all({type='PET'},{type='BUFF_STACKS',unit='pet',spell=428728,operator='GREATERTHANOREQUALS',value=5},BuiltinConditions.negate(buff(428726)))),
+  BuiltinConditions.spell('hunter-rapid-fire',3045,BuiltinConditions.all(worth,BuiltinConditions.negate(rapid),BuiltinConditions.any(BuiltinConditions.negate(killShot),{type='SPELL_COOLDOWN',spell=409593,ranked=false,operator='LESSTHANOREQUALS',value=0}))),
+  BuiltinConditions.spell('hunter-berserking',20554,BuiltinConditions.all(worth,rapid)),
+  BuiltinConditions.spell('hunter-blood-fury',20572,BuiltinConditions.all(worth,rapid)),
+  BuiltinConditions.spell('hunter-bestial-wrath',19574,BuiltinConditions.all(worth,{type='PET'}))},
+ rotation={
+  block('era.hunter.boundaries','hunter-'),
+  -- Inside melee range (dead zone, or a weaver stepping in): Kill Shot has no minimum range.
+  {id='hunter-melee',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onTrue={},onFalse={
+   BuiltinConditions.spell('hunter-melee-kill-shot',409593),
+   BuiltinConditions.spell('hunter-melee-wyvern-strike',458436),
+   BuiltinConditions.spell('hunter-melee-flanking-strike',415320),
+   BuiltinConditions.spell('hunter-melee-raptor-strike',2973,BuiltinConditions.negate({type='SPELL_ACTIVE',spell=2973,ranked=false})),
+   BuiltinConditions.spell('hunter-melee-mongoose-bite',1495),
+   BuiltinConditions.spell('hunter-melee-carve',425711,{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2}),
+   stop('hunter-melee-stop',true),
+  }},
+  {id='hunter-pull',type='branch',conditions=BuiltinConditions.combat(),onTrue={},onFalse={
+   BuiltinConditions.spell('hunter-pull-mark',1130,unmarked),
+   -- Lock and Load (passive): a Frost Trap placed before the pull makes the next Shot free.
+   BuiltinConditions.spell('hunter-pull-lnl-frost-trap',13809,BuiltinConditions.all(lockAndLoad,BuiltinConditions.negate(buff(415414)))),
+   BuiltinConditions.spell('hunter-pull-aimed-shot',19434,BuiltinConditions.all(standing,BuiltinConditions.any(BuiltinConditions.negate(sniperTraining),stacks(415401,'GREATERTHANOREQUALS',2)))),
+   BuiltinConditions.spell('hunter-pull-serpent-sting',1978,stingless),
+   {id='hunter-pull-auto-shot',type='spell',action=75,ranked=true,conditions=BuiltinConditions.negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})},
+   stop('hunter-pull-stop'),
+  }},
+  {id='hunter-auto-shot',type='spell',action=75,ranked=true,conditions=BuiltinConditions.all(BuiltinConditions.negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true}),standing)},
+  BuiltinConditions.spell('hunter-mark',1130,BuiltinConditions.all(unmarked,BuiltinConditions.any(BuiltinConditions.classified('worldboss'),BuiltinConditions.classified('elite'),BuiltinConditions.classified('rareelite'),
+   {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.5},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=8}))),
+  {id='hunter-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
+   BuiltinConditions.spell('hunter-moving-serpent-sting',1978,stingless),
+   BuiltinConditions.spell('hunter-moving-chimera-shot',409433),
+   BuiltinConditions.spell('hunter-moving-kill-shot',409593),
+   BuiltinConditions.spell('hunter-moving-explosive-shot',409552),
+   BuiltinConditions.spell('hunter-moving-arcane-shot',3044),
+   stop('hunter-moving-stop'),
+  }},
+  {id='hunter-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
+   BuiltinConditions.spell('hunter-aoe-explosive-trap',13813),
+   BuiltinConditions.spell('hunter-aoe-multi-shot',2643),
+   BuiltinConditions.spell('hunter-aoe-volley',1510,BuiltinConditions.all(standing,{type='DISTANCE_COUNT',enemy=true,distance=20,operator='GREATERTHANOREQUALS',value=4})),
+  }},
+  BuiltinConditions.spell('hunter-serpent-sting',1978,stingless),
+  BuiltinConditions.spell('hunter-chimera-refresh',409433,BuiltinConditions.any(rapid,{type='DEBUFF_REMAIN',unit='target',spell=1978,owndebuff=true,operator='LESSTHAN',value=6})),
+  {id='hunter-kill-shot-build',type='branch',conditions=killShot,onTrue={
+   BuiltinConditions.spell('hunter-ks-trick-multi-shot',2643,stacks(1233451,'GREATERTHANOREQUALS',4)),
+   BuiltinConditions.spell('hunter-ks-rapid-kill-shot',409593,rapid),
+   BuiltinConditions.spell('hunter-ks-execute-chimera',409433,{type='HEALTHPCT',unit='target',operator='LESSTHANOREQUALS',value=.2}),
+   BuiltinConditions.spell('hunter-ks-kill-shot',409593,BuiltinConditions.any(BuiltinConditions.negate(stacks(1233451,'GREATERTHANOREQUALS',4)),recharge(2643,'GREATERTHAN',.5))),
+   BuiltinConditions.spell('hunter-ks-chimera-shot',409433,BuiltinConditions.any(BuiltinConditions.negate(stacks(1233451,'GREATERTHANOREQUALS',3)),recharge(2643,'GREATERTHAN',.5))),
+   BuiltinConditions.spell('hunter-ks-explosive-trap',13813,recharge(2643,'GREATERTHAN',1.5)),
+   BuiltinConditions.spell('hunter-ks-arcane-shot',3044,recharge(2643,'GREATERTHAN',1)),
+   BuiltinConditions.spell('hunter-ks-multi-shot',2643),
+   stop('hunter-ks-wait'),
+  },onFalse={
+   BuiltinConditions.spell('hunter-lnl-chimera-shot',409433),
+   BuiltinConditions.spell('hunter-lnl-aimed-shot',19434,BuiltinConditions.any(BuiltinConditions.all(stacks(415401,'GREATERTHANOREQUALS',2),BuiltinConditions.negate(buff(415414))),BuiltinConditions.all(BuiltinConditions.negate(sniperTraining),afterAuto))),
+   BuiltinConditions.spell('hunter-lnl-explosive-trap',13813,BuiltinConditions.all(BuiltinConditions.negate(buff(415414)),recharge(409433,'LESSTHANOREQUALS',1.6))),
+   BuiltinConditions.spell('hunter-lnl-immolation-trap',13795,BuiltinConditions.all(BuiltinConditions.negate(buff(415414)),recharge(409433,'LESSTHANOREQUALS',1.6))),
+   BuiltinConditions.spell('hunter-lnl-frost-trap',13809,BuiltinConditions.all(lockAndLoad,BuiltinConditions.negate(buff(415414)),recharge(409433,'LESSTHANOREQUALS',1.6))),
+   BuiltinConditions.spell('hunter-lnl-explosive-shot',409552),
+   BuiltinConditions.spell('hunter-lnl-steady-shot',437123,standing),
+   BuiltinConditions.spell('hunter-lnl-multi-shot',2643),
+   BuiltinConditions.spell('hunter-lnl-arcane-shot',3044),
+   stop('hunter-lnl-wait'),
+  }},
+ }},
+}))

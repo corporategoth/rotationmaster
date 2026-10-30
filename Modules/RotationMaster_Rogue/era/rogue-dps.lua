@@ -1,0 +1,48 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Classic Era Rogue melee DPS, levels 1–60, every spec (the recommended vanilla premade; also
+-- Hardcore and Self-Found). simulator/classic order with Icy Veins and Wowhead: Slice and Dice from
+-- one point when missing on a target worth it, refreshed at five in its last three seconds;
+-- Improved Expose Armor duty in groups when nobody Sunders; a two-point Eviscerate on a dying
+-- target; Eviscerate at five and no builder past five. The builder follows what is known:
+-- Ghostly Strike and Hemorrhage outside raids, Backstab when not faced, else Sinister Strike.
+-- Shared parts: era/blocks.lua. Left manual: Feint, Sprint, Blind, Sap and positioning; Vanish,
+-- Gouge, Preparation, Kidney Shot and racials are listed off.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function points(n)return{type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=n}end
+local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
+local sliced={type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}
+-- A target worth a Slice: an elite or boss, or one above a fifth of its health.
+local lasting=BuiltinConditions.any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLASSIFICATION',unit='target',value='elite'},
+ {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.2})
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.era.rogue.dps',revision=5,
+ blocks={['era.rogue.boundaries']=3,['era.rogue.opener']=3,['era.rogue.upkeep']=2,['era.rogue.builders']=2,['era.rogue.expose-armor']=2},
+ applicability={families={'era'},actionContext='player',class='ROGUE'},
+ tags={'dps','melee','leveling','endgame','icy-veins','wowhead'},
+ sources={
+ {url='https://www.icy-veins.com/wow-classic/rogue-dps-pve-rotation-cooldowns-abilities',title='Icy Veins: Classic Rogue DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2024-11-17'},
+ {url='https://www.icy-veins.com/wow-classic/classic-rogue-leveling-guide',title='Icy Veins: Classic Rogue leveling guide',reviewedAt='2026-10-23',revision='2024-11-16'},
+ {url='https://www.icy-veins.com/wow-classic/sword-rogue-leveling-talent-build-from-1-to-60',title='Icy Veins: Classic Sword Rogue leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},
+ {url='https://www.icy-veins.com/wow-classic/subtlety-rogue-leveling-talent-build-from-1-to-60',title='Icy Veins: Classic Subtlety Rogue leveling 1-60',reviewedAt='2026-10-23',revision='2026-07-18'},
+ {url='https://www.wowhead.com/classic/guide/classes/rogue/dps-rotation-cooldowns-abilities-pve',title='Wowhead: Classic Rogue DPS rotation, cooldowns and abilities',reviewedAt='2026-10-23',revision='2025-03-20'}},
+ body={priority=10,
+ cooldowns={block('era.rogue.upkeep','rogue-')},
+ rotation={
+ block('era.rogue.boundaries','rogue-'),
+ {id='rogue-stealth',type='branch',conditions={type='STEALTHED'},onFalse={},onTrue={block('era.rogue.opener','rogue-stealth-')}},
+ BuiltinConditions.spell('rogue-riposte',14251),
+ BuiltinConditions.spell('rogue-slice',5171,BuiltinConditions.all(points(1),BuiltinConditions.negate(sliced),lasting)),
+ block('era.rogue.expose-armor','rogue-'),
+ BuiltinConditions.spell('rogue-slice-refresh',5171,BuiltinConditions.all(points(5),{type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=3})),
+ BuiltinConditions.spell('rogue-kill-shot',2098,BuiltinConditions.all(points(2),BuiltinConditions.lifetime('LESSTHAN',4))),
+ {id='rogue-finisher',type='branch',conditions=points(5),onFalse={},onTrue={
+  BuiltinConditions.spell('rogue-eviscerate',2098),
+  {id='rogue-pool',type='stop',suppress_attack=false,conditions={}},
+ }},
+ {id='rogue-kidney-shot',type='spell',action=408,ranked=false,disabled=true,conditions=BuiltinConditions.all(BuiltinConditions.negate({type='GROUP'}),points(3),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4})},
+ block('era.rogue.builders','rogue-'),
+ BuiltinConditions.spell('rogue-sinister',1752),
+ }},
+}))

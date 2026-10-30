@@ -1,0 +1,19 @@
+# MobInfo2 condition observations
+
+`RUNNER`, `RESIST`, and `IMMUNE` retain their existing optional registration: the global `MI2_GetMobData` must be truthy when the condition module loads. Runtime observation uses `Platform:GetMobInfo2Observation(unit, kind, school, cache)` on probe-policy clients. It neither requests inspection nor changes MobInfo2 storage.
+
+The adapter checks readable Boolean `UnitExists(unit)` first. Known absence returns `{exists=false}`. Missing, failed, nil, malformed, or restricted required facts return `nil, reason`. Only normalized presence is cached, keyed by its private helper, receiver, and selected unit within the supplied evaluation pass. Name, level, and provider records remain fresh on every invocation. A nil cache queries presence afresh.
+
+For a present unit, the adapter consumes only result one of `UnitName(unit)` and `UnitLevel(unit)`, then calls the current provider as `MI2_GetMobData(name, level, unit)` with exactly three arguments and no receiver. Name must be a readable nonempty string; level must be finite numeric data. Signed and fractional levels are forwarded unchanged. No GUID lookup, unit redirection, guessed level bound, or alternate provider API is added.
+
+The publisher API supports this legacy name/level lookup and omits unrecorded fields. Its current implementation can return nil when no matching record exists. This differs from provider failure: a successful nil lookup returns `{exists=true, recorded=false}`, and omitted relevant optional history also remains an ordinary false condition. These deliberate no-history results can match under NOT. Missing provider capability, provider exceptions, unreadable consumed fields, and malformed records are unavailable and cannot authorize NOT or either branch arm. The adapter does not reuse stale provider data.
+
+The three kinds consume different fields:
+
+- `runner` preserves truthiness for readable finite numbers, Booleans, and strings. Numeric zero and the empty string remain true; nil and false remain false. Compound values, unreadable values, and nonfinite numbers are unavailable. No new meaning is assigned to action codes.
+- `resist` compares only a positive finite school observation divided by its hit count. Missing or false Hits retains the historical default of one. The consumed count, Hits, and ratio must be finite. Hits zero makes this ratio unavailable; negative finite Hits is preserved. Missing, zero, or negative school observations remain false.
+- `immune` recognizes a negative finite school observation. Partial immunity requires only that observation. Complete immunity additionally needs finite Hits and checks `Hits < 1`; zero is meaningful here. A missing or false Hits value still defaults to one. Unavailable Hits is returned as `hitsReason`, so it does not invalidate a partial-immunity query.
+
+Only the three current evaluator bodies change. Validators, fields, prose, widgets, registration branches, and unrelated captured identities remain unchanged. Current exported editable copies use the adapter. Archived raw callbacks and binding maps retain their previous dispatch, arithmetic, errors, and source hashes; saved code is not rewritten.
+
+The publisher's [Source page](https://www.curseforge.com/wow/addons/mobinfo2/source) identifies its SVN repository. The audit pins [the public provider](https://repos.curseforge.com/wow/mobinfo2/!svn/bc/463/trunk/MobInfo2.lua), [entry representation](https://repos.curseforge.com/wow/mobinfo2/!svn/bc/463/trunk/Database/MI2_Entry.lua), and [database lookup](https://repos.curseforge.com/wow/mobinfo2/!svn/bc/463/trunk/Database/MI2_Database.lua) at revision 463. This establishes provider source behavior, not native client acceptance or the version installed by a particular player. Protected calls contain errors; they cannot interrupt arbitrary provider code that does not return.

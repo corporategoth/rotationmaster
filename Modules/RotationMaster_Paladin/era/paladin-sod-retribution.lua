@@ -1,0 +1,51 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
+-- Season of Discovery Retribution, levels 1-60, and the default for any SoD Paladin no other premade
+-- fits. Wowhead Phase 8 with simulator: Seal of Martyrdom, Divine Storm at three Holy Power, then by
+-- weapon speed: a slow two-hander (3.3 s or more) plays Crusader Strike, Exorcism, Divine Storm and
+-- Judgement as a filler; a fast one judges only as the seal runs out, then Exorcism, Crusader
+-- Strike and Divine Storm. Consecration last; Holy Wrath on Undead and Demons (on anything with the
+-- Purifying Power rune); Hammer of Wrath with mana to spare, or always with Improved Hammer of Wrath.
+-- Shared blocks: era/blocks.lua. Original priority data, no guide prose.
+local _,addon=...
+local BuiltinConditions=addon.BuiltInConditionHelpers
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
+local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
+local undead=BuiltinConditions.any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
+local holyPower={type='BUFF_STACKS',unit='player',spell=1226461,operator='GREATERTHANOREQUALS',value=3}
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution',revision=6,
+ blocks={['sod.paladin.ret-upkeep']=2,['era.paladin.safety']=1,['era.paladin.melee-opening']=3,['sod.paladin.seal']=2},
+ applicability={families={'era'},actionContext='player',class='PALADIN',rulesets={'season:2'}},
+ tags={'leveling','endgame','retribution','melee','single-target','season-of-discovery','wowhead','icy-veins'},
+ sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin DPS rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-06-06'},
+
+  {url='https://www.icy-veins.com/wow-classic/retribution-paladin-dps-season-of-discovery-leveling',title='Icy Veins: SoD Retribution Paladin leveling (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-02',notes='Leveling order and the mana-gated Hammer of Wrath.'}},
+ body={priority=102,
+  cooldowns={BuiltinConditions.block('sret-upkeep','sod.paladin.ret-upkeep','sret-'),BuiltinConditions.block('sret-safety','era.paladin.safety','sret-')},
+  rotation={
+   BuiltinConditions.block('sret-opening','era.paladin.melee-opening','sret-'),
+   BuiltinConditions.block('sret-seal','sod.paladin.seal','sret-'),
+   {id='sret-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
+    BuiltinConditions.spell('sret-pull-exorcism',415068),
+    BuiltinConditions.spell('sret-pull-judgement',20271,BuiltinConditions.negate(BuiltinConditions.known(415068))),
+    {id='sret-pull-stop',type='stop',conditions={}},
+   }},
+   BuiltinConditions.spell('sret-divine-storm-power',407778,holyPower),
+   {id='sret-slow',type='branch',conditions={type='SWING_TIME',offhand=false,operator='GREATERTHANOREQUALS',value=3.3},onTrue={
+    BuiltinConditions.spell('sret-slow-crusader-strike',407676),
+    BuiltinConditions.spell('sret-slow-exorcism',415068),
+    BuiltinConditions.spell('sret-slow-divine-storm',407778),
+    BuiltinConditions.spell('sret-slow-judgement',20271),
+   },onFalse={
+    BuiltinConditions.spell('sret-fast-judgement',20271,{type='BUFF_REMAIN',unit='player',spell=407798,ownbuff=true,operator='LESSTHAN',value=2}),
+    BuiltinConditions.spell('sret-fast-exorcism',415068),
+    BuiltinConditions.spell('sret-fast-crusader-strike',407676),
+    BuiltinConditions.spell('sret-fast-divine-storm',407778,BuiltinConditions.negate({type='BUFF',unit='player',spell=1226461})),
+   }},
+   BuiltinConditions.spell('sret-consecration',26573,BuiltinConditions.any(mana('GREATERTHANOREQUALS',0.4),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3})),
+   BuiltinConditions.spell('sret-holy-wrath',2812,BuiltinConditions.all(BuiltinConditions.any(rune(429144),undead),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2})),
+   BuiltinConditions.spell('sret-hammer-of-wrath',24275,BuiltinConditions.any(rune(429152),mana('GREATERTHANOREQUALS',0.3))),
+  },
+ },
+}))
