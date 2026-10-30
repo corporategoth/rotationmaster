@@ -100,6 +100,28 @@ class Classify(unittest.TestCase):
 
 
 class Pkgmeta(unittest.TestCase):
+    def test_packaged_module_tocs_use_wago_accepted_aliases(self):
+        module = 'RotationMaster_Mage'
+        prefix = module + '/' + module
+        layout = {prefix + '.toc': b'fallback', prefix + '_Standard.toc': b'retail',
+                  prefix + '_Camelot.toc': b'forever', prefix + '_Forever.toc': b'forever',
+                  prefix + '_Mists.toc': b'mists'}
+        result = P.normalize_module_tocs(layout, [module])
+        self.assertEqual(result[prefix + '_Mainline.toc'], b'retail')
+        self.assertEqual(result[prefix + '_Camelot.toc'], b'forever')
+        self.assertEqual(result[prefix + '_Mists.toc'], b'mists')
+        self.assertNotIn(prefix + '_Standard.toc', result)
+        self.assertNotIn(prefix + '_Forever.toc', result)
+
+    def test_packaging_refuses_conflicting_or_missing_toc_aliases(self):
+        module = 'RotationMaster_Mage'
+        prefix = module + '/' + module
+        for layout in ({prefix + '_Standard.toc': b'a', prefix + '_Mainline.toc': b'b'},
+                       {prefix + '_Forever.toc': b'a', prefix + '_Camelot.toc': b'b'},
+                       {prefix + '_Forever.toc': b'a'}):
+            with self.subTest(layout=layout), self.assertRaises(P.PackageError):
+                P.normalize_module_tocs(layout, [module])
+
     def test_the_repository_pkgmeta_parses(self):
         meta = P.parse_pkgmeta(ROOT / '.pkgmeta')
         self.assertEqual(meta['package-as'], 'RotationMaster')
