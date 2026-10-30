@@ -20,6 +20,9 @@ What goes in the package: the files git tracks, minus dotfiles and the `.pkgmeta
 folder. A CHANGELOG.md in the checkout (tools/release_notes.py writes it) is added as the manual
 changelog. Nothing outside the checkout is read.
 
+Class-module TOCs in the archive use the Wago-accepted Mainline and Camelot aliases. The source
+keeps its Standard and Forever names for development; identical Forever/Camelot files are deduplicated.
+
 `--check` fails when the package holds a path that is not for the game (tests, tools, docs, .claude,
 sources, secrets), lacks a required file, has a TOC that disagrees with the supported clients or lists
 a file that is missing, or has a file or zip over the size limits. A package may hold only what the
@@ -225,6 +228,24 @@ def project_tocs(root, meta):
     return tocs
 
 
+def normalize_module_tocs(layout, modules):
+    """Use accepted client aliases consistently in the one archive for every site."""
+    result = dict(layout)
+    for module in modules:
+        prefix = f'{module}/{module}'
+        standard, mainline = prefix + '_Standard.toc', prefix + '_Mainline.toc'
+        forever, camelot = prefix + '_Forever.toc', prefix + '_Camelot.toc'
+        if standard in result:
+            if mainline in result:
+                raise PackageError(f'{module}: Standard and Mainline TOCs both exist')
+            result[mainline] = result.pop(standard)
+        if forever in result:
+            if camelot not in result or result[forever] != result[camelot]:
+                raise PackageError(f'{module}: Forever TOC has no identical Camelot alias')
+            result.pop(forever)
+    return result
+
+
 def build_files(root, meta, info, changelog=None):
     """The package as {path inside the zip: bytes}."""
     patterns = ignore_globs(root, meta['ignore'])
@@ -253,7 +274,7 @@ def build_files(root, meta, info, changelog=None):
             layout[f'{moved[top]}/{relative[len(top) + 1:]}'] = data
         else:
             layout[f'{package}/{relative}'] = data
-    return layout
+    return normalize_module_tocs(layout, moved.values())
 
 
 def write_zip(layout, destination, info):
@@ -513,6 +534,8 @@ def parity(root, version_arg, meta):
         for path in sorted(out.rglob('*')):
             if path.is_file():
                 theirs[path.relative_to(out).as_posix()] = path.read_bytes()
+        # The release archive intentionally normalizes the same client aliases for every site.
+        theirs = normalize_module_tocs(theirs, meta['move-folders'].values())
         info = project_info(clone)
         ours = build_files(clone, meta, info)
         only_ours, only_theirs = sorted(set(ours) - set(theirs)), sorted(set(theirs) - set(ours))
