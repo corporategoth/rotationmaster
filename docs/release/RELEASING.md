@@ -33,9 +33,9 @@ Presence of a secret does not prove the token is still valid. Set optional GitHu
 `WOWI_UPLOAD_BETA=true` to upload betas to WoWInterface, and `BETA_GUIDE_URL` to link the beta guide in the notes.
 Gitea only needs its built-in release token, or an optional `RELEASE_TOKEN` if that token cannot write releases.
 
-GitHub Actions is the **only** publisher to the addon sites. The Gitea workflow creates the Gitea release and its
-asset; the configured mirror and webhook carry the tag and release to GitHub. Do not add a second addon-site upload
-to Gitea or another GitHub tag workflow.
+GitHub Actions is the **only** publisher to the addon sites. Each service creates its own release and attaches a
+checked ZIP. The configured mirror carries tags to GitHub and the webhook synchronizes release metadata, but does
+not copy assets. Do not add a second addon-site upload to Gitea or another GitHub tag workflow.
 
 ## Before tagging
 
@@ -93,8 +93,8 @@ A tag pushed to Gitea is mirrored to GitHub. Both services run their release wor
   package, then creates or updates the Gitea release. It does not upload to addon sites.
 - `.github/workflows/release.yml` independently runs static checks and those three test suites, verifies that the tag
   points at a commit on `master`, generates the release plan and notes, checks the vendored packager, builds and checks
-  the ZIP, then uploads to CurseForge, Wago and, when the release plan allows, WoWInterface. A missing required GitHub
-  secret stops the run before uploading. The publisher does not create a second GitHub release.
+  the ZIP, attaches it to the GitHub release, then uploads the same ZIP to CurseForge, Wago and, when the release plan
+  allows, WoWInterface. A missing required GitHub secret stops the run before uploading.
 
 For a dry run, use **GitHub Actions > Publish addon > Run workflow**, enter an existing tag and leave `dry_run` enabled.
 A manual run with `dry_run` disabled publishes to the sites; do not rerun a successful publication because the sites
@@ -105,8 +105,8 @@ may create duplicate files. Gitea's Release workflow has its own dry-run option 
 - Both release runs are green, and the GitHub run shows the plan you expected (`type=beta`, `sites=curseforge wago`).
 - The Gitea release exists, is marked prerelease for a beta, has the notes and the zip.
 - **CurseForge** lists a *Beta* file with the right game versions; **Wago** shows it as beta; **WoWInterface** shows no new file
-  for a beta. If a game version was rejected (CurseForge may not know `38002` or `16001` yet), the upload step says so.
-- The mirror on GitHub received the tag and, through the webhook, the release.
+  for a beta. If a game version was rejected, the upload step says so.
+- GitHub has the tag, the correct prerelease status, and the checked ZIP attached to its release.
 - Install the CurseForge package into a clean client and check Settings > About shows the tag as the version.
 
 ## Back out

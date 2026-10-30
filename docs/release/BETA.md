@@ -47,9 +47,6 @@ The list of every renamed Built In is in `docs/builtin-name-changes.md`.
 | Retail (Midnight) 12.1.5 | 120105 | Partly: some restricted-data probes only |
 | Forever 1.60.1 | 16001 | Loads; startup and play not verified |
 | Classic Era / SoD 1.15.9 | 11509 | No |
-| Wrath of the Lich King Classic 3.4.5 | 30405 | No |
-| Wrath Titan Reforged 3.80.2 | 38002 | No |
-| Cataclysm Classic 4.4.2 | 40402 | No |
 | Mists of Pandaria Classic 5.5.4 | 50504 | No |
 
 "No" means only tests with a model of the client have run. Reports from those clients are the most valuable.

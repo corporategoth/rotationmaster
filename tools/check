@@ -3,6 +3,7 @@
 
 """Run Rotation Master validation from any working directory; fail closed in CI/hooks."""
 import argparse
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -968,7 +969,9 @@ def main():
     for command in commands:
         print('+ ' + ' '.join(command), flush=True)
         try:
-            result = subprocess.run(command, cwd=root)
+            env = {key: value for key, value in os.environ.items()
+                   if key not in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_PREFIX')}
+            result = subprocess.run(command, cwd=root, env=env)
         except FileNotFoundError:
             print(f'Required executable not found: {command[0]}', file=sys.stderr)
             return 127
