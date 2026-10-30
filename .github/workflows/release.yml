@@ -139,7 +139,41 @@ jobs:
             gh release upload "${TAG}" "${zip}" --repo "${GITHUB_REPOSITORY}"
           else
             expected="sha256:$(sha256sum "${zip}" | cut -d ' ' -f1)"
-            [ "${digest}" = "${expected}" ] || { echo 'Existing release asset differs from the checked ZIP.' >&2; exit 1; }
+            if [ "${digest}" != "${expected}" ]; then
+              # ZIP compression differs across zlib implementations. Reuse the published archive only when every
+              # entry and its contents match the newly checked build; the addon sites then receive those same bytes.
+              existing_dir=".release/existing"
+              gh release download "${TAG}" --repo "${GITHUB_REPOSITORY}" --pattern "RotationMaster-${TAG}.zip" --dir "${existing_dir}" || { echo 'Existing release asset differs from the checked ZIP.' >&2; exit 1; }
+              existing="${existing_dir}/RotationMaster-${TAG}.zip"
+              downloaded="sha256:$(sha256sum "${existing}" | cut -d ' ' -f1)"
+              [ "${downloaded}" = "${digest}" ] || { echo 'Existing release asset digest did not match GitHub.' >&2; exit 1; }
+              python3 - "${zip}" "${existing}" <<'PY'
+          import hashlib, sys, zipfile
+          def entries(path):
+              with zipfile.ZipFile(path) as archive:
+                  infos = archive.infolist()
+                  names = [info.filename for info in infos]
+                  if len(names) != len(set(names)):
+                      raise ValueError('duplicate ZIP entries')
+                  result = {}
+                  for info in infos:
+                      digest = hashlib.sha256()
+                      with archive.open(info) as stream:
+                          while chunk := stream.read(1024 * 1024):
+                              digest.update(chunk)
+                      result[info.filename] = (info.file_size, info.external_attr, digest.digest())
+                  return result
+          try:
+              if entries(sys.argv[1]) != entries(sys.argv[2]):
+                  raise ValueError('different entries')
+          except (OSError, ValueError, zipfile.BadZipFile) as error:
+              print('Existing release asset differs from the checked ZIP: ' + str(error), file=sys.stderr)
+              raise SystemExit(1)
+          PY
+              cp "${existing}" "${zip}"
+              sha256sum "${zip}" > .release/package.sha256
+              echo 'Equivalent release asset reused for addon site uploads.'
+            fi
           fi
       - name: Upload to addon sites
         if: ${{ env.DRY_RUN != 'true' }}
