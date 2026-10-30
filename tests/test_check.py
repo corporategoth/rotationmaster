@@ -2,19 +2,36 @@
 
 """Runner contract: cwd independence and failures must reach hooks/CI."""
 from pathlib import Path
+import contextlib
+import io
 import shutil
 import os
 import re
+import runpy
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / 'tools/check'
 
 
 class RunnerTests(unittest.TestCase):
+    def test_checks_do_not_inherit_a_git_hook_repository(self):
+        run = runpy.run_path(str(RUNNER), run_name='test_runner')['main']
+        inherited = {'GIT_DIR': '/wrong/repository', 'GIT_WORK_TREE': '/wrong/tree',
+                     'GIT_INDEX_FILE': '/wrong/index', 'GIT_COMMON_DIR': '/wrong/common', 'GIT_PREFIX': 'wrong/'}
+        with mock.patch.dict(os.environ, inherited), mock.patch.object(sys, 'argv', ['check', '--static']), \
+             mock.patch.object(subprocess, 'run', return_value=subprocess.CompletedProcess([], 0)) as called, \
+             contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(run(), 0)
+        self.assertTrue(called.call_args_list)
+        for call in called.call_args_list:
+            self.assertFalse(set(inherited) & set(call.kwargs['env']))
+            self.assertEqual(call.kwargs['env']['PATH'], os.environ['PATH'])
+
     def test_missing_runtime_fails_with_actionable_message(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

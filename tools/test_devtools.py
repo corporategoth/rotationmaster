@@ -35,6 +35,11 @@ import release_notes as R  # noqa: E402
 import translation_apply  # noqa: E402
 import translation_lib as T  # noqa: E402
 
+# Tests create their own repositories and query the checkout by path. A Git hook's
+# repository variables would otherwise redirect those nested Git calls to its parent.
+for _key in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_PREFIX'):
+    os.environ.pop(_key, None)
+
 INFO = {'version': '2.0.0-beta.1', 'revision': '12', 'hash': 'a' * 40, 'abbreviated-hash': 'aaaaaaa', 'author': 'A',
         'timestamp': '1700000000', 'date-iso': '2023-11-14T22:13:20Z', 'date-integer': '20231114221320'}
 
@@ -45,10 +50,18 @@ def temp_dir(test):
     return Path(handle.name)
 
 
+def fixture_git_env():
+    """Isolate disposable test repositories from Git's hook-specific repository variables."""
+    env = dict(os.environ)
+    for key in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_PREFIX'):
+        env.pop(key, None)
+    return env
+
+
 def git(root, *args):
     identity = {'GIT_AUTHOR_NAME': 'T', 'GIT_AUTHOR_EMAIL': 't@example.invalid',
                 'GIT_COMMITTER_NAME': 'T', 'GIT_COMMITTER_EMAIL': 't@example.invalid'}
-    subprocess.run(['git', '-C', str(root), *args], check=True, capture_output=True, env={**os.environ, **identity})
+    subprocess.run(['git', '-C', str(root), *args], check=True, capture_output=True, env={**fixture_git_env(), **identity})
 
 
 def minimal_layout(version='2.0.0-beta.1'):
@@ -107,6 +120,14 @@ class Pkgmeta(unittest.TestCase):
 
 
 class Text(unittest.TestCase):
+    def test_package_git_lookup_ignores_a_parent_hook_repository(self):
+        from unittest import mock
+        inherited = {'GIT_DIR': '/wrong/repository', 'GIT_WORK_TREE': '/wrong/tree', 'GIT_INDEX_FILE': '/wrong/index'}
+        result = subprocess.CompletedProcess([], 0, b'value\n', b'')
+        with mock.patch.dict(os.environ, inherited), mock.patch.object(P.subprocess, 'run', return_value=result) as run:
+            self.assertEqual(P.git(ROOT, 'rev-parse', 'HEAD'), 'value')
+        self.assertFalse(set(inherited) & set(run.call_args.kwargs['env']))
+
     def test_release_targets_only_current_supported_clients(self):
         self.assertEqual(set(P.SUPPORTED_CLIENTS), {11509, 16001, 20506, 50504, 120105})
 
@@ -120,9 +141,8 @@ class Text(unittest.TestCase):
                                                    '## X-Curse-Project-ID: 301085\n## X-Wago-ID: vEGPM4N1\n')
         (source / '.pkgmeta').write_text('package-as: RotationMaster\nmanual-changelog: CHANGELOG.md\n')
         (source / 'CHANGELOG.md').write_text('# Test\n')
-        fixture_env = dict(os.environ)
-        for key in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_PREFIX',
-                    'GITHUB_ACTIONS', 'GITHUB_REF', 'GITHUB_REF_NAME', 'GITHUB_SHA', 'GITHUB_OUTPUT',
+        fixture_env = fixture_git_env()
+        for key in ('GITHUB_ACTIONS', 'GITHUB_REF', 'GITHUB_REF_NAME', 'GITHUB_SHA', 'GITHUB_OUTPUT',
                     'GITHUB_REPOSITORY', 'GITHUB_TOKEN', 'GH_TOKEN', 'CF_API_TOKEN', 'WOWI_API_TOKEN'):
             fixture_env.pop(key, None)
         fixture_env.update(GIT_AUTHOR_NAME='T', GIT_AUTHOR_EMAIL='t@example.invalid',
@@ -393,9 +413,15 @@ class LoadGraph(unittest.TestCase):
 
 
 class Notes(unittest.TestCase):
+    def test_fixture_git_environment_excludes_parent_hook_context(self):
+        from unittest import mock
+        inherited = {'GIT_DIR': '/wrong/repository', 'GIT_WORK_TREE': '/wrong/tree', 'GIT_INDEX_FILE': '/wrong/index'}
+        with mock.patch.dict(os.environ, inherited):
+            self.assertFalse(set(inherited) & set(fixture_git_env()))
+
     def repository(self):
         root = temp_dir(self)
-        subprocess.run(['git', 'init', '-q', '-b', 'main', str(root)], check=True)
+        subprocess.run(['git', 'init', '-q', '-b', 'main', str(root)], check=True, env=fixture_git_env())
         return root
 
     def commit(self, root, name, subject):

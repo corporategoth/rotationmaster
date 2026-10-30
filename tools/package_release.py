@@ -87,7 +87,9 @@ class PackageError(Exception):
 
 
 def git(root, *args, check=True):
-    done = subprocess.run(['git', '-C', str(root), *args], capture_output=True)
+    env = {key: value for key, value in os.environ.items()
+           if key not in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_PREFIX')}
+    done = subprocess.run(['git', '-C', str(root), *args], capture_output=True, env=env)
     if check and done.returncode:
         raise PackageError(f'git {" ".join(args)} failed: {done.stderr.decode(errors="replace").strip()}')
     return done.stdout.decode('utf-8', 'replace').strip() if done.returncode == 0 else ''
@@ -171,7 +173,9 @@ def project_info(root, tag=None, version=None):
 
 
 def tracked_files(root):
-    names = subprocess.run(['git', '-C', str(root), 'ls-files', '-z'], capture_output=True, check=True).stdout.split(b'\0')
+    env = {key: value for key, value in os.environ.items()
+           if key not in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_PREFIX')}
+    names = subprocess.run(['git', '-C', str(root), 'ls-files', '-z'], capture_output=True, check=True, env=env).stdout.split(b'\0')
     return sorted(n.decode('utf-8') for n in names if n and (root / n.decode('utf-8')).is_file())
 
 

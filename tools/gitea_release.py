@@ -10,8 +10,8 @@ in GITEA_TOKEN, RELEASE_TOKEN or GITHUB_TOKEN authorizes the call (the first one
 --repo override the first two. The token is sent only in the Authorization header and never printed.
 
 Safe to run again for the same tag: an existing release is updated (notes, prerelease flag) and an asset of the same
-name is replaced. Nothing here touches GitHub: the repository is a push mirror and receives the release through
-Gitea's own mirroring, never from this script.
+name is replaced. Nothing here touches GitHub: its own release workflow attaches the GitHub asset, and the separate
+release-sync webhook mirrors release metadata.
 """
 import argparse
 import json

@@ -114,7 +114,9 @@ def main(argv=None):
             return subprocess.CompletedProcess(command, 0)
         began = time.time()
         try:
-            done = real_run(command, cwd=kwargs.get('cwd', ROOT), capture_output=True, timeout=args.timeout)
+            env = {key: value for key, value in os.environ.items()
+                   if key not in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_PREFIX')}
+            done = real_run(command, cwd=kwargs.get('cwd', ROOT), env=env, capture_output=True, timeout=args.timeout)
             code, out = done.returncode, done.stdout + done.stderr
         except FileNotFoundError:
             code, out = 127, f'Required executable not found: {command[0]}\n'.encode()
