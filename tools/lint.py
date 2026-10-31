@@ -72,7 +72,9 @@ def main():
         tool=Path(os.environ.get('RM_WOWLUA_LS',str(default_target()))).resolve()
         if not tool.is_file(): raise ValueError('Checker is missing. Run: python3 tools/setup_lint.py')
         if hashlib.sha256(tool.read_bytes()).hexdigest()!=spec['sha256']: raise ValueError('Checker binary does not match the pinned manifest.')
-        result=subprocess.run([str(tool),'check',str(ROOT)],cwd=ROOT,capture_output=True,text=True,timeout=120)
+        # Shared CI runners can be heavily contended; keep a bounded check without
+        # treating slow scheduling as a static-analysis failure.
+        result=subprocess.run([str(tool),'check',str(ROOT)],cwd=ROOT,capture_output=True,text=True,timeout=600)
         output=result.stdout+'\n'+result.stderr
         records=parse_diagnostics(output,ROOT);validate_result(result.returncode,output,records)
         baseline_path=ROOT/'tools/lint-baseline.json'
