@@ -25,6 +25,7 @@ local classes = {
 -- An unset selector retains the complete local suite.
 local allClasses = classes
 local selectedClass = os.getenv('RM_CORPUS_CLASS')
+
 if selectedClass then
     assert(corpus.contains(classes, selectedClass), 'unknown RM_CORPUS_CLASS: ' .. selectedClass)
     classes = { selectedClass }
@@ -476,6 +477,7 @@ test('every shipped pack has a matching family and class schema fixture', functi
         local scope = pack.applicability
         assert(not scope.class or corpus.contains(allClasses, scope.class), pack.id .. ' has an unknown class')
         local inShard = not selectedClass or not scope.class or scope.class == selectedClass
+
         if inShard then
             assert(visited[pack.id], pack.id .. ' has no matching schema fixture')
 
@@ -484,10 +486,9 @@ test('every shipped pack has a matching family and class schema fixture', functi
                 and not scope.intent
                 and not scope.rulesets
                 and not pack.body.disabled
-                and (corpus.contains(scope.families, 'tbc') or corpus.contains(scope.families, 'era') or corpus.contains(
-                    scope.families,
-                    'progression'
-                ))
+                and (corpus.contains(scope.families, 'tbc')
+                    or corpus.contains(scope.families, 'era')
+                    or corpus.contains(scope.families, 'progression'))
             then
                 assert(runnable[pack.id], pack.id .. ' never became eligible in its sampled supported context')
             end
