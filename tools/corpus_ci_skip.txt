@@ -1,0 +1,2 @@
+# Covered by the per-class corpus jobs.
+lua5.1 tests/default_corpus.lua

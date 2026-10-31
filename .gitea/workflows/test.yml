@@ -43,7 +43,7 @@ jobs:
 
   # The whole suite, once per runtime. `tools/check_all.py` runs the same command list as `tools/check`, never stops
   # at the first failure, and compares against tools/known_failures.txt: a suite on that list may fail, any other
-  # failure fails the job. default_corpus.lua alone takes several minutes; the lua5.1 leg is the long one.
+  # failure fails the job. The exhaustive default corpus runs separately in class-specific jobs.
   tests:
     name: Tests (${{ matrix.runtime }})
     needs: [static]
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.gitea/actions/toolchain
       - name: Run the suite
-        run: python3 tools/check_all.py --runtime ${{ matrix.runtime }} --baseline tools/known_failures.txt --json test-results-${{ matrix.runtime }}.json
+        run: python3 tools/check_all.py --skip-slow tools/corpus_ci_skip.txt --runtime ${{ matrix.runtime }} --baseline tools/known_failures.txt --json test-results-${{ matrix.runtime }}.json
       - name: Upload the result summary
         if: ${{ always() }}
         uses: christopherhx/gitea-upload-artifact@62ac910c5d3dfa85c7cb2df15afe2e342b2407c2 # untagged head
@@ -65,6 +65,25 @@ jobs:
           name: test-results-${{ matrix.runtime }}
           path: test-results-${{ matrix.runtime }}.json
           if-no-files-found: ignore
+
+  # Partition the same exhaustive corpus by class to bound each Lua 5.1 command.
+  corpus:
+    name: Default corpus (${{ matrix.class }})
+    needs: [static]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        class: [WARRIOR, PALADIN, HUNTER, ROGUE, PRIEST, SHAMAN, MAGE, WARLOCK, DRUID, DEATHKNIGHT, MONK, DEMONHUNTER, EVOKER]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.gitea/actions/toolchain
+      - name: Run the complete client matrix for this class
+        env:
+          RM_CORPUS_CLASS: ${{ matrix.class }}
+        run: python3 tools/check_all.py --only 'lua5.1 tests/default_corpus.lua' --baseline tools/known_failures.txt
 
   # Build the package exactly as a release would, check it, prove it is what the real BigWigs packager makes, and
   # keep the zip as an artifact so it can be installed and tried before anything is tagged.
