@@ -1,5 +1,5 @@
-# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Interface: 11509
+## X-Copyright: Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Title: Rotation Master [|cfff58cbaPaladin|r] |cff00aa00@project-version@|r
 ## IconTexture: Interface\Icons\ClassIcon_Paladin
 ## Notes: Rotation Master's Built In Paladin rotations. Rotation Master loads this itself, only for a Paladin, and only this edition's files.
