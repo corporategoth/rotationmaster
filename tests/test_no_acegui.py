@@ -7,7 +7,7 @@ import unittest
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-RETIRED = ('AceGUI-3.0', 'AceConfig-3.0', 'AceDBOptions-3.0', 'LibAboutPanel-2.0',
+RETIRED = ('AceComm-3.0', 'AceBucket-3.0', 'AceGUI-3.0', 'AceConfig-3.0', 'AceDBOptions-3.0', 'LibAboutPanel-2.0',
            'AceGUI-3.0-ActionSlotWidgets', 'AceGUI-3.0-SharedMediaWidgets',
            'AceGUI-3.0-Spell-EditBox', 'AceGUI-3.0-Item-EditBox')
 
@@ -43,7 +43,7 @@ class NativeOnlyDistribution(unittest.TestCase):
             self.assertFalse(path.startswith(('Options/', 'Widgets/')), path)
             self.assertNotIn('_compat.lua', path)
         for name in ('AceAddon-3.0', 'AceConsole-3.0', 'AceDB-3.0', 'AceEvent-3.0',
-                     'AceTimer-3.0', 'AceLocale-3.0', 'AceSerializer-3.0', 'AceComm-3.0', 'AceBucket-3.0'):
+                     'AceTimer-3.0', 'AceLocale-3.0', 'AceSerializer-3.0'):
             self.assertIn('Libs/' + name + '/' + name + '.lua', loaded)
         self.assertIn('Libs/LibSharedMedia-3.0/LibSharedMedia-3.0.lua', loaded)
         self.assertNotIn('AceGUI', (ROOT / 'RotationMaster.toc').read_text())

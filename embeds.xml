@@ -12,8 +12,6 @@
 <Include file="Libs\AceTimer-3.0\AceTimer-3.0.xml" />
 <Include file="Libs\AceLocale-3.0\AceLocale-3.0.xml" />
 <Include file="Libs\AceSerializer-3.0\AceSerializer-3.0.xml" />
-<Include file="Libs\AceComm-3.0\AceComm-3.0.xml" />
-<Include file="Libs\AceBucket-3.0\AceBucket-3.0.xml" />
 <Include file="Libs\LibCompress\lib.xml" />
 <Include file="Libs\LibSharedMedia-3.0\lib.xml" />
 <Script file="Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua" />
