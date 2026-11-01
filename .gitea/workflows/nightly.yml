@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.gitea/actions/toolchain
       - name: Run every suite, no known-failures list
-        run: python3 tools/check_all.py --skip-slow tools/corpus_ci_skip.txt --runtime ${{ matrix.runtime }} --json strict-results-${{ matrix.runtime }}.json
+        run: python3 tools/check_all.py --jobs 2 --skip-slow tools/corpus_ci_skip.txt --runtime ${{ matrix.runtime }} --json strict-results-${{ matrix.runtime }}.json
       - name: Upload the result summary
         if: ${{ always() }}
         uses: christopherhx/gitea-upload-artifact@62ac910c5d3dfa85c7cb2df15afe2e342b2407c2 # untagged head

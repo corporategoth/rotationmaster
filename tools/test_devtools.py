@@ -17,6 +17,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest import mock
 
 TOOLS = Path(__file__).resolve().parent
 ROOT = TOOLS.parent
@@ -722,6 +723,30 @@ class Fast(unittest.TestCase):
         (root / 'b.txt').write_text('# comment\nlua5.1 tests/a.lua\n\n  \npython3 tests/b.py\n')
         self.assertEqual(check_all.load_baseline(root / 'b.txt'), {'lua5.1 tests/a.lua', 'python3 tests/b.py'})
         self.assertEqual(check_all.label(['lua5.1', 'tests/a.lua']), 'lua5.1 tests/a.lua')
+
+
+class ParallelChecks(unittest.TestCase):
+    def test_lua_workers_run_concurrently_and_report_failures(self):
+        barrier = threading.Barrier(2, timeout=5)
+
+        def run(command, **kwargs):
+            barrier.wait()
+            return subprocess.CompletedProcess(command, int(command[1] == 'bad.lua'), b'output\n', b'')
+
+        def check():
+            subprocess.run(['lua5.1', 'good.lua'])
+            subprocess.run(['lua5.1', 'bad.lua'])
+
+        output = io.StringIO()
+        with mock.patch.object(check_all.runpy, 'run_path', return_value={'main': check}), \
+                mock.patch.object(subprocess, 'run', side_effect=run), contextlib.redirect_stdout(output):
+            self.assertEqual(check_all.main(['--jobs', '2']), 1)
+        self.assertIn('FAILED (exit 1): lua5.1 bad.lua', output.getvalue())
+        self.assertIn('2 commands, 1 failed', output.getvalue())
+
+    def test_jobs_must_be_positive(self):
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            check_all.main(['--jobs', '0'])
 
 
 class CorpusSharding(unittest.TestCase):
