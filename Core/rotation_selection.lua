@@ -1445,13 +1445,13 @@ end
 -- Names what a rotation overlaps with in one line, for a tooltip or note.
 -- @param list table|nil  The overlap list for the rotation (from GetSwitchOverlaps).
 -- @return string|nil  The text; nil when nothing.
--- @return boolean|nil  Whether any overlap is an exact priority tie.
+-- @return boolean|nil  Whether any overlap is ambiguous: an exact priority tie, or an identical switch (a copy).
 function addon:DescribeSwitchOverlap(list)
     if type(list) ~= 'table' or #list == 0 then
         return nil
     end
 
-    local ties, others = {}, {}
+    local ties, others, ambiguous = {}, {}, false
 
     for _, entry in ipairs(list) do
         local text = string.format(
@@ -1459,6 +1459,8 @@ function addon:DescribeSwitchOverlap(list)
             self.PlainWorkbenchName and self:PlainWorkbenchName(entry.name) or entry.name,
             entry.priority
         )
+
+        ambiguous = ambiguous or entry.tie or entry.kind == 'identical'
 
         if entry.tie then
             ties[#ties + 1] = text
@@ -1482,7 +1484,7 @@ function addon:DescribeSwitchOverlap(list)
         )
     end
 
-    return table.concat(lines, '\n'), #ties > 0
+    return table.concat(lines, '\n'), ambiguous
 end
 
 -- Names of the Classic season ids that a ruleset token can carry (translated through L when shown).

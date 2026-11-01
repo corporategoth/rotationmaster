@@ -1473,37 +1473,65 @@ function minimapInitialize()
     UIDropDownMenu_AddButton(info)
     info = UIDropDownMenu_CreateInfo()
     info.func = minimapChangeRotation
-    info.text, info.arg1, info.checked = L["Automatic Switching"], nil, (addon.manualRotation == false)
-    UIDropDownMenu_AddButton(info)
 
+    -- Automatic Switching (gold) and Default (green, as in the rotation list) are special cases among the rotations.
     info.text, info.arg1, info.checked =
-        DEFAULT, DEFAULT, (addon.manualRotation == true and addon.currentRotation == DEFAULT)
+        "|cffffd100" .. L["Automatic Switching"] .. "|r", nil, (addon.manualRotation == false)
 
     UIDropDownMenu_AddButton(info)
 
-    do
-        for id, rot in pairs(runtimeRows(addon, addon.currentSpec)) do
-            if id ~= DEFAULT then
-                local identifier = addon.GetRotationIdentifier and addon:GetRotationIdentifier(addon.currentSpec, id)
-                local label = identifier and string.format('%s [%s]', tostring(rot.name), identifier) or rot.name
+    -- Rotations in the order automatic switching tries them: highest priority first, then by name; Default, the last
+    -- resort, goes last.
+    local entries = {}
 
-                info.text, info.arg1, info.checked =
-                    label, id, (addon.manualRotation == true and addon.currentRotation == id)
+    for id, rot in pairs(runtimeRows(addon, addon.currentSpec)) do
+        if id ~= DEFAULT then
+            local priority = addon.RotationData
+                and addon.RotationData.GetRotationPriority
+                and addon.RotationData.GetRotationPriority(rot.priority)
+                or tonumber(rot.priority)
+                or 0
 
-                -- Built Ins are told apart by colour; the tooltip says so.
-                info.tooltipTitle, info.tooltipText, info.tooltipOnButton = nil, nil, nil
-
-                if addon:IsDefaultRuntimeRotation(addon.currentSpec, id) then
-                    info.text = "|cff5bc0eb" .. tostring(label) .. "|r"
-
-                    info.tooltipTitle, info.tooltipText, info.tooltipOnButton =
-                        rot.name, L["Built In · read-only"], true
-                end
-
-                UIDropDownMenu_AddButton(info)
-            end
+            entries[#entries + 1] = { id = id, rot = rot, priority = priority, name = tostring(rot.name):lower() }
         end
     end
+
+    table.sort(entries, function(left, right)
+        if left.priority ~= right.priority then
+            return left.priority > right.priority
+        end
+        if left.name ~= right.name then
+            return left.name < right.name
+        end
+
+        return tostring(left.id) < tostring(right.id)
+    end)
+
+    for _, entry in ipairs(entries) do
+        local id, rot = entry.id, entry.rot
+        local identifier = addon.GetRotationIdentifier and addon:GetRotationIdentifier(addon.currentSpec, id)
+        local label = identifier and string.format('%s [%s]', tostring(rot.name), identifier) or rot.name
+
+        info.text, info.arg1, info.checked = label, id, (addon.manualRotation == true and addon.currentRotation == id)
+
+        -- Built Ins are told apart by colour; the tooltip says so.
+        info.tooltipTitle, info.tooltipText, info.tooltipOnButton = nil, nil, nil
+
+        if addon:IsDefaultRuntimeRotation(addon.currentSpec, id) then
+            info.text = "|cff5bc0eb" .. tostring(label) .. "|r"
+
+            info.tooltipTitle, info.tooltipText, info.tooltipOnButton = rot.name, L["Built In · read-only"], true
+        end
+
+        UIDropDownMenu_AddButton(info)
+    end
+
+    info.tooltipTitle, info.tooltipText, info.tooltipOnButton = nil, nil, nil
+
+    info.text, info.arg1, info.checked =
+        "|cff73d999" .. DEFAULT .. "|r", DEFAULT, (addon.manualRotation == true and addon.currentRotation == DEFAULT)
+
+    UIDropDownMenu_AddButton(info)
 
     -- A Built In that would apply now but is switched off is not offered;
     -- say so, so a forgotten toggle is not mistaken for a missing rotation.

@@ -462,6 +462,9 @@ local function create(parent)
 
         if entry.readOnly then
             control.nameLabel:SetTextColor(.357, .753, .922)
+        elseif entry.fallback then
+            -- The Default fallback is a special case: its own colour, neither the Built In blue nor an error red.
+            control.nameLabel:SetTextColor(.45, .85, .6)
         else
             control.nameLabel:SetTextColor(.9, .92, .94)
         end
@@ -614,7 +617,7 @@ local function create(parent)
         end
 
         if addon.SetWorkbenchNotice then
-            -- Only an exact tie is flagged: any other overlap is decided by priority and reads in the tooltip.
+            -- Only a tie or an identical switch is flagged: any other overlap is decided by priority and reads in the tooltip.
             addon:SetWorkbenchNotice(control, tie == true, true)
         end
 

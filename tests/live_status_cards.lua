@@ -335,12 +335,15 @@ test('the switch condition field has the same bar and tooltip', function()
     local f, parent, env = fixture(2)
     local pane = assert(f.addon:CreateRotationEditor(parent, 0, 'mine'))
     local stripe = pane.switchLiveBar
-    assert(stripe:IsShown() and stripe.state.status == 'satisfied' and stripe:GetParent() == pane.switch)
+    local lane = pane.switch.markerLane
+    -- In its marker lane the field draws the bar itself, beside its other markers.
+    assert(stripe.state.status == 'satisfied' and lane.shown.live and lane.textures.live:IsShown())
     local lines = tooltip(f)
     pane.switch.scripts.OnEnter(pane.switch)
 
+    -- The markers come first in bar order, each in its bar's colour; the field's own text comes last.
     assert(
-        lines[1][1] == 'Currently Matches' and lines[2][1]:sub(1, #CLICK) == CLICK,
+        lines[1][1] == 'Currently Matches' and lines[#lines][1]:sub(1, #CLICK) == CLICK,
         'switch tooltip ' .. tostring(lines[1][1])
     )
 

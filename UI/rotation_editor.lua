@@ -1224,7 +1224,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         then
             local overlap, tie = addon:DescribeSwitchOverlap(addon:GetSwitchOverlaps(spec)[self.workspace.id])
 
-            -- Only an exact priority tie is ambiguous (as in the rotation list); other overlaps are decided by
+            -- Only a tie or an identical switch is ambiguous (as in the rotation list); other overlaps are decided by
             -- priority and stay plain notes.
             if overlap and tie then
                 ambiguous = overlap
