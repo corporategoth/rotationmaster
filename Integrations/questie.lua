@@ -490,19 +490,22 @@ function addon.Integrations.NewQuestie(options)
         local api = source.api
         local contract = contracts[api]
 
-        if contract then
-            if contract.readyFn ~= source.readyFn or contract.updateFn ~= source.updateFn then
-                fault('incompatible', 'registration-changed')
-            end
-        elseif seenReady[api] or seenUpdates[api] then
-            fault('error', 'registration-unconfirmed')
-        else
-            contract = { readyFn = source.readyFn, updateFn = source.updateFn }
-            contracts[api] = contract
+        if contract and (contract.readyFn ~= source.readyFn or contract.updateFn ~= source.updateFn) then
+            fault('incompatible', 'registration-changed')
         end
 
+        -- A failed registration remains authoritative even if the weak contract was collected.
         if failedReady[api] or failedUpdates[api] then
             fault('error', 'registration-failed')
+        end
+
+        if not contract then
+            if seenReady[api] or seenUpdates[api] then
+                fault('error', 'registration-unconfirmed')
+            end
+
+            contract = { readyFn = source.readyFn, updateFn = source.updateFn }
+            contracts[api] = contract
         end
 
         guard(g)

@@ -646,6 +646,7 @@ test('failed ready registration after disable preserves its outcome without publ
 
     s:SetEnabled(true)
     assert(s:GetStatus().state == 'disabled' and s:GetStatus().reason == 'disabled')
+    collectgarbage('collect')
     s:SetEnabled(true)
 
     assert(
@@ -668,6 +669,7 @@ test('failed updates registration after disable preserves its outcome without pu
 
     s:SetEnabled(true)
     assert(s:GetStatus().state == 'disabled' and s:GetStatus().reason == 'disabled')
+    collectgarbage('collect')
     s:SetEnabled(true)
 
     assert(
