@@ -211,3 +211,13 @@ jobs:
           export archive="${GITHUB_WORKSPACE}/.release/RotationMaster-${TAG}.zip"
           export archive_name="RotationMaster-${TAG}.zip" archive_label="${TAG}" archive_version="${TAG}"
           bash tools/vendor/bigwigs-packager/release.sh "${args[@]}" -c -z -o -r "${GITHUB_WORKSPACE}/.release"
+      - name: Announce on Discord
+        if: ${{ env.DRY_RUN != 'true' }}
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.TAG }}
+        run: |
+          set -uo pipefail
+          # A failed announcement must not fail a release that has already been published.
+          python3 tools/discord_announce.py --tag "${TAG}" --notes release-notes-github.md --url "${RELEASE_URL}" \
+            || echo "::warning::Discord announcement failed."

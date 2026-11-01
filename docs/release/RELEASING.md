@@ -28,6 +28,7 @@ GitHub repository **Settings > Secrets and variables > Actions** supplies the pu
 | `CF_API_KEY` | CurseForge upload (project id 301085) |
 | `WAGO_API_TOKEN` | Wago Addons upload (project `vEGPM4N1`) |
 | `WOWI_API_TOKEN` | WoWInterface upload (addon 25079); stable tags and explicitly enabled betas |
+| `DISCORD_WEBHOOK_URL` | Optional. A plain Discord webhook; the release announcement posts the notes (not just a link). Remove the repository's GitHub-style `/github` release webhook so releases are not announced twice |
 
 Presence of a secret does not prove the token is still valid. Set optional GitHub Actions variables
 `WOWI_UPLOAD_BETA=true` to upload betas to WoWInterface, and `BETA_GUIDE_URL` to link the beta guide in the notes.
