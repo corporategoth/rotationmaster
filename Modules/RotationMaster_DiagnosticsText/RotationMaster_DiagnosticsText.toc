@@ -1,6 +1,7 @@
 # Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Interface: 11509, 20506, 50504, 120105, 16001
-## Title: Rotation Master - Diagnostics text
+## Title: Rotation Master |cffffffffDiagnostics text|r
+## IconTexture: Interface/AddOns/RotationMaster/Assets/Branding/rotation-master-small
 ## Notes: The performance, memory, analytics and error report windows and their commands. Rotation Master loads this itself, the first time that text is needed; it holds only translations.
 ## Author: PreZ
 ## Version: @project-version@
@@ -8,6 +9,7 @@
 ## LoadOnDemand: 1
 ## Group: RotationMaster
 ## X-Category: Action Bars
+## Category: Action Bars
 ## X-License: MIT + Attribution
 
 deDE.lua
