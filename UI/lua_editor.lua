@@ -7,7 +7,7 @@
 -- A failing optional provider is replaced by the native editor with text, read-only state and context kept; nothing
 -- here may rely on an undocumented third-party global. Controls are pooled per source host and released, not destroyed,
 -- so Release must leave no callbacks, focus or scripts behind.
--- Loaded after Integrations/lua_workbench.lua, UI/lua_completion.lua and UI/line_numbers.lua, which add completion and
+-- Loaded after LibsAugment/LuaWorkbench.lua, UI/lua_completion.lua and UI/line_numbers.lua, which add completion and
 -- the gutter to the native control; callers are UI/custom_condition_editor.lua and UI/function_source_pane.lua.
 
 local addon_name, addon = ...

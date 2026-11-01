@@ -6,7 +6,7 @@
 -- autocomplete and navigation to include them. Owns only the overlay on the engine (marked `rm*` fields so it is
 -- applied once and stripped before reapplying); it never edits saved functions and must not break the engine when it is
 -- absent or limited. Loaded from RotationMaster.toc after Core/custom_condition_services.lua; callers are
--- Integrations/lua_workbench.lua and UI/lua_completion.lua.
+-- LibsAugment/LuaWorkbench.lua and UI/lua_completion.lua.
 
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)

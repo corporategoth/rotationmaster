@@ -5,7 +5,7 @@
 -- control `c` made by UI/lua_editor.lua; it never loads Blizzard API docs and holds no event frame of its own.
 -- It owns the engine, the editor-input shim and the script wrappers on c.edit, and removes them again in
 -- c:ReleaseCompletion; it must not touch the user's LuaWorkbench workspace or saved state.
--- Loaded after Integrations/lua_workbench.lua (which supplies CreateLuaWorkbenchEngine) and before UI/lua_editor.lua
+-- Loaded after LibsAugment/LuaWorkbench.lua (which supplies CreateLuaWorkbenchEngine) and before UI/lua_editor.lua
 -- calls it; a no-op when that integration or Core/lua_symbols.lua is missing.
 
 local _, addon = ...

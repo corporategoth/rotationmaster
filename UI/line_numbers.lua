@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Line-number gutter for Lua editors. InstallLuaLineNumberControl adapts LuaWorkbench's gutter (its callbacks and
--- visible-row renderer) to a control, either the embedded LuaWorkbench editor (Integrations/lua_workbench.lua) or the
+-- visible-row renderer) to a control, either the separately installed LuaWorkbench editor (LibsAugment/LuaWorkbench.lua) or the
 -- native reduced editor (InstallNativeLuaLineNumbers, called from UI/lua_editor.lua).
 -- Gutter updates are queued by the provider's callbacks and painted from a later OnUpdate, after the provider's own
 -- frame update has returned, so the EditBox is never read mid-callback. Row heights are measured from the real font so

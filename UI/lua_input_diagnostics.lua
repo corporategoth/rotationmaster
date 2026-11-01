@@ -4,7 +4,7 @@
 -- and a plain-text report of the control's frames, focus owners, line-number gutter and LuaWorkbench overlay state,
 -- shown through `/rm debug editor` (Diagnostics/glow.lua). It must never include source text: reports carry counts and
 -- byte lengths only. Every client query goes through `read` so a missing or failing method reads as 'unavailable'
--- instead of raising. The control is attached by UI/lua_editor.lua and Integrations/lua_workbench.lua, which call
+-- instead of raising. The control is attached by UI/lua_editor.lua and LibsAugment/LuaWorkbench.lua, which call
 -- `InstallLuaInputDiagnostics` when it exists; this file loads just before them (after UI/lua_input_probe.lua) and
 -- shows a report through `addon:ShowConditionText`.
 local addon_name, addon = ...

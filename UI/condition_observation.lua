@@ -2,7 +2,7 @@
 
 -- Small helpers around the condition widget registry (UI/condition_widgets.lua): run a callback while every widget it
 -- creates is observed, and clear keyboard focus. Owns no widgets and no saved data. Callers are the Test and debugger
--- paths (Integrations/lua_workbench.lua) and the config and browser windows. Loaded from RotationMaster.toc right after
+-- paths (LibsAugment/LuaWorkbench.lua) and the config and browser windows. Loaded from RotationMaster.toc right after
 -- UI/condition_widgets.lua, whose `addon:ObserveConditionWidgets` it depends on.
 local _, addon = ...
 
