@@ -676,8 +676,8 @@ def ensure_bundle_toc(catalog):
     files = bundle_files(catalog)
     if not toc.exists():
         header = [notice_line('toc'), f'## Interface: {BUNDLE_INTERFACE}',
-                  f'## Title: Rotation Master |cffffffff{catalog.title or catalog.name}|r',
-                  '## IconTexture: Interface/AddOns/RotationMaster/Assets/Branding/rotation-master-small',
+                  f'## Title: Rotation Master [|cffeda55f{catalog.title or catalog.name}|r] |cff00aa00@project-version@|r',
+                  '## IconTexture: Interface\\Icons\\INV_Misc_Note_01',
                   f'## Notes: {catalog.notes or "Text Rotation Master shows on one screen."} Rotation Master loads this itself, the first time that text is needed; it holds only translations.',
                   '## Author: PreZ', '## Version: @project-version@', '## Dependencies: RotationMaster', '## LoadOnDemand: 1',
                   '## Group: RotationMaster', '## X-Category: Action Bars', '## Category: Action Bars', TOC_LICENSE_FIELD, '']

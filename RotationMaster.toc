@@ -2,7 +2,7 @@
 ## Interface: 11509, 20506, 50504, 120105, 16001
 ## Interface-Classic: 11509
 ## Interface-BCC: 20506
-## Title: Rotation Master
+## Title: Rotation Master |cff00aa00@project-version@|r
 ## IconTexture: Interface/AddOns/RotationMaster/Assets/Branding/rotation-master-small
 ## Version: @project-version@
 ## Author: PreZ

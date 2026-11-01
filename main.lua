@@ -376,7 +376,12 @@ local floor = math.floor
 local isin, starts_with, isint =
     addon.Functions.values.isin, addon.Functions.text.starts_with, addon.Functions.values.isint
 
-addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
+-- The TOC Title carries colour codes and the version for the addon list; the plain name is what chat output wants.
+addon.pretty_name = (GetAddOnMetadata(addon_name, "Title") or addon_name):gsub("|c%x%x%x%x%x%x%x%x.-|r", ""):gsub(
+    "|r",
+    ""
+):gsub("%s+$", "")
+
 addon.delayed_condition = {}
 
 -- Borrows the validated selection pass for an owner and specialization.

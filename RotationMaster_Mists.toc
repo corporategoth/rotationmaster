@@ -1,6 +1,6 @@
 # Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Interface: 50504
-## Title: Rotation Master
+## Title: Rotation Master |cff00aa00@project-version@|r
 ## IconTexture: Interface/AddOns/RotationMaster/Assets/Branding/rotation-master-small
 ## Version: @project-version@
 ## Author: PreZ

@@ -1,7 +1,7 @@
 # Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Interface: 11509, 20506, 50504, 120105, 16001
-## Title: Rotation Master |cffffffffWarrior|r
-## IconTexture: Interface/AddOns/RotationMaster/Assets/Branding/rotation-master-small
+## Title: Rotation Master [|cffc79c6eWarrior|r] |cff00aa00@project-version@|r
+## IconTexture: Interface\Icons\ClassIcon_Warrior
 ## Notes: Rotation Master's Built In Warrior rotations. Rotation Master loads this itself, only for a Warrior, and only this edition's files.
 ## Author: PreZ
 ## Version: @project-version@
