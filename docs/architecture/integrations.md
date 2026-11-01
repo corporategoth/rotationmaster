@@ -34,7 +34,7 @@ Catalog loading performs no discovery or native query. Listing uses bounded addo
 
 ## Edition scope is what RM can do with the addon
 
-An addon is listed for an edition only when RM can do something with it there, and a row is hidden on an edition outside its scope. Decided 2026-10-25, per addon:
+Most addon rows are hidden outside their supported scope. LuaWorkbench and WowLua remain visible as unavailable editor choices even when their client scope is unsupported. Decided 2026-10-25, per addon:
 
 | Addon | What RM does with it | Editions kept | Dropped, and why |
 | --- | --- | --- | --- |
@@ -43,7 +43,7 @@ An addon is listed for an edition only when RM can do something with it there, a
 | MobInfo2 | RESIST, IMMUNE and RUNNER look a creature up by name and level. | Era, TBC, Classic progression | Retail, Forever: an NPC name is secret there, so the conditions are unavailable (`docs/restricted-clients.md`). |
 | DBM, BigWigs | Boss-mod conditions through the encounter adapter. | Era, TBC, Classic progression | Retail, Forever: the adapter reports them incompatible by design (`Integrations/encounters.lua`). |
 | TotemTimers | Maps the totem buttons. | Forever, Era, TBC, Classic progression | Retail: the project's Retail file is the historical 2020 release. |
-| WowLua | Detection only, no function. | none | Row removed. |
+| WowLua | Uses the installed syntax engine on an RM-owned Lua editor. | Retail, Classic Era, TBC, Mists and Wrath | Other editions unverified. |
 | G15Buttons, SyncUI, Neuron, DiabolicUI, SamyTotemTimers | Button scans. | none | No update in more than two years (2014, 2020, 2022, 2022, 2023). Scans and rows removed. |
 
 The remaining rows keep their advertised editions. LittleWigs and the DBM dungeon module pack are companion links on the BigWigs and DBM rows: they register through the boss mod RM already reads, so they add no code.

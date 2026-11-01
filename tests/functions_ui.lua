@@ -355,7 +355,7 @@ test('condition completion binding refreshes symbols without losing pending call
     d:SelectFunction('print');assert(d.code.context.source.bindings.helper=='HELPER' and d:PendingSource().evaluate=='return functions.helper(value)')
 end)
 local function completion(f,a,d)
-    f.env.GetLocale=function() return 'enUS' end;f.load('Libs/LuaWorkbench-Embed/modules.lua');f.load('Core/lua_symbols.lua')
+    f.env.GetLocale=function() return 'enUS' end;f.load('tests/fixtures/legacy_luaworkbench/modules.lua');f.load('Core/lua_symbols.lua')
     local create=f.env.CreateFrame;f.env.CreateFrame=function(...) local frame=create(...);frame.RegisterEvent=function() end;frame.UnregisterAllEvents=function() end;return frame end
     local engine={L={},UI={},Workspace={db={options={}}},Query={Console={SetStatus=function() end}}}
     for _,name in ipairs({'Localization','LuaEditor','Analysis','APIHelp','Autocomplete'}) do a.LuaWorkbenchModules[name]('rotationmaster',engine) end

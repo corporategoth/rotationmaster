@@ -17,7 +17,7 @@
 ## X-Project-Revision: @project-revision@
 ## X-ReleaseDate: @project-date-iso@
 ## SavedVariables: RotationMasterDB
-## OptionalDeps: LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations, LibRangeCheck-3.0, Masque
+## OptionalDeps: LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations, LibRangeCheck-3.0, Masque, !!!LuaWorkbench, WowLua
 ## X-Credits: None
 ## X-License: MIT + Attribution
 ## X-Author-Server: Atiesh
@@ -271,9 +271,9 @@ UI/legacy_archive_banner.lua
 # Code authoring UI
 UI/lua_input_probe.lua
 UI/lua_input_diagnostics.lua
-Libs/LuaWorkbench-Embed/modules.lua
 UI/lua_debug_output.lua
-Integrations/lua_workbench.lua
+LibsAugment/LuaWorkbench.lua
+LibsAugment/WowLua.lua
 UI/lua_completion.lua
 UI/line_numbers.lua
 UI/lua_editor.lua

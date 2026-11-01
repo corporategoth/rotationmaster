@@ -192,7 +192,13 @@ function platform:GetRotationSpecializations(classID)
     end
 
     if kind == "group" then
-        local count, why = queryInteger(GetNumTalentGroups, 4, false, false)
+        local count, why
+
+        if type(GetNumSpecGroups) == "function" then
+            count, why = queryInteger(GetNumSpecGroups, 4, false)
+        else
+            count, why = queryInteger(GetNumTalentGroups, 4, false, false)
+        end
 
         if not count then
             return nil, why

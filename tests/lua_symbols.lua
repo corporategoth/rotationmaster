@@ -120,7 +120,7 @@ end)
 local function documentationEngine(f)
     f.env.GetLocale = function() return 'enUS' end
     f.env.CreateFrame = function() return { RegisterEvent = function() end, SetScript = function() end } end
-    f.load('Libs/LuaWorkbench-Embed/modules.lua')
+    f.load('tests/fixtures/legacy_luaworkbench/modules.lua')
     local a = f.addon
 
     local engine = {

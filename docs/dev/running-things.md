@@ -139,7 +139,7 @@ python3 tools/locales.py check
 | `tools/builtin_names.py`, `tools/builtin_names_overrides.py`, `tools/builtin_modules.lua` | Built In names; the offline view of the load-on-demand modules |
 | `tools/generate_client_api.py` | Per-client API manifests for the fixtures |
 | `tools/generate_control_icons.py` | Control textures (rsvg-convert and ImageMagick) |
-| `tools/sync_luaworkbench.py` | Rebuild the embedded LuaWorkbench from a pinned checkout |
+| `docs/dev/luaworkbench/README.md` | Optional isolated-editor API patch for a separately installed LuaWorkbench |
 | `tools/install_hooks.py` | Plain git hook running `tools/check --static` |
 | `tools/precommit_hygiene.py`, `.pre-commit-config.yaml` | Repository guards and the hook list |
 | `tools/package_release.py`, `tools/release_notes.py`, `tools/release_plan.py`, `tools/gitea_release.py`, `tools/vendor/bigwigs-packager/` | Release package, notes, plan, Gitea release, pinned packager |

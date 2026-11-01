@@ -952,7 +952,8 @@ test('only explicit unsupported clients hide inventory and editor menu candidate
     assert(clientCalls == 1 and seen['!!!LuaWorkbench'] and not seen.LuaWorkbench)
 
     assert(
-        not p.fields.integration_card_editor_LuaWorkbench
+        p.fields.integration_card_editor_LuaWorkbench
+            and state(p, 'editor_LuaWorkbench') == 'Not loaded'
             and not p.fields.integration_card_Questie
             and not p.fields.section_integrations_quests
             and not p.fields.integration_card_Dominos

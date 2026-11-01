@@ -53,7 +53,7 @@ All windows are registered; the opener is the window the user acts in when they 
 | Custom condition editor, field schema editor, source preview / debug surface | `FULLSCREEN_DIALOG` | `custom_condition_editor.lua`, `schema_editor.lua`, `condition_source_preview.lua` | the pane, or the editor that hides for it |
 | Confirm and unsaved-changes prompts | `FULLSCREEN_DIALOG` | `settings_form.lua`, `rotation_navigation.lua`, `custom_condition_transfer.lua` | the pane |
 | Talent tree control strip | `FULLSCREEN_DIALOG` | `talent_popup.lua` | the condition pane; over Blizzard's talent window |
-| Embedded Lua editor panels (Inspector, probe terminal / snapshot) | `FULLSCREEN_DIALOG` (library: `DIALOG`) | `Integrations/lua_workbench.lua` | the embedded editor |
+| Embedded Lua editor panels (Inspector, probe terminal / snapshot) | `FULLSCREEN_DIALOG` (library: `DIALOG`) | `LibsAugment/LuaWorkbench.lua` | the embedded editor |
 | Drag ghost | `TOOLTIP`, not ordered | `controls.lua` | a drag |
 | Spell search suggestions | `TOOLTIP` | `spell_search.lua` | an edit box |
 | Preview overlay | `MEDIUM` | `preview.lua` | not a window |

@@ -4,7 +4,7 @@
 -- debugger terminal showed. It owns one window per code-editor control (cached on control.outputWindow) and never
 -- accepts edits: the text box reverts any typing so the user can only select and copy.
 -- Loaded in the "Code authoring UI" block of RotationMaster.toc after the LuaWorkbench embed;
--- Integrations/lua_workbench.lua calls it from the control's ShowDebugOutput. Builds on
+-- LibsAugment/LuaWorkbench.lua calls it from the control's ShowDebugOutput. Builds on
 -- addon:CreateWorkbenchTransferShell (UI/settings_transfer.lua).
 
 local addon_name, addon = ...

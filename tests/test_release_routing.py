@@ -14,6 +14,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ReleaseRouting(unittest.TestCase):
+    def test_mists_manifest_matches_main_load_order_and_metadata(self):
+        main = (ROOT / 'RotationMaster.toc').read_text().splitlines()
+        mists = (ROOT / 'RotationMaster_Mists.toc').read_text().splitlines()
+        self.assertIn('## Interface: 50504', mists)
+        directives = ('## Interface:', '## Interface-Classic:', '## Interface-BCC:')
+        self.assertEqual([line for line in main if not line.startswith(directives)],
+                         [line for line in mists if not line.startswith(directives)])
+
     @staticmethod
     def archive(content, level):
         out = io.BytesIO()
@@ -74,6 +82,13 @@ elif args[:2] == ['release', 'download']:
                                  f'{hashlib.sha256(existing_zip).hexdigest()}  .release/{archive.name}\n')
             return result, log.read_text(), checksum
 
+    def test_github_publisher_gates_on_all_corpus_shards(self):
+        workflow = (ROOT / '.github/workflows/release.yml').read_text(encoding='utf-8')
+        self.assertIn('run: python3 tools/check_all.py --skip-slow tools/corpus_ci_skip.txt --runtime "${RUNTIME}"', workflow)
+        self.assertIn("run: python3 tools/check_all.py --only 'lua5.1 tests/default_corpus.lua'", workflow)
+        self.assertIn('RM_CORPUS_CLASS: ${{ matrix.class }}', workflow)
+        self.assertIn('needs: [static, tests, corpus]', workflow)
+
     def test_github_release_creates_prerelease_with_checked_zip(self):
         result, calls, _ = self.github_step()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -114,7 +129,7 @@ elif args[:2] == ['release', 'download']:
     def test_github_owns_site_uploads(self):
         workflow = (ROOT / '.github/workflows/release.yml').read_text(encoding='utf-8')
         self.assertIn('tags:', workflow)
-        self.assertIn('needs: [static, tests]', workflow)
+        self.assertIn('needs: [static, tests, corpus]', workflow)
         self.assertIn('name: Upload to addon sites', workflow)
         for name in ('CF_API_KEY', 'WAGO_API_TOKEN', 'WOWI_API_TOKEN'):
             self.assertIn('secrets.' + name, workflow)

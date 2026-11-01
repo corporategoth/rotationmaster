@@ -1655,5 +1655,39 @@ test('startup loads this character\'s Built In module before the rotation librar
     initialize(a)
     assert(table.concat(order,', ')=='load RotationMaster_Shaman, library',table.concat(order,', '))
 end)
+test('missing version metadata does not interrupt startup or minimap tooltip', function()
+    local env, a, load = fixture(true, true)
+
+    env.C_AddOns.GetAddOnMetadata = function(_, key)
+        if key == 'Title' then
+            return 'RotationMaster'
+        end
+    end
+
+    load('main.lua')
+    initialize(a)
+    local enabled = false
+
+    a.info = function(_, message, ...)
+        string.format(message, ...)
+    end
+
+    a.enable = function()
+        enabled = true
+    end
+
+    a:OnEnable()
+    assert(enabled, 'startup did not enable the addon')
+
+    local tooltip = {
+        SetText = function(_, text)
+            assert(type(text) == 'string')
+        end,
+        AddLine = function() end,
+    }
+
+    env.broker.OnTooltipShow(tooltip)
+end)
+
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)

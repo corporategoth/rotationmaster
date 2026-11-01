@@ -209,4 +209,17 @@ test(
     end
 )
 
+test('Mists enumerates specialization groups using the modern count API', function()
+    local f = fixture(19, 4)
+    f.env.GetNumTalentGroups = nil
+
+    f.env.GetNumSpecGroups = function(inspect)
+        assert(inspect == false)
+        return 2
+    end
+
+    local choices = f.addon.Platform:GetRotationSpecializations()
+    assert(choices and #choices == 2 and choices[1].id == 1 and choices[2].id == 2)
+end)
+
 finish()

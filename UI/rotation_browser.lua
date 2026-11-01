@@ -1514,7 +1514,16 @@ local function create(parent)
         self.specEntries = addon.GetRotationSpecEntries and addon:GetRotationSpecEntries() or {}
         self.hasSpecFilter = #self.specEntries > 0
         local current = addon.GetCurrentRotationSpecValue and addon:GetCurrentRotationSpecValue()
-        self.specValue = self.hasSpecFilter and (current ~= nil and current or 'all') or nil
+        local listedCurrent = false
+
+        for _, entry in ipairs(self.specEntries) do
+            if entry.id == current then
+                listedCurrent = true
+                break
+            end
+        end
+
+        self.specValue = self.hasSpecFilter and (listedCurrent and current or 'all') or nil
         addon.rotationListSpec = self.specValue
         -- The namespaces this list can read: yours, and every specialization
         -- where namespaces are specializations (each keeps its own fallback).

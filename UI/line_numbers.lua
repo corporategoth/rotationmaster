@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Line-number gutter for Lua editors. InstallLuaLineNumberControl adapts LuaWorkbench's gutter (its callbacks and
--- visible-row renderer) to a control, either the embedded LuaWorkbench editor (Integrations/lua_workbench.lua) or the
+-- visible-row renderer) to a control, either the separately installed LuaWorkbench editor (LibsAugment/LuaWorkbench.lua) or the
 -- native reduced editor (InstallNativeLuaLineNumbers, called from UI/lua_editor.lua).
 -- Gutter updates are queued by the provider's callbacks and painted from a later OnUpdate, after the provider's own
 -- frame update has returned, so the EditBox is never read mid-callback. Row heights are measured from the real font so
@@ -682,15 +682,154 @@ end
 -- Native editor entry point
 -- ============================================================================
 
--- Attaches the gutter to a native reduced editor `control`. Requires control.completionEngine (from
--- UI/lua_completion.lua) and returns without doing anything when it is missing.
--- @param control table  The native Lua editor control.
---
--- The reduced editor has no debugger, so the debugger's gutter buttons are disabled.
+-- Draw native gutters without requiring a separately installed LuaWorkbench engine.
+-- The viewport owns its labels, so scrolling and releasing a pooled editor never changes the source EditBox.
+-- @param control table  The native editor control to decorate.
+local function installStandaloneNative(control)
+    local gutter = CreateFrame('Frame', nil, control.frame)
+    gutter:SetPoint('TOPLEFT', control.frame, 'TOPLEFT', 4, -4)
+    gutter:SetPoint('BOTTOMLEFT', control.frame, 'BOTTOMLEFT', 4, 4)
+    gutter:SetWidth(56)
+
+    if gutter.SetClipsChildren then
+        gutter:SetClipsChildren(false)
+    end
+
+    local measure = gutter:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+    measure:SetWordWrap(true)
+    measure:Hide()
+    local state = { frame = gutter, measure = measure, rows = {}, dirty = true }
+    control.standaloneLineNumbers = state
+
+    -- Shows or hides the independent gutter.
+    -- @param visible boolean  True to show the line numbers.
+    function control:SetLineNumbers(visible)
+        visible = visible == true
+        self.lineNumbersVisible = visible
+        self.lineNumberSetting = visible
+        state.dirty = true
+
+        if visible and not self.released then
+            gutter:Show()
+        else
+            gutter:Hide()
+        end
+    end
+
+    function control:RefreshLineNumbers()
+        local wanted = addon.db.profile.lua_line_numbers ~= false
+
+        if self.lineNumberSetting ~= wanted then
+            self:SetLineNumbers(wanted)
+        end
+    end
+
+    function control:ReleaseLineNumbers()
+        gutter:Hide()
+        state.dirty = true
+    end
+
+    control.frame:HookScript('OnUpdate', function()
+        if control.released or not control.lineNumbersVisible then
+            if gutter:IsShown() then
+                gutter:Hide()
+            end
+
+            return
+        end
+
+        if not gutter:IsShown() then
+            gutter:Show()
+        end
+
+        local source = control:GetText()
+        local edit, scroll = control.edit, control.scroll
+        local width = edit:GetWidth()
+        local font, size, flags = edit:GetFont()
+        local spacing = edit:GetSpacing() or 0
+        local left, right, top = edit:GetTextInsets()
+        left, right, top = left or 0, right or 0, top or 0
+        local offset = scroll:GetVerticalScroll() or 0
+        local height = scroll:GetHeight()
+
+        local geometryChanged = source ~= state.source
+            or width ~= state.width
+            or font ~= state.font
+            or size ~= state.size
+            or flags ~= state.flags
+            or spacing ~= state.spacing
+            or left ~= state.left
+            or right ~= state.right
+            or top ~= state.top
+
+        if geometryChanged then
+            measure:SetFont(font, size, flags)
+            measure:SetSpacing(spacing)
+            measure:SetWidth(math.max(1, width - left - right))
+            local positions, y = {}, top
+
+            for line in (source .. '\n'):gmatch('(.-)\n') do
+                measure:SetHeight(0)
+                local display = (line ~= '' and line or 'M'):gsub('|', '||')
+                measure:SetText(display)
+                local lineHeight = math.max(size or 12, measure:GetStringHeight()) + spacing
+                positions[#positions + 1] = { y = y, height = lineHeight }
+                y = y + lineHeight
+            end
+
+            state.positions = positions
+            state.source, state.width, state.font, state.size, state.flags = source, width, font, size, flags
+            state.spacing, state.left, state.right, state.top = spacing, left, right, top
+            state.dirty = true
+        end
+
+        if not state.dirty and offset == state.offset and height == state.height then
+            return
+        end
+
+        state.dirty, state.offset, state.height = false, offset, height
+        local shown = 0
+
+        for line, position in ipairs(state.positions or {}) do
+            local y = position.y - offset
+
+            if y + position.height >= 0 and y <= height then
+                shown = shown + 1
+                local row = state.rows[shown]
+
+                if not row then
+                    row = gutter:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+                    row:SetJustifyH('RIGHT')
+                    state.rows[shown] = row
+                end
+
+                row:SetFont(font, size, flags)
+                row:ClearAllPoints()
+                row:SetPoint('TOPRIGHT', gutter, 'TOPRIGHT', -8, -y)
+                row:SetText(tostring(line))
+                row:SetTextColor(.62, .65, .68, 1)
+                row:Show()
+            elseif y > height then
+                break
+            end
+        end
+
+        for index = shown + 1, #state.rows do
+            state.rows[index]:Hide()
+        end
+    end)
+
+    control:RefreshLineNumbers()
+end
+
+-- Attaches a native gutter, using the independent renderer when no completion engine is available.
+-- The native editor does not offer debugger breakpoint controls.
+-- @param control table  The native editor control to decorate.
 function addon:InstallNativeLuaLineNumbers(control)
     local engine = control.completionEngine
 
     if not engine then
+        installStandaloneNative(control)
         return
     end
 
