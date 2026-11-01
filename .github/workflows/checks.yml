@@ -45,7 +45,25 @@ jobs:
       - name: Run the suite
         env:
           RUNTIME: ${{ matrix.runtime }}
-        run: python3 tools/check_all.py --runtime "${RUNTIME}" --baseline tools/known_failures.txt
+        run: python3 tools/check_all.py --skip-slow tools/corpus_ci_skip.txt --runtime "${RUNTIME}" --baseline tools/known_failures.txt
+
+  corpus:
+    name: Default corpus (${{ matrix.class }})
+    needs: [static]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        class: [WARRIOR, PALADIN, HUNTER, ROGUE, PRIEST, SHAMAN, MAGE, WARLOCK, DRUID, DEATHKNIGHT, MONK, DEMONHUNTER, EVOKER]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: ./.gitea/actions/toolchain
+      - name: Run the complete client matrix for this class
+        env:
+          RM_CORPUS_CLASS: ${{ matrix.class }}
+        run: python3 tools/check_all.py --only 'lua5.1 tests/default_corpus.lua' --baseline tools/known_failures.txt
 
   package:
     name: Release package

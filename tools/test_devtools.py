@@ -719,6 +719,37 @@ class Fast(unittest.TestCase):
         self.assertEqual(check_all.label(['lua5.1', 'tests/a.lua']), 'lua5.1 tests/a.lua')
 
 
+class CorpusSharding(unittest.TestCase):
+    def test_ci_runs_every_class_and_release_waits_for_it(self):
+        import re
+
+        source = (ROOT / 'tests/default_corpus.lua').read_text()
+        class_block = source.split('local classes = {', 1)[1].split('}', 1)[0]
+        classes = set(re.findall(r"'([A-Z]+)'", class_block))
+        self.assertEqual(len(classes), 13)
+        for name in ('.gitea/workflows/test.yml', '.gitea/workflows/nightly.yml',
+                     '.gitea/workflows/release.yml', '.github/workflows/checks.yml'):
+            text = (ROOT / name).read_text()
+            matrix = re.search(r'^        class: \[([^]]+)\]', text, re.MULTILINE)
+            self.assertIsNotNone(matrix, name)
+            selected = matrix.group(1).replace(' ', '').split(',')
+            self.assertEqual(len(selected), len(classes), name)
+            self.assertEqual(set(selected), classes, name)
+            self.assertIn('--skip-slow tools/corpus_ci_skip.txt', text, name)
+            self.assertIn('RM_CORPUS_CLASS: ${{ matrix.class }}', text, name)
+        release = (ROOT / '.gitea/workflows/release.yml').read_text()
+        self.assertIn('needs: [verify-static, verify-tests, corpus]', release)
+        self.assertEqual(check_all.load_baseline(TOOLS / 'corpus_ci_skip.txt'),
+                         {'lua5.1 tests/default_corpus.lua'})
+
+    def test_unknown_class_fails_before_running(self):
+        env = dict(os.environ, RM_CORPUS_CLASS='NOT_A_CLASS')
+        result = subprocess.run(['lua5.1', 'tests/default_corpus.lua'], cwd=ROOT,
+                                env=env, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('unknown RM_CORPUS_CLASS', result.stderr)
+
+
 class Plan(unittest.TestCase):
     ALL = {'CF_API_KEY': 'x', 'WOWI_API_TOKEN': 'x', 'WAGO_API_TOKEN': 'x'}
 

@@ -92,7 +92,7 @@ jobs:
           if [ "${ALLOW_KNOWN_FAILURES}" = "true" ]; then
             baseline=(--baseline tools/known_failures.txt)
           fi
-          python3 tools/check_all.py --runtime "${{ matrix.runtime }}" "${baseline[@]}" --json "test-results-${{ matrix.runtime }}.json"
+          python3 tools/check_all.py --skip-slow tools/corpus_ci_skip.txt --runtime "${{ matrix.runtime }}" "${baseline[@]}" --json "test-results-${{ matrix.runtime }}.json"
       - name: Upload the result summary
         if: ${{ always() }}
         uses: christopherhx/gitea-upload-artifact@62ac910c5d3dfa85c7cb2df15afe2e342b2407c2 # untagged head
@@ -101,9 +101,34 @@ jobs:
           path: test-results-${{ matrix.runtime }}.json
           if-no-files-found: ignore
 
+  corpus:
+    name: Default corpus (${{ matrix.class }})
+    needs: [verify-static]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        class: [WARRIOR, PALADIN, HUNTER, ROGUE, PRIEST, SHAMAN, MAGE, WARLOCK, DRUID, DEATHKNIGHT, MONK, DEMONHUNTER, EVOKER]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ github.event.inputs.tag || github.ref_name }}
+      - uses: ./.gitea/actions/toolchain
+      - name: Run the complete client matrix for this class
+        env:
+          RM_CORPUS_CLASS: ${{ matrix.class }}
+        run: |
+          baseline=()
+          if [ "$ALLOW_KNOWN_FAILURES" = "true" ]; then
+            baseline=(--baseline tools/known_failures.txt)
+          fi
+          python3 tools/check_all.py --only 'lua5.1 tests/default_corpus.lua' "${baseline[@]}"
+
   package-and-publish:
     name: Package and publish
-    needs: [verify-static, verify-tests]
+    needs: [verify-static, verify-tests, corpus]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
