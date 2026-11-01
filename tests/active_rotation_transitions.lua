@@ -165,7 +165,7 @@ check('actual minimap callback chooses named and automatic mode', function()
     for _, row in ipairs(menu) do
         if row.arg1 == 'named' then
             named = row
-        elseif row.text == 'Automatic Switching' then
+        elseif row.text and row.text:find('Automatic Switching', 1, true) then
             auto = row
         end
     end

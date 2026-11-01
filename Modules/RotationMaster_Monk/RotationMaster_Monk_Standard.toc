@@ -1,13 +1,16 @@
-# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Interface: 120105
-## Title: Rotation Master - Monk
+## X-Copyright: Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+## Title: Rotation Master [|cff00ff96Monk|r]
+## IconTexture: Interface\Icons\ClassIcon_Monk
 ## Notes: Rotation Master's Built In Monk rotations. Rotation Master loads this itself, only for a Monk, and only this edition's files.
 ## Author: PreZ
 ## Version: @project-version@
 ## Dependencies: RotationMaster
 ## LoadOnDemand: 1
+## AllowLoadGameType: standard, mists
 ## Group: RotationMaster
 ## X-Category: Action Bars
+## Category: Action Bars
 ## X-License: MIT + Attribution
 
 bind.lua

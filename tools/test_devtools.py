@@ -576,13 +576,13 @@ class Copyright(unittest.TestCase):
     def test_every_comment_syntax(self):
         for kind, (name, text) in self.SAMPLES.items():
             done = C.fixed(kind, text)
-            first = done.split('\n')[0]
-            self.assertEqual(first, C.notice_line(kind), kind)
+            lines = done.split('\n')
+            self.assertEqual(lines[C.notice_index(kind, lines)], C.notice_line(kind), kind)
             self.assertEqual(C.problem(kind, done), None, kind)
             self.assertEqual(C.fixed(kind, done), done, f'{kind}: --write is idempotent')
         self.assertEqual(C.notice_line('lua'), '-- ' + C.NOTICE)
         self.assertEqual(C.notice_line('python'), '# ' + C.NOTICE)
-        self.assertEqual(C.notice_line('toc'), '# ' + C.NOTICE)
+        self.assertEqual(C.notice_line('toc'), '## X-Copyright: ' + C.NOTICE)
         self.assertEqual(C.notice_line('xml'), '<!-- ' + C.NOTICE + ' -->')
 
     def test_a_shebang_and_an_xml_declaration_stay_first(self):

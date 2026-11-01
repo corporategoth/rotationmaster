@@ -195,7 +195,7 @@ function addon:InstallRotationNavigation(pane)
 
         if not self.leavePrompt then
             local frame = CreateFrame('Frame', nil, self.frame)
-            frame:SetSize(420, 130)
+            frame:SetSize(520, 130)
             frame:SetPoint('CENTER')
             frame:EnableMouse(true)
             local background = frame:CreateTexture(nil, 'BACKGROUND')
@@ -214,10 +214,11 @@ function addon:InstallRotationNavigation(pane)
             for index, entry in ipairs({
                 { 'apply', L['Apply'] },
                 { 'discard', L['Discard'] },
+                { 'keep', L['Keep Unsaved'] },
                 { 'cancel', L['Cancel'] },
             }) do
-                local control = addon:CreateWorkbenchButton(frame, entry[2], 124)
-                control:SetPoint('BOTTOMLEFT', 14 + (index - 1) * 134, 14)
+                local control = addon:CreateWorkbenchButton(frame, entry[2], 116)
+                control:SetPoint('BOTTOMLEFT', 14 + (index - 1) * 126, 14)
                 self.leavePrompt[entry[1]] = control
             end
 
@@ -230,12 +231,18 @@ function addon:InstallRotationNavigation(pane)
 
         local prompt = self.leavePrompt
         -- The prompt covers the editor pane, so it shares the pane's width.
-        local promptWidth = addon:FitWorkbenchPrompt(prompt.frame, self.frame, 420)
+        local promptWidth = addon:FitWorkbenchPrompt(prompt.frame, self.frame, 520)
         prompt.message:SetWidth(math.max(1, promptWidth - 28))
 
-        addon:LayoutWorkbenchRow({ prompt.apply, prompt.discard, prompt.cancel }, 14, 96, promptWidth - 28, {
-            gap = 10,
-        })
+        addon:LayoutWorkbenchRow(
+            { prompt.apply, prompt.discard, prompt.keep, prompt.cancel },
+            14,
+            96,
+            promptWidth - 28,
+            {
+                gap = 10,
+            }
+        )
 
         local request = { callback = callback, generation = self.generation, workspace = self.workspace }
         self.pendingLeave = request
@@ -265,6 +272,28 @@ function addon:InstallRotationNavigation(pane)
                         .. tostring(why)
                 )
 
+                return
+            end
+
+            prompt.frame:Hide()
+            callback()
+        end)
+
+        -- Leaves the draft as it is: typed edits are committed to it, and it stays open (marked pink in the list) with
+        -- everything unsaved until it is applied or discarded.
+        addon:SetUIScript(prompt.keep, 'OnClick', function()
+            if not valid() then
+                return
+            end
+
+            local ok, why = pane:FlushFieldEdits()
+
+            if ok then
+                ok, why = pane:FlushName()
+            end
+
+            if not ok then
+                prompt.message:SetText(tostring(why))
                 return
             end
 

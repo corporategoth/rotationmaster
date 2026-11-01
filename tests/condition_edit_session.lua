@@ -69,20 +69,22 @@ test('condition edits apply explicitly and cancellation preserves the original',
     assert(not another:Apply() and original.spell == 403)
 end)
 
-test('schema and semantic errors never partially replace saved fields', function()
+test('an incomplete or invalid condition is saved whole, never partially', function()
     local a = fixture()
-    local original = { type = 'SPELL_KNOWN', spell = 403 }
-    local session = assert(a:NewConditionEditSession(0, original))
-    assert(session:Command('Replace', {}, { type = 'SPELL_KNOWN', spell = 'typo' }))
-    assert(not session:Apply())
-    assert(original.spell == 403)
-    assert(session:Command('Replace', {}, { type = 'SPELL_KNOWN', spell = 99 }))
-    assert(not session:Apply())
-    assert(original.spell == 403)
-    assert(session:Command('Replace', {}, { type = 'SPELL_KNOWN', spell = 403, disabled = { future = true } }))
-    assert(not session:Apply())
-    assert(original.disabled == nil)
-    assert(not session:Command('Apply', {}))
+
+    for _, replacement in ipairs({
+        { type = 'SPELL_KNOWN', spell = 'typo' },
+        { type = 'SPELL_KNOWN', spell = 99 },
+        { type = 'SPELL_KNOWN', spell = 403, disabled = { future = true } },
+    }) do
+        local original = { type = 'SPELL_KNOWN', spell = 403 }
+        local session = assert(a:NewConditionEditSession(0, original))
+        assert(session:Command('Replace', {}, replacement))
+        -- Work in progress is applied as it stands (the cards and list show it as an error); nothing is half written.
+        assert(session:Apply())
+        assert(original.spell == replacement.spell and (original.disabled == nil) == (replacement.disabled == nil))
+        assert(not session:Command('Apply', {}))
+    end
 end)
 
 test('another editor changing saved data blocks a stale apply', function()

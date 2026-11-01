@@ -61,6 +61,7 @@ function addon:GetOrderedAutoSwitchRotations(spec, rotations)
                 tie = tie,
                 priority = priority,
                 name = type(body.name) == 'string' and body.name or id,
+                identifier = type(body.identifier) == 'string' and body.identifier or id,
             }
         end
     end
@@ -68,6 +69,11 @@ function addon:GetOrderedAutoSwitchRotations(spec, rotations)
     table.sort(candidates, function(left, right)
         if left.priority ~= right.priority then
             return left.priority > right.priority
+        end
+
+        -- Equal priorities go by identifier, which is what identifies a rotation; the name is only a description.
+        if left.identifier ~= right.identifier then
+            return left.identifier < right.identifier
         end
         if left.name ~= right.name then
             return left.name < right.name
@@ -999,7 +1005,7 @@ function addon:GetRotationEligibilityReport()
             names[#names + 1] = string.format(L['then the fallback (%s)'], DEFAULT)
 
             lines[#lines + 1] = string.format(
-                L['Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name.'],
+                L['Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by identifier.'],
                 table.concat(names, ', ')
             )
         end
@@ -1442,47 +1448,34 @@ function addon:GetSwitchOverlaps(spec)
     return result
 end
 
--- Names what a rotation overlaps with in one line, for a tooltip or note.
+-- Names the rotations this one conflicts with, one short line each: another rotation whose switch can match together
+-- with this one's and that has the same priority, so only the name decides between them. Anything else (a different
+-- priority, or switches that never match together) is not a conflict and is not mentioned.
 -- @param list table|nil  The overlap list for the rotation (from GetSwitchOverlaps).
--- @return string|nil  The text; nil when nothing.
--- @return boolean|nil  Whether any overlap is an exact priority tie.
+-- @return string|nil  One line per conflicting rotation, joined by newlines; nil when nothing conflicts.
+-- @return boolean|nil  True when there is a conflict.
 function addon:DescribeSwitchOverlap(list)
     if type(list) ~= 'table' or #list == 0 then
         return nil
     end
 
-    local ties, others = {}, {}
+    local lines = {}
 
     for _, entry in ipairs(list) do
-        local text = string.format(
-            '%s (%d)',
-            self.PlainWorkbenchName and self:PlainWorkbenchName(entry.name) or entry.name,
-            entry.priority
-        )
-
         if entry.tie then
-            ties[#ties + 1] = text
-        else
-            others[#others + 1] = text
+            lines[#lines + 1] = string.format(L['Same priority as %s'], string.format(
+                '%s (%d)',
+                self.PlainWorkbenchName and self:PlainWorkbenchName(entry.name) or entry.name,
+                entry.priority
+            ))
         end
     end
 
-    local lines = {}
-
-    if #ties > 0 then
-        lines[#lines + 1] = string.format(
-            L['Same priority as %s: both can be selected at once, and the tie is decided by name.'],
-            table.concat(ties, ', ')
-        )
-    end
-    if #others > 0 then
-        lines[#lines + 1] = string.format(
-            L['Can be selected together with %s: only priority decides which is chosen.'],
-            table.concat(others, ', ')
-        )
+    if #lines == 0 then
+        return nil
     end
 
-    return table.concat(lines, '\n'), #ties > 0
+    return table.concat(lines, '\n'), true
 end
 
 -- Names of the Classic season ids that a ruleset token can carry (translated through L when shown).

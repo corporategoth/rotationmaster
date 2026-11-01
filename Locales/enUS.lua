@@ -2366,9 +2366,9 @@ T["%s: ships disabled, an alternative to the recommended one (turn it on in Rota
 -- 4fd646c3
 -- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
 T["then the fallback (%s)"] = 667
--- 1e1885f9
+-- 9c57c5f7
 -- %s #1: %s #1: the comma-separated list of rotations in the order they are tried, e.g. "Frost AoE (10), Frost Single Target (5), then the fallback (Default)"
-T["Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name."] = 668
+T["Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by identifier."] = 668
 -- 724799e1
 -- %s #1: %s #1: the name of the rotation that would be chosen, or "None", e.g. "Frost Single Target"
 T["Automatic switching would choose: %s"] = 669
@@ -2530,8 +2530,8 @@ T["Disabled by you: automatic switching skips it. Select it and click Disabled t
 T["Ships disabled (an alternative to the recommended Built In): automatic switching skips it until you turn it on."] = 721
 -- 67bd22a0
 T["Disabled: automatic switching skips it."] = 722
--- 72e45f33
-T["Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone."] = 723
+-- 20bbf0a8
+T["Higher numbers are tried first; equal priorities go by identifier. Your rotations and Built Ins compete on priority alone."] = 723
 -- 73074f60
 -- %s #1: %s #1: the names of the rotations with the same priority, separated by commas, e.g. "Frost AoE, Frost Single Target"
 T["Same priority as %s: both can be selected at once, and the tie is decided by name."] = 724
@@ -6151,8 +6151,8 @@ T["Checked %d seconds ago."] = 1933
 T["Rotation Master is advising this step now."] = 1934
 -- 053a39d7
 T["This cooldown is showing now."] = 1935
--- 42ee3bdd
-T["This rotation is advising now."] = 1936
+-- 0b2fc05c
+T["This rotation is active."] = 1936
 -- 81f39eb5
 -- Context: Option in the player state condition: the player is on a mount.
 T["Mounted"] = 1937
@@ -10019,6 +10019,16 @@ T["you {{!are|are not}} a raid %s"] = 3451
 T["Matches your role in a raid: member, assistant or leader. Outside a raid it does not match."] = 3452
 -- b1df5d42
 T["{unit} {{!exist|do not exist}}"] = 3453
+-- 8e8cf886
+T["Conflict detected"] = 3454
+-- 56b96978
+T["Same priority as %s"] = 3455
+-- ef31c02f
+T["Live Status Update Check"] = 3457
+-- 0678e31f
+T["Click to edit"] = 3458
+-- f3d230a2
+T["Keep Unsaved"] = 3459
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

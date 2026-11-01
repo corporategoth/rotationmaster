@@ -1,8 +1,9 @@
-# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Interface: 11509, 20506, 50504, 120105, 16001
+## X-Copyright: Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Interface-Classic: 11509
 ## Interface-BCC: 20506
-## Title: Rotation Master
+## Title: Rotation Master |cff00aa00@project-version@|r
+## IconTexture: Interface/AddOns/RotationMaster/Assets/Branding/rotation-master-small
 ## Version: @project-version@
 ## Author: PreZ
 ## X-Discord: https://discord.gg/4aKZSpUMet
@@ -11,6 +12,7 @@
 ## X-Website: https://github.com/corporategoth/rotationmaster/wiki
 ## X-BugReport: https://github.com/corporategoth/rotationmaster/issues
 ## X-Category: Action Bars
+## Category: Action Bars
 ## X-WoWI-ID: 25079
 ## X-Curse-Project-ID: 301085
 ## X-Wago-ID: vEGPM4N1

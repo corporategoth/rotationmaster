@@ -433,6 +433,32 @@ local function create(parent)
         control:Hide()
     end
 
+    -- Repaints every bound row's bars and tooltip headers (the unsaved state may have changed), without rebinding.
+    function browser:RepaintRowMarkers()
+        for _, control in ipairs(self.rowButtons or {}) do
+            if control.browserEntry and control.repaintMarkers then
+                control.repaintMarkers()
+            end
+        end
+    end
+
+    -- Tells whether a rotation has unsaved changes: a draft kept open, or the one being edited right now (including
+    -- text typed but not yet committed).
+    -- @param spec number|string  The row's specialization namespace.
+    -- @param key string  The row's key.
+    -- @return boolean  True when it has unsaved changes.
+    function browser:RowUnsaved(spec, key)
+        local pane = self.pane
+
+        if
+            pane and self.nativeDetails and pane.workspace and pane.workspace.id == key and not pane.workspace.readOnly
+        then
+            return pane:HasUnsavedChanges() == true or pane.workspace.pending == true
+        end
+
+        return addon.HasKeptDraft and addon:HasKeptDraft(spec, key) or false
+    end
+
     -- Fills a pooled row control from a roster entry: name, one status line (kind, specialization, priority), color and
     -- alpha for the state, the tooltip, the "Turn on" button for a Built In the player disabled, and the click handler.
     -- @param control table  The pooled row button to fill.
@@ -462,6 +488,9 @@ local function create(parent)
 
         if entry.readOnly then
             control.nameLabel:SetTextColor(.357, .753, .922)
+        elseif entry.fallback then
+            -- The Default fallback is a special case: its own colour, neither the Built In blue nor an error red.
+            control.nameLabel:SetTextColor(.45, .85, .6)
         else
             control.nameLabel:SetTextColor(.9, .92, .94)
         end
@@ -585,10 +614,10 @@ local function create(parent)
         )
             or nil
 
-        addon:SetWorkbenchProblem(control, blockedText)
+        addon:SetWorkbenchProblem(control, blockedText, true)
         -- Grey when it is switched off (by you, or as it ships); amber when
-        -- its switch can match together with another rotation, so only
-        -- priority decides (stronger on a tie). The tooltip says which apply.
+        -- its switch ties on priority with another rotation that can match
+        -- with it. The tooltip says which apply.
         local disabledText
 
         if entry.readOnly and entry.builtinState == 'user-disabled' then
@@ -613,40 +642,31 @@ local function create(parent)
             overlapText, tie = addon:DescribeSwitchOverlap(self.overlaps[key])
         end
 
-        if addon.SetWorkbenchNotice then
-            addon:SetWorkbenchNotice(control, overlapText and true or false, tie)
-        end
+        -- The row's tooltip: one coloured header per bar, in the bars' order (conflict, problem, unsaved), then the rest.
+        local details = {}
 
-        local lines = {}
-
-        if blockedText then
-            lines[#lines + 1] = blockedText
-        end
         if entry.readOnly then
-            lines[#lines
+            details[#details
                 + 1] = L['Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile.']
         end
 
         if entry.readOnly and not entry.eligible and not blockedText then
             local reasons = addon.BuiltinEligibilityReasons or {}
 
-            lines[#lines + 1] = string.format(
+            details[#details + 1] = string.format(
                 L['Not available for this character: %s'],
                 reasons[entry.eligibilityReason] or L['Unavailable']
             )
         end
 
         if specText and status ~= line(specText) then
-            lines[#lines + 1] = line(specText)
+            details[#details + 1] = line(specText)
         end
         if entry.scope then
-            lines[#lines + 1] = entry.scope == 'character' and L['This character'] or L['Class']
+            details[#details + 1] = entry.scope == 'character' and L['This character'] or L['Class']
         end
         if disabledText then
-            lines[#lines + 1] = disabledText
-        end
-        if overlapText then
-            lines[#lines + 1] = overlapText
+            details[#details + 1] = disabledText
         end
 
         local identifier = self.identifiers and self.identifiers[key]
@@ -655,14 +675,47 @@ local function create(parent)
             identifier = nil
         end
         if identifier then
-            lines[#lines + 1] = string.format(L['Identifier: %s (/rm set %s)'], identifier, identifier)
+            details[#details + 1] = string.format(L['Identifier: %s (/rm set %s)'], identifier, identifier)
         end
         if not entry.fallback then
-            lines[#lines
-                + 1] = L['Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone.']
+            details[#details
+                + 1] = L['Higher numbers are tried first; equal priorities go by identifier. Your rotations and Built Ins compete on priority alone.']
         end
 
-        control.tooltip = #lines > 0 and table.concat(lines, '\n\n') or nil
+        -- Paints the bars and the tooltip from the row's current state; called now and whenever the unsaved state changes.
+        local function paintMarkers()
+            if addon.SetWorkbenchNotice then
+                -- Only a tie is flagged: any other overlap is decided by priority and is not a conflict.
+                addon:SetWorkbenchNotice(control, tie == true, true)
+            end
+
+            local unsaved = not entry.readOnly and browser:RowUnsaved(target, key)
+            addon:SetWorkbenchUnsaved(control, unsaved)
+            addon:LayoutRowBars(control, { { control.nameLabel, 6 }, { control.statusLabel, 6 } })
+
+            local groups = {}
+
+            if tie == true and overlapText then
+                groups[#groups + 1] = addon:ColorizeText(addon.AMBIGUOUS_COLOR, L['Conflict detected'])
+                    .. '\n'
+                    .. overlapText
+            end
+            if blockedText then
+                groups[#groups + 1] = addon:ColorizeText({ .9, .25, .2 }, blockedText)
+            end
+            if unsaved then
+                groups[#groups + 1] = addon:ColorizeText(addon.UNSAVED_COLOR, L['Unsaved'])
+            end
+
+            for _, detail in ipairs(details) do
+                groups[#groups + 1] = detail
+            end
+
+            control.tooltip = #groups > 0 and table.concat(groups, '\n\n') or nil
+        end
+
+        control.repaintMarkers = paintMarkers
+        paintMarkers()
 
         -- Tells whether this row's list is still the live one: same serial, profile, specialization and navigation
         -- state, and the row's key is still listed.
@@ -677,38 +730,9 @@ local function create(parent)
                 and browser.rowsByKey[key] ~= nil
         end
 
-        -- A Built In you switched off turns back on from the list in one click.
-        if entry.readOnly and entry.builtinState == 'user-disabled' then
-            if not control.enableButton then
-                control.enableButton = addon:CreateWorkbenchButton(control, L['Turn on'], 64)
-                control.enableButton:SetHeight(18)
-                control.enableButton:SetPoint('RIGHT', control, 'RIGHT', -6, 0)
-            end
-
-            local button = control.enableButton
-            button.tooltip = L['Turn this Built In back on for this profile.']
-
-            -- Turns the disabled Built In back on for this profile and refreshes automatic switching and the list;
-            -- ignored when the row is stale.
-            addon:SetUIScript(button, 'OnClick', function()
-                if not requestValid() or control.browserLease ~= lease then
-                    return
-                end
-
-                local ok = addon:SetDefaultRotationEnabled(entry.canonicalId, true)
-
-                if ok then
-                    if addon.currentSpec ~= nil and addon.db.profile.enable then
-                        addon:UpdateAutoSwitch()
-                        addon:SwitchRotation()
-                    end
-
-                    browser:RefreshRows()
-                end
-            end)
-
-            button:Show()
-        elseif control.enableButton then
+        -- A Built In you switched off shows grey in the list; it turns back on from its own page (Enabled), so a row
+        -- never carries a Turn on button. A pooled row that had one hides it.
+        if control.enableButton then
             addon:SetUIScript(control.enableButton, 'OnClick', nil)
             control.enableButton:Hide()
         end
@@ -923,6 +947,13 @@ local function create(parent)
 
             if ap ~= bp then
                 return ap > bp
+            end
+
+            -- Equal priorities go by identifier (what identifies a rotation), then by name.
+            local ai, bi = a.identifier or '', b.identifier or ''
+
+            if ai ~= bi then
+                return ai < bi
             end
             if a.name ~= b.name then
                 return a.name < b.name
@@ -1348,6 +1379,13 @@ local function create(parent)
 
             self.nativeDetails = true
             self.pane = pane
+
+            -- An edit in the open rotation paints its row's pink bar at once, not only when the rotation is left.
+            pane.onUnsavedRefresh = function()
+                if self.active and self.editorOwner == owner then
+                    self:RepaintRowMarkers()
+                end
+            end
 
             pane.onSaved = function()
                 if self.active and self.editorOwner == owner then

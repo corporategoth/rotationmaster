@@ -1,11 +1,12 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Visual markers for editor controls: a red border for invalid data and an amber left rail for unsaved changes, plus
+-- Visual markers for editor controls: a red border for invalid data and a left rail (addon.UNSAVED_COLOR) for unsaved changes, plus
 -- the rotation pane's unsaved-state refresh. The two markers are separate on purpose so validation and unsaved state
 -- never share a meaning. It only draws and reads the draft; the comparison itself is addon:RotationUnsavedState in
 -- Core/unsaved_changes.lua, and nothing here saves or discards. Loaded in the UI/ block of RotationMaster.toc after
 -- UI/drag_presentation.lua.
-local _, addon = ...
+local addon_name, addon = ...
+local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Shows or hides a red border on a control and records the validation message. Safe on nil; textures are created the
 -- first time a control is marked invalid.
@@ -53,7 +54,183 @@ function addon:SetWorkbenchInvalid(control, invalid, message)
     end
 end
 
--- Shows or hides the amber unsaved rail on a control (safe on nil); the texture is created on first use. A separate
+-- Marker lanes. A field that can carry several left-edge bars (ambiguous, live, unsaved) lays them out side by side in
+-- this fixed order, 3 pixels each with a 1 pixel gap, and moves its text clear of them, so the bars never overlap the
+-- text or each other. The field's tooltip lists the same markers top to bottom in the same order, each line in its bar's
+-- colour. Fields without a lane keep their single bar over the edge.
+local MARKER_ORDER = { 'ambiguous', 'live', 'unsaved' }
+local MARKER_WIDTH, MARKER_GAP = 3, 1
+-- The one colour of every unsaved-changes marker (the left bar on fields and cards, and the marker's tooltip line).
+-- Change it here and it changes everywhere.
+addon.UNSAVED_COLOR = { 1, .45, .75, 1 }
+addon.AMBIGUOUS_COLOR = { .74, .5, 1, 1 }
+
+-- Opts a field into a marker lane; `text` is the field's text region, which the lane keeps clear of the bars.
+-- @param control table  The field.
+-- @param text table  The text region (a FontString) anchored to the field's left edge.
+function addon:EnableMarkerLane(control, text)
+    local base = {}
+
+    for index = 1, text:GetNumPoints() do
+        base[index] = { text:GetPoint(index) }
+    end
+
+    control.markerLane = { text = text, base = base, shown = {}, color = {}, tip = {}, footer = {}, textures = {} }
+end
+
+-- Positions the lane's visible bars and shifts the text right of them.
+-- @param control table  The field with a lane.
+local function layoutLane(control)
+    local lane = control.markerLane
+    local x = 0
+
+    for _, kind in ipairs(MARKER_ORDER) do
+        local texture = lane.textures[kind]
+
+        if texture then
+            if lane.shown[kind] then
+                texture:ClearAllPoints()
+                texture:SetPoint('TOPLEFT', control, 'TOPLEFT', x, 0)
+                texture:SetPoint('BOTTOMLEFT', control, 'BOTTOMLEFT', x, 0)
+                texture:SetWidth(MARKER_WIDTH)
+                texture:Show()
+                x = x + MARKER_WIDTH + MARKER_GAP
+            else
+                texture:Hide()
+            end
+        end
+    end
+
+    lane.inset = x
+    lane.text:ClearAllPoints()
+
+    for _, point in ipairs(lane.base) do
+        lane.text:SetPoint(point[1], point[2], point[3], (point[4] or 0) + x, point[5] or 0)
+    end
+end
+
+-- Shows or hides one marker in the field's lane.
+-- @param control table  The field with a lane.
+-- @param kind string  'ambiguous', 'live' or 'unsaved'.
+-- @param shown boolean  Whether the bar shows.
+-- @param color table  { r, g, b, a } of the bar and its tooltip line.
+-- @param tip string|string[]|function|nil  The tooltip lines (or a function returning them): a coloured title, then white detail.
+-- @param footer string|function|nil  A white line shown after the field's own text (for example when it was checked).
+function addon:SetLaneMarker(control, kind, shown, color, tip, footer)
+    local lane = control.markerLane
+
+    if not lane then
+        return
+    end
+
+    if shown and not lane.textures[kind] then
+        lane.textures[kind] = control:CreateTexture(nil, 'OVERLAY')
+    end
+
+    lane.shown[kind] = shown == true
+    lane.color[kind] = color
+    lane.tip[kind] = tip
+    lane.footer[kind] = footer
+
+    if lane.textures[kind] and color then
+        lane.textures[kind]:SetColorTexture(color[1], color[2], color[3], color[4] or 1)
+    end
+
+    layoutLane(control)
+end
+
+-- Shows the tooltip lines of a lane's markers followed by `text` in white, with the first line in the normal tooltip font
+-- (a tooltip's first line is otherwise drawn larger).
+-- @param control table  The field with a lane.
+-- @param text string|nil  The field's own tooltip text, shown last.
+-- @return boolean  True when the lane had lines and the tooltip is shown.
+function addon:ShowLaneTooltip(control, text)
+    local lines = self:LaneTooltipLines(control)
+
+    if #lines == 0 or not GameTooltip then
+        return false
+    end
+
+    GameTooltip:SetOwner(control, 'ANCHOR_RIGHT')
+
+    -- SetText starts the tooltip afresh; the rest follow as ordinary lines.
+    GameTooltip:SetText(lines[1].text, lines[1].color[1], lines[1].color[2], lines[1].color[3], 1, true)
+
+    for index = 2, #lines do
+        GameTooltip:AddLine(
+            lines[index].text,
+            lines[index].color[1],
+            lines[index].color[2],
+            lines[index].color[3],
+            true
+        )
+    end
+
+    if text then
+        GameTooltip:AddLine(text, 1, 1, 1, true)
+    end
+
+    for _, kind in ipairs(MARKER_ORDER) do
+        local footer = control.markerLane.shown[kind] and control.markerLane.footer[kind]
+
+        if type(footer) == 'function' then
+            footer = footer()
+        end
+
+        if type(footer) == 'string' then
+            GameTooltip:AddLine(footer, 1, 1, 1, true)
+        end
+    end
+
+    self:UseBodyFontOnTooltipTitle(lines[1].color)
+    GameTooltip:Show()
+    return true
+end
+
+-- Draws the first tooltip line in the body font instead of the larger title font, copying the font of the second line.
+-- Setting a font resets the text colour, so the title's colour is applied again.
+-- @param color table|nil  { r, g, b } of the title.
+function addon:UseBodyFontOnTooltipTitle(color)
+    local name = GameTooltip and GameTooltip.GetName and GameTooltip:GetName()
+    local first = name and _G[name .. 'TextLeft1']
+    local second = name and _G[name .. 'TextLeft2']
+
+    if first and second and first.SetFontObject and second.GetFontObject and second:GetFontObject() then
+        first:SetFontObject(second:GetFontObject())
+
+        if color and first.SetTextColor then
+            first:SetTextColor(color[1], color[2], color[3])
+        end
+    end
+end
+
+-- The tooltip lines of a lane's visible markers in bar order, each with its colour.
+-- @param control table  The field with a lane.
+-- @return table[]  Entries { text, color } top to bottom: each marker's title in its colour, its details white.
+function addon:LaneTooltipLines(control)
+    local lines = {}
+    local lane = control.markerLane
+
+    for _, kind in ipairs(MARKER_ORDER) do
+        local tip = lane and lane.shown[kind] and lane.tip[kind]
+
+        if type(tip) == 'function' then
+            tip = tip()
+        end
+        if type(tip) == 'string' then
+            tip = { tip }
+        end
+
+        -- The marker's first line is its coloured title; any further lines are white detail.
+        for index, text in ipairs(tip or {}) do
+            lines[#lines + 1] = { text = text, color = index == 1 and lane.color[kind] or { 1, 1, 1, 1 } }
+        end
+    end
+
+    return lines
+end
+
+-- Shows or hides the unsaved rail on a control (safe on nil); the texture is created on first use. A separate
 -- amber rail preserves the meaning of validation/negation borders.
 -- @param control table|nil  The control.
 -- @param changed boolean|nil  True shows the rail.
@@ -64,18 +241,52 @@ function addon:SetWorkbenchUnsaved(control, changed)
 
     control.rmUnsaved = changed == true
 
-    if not control.unsavedMark then
-        control.unsavedMark = control:CreateTexture(nil, 'OVERLAY')
-        control.unsavedMark:SetPoint('TOPLEFT', control, 'TOPLEFT', 1, -2)
-        control.unsavedMark:SetPoint('BOTTOMLEFT', control, 'BOTTOMLEFT', 1, 2)
-        control.unsavedMark:SetWidth(3)
-        control.unsavedMark:SetColorTexture(1, .7, .15, .95)
+    if control.markerLane then
+        self:SetLaneMarker(control, 'unsaved', changed == true, addon.UNSAVED_COLOR, L['Unsaved'])
+        return
     end
 
-    if changed then
-        control.unsavedMark:Show()
-    else
-        control.unsavedMark:Hide()
+    if not control.unsavedMark and not control.unsavedNoBar then
+        control.unsavedMark = control:CreateTexture(nil, 'OVERLAY')
+
+        if control.unsavedOutside then
+            -- A card's bar stands clear of its border (which may itself be red or amber), left of the card.
+            control.unsavedMark:SetPoint('TOPRIGHT', control, 'TOPLEFT', -2, 0)
+            control.unsavedMark:SetPoint('BOTTOMRIGHT', control, 'BOTTOMLEFT', -2, 0)
+        else
+            control.unsavedMark:SetPoint('TOPLEFT', control, 'TOPLEFT', 1, -2)
+            control.unsavedMark:SetPoint('BOTTOMLEFT', control, 'BOTTOMLEFT', 1, 2)
+        end
+
+        control.unsavedMark:SetWidth(3)
+
+        control.unsavedMark:SetColorTexture(
+            addon.UNSAVED_COLOR[1],
+            addon.UNSAVED_COLOR[2],
+            addon.UNSAVED_COLOR[3],
+            addon.UNSAVED_COLOR[4]
+        )
+    end
+
+    if control.unsavedMark then
+        if changed then
+            control.unsavedMark:Show()
+        else
+            control.unsavedMark:Hide()
+        end
+    end
+
+    -- A card also gets a second border of the same colour outside its own (a rounded frame the card builds), so a
+    -- modified card reads at a glance whatever its own border colour is.
+    local ring = control.unsavedRingFrame
+
+    if ring then
+        if changed then
+            ring.decoration:SetColors(addon.UNSAVED_COLOR[1], addon.UNSAVED_COLOR[2], addon.UNSAVED_COLOR[3], 1, 0)
+            ring:Show()
+        else
+            ring:Hide()
+        end
     end
 end
 
@@ -209,6 +420,17 @@ function addon:InstallRotationUnsaved(pane)
                     addon:SetWorkbenchUnsaved(dialog.tagPicker.frame, writable and dirty)
                 end
             end
+        end
+    end
+
+    -- Tells whoever listens (the rotation list) that the unsaved state may have changed, so its row repaints at once.
+    local refresh = pane.RefreshUnsaved
+
+    function pane:RefreshUnsaved()
+        refresh(self)
+
+        if self.onUnsavedRefresh then
+            self.onUnsavedRefresh()
         end
     end
 

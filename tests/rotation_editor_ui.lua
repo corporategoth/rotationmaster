@@ -265,7 +265,6 @@ test('section and card controls distinguish collapsed summaries from action deta
     pane.contentTabs.cooldowns:Click()
     pane.sectionTools.cooldowns.expand:Click();assert(not card(pane,'optional').model.expanded and not card(pane,'optional').model.compact)
     pane.sectionTools.cooldowns.collapse:Click();assert(card(pane,'optional').model.compact)
-    assert(pane.hint:GetText():find('condition',1,true))
 end)
 test('readonly expanded branch condition inspection remains enabled after disabled field pool reuse',function()
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'builtin'));local inspected=false
@@ -353,7 +352,8 @@ test('invalid typing immediately updates card and root markers without replacing
     assert(card(pane,'optional').model.invalid and pane.validationButton:IsShown())
     assert(card(pane,'optional').fieldControls.xoffs==field and field:GetText()=='unfinished')
     local report;f.addon.ShowConditionText=function(_,message) report=message end;pane.validationButton:Click();assert(report:find('Horizontal offset',1,true))
-    assert(not pane:Apply() and pane.validationButton:IsShown())
+    -- Unparseable typed input still blocks Apply; the reason takes the footer line from the problem notice.
+    assert(not pane:Apply() and (pane.status:GetText() or '')~='')
     field:SetText('1.5');field.scripts.OnTextChanged(field,true);assert(not card(pane,'optional').model.invalid and not pane.validationButton:IsShown())
 end)
 test('only active workspace tools occupy the fixed toolbar',function()

@@ -840,9 +840,10 @@ test('a rotation that cannot be selected wears a red row naming its first blocki
         tostring(one and one.problemText)
     )
 
-    -- The tooltip leads with the blocking issue, then the selection order note.
-    assert(one.tooltip:sub(1, #one.problemText) == one.problemText and one.problemEdges[1]:IsShown())
-    assert(two and two.problemText == nil and (two.problemEdges == nil or not two.problemEdges[1]:IsShown()))
+    -- The tooltip leads with the blocking issue (in red), and the row wears a red bar rather than an outline.
+    local lead = one.tooltip:match('^|c%x%x%x%x%x%x%x%x(.-)|r')
+    assert(lead == one.problemText and one.problemBar:IsShown())
+    assert(two and two.problemText == nil and (two.problemBar == nil or not two.problemBar:IsShown()))
     browser:Release()
 end)
 

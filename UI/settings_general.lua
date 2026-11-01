@@ -448,6 +448,18 @@ function addon:BuildGeneralSettings(p)
         sample:Disable()
     end
 
+    -- Talent groups need your own names (Primary, Secondary, ...) on every client that keys rotations by talent group:
+    -- Era, TBC, Wrath, Cataclysm and Forever. Retail and Mists name real specializations, so the option is gone.
+    if self.Platform:GetRotationSpecKind() == 'slot' and store.char and store.char.specs then
+        p:Heading(L['Specialization Names'])
+
+        for i, caption in ipairs({ PRIMARY, SECONDARY }) do
+            p:Edit('spec' .. i, caption, store.char.specs[i], nil, function(v)
+                store.char.specs[i] = v
+            end)
+        end
+    end
+
     p:Column(2)
     p:Heading(L['Effect Options'])
     -- The preview icon has no caption: it sits left of Effect and
@@ -687,18 +699,6 @@ function addon:BuildGeneralSettings(p)
         profile.tooltip_limit = v
         tooltipsChanged()
     end)
-
-    if
-        WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 and store.char and store.char.specs
-    then
-        p:Heading(L['Specialization Names'])
-
-        for i, caption in ipairs({ PRIMARY, SECONDARY }) do
-            p:Edit('spec' .. i, caption, store.char.specs[i], nil, function(v)
-                store.char.specs[i] = v
-            end)
-        end
-    end
 
     p:Heading(L['Debugging Options'])
 

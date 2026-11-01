@@ -20,6 +20,32 @@ local data = addon.RotationData
 -- Helpers
 -- ============================================================================
 
+-- Splits text into its lines.
+-- @param value string  The text.
+-- @return string[]  The lines.
+local function splitLines(value)
+    local lines = {}
+
+    for line in string.gmatch(value, '[^\n]+') do
+        lines[#lines + 1] = line
+    end
+
+    return lines
+end
+
+-- The ambiguous marker's tooltip lines: a short title, then one white line per conflicting rotation.
+-- @param detail string  The conflicts, one per line.
+-- @return string[]  The title followed by the conflict lines.
+local function conflictLines(detail)
+    local lines = { L['Conflict detected'] }
+
+    for _, line in ipairs(splitLines(detail)) do
+        lines[#lines + 1] = line
+    end
+
+    return lines
+end
+
 -- Creates a left-aligned, non-wrapping label.
 -- @param parent table  The frame that owns the font string.
 -- @param font string|nil  The font object name; nil means 'GameFontHighlightSmall'.
@@ -150,6 +176,19 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- @param message string|nil  The text to show; nil clears the line.
     function pane:Message(message)
         self.status:SetText(message or '')
+        self:RefreshFooterNotice()
+    end
+
+    -- Shows the "cannot be selected" problem in the footer, where the hint used to be, unless a status message is using
+    -- that space. Clicking it lists every problem.
+    function pane:RefreshFooterNotice()
+        local button = self.validationButton
+
+        if self.validationWanted and (self.status:GetText() or '') == '' then
+            button:Show()
+        else
+            button:Hide()
+        end
     end
 
     -- Enables Undo while there is history or pending typed input, Redo only when nothing is pending, and Apply when the
@@ -227,7 +266,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             return
         end
 
-        addon:FitRotationSceneWidth(scene, self.view.viewportWidth)
+        -- The list keeps a 6 px gutter on each side for a card's unsaved border, so cards fill 12 px less than the viewport.
+        addon:FitRotationSceneWidth(scene, self.view.viewportWidth - 12)
         local validation = data.ValidateBody(snapshot, addon:GetImportValidationOptions())
         self.validation = validation
         self:CollectSectionProblems(snapshot, validation)
@@ -247,6 +287,21 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
                 then
                     model.invalid = true
                     model.problem = diagnostic.code
+                    break
+                end
+            end
+
+            -- The condition text turns red only when the condition itself has a problem, not when something else on the
+            -- card (a missing spell, say) is incomplete.
+            local conditions = path .. '.conditions'
+
+            for _, diagnostic in ipairs(validation.diagnostics) do
+                if
+                    diagnostic.path == conditions
+                    or diagnostic.path:sub(1, #conditions + 1) == conditions .. '.'
+                    or diagnostic.path:sub(1, #conditions + 1) == conditions .. '['
+                then
+                    model.conditionInvalid = true
                     break
                 end
             end
@@ -370,10 +425,12 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
         local first = problems.record or problems.rotation or problems.cooldowns
 
-        self.validationButton:SetText(
-            first and string.format(L['This rotation cannot be selected. %s.'], first)
-                or L['This rotation cannot run until its incomplete or unavailable data is resolved.']
-        )
+        local problem = first and string.format(L['This rotation cannot be selected. %s.'], first)
+            or L['This rotation cannot run until its incomplete or unavailable data is resolved.']
+
+        self.validationButton:SetText(problem)
+        -- The footer line can be cut short beside the buttons; the tooltip carries the whole text.
+        self.validationButton.tooltip = problem
     end
 
     -- Re-validates and repaints card borders in place, without re-rendering the canvas, so typing in a field never
@@ -399,7 +456,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             local model = card.model and byId[card.model.id]
 
             if model and card.frame:IsShown() then
-                card:SetValidation(model.invalid)
+                card:SetValidation(model.invalid, model.conditionInvalid == true)
                 card.model.pendingProblem = model.pendingProblem
 
                 if card.RefreshHighlightPreview then
@@ -1007,9 +1064,13 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     addon:StyleWorkbenchHeader(pane.switchLabel:GetFontString())
     pane.switchLabel.art:SetAlpha(.1)
     addon:AlignWorkbenchTextLeft(pane.switchLabel, 0)
-    pane.switch.tooltip = L['Click condition text on any card to view or edit its conditions.']
-    -- The switch condition's live bar, and its state first in the tooltip.
+    pane.switch.tooltip = L['Click to edit']
+    -- The switch condition's markers (ambiguous, live, unsaved) sit side by side left of its text, and the tooltip lists
+    -- them in the same order.
+    addon:EnableMarkerLane(pane.switch, pane.switchText)
     pane.switchLiveBar = addon:CreateLiveStatusBar(pane.switch)
+    -- A small dial beside the switch condition: empty at each live check, filling clockwise until the next one.
+    pane.liveClock = addon:CreateLiveClock(pane.frame)
 
     do
         local enter = pane.switch:GetScript('OnEnter')
@@ -1018,9 +1079,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             if enter then
                 enter(control, ...)
             end
-            if pane.switchLiveBar.state then
-                addon:ShowConditionFieldTooltip(control, control.tooltip, pane.switchLiveBar.state)
-            end
+
+            addon:ShowLaneTooltip(control, control.tooltip)
         end)
     end
 
@@ -1151,12 +1211,12 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     -- Collects what else bears on selection, kept off the page (vertical space is scarce): where it loads (the
     -- Read-Only pill's tooltip), and the specialization being played and overlapping switches (the switch's tooltip,
-    -- with an amber edge on the switch for an overlap).
+    -- with an ambiguous bar on the switch for an overlap).
     -- @return string|nil  The notes joined by newlines; nil when there are none.
-    -- @return boolean  True when the switch overlaps another rotation's (the amber edge).
+    -- @return string|nil  What the switch overlaps with (the ambiguous bar's tooltip line); nil when nothing.
     -- @return string|nil  Where the rotation loads, from its applicability; nil when unknown.
     function pane:SwitchNotes()
-        local lines, amber = {}, false
+        local lines, ambiguous = {}, nil
         local scope
 
         if self.workspace.readOnly and not self.workspace.preview and addon.GetDefaultRotation then
@@ -1204,35 +1264,30 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             and spec == addon.currentSpec
             and addon.GetSwitchOverlaps
         then
-            local overlap = addon:DescribeSwitchOverlap(addon:GetSwitchOverlaps(spec)[self.workspace.id])
-
-            if overlap then
-                lines[#lines + 1] = overlap
-                amber = true
-            end
+            ambiguous = addon:DescribeSwitchOverlap(addon:GetSwitchOverlaps(spec)[self.workspace.id])
         end
 
-        return #lines > 0 and table.concat(lines, '\n') or nil, amber, where
+        return #lines > 0 and table.concat(lines, '\n') or nil, ambiguous, where
     end
 
-    -- Puts the selection notes into the switch tooltip, the amber overlap edge on the switch, and the Read-Only pill's
+    -- Puts the selection notes into the switch tooltip, the ambiguous marker on the switch, and the Read-Only pill's
     -- tooltip.
     function pane:ApplySwitchNotes()
-        local note, amber, where = self:SwitchNotes()
+        local note, ambiguous, where = self:SwitchNotes()
 
-        self.switch.tooltip = note and (self.switchBaseTooltip and self.switchBaseTooltip .. '\n\n' .. note or note)
-            or self.switchBaseTooltip
+        -- 'Click to edit' only where it can be edited; a read-only rotation's switch says nothing of the kind.
+        local base = not self.workspace.readOnly and self.switchBaseTooltip or nil
 
-        if addon.SetWorkbenchNotice then
-            addon:SetWorkbenchNotice(self.switch, amber, false)
-        end
+        self.switch.tooltip = note and (base and base .. '\n\n' .. note or note) or base
 
-        -- The live bar steps inside the amber overlap edge when that shows.
-        local inset = amber and 4 or 0
-        local bar = self.switchLiveBar
-        bar:ClearAllPoints()
-        bar:SetPoint('TOPLEFT', self.switch, 'TOPLEFT', inset, 0)
-        bar:SetPoint('BOTTOMLEFT', self.switch, 'BOTTOMLEFT', inset, 0)
+        -- The ambiguous bar is the first marker: it explains the conflict in its own colour above the live state.
+        addon:SetLaneMarker(
+            self.switch,
+            'ambiguous',
+            ambiguous ~= nil,
+            addon.AMBIGUOUS_COLOR,
+            ambiguous and conflictLines(ambiguous)
+        )
 
         local pill = self.workspace.preview
             and L['Import preview: this is the incoming rotation, read-only. Nothing is saved until you click Import.']
@@ -1259,7 +1314,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     addon:InstallRotationView(pane)
     pane.hint = text(pane.frame)
     pane.hint:SetPoint('BOTTOMLEFT', 8, 12)
-    pane.hint:SetText(L['Click condition text on any card to view or edit its conditions.'])
+    pane.hint:SetText('')
     -- The footer is one row of controls, each anchored to its neighbor so
     -- none can sit on another: Discard at the right edge, Apply, View Changes
     -- (draft_change_controls.lua) and, while cards are selected, their
@@ -1386,6 +1441,11 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             label:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 8, 12)
             label:SetPoint('RIGHT', right, 'LEFT', -10, 0)
         end
+
+        -- The problem line (red, with a warning icon) takes the same space, level with the buttons.
+        self.validationButton:ClearAllPoints()
+        self.validationButton:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 8, 8)
+        self.validationButton:SetPoint('BOTTOMRIGHT', right, 'BOTTOMLEFT', -10, 0)
 
         local changed = self.footerStacked ~= stacked
         self.footerStacked = stacked
@@ -2036,22 +2096,17 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             and self.validation.resolved
             and not self:HasInvalidPendingFields()
 
-        self.validationButton:ClearAllPoints()
-        self.validationButton:SetPoint('TOPLEFT', 8, -y - 26)
-        self.validationButton:SetWidth(math.max(100, width - 16))
         self:RefreshSectionMarkers()
+        -- The problem line lives in the footer, beside Apply; LayoutFooter places it and RefreshFooterNotice shows it.
+        self.validationWanted = not available
 
-        if available then
-            self.validationButton:Hide()
-        else
-            self.validationButton:Show()
-        end
-
-        local switchTop = y + 30 + (available and 0 or 24)
+        local switchTop = y + 30
         self.switchLabel:ClearAllPoints()
         self.switchLabel:SetPoint('TOPLEFT', 8, -switchTop)
         self.switch:ClearAllPoints()
         self.switch:SetPoint('TOPLEFT', 8, -switchTop - 22)
+        self.liveClock:ClearAllPoints()
+        self.liveClock:SetPoint('BOTTOMRIGHT', self.switch, 'TOPRIGHT', -2, 3)
         self.switchText:SetWidth(math.max(100, width - 28))
         self.switchText:SetText(self:SwitchSummary(self.workspace:Snapshot()))
         local switchHeight = math.max(20, self.switchText:GetStringHeight())
@@ -2065,7 +2120,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
         self.canvas.frame:SetSize(math.max(1, width - 40), math.max(
             1,
-            height - top - 48 - (self.footerStacked and 28 or 0)
+            height - top - 46 - (self.footerStacked and 28 or 0)
         ))
 
         self.canvas:LayoutScrollBar()
@@ -2075,6 +2130,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         else
             self.hint:Hide()
         end
+
+        self:RefreshFooterNotice()
     end
 
     -- Re-lays out and redraws.
@@ -2728,6 +2785,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     -- Cancels the live bar timer, if any.
     function pane:StopLiveStatus()
+        if self.liveClock then
+            self.liveClock:Clear()
+        end
+
         if self.liveTimer then
             local timer = self.liveTimer
             self.liveTimer = nil
@@ -2799,6 +2860,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
 
         self.switchLiveBar:SetState(nil)
+        self.liveClock:Clear()
     end
 
     -- Tells whether this rotation is the one advising now, and which step it chose (the last recommendation /rm debug
@@ -2906,6 +2968,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
 
         self.liveStates = states
+        self.liveClock:Restart(now, self:LiveInterval())
         local switch = not self.workspace.fallback and self.workspace:Snapshot().switch
 
         if type(switch) == 'table' and switch.type ~= nil and type(addon.SwitchConditionMatchesNow) == 'function' then
@@ -2916,7 +2979,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
                 or { status = 'unavailable', reason = L['unreadable right now'], at = now }
 
             if active then
-                state.chosen = L['This rotation is advising now.']
+                state.chosen = L['This rotation is active.']
             end
 
             self.switchLiveBar:SetState(state)

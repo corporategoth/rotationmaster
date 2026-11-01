@@ -788,7 +788,16 @@ local function unsavedMarks(pane)
     local list = {}
 
     local function check(name, control)
-        if control and control.unsavedMark and control.unsavedMark:IsShown() then
+        -- A field shows its pink bar, a switch its lane marker, a card its outside border.
+        local lane = control and control.markerLane
+        local ring = control and control.unsavedRingFrame
+
+        if
+            control
+            and (control.unsavedMark and control.unsavedMark:IsShown()
+                or lane and lane.shown.unsaved
+                or ring and ring:IsShown())
+        then
             list[#list + 1] = name
         end
     end

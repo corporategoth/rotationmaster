@@ -9,23 +9,6 @@
         "AceAddon-3.0.xml": "b9820071648e42f9167882ef2a08602644a301cefd5d7e57c82aa36ca1439259"
       }
     },
-    "AceBucket-3.0": {
-      "source": "https://repos.wowace.com/wow/ace3/trunk/AceBucket-3.0",
-      "revision": "r1421",
-      "files": {
-        "AceBucket-3.0.lua": "8cc21cc2598471051ccc567568621021d23d182696ab411644f9a351f26c6902",
-        "AceBucket-3.0.xml": "e4e964436c8b56ef3a20e6c3c9bbb2d0f6b33246545755258c1190687a1e5a3d"
-      }
-    },
-    "AceComm-3.0": {
-      "source": "https://repos.wowace.com/wow/ace3/trunk/AceComm-3.0",
-      "revision": "r1421",
-      "files": {
-        "AceComm-3.0.lua": "5d8cb6fd2a5661ed85f9f67c82b09fe81d05ebb5c9a4a0e8ca02c3a90a1a118e",
-        "AceComm-3.0.xml": "a250107c2aa6c1474c881146f774c3797aee38e5ee4c0762b09461d316ba75ee",
-        "ChatThrottleLib.lua": "3491b6c98cae1634a9f0494b436e86df1632309fb68181c25240b53c4d86dde8"
-      }
-    },
     "AceConsole-3.0": {
       "source": "https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0",
       "revision": "r1421",

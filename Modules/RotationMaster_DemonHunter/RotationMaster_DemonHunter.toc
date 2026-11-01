@@ -1,13 +1,16 @@
-# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Interface: 11509, 20506, 50504, 120105, 16001
-## Title: Rotation Master - Demon Hunter
+## X-Copyright: Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+## Title: Rotation Master [|cffa330c9Demon Hunter|r]
+## IconTexture: Interface\Icons\ClassIcon_DemonHunter
 ## Notes: Rotation Master's Built In Demon Hunter rotations. Rotation Master loads this itself, only for a Demon Hunter, and only this edition's files.
 ## Author: PreZ
 ## Version: @project-version@
 ## Dependencies: RotationMaster
 ## LoadOnDemand: 1
+## AllowLoadGameType: standard
 ## Group: RotationMaster
 ## X-Category: Action Bars
+## Category: Action Bars
 ## X-License: MIT + Attribution
 
 # Fallback for a client without its own RotationMaster_<Class>_<Flavor>.toc here:

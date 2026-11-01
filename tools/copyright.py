@@ -8,7 +8,7 @@
   python3 tools/copyright.py --list      how many files each kind holds, and which are skipped and why
 
 The full terms live only in LICENSE; a file carries one line that names the owner and points there. That line is written in
-the file's own comment syntax and is the first line (after a shebang, or after the XML declaration). `--write` is idempotent
+the file's own comment syntax and is the first line (after a shebang, the XML declaration or a TOC's `## Interface:` field). `--write` is idempotent
 and upgrades an older notice (another year, older wording) in place.
 
 Every tracked file must be classified below: written with a comment syntax (`INCLUDE`) or skipped with a reason (`SKIP`).
@@ -48,8 +48,9 @@ KINDS = {
     'python': {'prefix': '# ', 'suffix': '', 'blank': True, 'shebang': True},
     'shell': {'prefix': '# ', 'suffix': '', 'blank': True, 'shebang': True},
     'yaml': {'prefix': '# ', 'suffix': '', 'blank': True},
-    # A TOC comment is a line that starts with a single `#` (`##` starts a field); it may sit before `## Interface:`.
-    'toc': {'prefix': '# ', 'suffix': '', 'blank': False},
+    # A TOC notice is a field right after `## Interface:`. A `#` comment as the first line makes the client ignore every
+    # field in the file (Title, Version, Category, icon...), so the addon list shows only the folder name.
+    'toc': {'prefix': '## X-Copyright: ', 'suffix': '', 'blank': False, 'after_interface': True},
     # An XML comment never goes before the declaration.
     'xml': {'prefix': '<!-- ', 'suffix': ' -->', 'blank': False, 'declaration': True},
 }
@@ -102,7 +103,7 @@ COMPILED = [(re.compile(pattern), action) for pattern, action in RULES]
 # oracles/snapshots). Each entry is an exact path and must exist; the reason names what depends on the bytes.
 FROZEN = {}
 
-STALE = re.compile(r'^(?:-- |# |<!-- )Copyright \d{4}(?:-\d{4})?\b.*Elder\b')
+STALE = re.compile(r'^(?:-- |# |<!-- |## X-Copyright: )Copyright \d{4}(?:-\d{4})?\b.*Elder\b')
 
 
 def classify(path):
@@ -126,6 +127,8 @@ def notice_index(kind, lines):
     if syntax.get('shebang') and lines and lines[0].startswith('#!'):
         return 1
     if syntax.get('declaration') and lines and XML_DECLARATION.match(lines[0]):
+        return 1
+    if syntax.get('after_interface') and lines and lines[0].startswith('## Interface:'):
         return 1
     return 0
 
@@ -168,6 +171,8 @@ def fixed(kind, text):
 
 
 def toc_problem(text):
+    if not text.startswith('## '):
+        return 'a TOC must start with a ## field: a leading # comment makes the client ignore every field in the file'
     fields = [line for line in text.split('\n') if line.startswith('## X-License:')]
     if fields != [TOC_LICENSE_FIELD]:
         return f'TOC licence field must be exactly "{TOC_LICENSE_FIELD}"'

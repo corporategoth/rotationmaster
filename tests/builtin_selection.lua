@@ -132,8 +132,16 @@ test(
         assert(current(f) == 'rm.retail.monk.initial', 'auto-switch chose ' .. tostring(current(f)))
         local rows = menu(f)
         local text = menuText(rows)
-        assert(text:find('Automatic Switching', 1, true) and text:find('\nDefault\n', 1, true), text)
+        assert(text:find('Automatic Switching', 1, true) and text:find('|cff73d999Default|r', 1, true), text)
         assert(text:find('|cff5bc0ebBlizzard Assisted [initial]|r', 1, true), text)
+
+        -- Automatic Switching first, then rotations by priority, and Default, the last resort, last.
+        local auto, builtin, default =
+            text:find('Automatic Switching', 1, true),
+            text:find('Blizzard Assisted', 1, true),
+            text:find('Default|r', 1, true)
+
+        assert(auto < builtin and builtin < default, text)
         assert(not text:find('read%-only'), 'the menu still carries the read-only suffix: ' .. text)
         local report = why(f)
         assert(report:find('Blizzard Assisted (Built In) [initial]: ready', 1, true), report)
@@ -280,11 +288,16 @@ test(
         local report = why(f)
         assert(report:find('Blizzard Assisted with brews (Built In) [brewmaster]: disabled by you', 1, true), report)
         local text = menuText(menu(f))
-        -- No Brewmaster pack is on, so the alternative that ships off is named too.
-        assert(text:find('2 Built In disabled: Blizzard Assisted with brews, Reference (Icy Veins)', 1, true), text)
+
+        -- A switched-off Built In is not offered in the menu, and the menu no longer carries a note about them.
+        assert(
+            not text:find('Built In disabled', 1, true) and not text:find('Blizzard Assisted with brews', 1, true),
+            text
+        )
+
         assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster.guide', true))
         text = menuText(menu(f))
-        assert(text:find('1 Built In disabled: Blizzard Assisted with brews|r', 1, true), text)
+        assert(not text:find('Built In disabled', 1, true), text)
         assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster.guide', false))
         -- A profile saved before the repair: a shipped-enabled pack off, a shipped-off pack off
         -- and on, and another class's pack off (unknown here, left alone).

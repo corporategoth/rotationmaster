@@ -42,7 +42,8 @@ test('rotation changes identify edited and moved cards separately from metadata 
     after = a.RotationData.CopyData(before)
     after.rotation[1], after.rotation[2] = after.rotation[2], after.rotation[1]
     state = a:RotationUnsavedState(before, after)
-    assert(state.cards.a and state.cards.b and not state.metadata)
+    -- A swap moves one of the two cards (the fewest that explains it), never both and never anything else.
+    assert(state.cards.a ~= state.cards.b and not state.cards.c and not state.metadata)
 end)
 
 test('plain change comparison sees deletions and distinct numeric/string keys without running callbacks', function()

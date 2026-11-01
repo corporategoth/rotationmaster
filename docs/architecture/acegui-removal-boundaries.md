@@ -2,7 +2,7 @@
 
 Rotation Master no longer ships or supports AceGUI. The legacy GUI compatibility contract was explicitly retired. There is no on-demand companion, proxy library, global LibStub interception or fallback to another addon's GUI.
 
-The distribution removes AceGUI and its widget packages, AceConfig, AceDBOptions, LibAboutPanel, the old Options/Widgets renderers, registration bridges and predictor manifests. AceAddon, AceDB, AceLocale, AceConsole, AceEvent, AceTimer, AceSerializer, AceComm and AceBucket remain independent runtime services. LibSharedMedia remains for sound selection. Retained vendor files keep their upstream hashes and license notices.
+The distribution removes AceGUI and its widget packages, AceConfig, AceDBOptions, LibAboutPanel, the old Options/Widgets renderers, registration bridges and predictor manifests. AceAddon, AceDB, AceLocale, AceConsole, AceEvent, AceTimer and AceSerializer remain independent runtime services. AceComm (with ChatThrottleLib) and AceBucket were dropped because nothing used them. LibSharedMedia remains for sound selection. Retained vendor files keep their upstream hashes and license notices.
 
 ## Native field ownership
 

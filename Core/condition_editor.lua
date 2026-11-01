@@ -365,25 +365,15 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
         end
 
         local snapshot = draft:Snapshot()
-        local body = { name = "Condition draft", switch = snapshot, rotation = {}, cooldowns = {} }
-        local result = data.ValidateBody(body, addon:GetImportValidationOptions())
 
-        if not result.valid then
-            return nil, "invalid-condition-data", result
-        end
-        if not result.supported then
-            return nil, "unsupported-condition-data", result
-        end
-        if not result.resolved then
-            return nil, "unresolved-condition-data", result
-        end
-
+        -- An incomplete condition (a missing spell, an unresolved or unsupported field) is applied all the same: the
+        -- editor, the cards and the rotation list show it as an error, so work in progress is never refused. Only a
+        -- closed, read-only or stale target, or a validator that rewrites the draft, stops an apply.
         local candidate = data.CopyData(snapshot)
 
-        -- Runs the announcement or the ordinary condition validator on the candidate copy.
+        -- Runs the announcement or the ordinary condition validator on the candidate copy, only to be sure it cannot
+        -- change the draft; what it answers does not matter.
         -- @return boolean  The validator's answer.
-        --
-        -- It may run custom code, hence the checks around it.
         local function validate()
             if options.announcementTarget then
                 return addon:validateAnnouncementCondition(candidate, spec)
@@ -392,16 +382,16 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
             return addon:validateCondition(candidate, spec)
         end
 
-        local ok, valid
+        local ok
 
         if addon.Diagnostics then
-            ok, valid = addon.Diagnostics:Call({
+            ok = addon.Diagnostics:Call({
                 module = "condition-editor",
                 operation = "validate",
                 customCode = true,
             }, validate)
         else
-            ok, valid = pcall(validate)
+            ok = pcall(validate)
         end
 
         if not ok then
@@ -409,9 +399,6 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
         end
         if not unchanged(snapshot, candidate) then
             return nil, "validation-mutated-condition"
-        end
-        if not valid then
-            return nil, "invalid-condition-fields"
         end
         if not targetExists() then
             return nil, "condition-target-missing"

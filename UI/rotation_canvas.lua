@@ -48,6 +48,8 @@ end
 -- the cooldown grid fill the viewport: list cards reach the right edge less
 -- 8 px per nested branch, and grid columns share the row. Nothing narrows.
 local listIndent, gridGap, gridCardMaximum = 24, 24, 600
+-- Width of the gutter around the list, room for a card's unsaved bar and border outside its own border.
+local CARD_GUTTER = 6
 
 -- Widens the scene's cards, groups and drop targets to fill a viewport of the given width for the list and grid layouts
 -- (the diagram is left alone) and updates scene.width.
@@ -1092,7 +1094,9 @@ function addon:CreateRotationCanvas(parent, owner)
         local ok, problem = pcall(function()
             local key = self:ModeKey()
             self:RememberViewport()
-            local position = self.pendingViewport or (owner.view.viewports or {})[key] or { x = 0, y = 0 }
+            -- A diagram opens a little off its corner, so the unsaved border outside the first card is in view.
+            local margin = self:IsDiagram() and -CARD_GUTTER or 0
+            local position = self.pendingViewport or (owner.view.viewports or {})[key] or { x = margin, y = margin }
             self.pendingViewport = nil
             self.viewportView = owner.view
             self.modeKey = key
@@ -1101,12 +1105,22 @@ function addon:CreateRotationCanvas(parent, owner)
             self.paddingX = diagram and self.frame:GetWidth() / 2 or 0
             self.paddingY = diagram and self.frame:GetHeight() / 2 or 0
             self.cameraHost:ClearAllPoints()
-            self.cameraHost:SetPoint('TOPLEFT', self.surface, 'TOPLEFT', self.paddingX, -self.paddingY)
+            -- A gutter on the left of the list lets a card's unsaved bar stand outside its border without being clipped.
+            local gutter = diagram and 0 or CARD_GUTTER
+
+            self.cameraHost:SetPoint(
+                'TOPLEFT',
+                self.surface,
+                'TOPLEFT',
+                self.paddingX + gutter,
+                -(self.paddingY + gutter)
+            )
+
             self.cameraHost:SetSize(scene.width * factor, scene.height * factor)
             self.child:SetSize(scene.width, scene.height)
             self.child:SetScale(factor)
-            local width = math.max(self.frame:GetWidth(), scene.width * factor + 2 * self.paddingX)
-            local height = math.max(self.frame:GetHeight(), scene.height * factor + 2 * self.paddingY)
+            local width = math.max(self.frame:GetWidth(), scene.width * factor + 2 * self.paddingX + 2 * gutter)
+            local height = math.max(self.frame:GetHeight(), scene.height * factor + 2 * self.paddingY + 2 * gutter)
             self.surface:SetSize(width, height)
             self.horizontal:UpdateExtent(width, self.frame:GetWidth())
             self.horizontal:SetValue(position.x + self.paddingX)
@@ -1124,12 +1138,41 @@ function addon:CreateRotationCanvas(parent, owner)
 
                 if not group then
                     group = CreateFrame('Frame', nil, self.child)
-                    group:EnableMouse(false)
                     group.decoration = addon:CreateRoundedCardDecoration(group)
                     self.groups[i] = group
                 end
 
-                group:SetFrameLevel(self.child:GetFrameLevel())
+                -- In the list a branch's own frame is a drag handle too (the space beside its True/False boxes), so the
+                -- whole branch moves from anywhere on it.
+                if model.kind == 'branch' and not diagram then
+                    local generation = self.generation
+
+                    group:EnableMouse(true)
+
+                    -- Wheel scrolling and clicks reach the viewport as on a card, then the drag source is bound.
+                    self:BindViewportInput(group, false, function()
+                        return owner.active and generation == self.generation
+                    end)
+
+                    addon:BindWorkbenchDragSource(
+                        group,
+                        function()
+                            if owner.active and generation == self.generation and not owner.workspace.readOnly then
+                                self:BeginDrag(model.id)
+                            end
+                        end,
+                        function()
+                            if owner.active then
+                                self:EndDrag()
+                            end
+                        end
+                    )
+                else
+                    group:EnableMouse(false)
+                end
+
+                -- One above the canvas (a child at the same level is under it for the mouse); cards sit one higher still.
+                group:SetFrameLevel(self.child:GetFrameLevel() + 1)
                 group:ClearAllPoints()
                 group:SetPoint('TOPLEFT', self.child, 'TOPLEFT', model.x, -model.y)
                 group:SetSize(model.width, model.height)

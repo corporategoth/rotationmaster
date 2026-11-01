@@ -9,6 +9,15 @@
 -- to the window-style editor. A saved condition's text is user code: this file never executes it.
 
 local addon_name, addon = ...
+
+-- Space kept below the editor for the footer row: the same 46 as the other tabs, less on the smallest supported pane
+-- (776 x 402), where the editor needs every pixel to fit.
+-- @param height number  The pane height.
+-- @return number  The reserve.
+local function footerReserve(height)
+    return height < 480 and 34 or 46
+end
+
 local invalidateDependencies = addon.InvalidateRotationDependencies
 
 if type(invalidateDependencies) ~= 'function' then
@@ -45,7 +54,7 @@ function addon:InstallInlineConditionNavigation(p)
         local editor = self.inlineCondition
 
         if editor and not editor.closed and editor.OwnerValid() then
-            editor:ResizeHeight(math.max(160, self.frame:GetHeight() - 34))
+            editor:ResizeHeight(math.max(160, self.frame:GetHeight() - footerReserve(self.frame:GetHeight())))
         end
     end
 
@@ -216,7 +225,7 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
         x = geometry.detailX,
         footer = p.frame,
         width = geometry.detailWidth - self:GetWorkbenchHelpReserve(p.frame),
-        height = math.max(160, p.frame:GetHeight() - 34),
+        height = math.max(160, p.frame:GetHeight() - footerReserve(p.frame:GetHeight())),
         editor = p.inlineEditorCache,
         resume = p.inlineResume,
     }
