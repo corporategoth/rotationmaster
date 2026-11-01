@@ -1035,7 +1035,7 @@ test('literal AceDB Default is protected independently of the localized Default 
 end)
 test('supported editor inventory distinguishes loaded metadata from available connection',function()
     local f,parent=fixture();local a=f.addon;f.load('UI/lua_editor.lua');f.load('UI/settings_integrations.lua');f.load('Integrations/catalog.lua')
-    f.load('Integrations/lua_workbench.lua')
+    f.load('tests/fixtures/legacy_luaworkbench/adapter.lua')
     -- Addon state comes from C_AddOns on every current client.
     f.env.C_AddOns={IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end,
         GetAddOnMetadata=function(name,key) assert(key=='Version');if name=='!!!LuaWorkbench' then return '1.2.3' end end}

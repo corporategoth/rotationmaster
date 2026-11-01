@@ -4,7 +4,7 @@ local F = dofile('tests/fixtures/addon.lua')
 local test, finish = F.suite()
 
 local expected = {
-    'ExtendedCharacterStats', 'MobInfo2', '!!!LuaWorkbench', 'WeakAuras', 'ForeverAuras', 'Masque', 'Questie',
+    'ExtendedCharacterStats', 'MobInfo2', '!!!LuaWorkbench', 'WowLua', 'WeakAuras', 'ForeverAuras', 'Masque', 'Questie',
     'DBM-Core', 'BigWigs', 'Titan', 'ElvUI', 'Bartender4', 'ButtonForge', 'LUI', 'Dominos', 'AzeriteUI', 'AzeriteUI6',
     'EllesmereUIActionBars', 'FarmingBar', 'TotemTimers'
 }
@@ -152,6 +152,7 @@ test('connection requires current owned capability rather than loaded flag alone
     end
 
     f.env.LuaWorkbench = {}
+    a.IsLuaWorkbenchIntegrationAvailable = function() return true end
     rows = a:ListIntegrationStatus()
 
     assert(

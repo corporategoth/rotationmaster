@@ -1561,7 +1561,13 @@ end
 -- choice cannot apply in the current context.
 -- @param GameTooltip table  The tooltip to fill.
 function DataBroker.OnTooltipShow(GameTooltip)
-    GameTooltip:SetText(addon.pretty_name .. " " .. GetAddOnMetadata(addon_name, "Version"), 0, 1, 1)
+    GameTooltip:SetText(
+        addon.pretty_name .. " " .. (GetAddOnMetadata(addon_name, "Version") or L["Development"]),
+        0,
+        1,
+        1
+    )
+
     GameTooltip:AddLine(" ")
 
     if addon.currentRotation ~= nil then
@@ -1963,7 +1969,7 @@ function addon:OnEnable()
         return
     end
 
-    self:info(L["Starting up version %s"], GetAddOnMetadata(addon_name, "Version"))
+    self:info(L["Starting up version %s"], GetAddOnMetadata(addon_name, "Version") or L["Development"])
 
     -- Live Status Update Frequency drives the rotation editor's live dots,
     -- which run their own timer only while the editor is open (see

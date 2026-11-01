@@ -84,10 +84,11 @@ end)
 test('unknown client identity and unverified addon scope remain unknown', function()
     local _, a = fixture()
 
-    for _, id in ipairs({ 'New custom editor', 'WowLua', 'G15Buttons' }) do
+    for _, id in ipairs({ 'New custom editor', 'G15Buttons' }) do
         assert(a:GetIntegrationClientSupport(id, { family = 'tbc', interface = 20506 }) == 'unknown')
     end
 
+    assert(a:GetIntegrationClientSupport('WowLua', { family = 'progression', interface = 50504 }) == 'supported')
     assert(a:GetIntegrationClientSupport('!!!LuaWorkbench', {}) == 'unknown')
     assert(a:GetIntegrationClientSupport('!!!LuaWorkbench', nil) == 'unknown')
 end)
@@ -185,7 +186,7 @@ end)
 test('dropped addons have no catalog scope or links', function()
     local f, a = fixture()
 
-    for _, id in ipairs({ 'G15Buttons', 'SyncUI', 'Neuron', 'DiabolicUI', 'SamyTotemTimers', 'WowLua' }) do
+    for _, id in ipairs({ 'G15Buttons', 'SyncUI', 'Neuron', 'DiabolicUI', 'SamyTotemTimers' }) do
         assert(a:GetIntegrationClientSupport(id, { family = 'tbc', interface = 20506 }) == 'unknown', id)
         assert(#a:GetIntegrationProjectLinks(id) == 0, id)
     end

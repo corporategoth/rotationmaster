@@ -2237,6 +2237,77 @@
           "RM provides only its LibDataBroker data source; Titan's TitanLDB.lua adopts existing data objects through DataObjectIterator and LibDataBroker_DataObjectCreated."
         ]
       }
+    },
+    "WowLua": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/wowlua",
+          "primary": true,
+          "note": "Retail, Classic Era, TBC and Mists Classic; release 1.1.7 declares interface 50500 for Mists.",
+          "families": [
+            "retail",
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "curseforge"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "WowLua project and release for Mists Classic",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/wowlua",
+            "https://www.curseforge.com/wow/addons/wowlua/files/7968152"
+          ]
+        },
+        "wowinterface": {
+          "status": "unverified",
+          "query": "Not independently checked for this catalog entry",
+          "evidence": [
+            "Only the CurseForge project was verified for this entry."
+          ]
+        },
+        "wago": {
+          "status": "unverified",
+          "query": "Not independently checked for this catalog entry",
+          "evidence": [
+            "Only the CurseForge project was verified for this entry."
+          ]
+        },
+        "wowuphub": {
+          "status": "unverified",
+          "query": "Not independently checked for this catalog entry",
+          "evidence": [
+            "Only the CurseForge project was verified for this entry."
+          ]
+        },
+        "github": {
+          "status": "unverified",
+          "query": "Not independently checked for this catalog entry",
+          "evidence": [
+            "Only the CurseForge project was verified for this entry."
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "progression": [
+          "wrath",
+          "mists"
+        ],
+        "evidence": [
+          "https://www.curseforge.com/wow/addons/wowlua",
+          "https://www.curseforge.com/wow/addons/wowlua/files/7968152"
+        ]
+      }
     }
   }
 }

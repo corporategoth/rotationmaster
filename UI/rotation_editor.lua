@@ -180,11 +180,15 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
 
         -- Apply waits for a valid, unused identifier; the message says why.
-        if
-            not self.workspace.readOnly
-            and not self.identifierProblem
-            and (self.workspace.pending or self:HasUnsavedChanges())
-        then
+        local unsaved = not self.workspace.readOnly and (self.workspace.pending or self:HasUnsavedChanges())
+
+        if unsaved then
+            self.discard:Enable()
+        else
+            self.discard:Disable()
+        end
+
+        if unsaved and not self.identifierProblem then
             self.apply:Enable()
         else
             self.apply:Disable()
@@ -514,6 +518,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         )
 
         self:RenderPriority(snapshot)
+        self:UpdateHistory()
     end
 
     -- Fills the identifier box: locked and grey on a Built In, a preview and the fallback (which is always 'default'),
@@ -2665,13 +2670,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             end
         end)
 
-        if workspace.readOnly then
-            self.apply:Disable()
-            self.discard:Disable()
-        else
-            self.apply:Enable()
-            self.discard:Enable()
-        end
+        self:UpdateHistory()
 
         for _, control in ipairs({ self.compare, self.clone }) do
             if workspace.pending then

@@ -14,6 +14,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ReleaseRouting(unittest.TestCase):
+    def test_mists_manifest_matches_main_load_order_and_metadata(self):
+        main = (ROOT / 'RotationMaster.toc').read_text().splitlines()
+        mists = (ROOT / 'RotationMaster_Mists.toc').read_text().splitlines()
+        self.assertIn('## Interface: 50504', mists)
+        directives = ('## Interface:', '## Interface-Classic:', '## Interface-BCC:')
+        self.assertEqual([line for line in main if not line.startswith(directives)],
+                         [line for line in mists if not line.startswith(directives)])
+
     @staticmethod
     def archive(content, level):
         out = io.BytesIO()

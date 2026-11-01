@@ -846,4 +846,20 @@ test('a rotation that cannot be selected wears a red row naming its first blocki
     browser:Release()
 end)
 
+test('unlisted current specialization defaults the visible filter to all', function()
+    local f, _, _, create = fixture(19, 4)
+    local a = f.addon
+    f.load('Core/rotation_selection.lua')
+    a.currentSpec = 2
+
+    a.GetRotationSpecEntries = function()
+        return { { id = 262, name = 'Elemental' }, { id = 264, name = 'Restoration' } }
+    end
+
+    a.GetCurrentRotationSpecValue = function() return 1444 end
+    local browser = a:CreateRotationBrowser(create('Frame'))
+    assert(browser.specValue == 'all' and a.rotationListSpec == 'all')
+    browser:Release()
+end)
+
 finish()

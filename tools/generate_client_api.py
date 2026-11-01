@@ -37,7 +37,7 @@ LUA_STD = set('''assert collectgarbage dofile error getfenv getmetatable ipairs 
  math coroutine os io debug bit _G _VERSION gcinfo module require newproxy'''.split())
 # Optional third-party addons the addon integrates with when present, and
 # globals the addon defines itself (frames, slash handlers, saved variables).
-FOREIGN = set('''LibStub addonName LuaWorkbench MI2_GetMobData RealMobHealth ECSLoader ExtendedCharacterStats WeakAuras
+FOREIGN = set('''LibStub addonName LuaWorkbench LuaWorkbenchEmbedding WowLua MI2_GetMobData RealMobHealth ECSLoader ExtendedCharacterStats WeakAuras
  RotationMasterFrontmostDialog RotationMasterDB'''.split())
 
 

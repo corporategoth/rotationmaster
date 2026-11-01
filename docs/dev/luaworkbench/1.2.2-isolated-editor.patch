@@ -1,0 +1,339 @@
+--- a/!!!LuaWorkbench.toc
++++ b/!!!LuaWorkbench.toc
+@@ -39,0 +40 @@
++EmbeddedModules.lua
+@@ -64,0 +66,2 @@
++
++Embedding.lua
+--- a/APIHelp.lua
++++ b/APIHelp.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -338,0 +340,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('APIHelp', initialize) end
++initialize(packageName, owner)
+--- a/Analysis.lua
++++ b/Analysis.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -325,0 +327,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('Analysis', initialize) end
++initialize(packageName, owner)
+--- a/Autocomplete.lua
++++ b/Autocomplete.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -426,0 +428,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('Autocomplete', initialize) end
++initialize(packageName, owner)
+--- a/Automation.lua
++++ b/Automation.lua
+@@ -1 +1,2 @@
+-local addonName, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -339,0 +341 @@
++if not addon.embedded then
+@@ -342,0 +345,6 @@
++
++end
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('Automation', initialize) end
++initialize(packageName, owner)
+--- a/BufferedPaste.lua
++++ b/BufferedPaste.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -104,0 +106,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('BufferedPaste', initialize) end
++initialize(packageName, owner)
+--- a/DebugCompiler.lua
++++ b/DebugCompiler.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -223,0 +225,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('DebugCompiler', initialize) end
++initialize(packageName, owner)
+--- a/DebugProbe.lua
++++ b/DebugProbe.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -543,0 +545 @@
++if not addon.embedded then
+@@ -553,0 +556,5 @@
++end
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('DebugProbe', initialize) end
++initialize(packageName, owner)
+--- a/DebugUI.lua
++++ b/DebugUI.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -46,0 +48 @@
++if not addon.embedded then
+@@ -48,0 +51 @@
++end
+@@ -265 +268 @@
+-   tooltip = CreateFrame('GameTooltip', 'LuaWorkbenchDebugValueTooltip', UIParent, 'GameTooltipTemplate')
++   tooltip = CreateFrame('GameTooltip', (not addon.embedded and 'LuaWorkbenchDebugValueTooltip' or nil), UIParent, 'GameTooltipTemplate')
+@@ -614,0 +618,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('DebugUI', initialize) end
++initialize(packageName, owner)
+--- a/Debugger.lua
++++ b/Debugger.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -630,0 +632,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('Debugger', initialize) end
++initialize(packageName, owner)
+--- a/EditorActions.lua
++++ b/EditorActions.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -325,0 +327,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('EditorActions', initialize) end
++initialize(packageName, owner)
+--- a/Helpers.lua
++++ b/Helpers.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -202,0 +204,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('Helpers', initialize) end
++initialize(packageName, owner)
+--- a/Inspector.lua
++++ b/Inspector.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -273 +274 @@
+- local panel = CreateFrame('Frame', 'LuaWorkbenchInspector', UIParent); self.panel = panel; self.buttons = {}
++ local panel = CreateFrame('Frame', (not addon.embedded and 'LuaWorkbenchInspector' or nil), UIParent); self.panel = panel; self.buttons = {}
+@@ -314 +315 @@
+- _G.UISpecialFrames[#_G.UISpecialFrames + 1] = 'LuaWorkbenchInspector'
++ if not addon.embedded then _G.UISpecialFrames[#_G.UISpecialFrames + 1] = 'LuaWorkbenchInspector' end
+@@ -333 +334 @@
+-  local picker = CreateFrame('GameTooltip', 'LuaWorkbenchFramePicker', UIParent, 'SharedTooltipTemplate'); self.picker = picker
++  local picker = CreateFrame('GameTooltip', (not addon.embedded and 'LuaWorkbenchFramePicker' or nil), UIParent, 'SharedTooltipTemplate'); self.picker = picker
+@@ -389,0 +391,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('Inspector', initialize) end
++initialize(packageName, owner)
+--- a/KnowledgeBase.lua
++++ b/KnowledgeBase.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -243 +244 @@
+- local panel = CreateFrame('Frame', 'LuaWorkbenchKnowledgeBase', W.window)
++ local panel = CreateFrame('Frame', (not addon.embedded and 'LuaWorkbenchKnowledgeBase' or nil), W.window)
+@@ -245 +246 @@
+- _G.UISpecialFrames[#_G.UISpecialFrames + 1] = 'LuaWorkbenchKnowledgeBase'
++ if not addon.embedded then _G.UISpecialFrames[#_G.UISpecialFrames + 1] = 'LuaWorkbenchKnowledgeBase' end
+@@ -340 +341 @@
+-  local panel = CreateFrame('Frame', 'LuaWorkbenchCopyFunction', self.panel)
++  local panel = CreateFrame('Frame', (not addon.embedded and 'LuaWorkbenchCopyFunction' or nil), self.panel)
+@@ -356 +357 @@
+-  _G.UISpecialFrames[#_G.UISpecialFrames + 1] = 'LuaWorkbenchCopyFunction'
++  if not addon.embedded then _G.UISpecialFrames[#_G.UISpecialFrames + 1] = 'LuaWorkbenchCopyFunction' end
+@@ -361,0 +363,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('KnowledgeBase', initialize) end
++initialize(packageName, owner)
+--- a/LuaConsole.lua
++++ b/LuaConsole.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -420,0 +422,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('LuaConsole', initialize) end
++initialize(packageName, owner)
+--- a/LuaEditor.lua
++++ b/LuaEditor.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -909,0 +911,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('LuaEditor', initialize) end
++initialize(packageName, owner)
+--- a/Navigation.lua
++++ b/Navigation.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -47 +48 @@
+-  local panel = CreateFrame('Frame', 'LuaWorkbenchSavedHelper', W.window); self.snapshot = panel
++  local panel = CreateFrame('Frame', (not addon.embedded and 'LuaWorkbenchSavedHelper' or nil), W.window); self.snapshot = panel
+@@ -62 +63 @@
+-  _G.UISpecialFrames[#_G.UISpecialFrames + 1] = 'LuaWorkbenchSavedHelper'
++  if not addon.embedded then _G.UISpecialFrames[#_G.UISpecialFrames + 1] = 'LuaWorkbenchSavedHelper' end
+@@ -128,0 +130,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('Navigation', initialize) end
++initialize(packageName, owner)
+--- a/Organization.lua
++++ b/Organization.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -197,0 +199 @@
++if not addon.embedded then
+@@ -203,0 +206,5 @@
++end
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('Organization', initialize) end
++initialize(packageName, owner)
+--- a/Search.lua
++++ b/Search.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -44,0 +46,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('Search', initialize) end
++initialize(packageName, owner)
+--- a/Snippets.lua
++++ b/Snippets.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -160 +161 @@
+- local panel = CreateFrame('Frame', 'LuaWorkbenchTextSnippets', W.window)
++ local panel = CreateFrame('Frame', (not addon.embedded and 'LuaWorkbenchTextSnippets' or nil), W.window)
+@@ -162 +163 @@
+- _G.UISpecialFrames[#_G.UISpecialFrames + 1] = 'LuaWorkbenchTextSnippets'
++ if not addon.embedded then _G.UISpecialFrames[#_G.UISpecialFrames + 1] = 'LuaWorkbenchTextSnippets' end
+@@ -216,0 +218,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('Snippets', initialize) end
++initialize(packageName, owner)
+--- a/UI.lua
++++ b/UI.lua
+@@ -1 +1,2 @@
+-local _, addon = ...
++local packageName, owner = ...
++local function initialize(_, addon)
+@@ -445,0 +447,4 @@
++
++end
++if owner.DefineEmbeddedModule then owner:DefineEmbeddedModule('UI', initialize) end
++initialize(packageName, owner)
+--- /dev/null
++++ b/EmbeddedModules.lua
+@@ -0,0 +1,7 @@
++local _, addon = ...
++-- Each module still initializes the ordinary workspace once. Hosts can create
++-- independent namespaces from the same factories; no copied editor source.
++addon.EmbeddedFactories = {}
++function addon:DefineEmbeddedModule(name, factory)
++ self.EmbeddedFactories[name] = factory
++end
+--- /dev/null
++++ b/Embedding.lua
+@@ -0,0 +1,49 @@
++local packageName, addon = ...
++local API={version=1}
++_G.LuaWorkbenchEmbedding=API
++local modules={'BufferedPaste','LuaEditor','Analysis','LuaConsole','UI','Search','Organization','Helpers','Navigation','DebugProbe','DebugCompiler','Debugger','DebugUI','APIHelp','Autocomplete','EditorActions','KnowledgeBase','Snippets','Inspector','Automation'}
++local function copy(value)
++ if type(value)~='table' then return value end
++ local result={};for key,child in pairs(value) do result[key]=copy(child) end;return result
++end
++function API:CreateEngine(options)
++ options=options or {}
++ local settings=addon.Workspace and addon.Workspace.db and addon.Workspace.db.options or {}
++ local W={current=options.id or 'embedded',currentName=options.name or 'Embedded editor'}
++ W.db={options=copy(settings),snippets={},drafts={},folders={},folderBySnippet={},clearOnRun={},autoRun={},helperModules={},textSnippets={},panelPositions={},split=.65}
++ local engine={embedded=true,L=addon.L,ShortcutText=addon.ShortcutText,Workspace=W,embeddingOptions=options}
++ function W:UpdateStatus() if options.status then options.status(engine.Query.Console.statusText,engine.Query.Console.statusFailed) end end
++ function W:NormalizeSource(source) return (source or ''):gsub('\r\n','\n') end
++ function W:StoreSource(source) return self:NormalizeSource(source) end
++ function W:Capture()
++  local C=engine.Query.Console;self.db.drafts[self.current]={name=self.currentName,source=C.source};self.dirty=self:IsSnippetDirty(self.current);self:UpdateStatus()
++ end
++ function W:IsSnippetDirty(id) local draft,saved=self.db.drafts[id],self.db.snippets[id];return draft and (not saved or draft.source~=saved.source) or false end
++ function W:HidePanels(except)
++  for _,entry in ipairs({'KnowledgeBase','Snippets','Navigation','Inspector'}) do local panel=engine[entry] and (engine[entry].panel or engine[entry].snapshot);if panel and panel~=except then panel:Hide() end end
++ end
++ function W:Select(id) if options.navigate then return options.navigate(id) end;return false end
++ function W:Show() if options.show then options.show() end end
++ function W:ShowHelp() if options.help then options.help() end end
++ function W:Layout() if engine.control then engine.control:Layout() end end
++ function W:RunShortcut(key)
++  if engine.DebugUI:Shortcut(key) then return true end
++  if engine.Navigation:Shortcut(key) then return true end
++  return false
++ end
++ for _,name in ipairs(modules) do
++  local factory=addon.EmbeddedFactories[name];if not factory then return nil,'missing-embedded-module:'..name end
++  factory(packageName,engine)
++ end
++ function engine:Release()
++  if self.released then return end;self.released=true
++  self.Debugger:Stop();self.DebugProbe:Stop()
++  self.Workspace:HidePanels()
++  if self.Autocomplete then self.Autocomplete:Hide() end
++  if self.Automation.probe then self.Automation.probe:UnregisterAllEvents() end
++  if self.APIHelp and self.APIHelp.events then
++   self.APIHelp.events:UnregisterAllEvents();self.APIHelp.events:SetScript('OnEvent',nil)
++  end
++ end
++ return engine
++end

@@ -98,10 +98,10 @@
       }
     },
     "LibSharedMedia-3.0": {
-      "source": "https://repos.wowace.com/wow/libsharedmedia-3-0/trunk/",
-      "revision": "r182",
+      "source": "https://www.curseforge.com/wow/addons/libsharedmedia-3-0/files/9277931",
+      "revision": "r184",
       "files": {
-        "LibSharedMedia-3.0.lua": "35230ddd390aebe0a7f607508e05a15d14341f44c9f151da7032393ea08b07ef",
+        "LibSharedMedia-3.0.lua": "3cf50b53f0be14cbb05fd416a18639dbfdd1a4b4d1174fe5505e6ce8b4571638",
         "lib.xml": "bd4f30d101a13ffb915114f6cd2d510fee506bca333f35387b3e08f238d85f8c"
       }
     },
@@ -199,15 +199,6 @@
       "files": {
         "LICENSE": "e3fdaf76f03ccf2bf5ec951f5e14eaf1178a6f6af8f7c9d321e3256fa31e25f9",
         "LibRangeCheck-3.0.lua": "ff3be5a5e6f48747a7217be1230174c8cc11cdd05dea72dc519b0024ca7aae09"
-      }
-    },
-    "LuaWorkbench-Embed": {
-      "source": "https://github.com/R41z0r/LuaWorkbench",
-      "revision": "9abc82050f70fca204a19965a717abc6e1eae952",
-      "files": {
-        "modules.lua": "d61120344ab0131455ea2db8628c2749d6fab38a068dcdb2fcfc31f58ec69d40",
-        "LICENSE": "0403db2d4020c42b27ae872de1ab237a539ec35b4c592b942eb97a7322ca09c8",
-        "manifest.json": "0f6e1d2bf653a58fd4cde211ab18db1443078fc91fe35a4c2fd83d2fbf4476a3"
       }
     }
   },

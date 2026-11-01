@@ -144,8 +144,7 @@ function addon:BuildIntegrationSettings(p)
         return not (success and state == 'unsupported')
     end
 
-    -- Returns the editor rows sorted by id, a lookup by id, and the Native row. Providers unsupported on this client
-    -- are left out; LuaWorkbench is listed as unavailable when the addon is not present.
+    -- Returns editor rows and the Native row. Known optional editors stay visible when unavailable or unsupported.
     -- @return table[]|nil  The rows { id, name, available }; nil when the page went stale or the provider list is
     --   missing.
     -- @return table  The rows by id.
@@ -173,17 +172,23 @@ function addon:BuildIntegrationSettings(p)
                 return
             end
 
-            if allowed and id ~= 'auto' and id ~= 'plain' and id ~= 'native' then
-                local available = true
+            local knownEditor = id == 'LuaWorkbench' or id == 'WowLua'
 
-                if id == 'LuaWorkbench' then
+            if (allowed or knownEditor) and id ~= 'auto' and id ~= 'plain' and id ~= 'native' then
+                local available = allowed
+
+                if id == 'LuaWorkbench' or id == 'WowLua' then
                     local check = self.IsLuaWorkbenchIntegrationAvailable
+
+                    if id == 'WowLua' then
+                        check = self.IsWowLuaIntegrationAvailable
+                    end
 
                     if not current() then
                         return
                     end
 
-                    available = type(check) == 'function' and check(self) == true
+                    available = allowed and type(check) == 'function' and check(self) == true
                 end
 
                 if not current() then
@@ -199,16 +204,17 @@ function addon:BuildIntegrationSettings(p)
         end
 
         table.sort(rows, function(a, b) return a.id < b.id end)
-        local workbenchAllowed = supported('!!!LuaWorkbench')
 
-        if not current() then
-            return
-        end
-
-        if workbenchAllowed and not byID.LuaWorkbench then
+        if not byID.LuaWorkbench then
             local row = { id = 'LuaWorkbench', name = L['LuaWorkbench'], available = false }
             rows[#rows + 1] = row
             byID.LuaWorkbench = row
+        end
+
+        if not byID.WowLua then
+            local row = { id = 'WowLua', name = 'WowLua', available = false }
+            rows[#rows + 1] = row
+            byID.WowLua = row
         end
 
         local native = { id = 'native', name = L['Native'], available = true }
@@ -503,7 +509,7 @@ function addon:BuildIntegrationSettings(p)
             return
         end
 
-        if allowed then
+        if allowed or entry.id == '!!!LuaWorkbench' or entry.id == 'WowLua' then
             metadata[entry.id] = entry
         end
     end

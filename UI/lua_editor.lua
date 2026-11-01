@@ -63,9 +63,14 @@ local function resolveEditor(self, preferred)
             end
         end
 
-        return name ~= 'LuaWorkbench'
-            or type(self.IsLuaWorkbenchIntegrationAvailable) == 'function'
+        if name == 'LuaWorkbench' then
+            return type(self.IsLuaWorkbenchIntegrationAvailable) == 'function'
                 and self:IsLuaWorkbenchIntegrationAvailable() == true
+        elseif name == 'WowLua' then
+            return type(self.IsWowLuaIntegrationAvailable) == 'function' and self:IsWowLuaIntegrationAvailable() == true
+        end
+
+        return true
     end
 
     if preferred == 'auto' then

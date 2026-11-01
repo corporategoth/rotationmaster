@@ -47,7 +47,7 @@ The list of every renamed Built In is in `docs/builtin-name-changes.md`.
 | Retail (Midnight) 12.1.5 | 120105 | Partly: some restricted-data probes only |
 | Forever 1.60.1 | 16001 | Loads; startup and play not verified |
 | Classic Era / SoD 1.15.9 | 11509 | No |
-| Mists of Pandaria Classic 5.5.4 | 50504 | No |
+| Mists of Pandaria Classic 5.5.4 | 50504 | Yes: startup, rotation selection, WowLua editor and line numbers |
 
 "No" means only tests with a model of the client have run. Reports from those clients are the most valuable.
 
@@ -143,3 +143,5 @@ These are the features most likely to misbehave. If you can exercise one, please
 ## Thanks
 
 If something is wrong, it helps to know even if you are not sure it is a bug.
+
+Optional LuaWorkbench editing requires the isolated editor API; the public 1.2.2 addon does not expose it and RM uses its native editor when it is absent. WowLua is an optional syntax provider on MoP.

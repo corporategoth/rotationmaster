@@ -156,12 +156,12 @@ return function()
 
     f.load('UI/lua_input_probe.lua')
     f.load('UI/lua_editor.lua')
-    f.load('Libs/LuaWorkbench-Embed/modules.lua')
-    local file = io.open('Integrations/lua_workbench.lua')
+    f.load('tests/fixtures/legacy_luaworkbench/modules.lua')
+    local file = io.open('tests/fixtures/legacy_luaworkbench/adapter.lua')
 
     if file then
         file:close()
-        f.load('Integrations/lua_workbench.lua')
+        f.load('tests/fixtures/legacy_luaworkbench/adapter.lua')
     end
 
     f.env.LuaWorkbench = { db = { options = { autocomplete = true }, drafts = { user = { source = 'KEEP' } } } }

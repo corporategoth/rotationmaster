@@ -24,6 +24,7 @@ local providers = {
     { 'ExtendedCharacterStats', 'ExtendedCharacterStats', 'Optional character statistics conditions.', 'ecs' },
     { 'MobInfo2', 'MobInfo2', 'Recorded creature history conditions; no current history is queried.' },
     { '!!!LuaWorkbench', 'LuaWorkbench', 'Lua editor integration. Choose an editor in Lua editor options.', 'editor' },
+    { 'WowLua', 'WowLua', 'Lua editor integration. Choose an editor in Lua editor options.', 'editor' },
     { 'WeakAuras', 'WeakAuras', 'Recommendation event bridge; no WeakAuras display is required.' },
     { 'ForeverAuras', 'ForeverAuras', 'Recommendation event bridge; no WeakAuras display is required.' },
     { 'Masque', 'Masque', 'Optional preview-button skins; configure skins with /masque.', 'masque' },
@@ -78,6 +79,7 @@ local projects={
  ["DBM-Core"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/deadly-boss-mods",["primary"]=true,["note"]="DBM-Core for Retail, Forever, Classic Era, TBC and Mists Classic. Encounter timers need the matching raid or dungeon module download, such as DBM-Raids-BC for TBC raids.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="curseforge",["label"]="CurseForge — DBM Dungeons",["url"]="https://www.curseforge.com/wow/addons/deadly-boss-mods-dbm-dungeons",["primary"]=false,["note"]="DBM module pack for dungeons, delves and events. Requires DBM-Core and registers through it, so the DBM row covers it; no separate RM connection.",["families"]={}},{["provider"]="github",["label"]="GitHub",["url"]="https://github.com/DeadlyBossMods/DeadlyBossMods",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="wowinterface",["label"]="WoWInterface — historical",["url"]="https://www.wowinterface.com/downloads/info8814-DeadlyBossMods.html",["primary"]=false,["note"]="Official historical release page. The authors no longer update it; use CurseForge or GitHub for current releases.",["families"]={}}},
  ["BigWigs"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/big-wigs",["primary"]=true,["note"]="BigWigs (Boss Timers & Tools) for Retail, Forever, Classic and Classic progression. Its TOC also declares TBC Anniversary.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="curseforge",["label"]="CurseForge — LittleWigs",["url"]="https://www.curseforge.com/wow/addons/littlewigs",["primary"]=false,["note"]="BigWigs plugin for dungeon and delve bosses. Requires BigWigs and feeds the same bars and stages, so the BigWigs row covers it; no separate RM connection.",["families"]={"retail","era","progression","tbc"}},{["provider"]="github",["label"]="GitHub",["url"]="https://github.com/BigWigsMods/BigWigs",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info5086-BigWigsBossmods.html",["primary"]=false,["note"]="Official project page. Publisher lists Retail, Classic Era, TBC, Wrath and Cataclysm Classic. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"retail","era","tbc","progression"}},{["provider"]="wago",["label"]="Wago Addons",["url"]="https://addons.wago.io/addons/bigwigs",["primary"]=false,["note"]="Official project page. This page requires JavaScript; edition metadata was not independently readable.",["families"]={}}},
  ["Titan"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/titan-panel",["primary"]=true,["note"]="Titan Panel for Retail, Forever, Mists Classic, Classic and Classic TBC.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info8092-TitanPanel.html",["primary"]=false,["note"]="Official project page. Publisher lists Retail and Classic Era. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"retail","era"}}},
+ ["WowLua"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/wowlua",["primary"]=true,["note"]="Retail, Classic Era, TBC and Mists Classic; release 1.1.7 declares interface 50500 for Mists.",["families"]={"retail","era","tbc","progression"}}},
 }
 local scopes={
  ["ExtendedCharacterStats"]={["families"]={"era","tbc","progression"},["progression"]={"wrath"},["interfaceRanges"]={}},
@@ -100,6 +102,7 @@ local scopes={
  ["DBM-Core"]={["families"]={"era","tbc","progression"},["progression"]={"wrath","cata","mists"},["interfaceRanges"]={}},
  ["BigWigs"]={["families"]={"era","tbc","progression"},["progression"]={"wrath","cata","mists"},["interfaceRanges"]={}},
  ["Titan"]={["families"]={"retail","forever","era","tbc","progression"},["progression"]={"mists"},["interfaceRanges"]={}},
+ ["WowLua"]={["families"]={"retail","era","tbc","progression"},["progression"]={"wrath","mists"},["interfaceRanges"]={}},
 }
 -- END GENERATED INTEGRATION PROJECTS
 
@@ -395,10 +398,17 @@ local function connection(kind, id)
             end
         end
     elseif kind == 'editor' then
-        local create, provider = rawget(addon, 'CreateLuaWorkbenchControl'), rawget(_G, 'LuaWorkbench')
+        local available = rawget(
+            addon,
+            id == 'WowLua' and 'IsWowLuaIntegrationAvailable' or 'IsLuaWorkbenchIntegrationAvailable'
+        )
 
-        if readable(create) and readable(provider) and type(create) == 'function' and type(provider) == 'table' then
-            return 'connected'
+        if readable(available) and type(available) == 'function' then
+            local ok, connected = pcall(available, addon)
+
+            if ok and connected then
+                return 'connected'
+            end
         end
     elseif kind == 'masque' then
         local ok, value = pcall(function()

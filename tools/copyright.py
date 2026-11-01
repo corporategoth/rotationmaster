@@ -61,6 +61,8 @@ XML_DECLARATION = re.compile(r'^<\?xml\b.*\?>\s*$')
 # (regular expression on the repository-relative path, 'include' kind or 'skip' reason)
 RULES = [
     # --- vendored: their own licences, their pinned bytes ---------------------------------------------------------------
+    (r'^tests/fixtures/legacy_luaworkbench/', ('skip', 'historical third-party editor fixture; retains its original licence')),
+    (r'^docs/dev/luaworkbench/.*\.patch$', ('skip', 'third-party editor patch; upstream source retains its licence')),
     (r'^Libs/', ('skip', 'vendored library: keeps its own licence (Libs/UPSTREAM.json pins its bytes)')),
     (r'^LibsAugment/', ('skip', 'vendored library augmentation: keeps its own licence')),
     (r'^tools/vendor/', ('skip', 'vendored tool (BigWigs packager): keeps its own licence')),
