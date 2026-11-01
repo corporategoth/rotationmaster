@@ -377,18 +377,9 @@ function addon:NewRotationEditSession(spec, original, options)
         end
 
         local snapshot = draft:Snapshot()
-        local validation = data.ValidateBody(snapshot, addon:GetImportValidationOptions())
-
-        if not validation.valid then
-            return finish(nil, 'invalid-rotation-data', validation)
-        end
-        if not validation.supported then
-            return finish(nil, 'unsupported-rotation-data', validation)
-        end
-        if not validation.resolved then
-            return finish(nil, 'unresolved-rotation-data', validation)
-        end
-
+        -- An incomplete rotation (missing or unavailable data, unsupported or unresolved fields, invalid conditions) is
+        -- saved all the same: the rotation list marks it as unselectable and the editor names the problems, so work in
+        -- progress is never refused. Only a bad identifier or name, or a stale or missing target, stops a save.
         local candidate = data.CopyData(snapshot)
         local tree = data.IndexRotationSteps(candidate)
 
@@ -397,7 +388,7 @@ function addon:NewRotationEditSession(spec, original, options)
         local function validate()
             local valid = addon:validateCondition(candidate.switch or {}, spec)
 
-            for _, row in ipairs(tree.rows) do
+            for _, row in ipairs(tree and tree.rows or {}) do
                 -- Validate both arms, including forced/unreachable branches.
                 if not addon:validateCondition(row.step.conditions or {}, spec) then
                     valid = false
@@ -424,9 +415,6 @@ function addon:NewRotationEditSession(spec, original, options)
         end
         if not equal(snapshot, candidate) then
             return finish(nil, 'validation-mutated-rotation')
-        end
-        if not valid then
-            return finish(nil, 'invalid-condition-fields')
         end
         if not owner() then
             return finish(nil, 'rotation-target-missing')

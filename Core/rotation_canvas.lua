@@ -207,7 +207,8 @@ function addon:BuildRotationCanvas(body, view)
             left = cardWidth / 2,
             right = cardWidth / 2,
             height = 0,
-            gap = listView and path[1] == 'rotation' and 0 or gap,
+            -- In the list, cards are 6 apart: room for a modified card's border (3 outside its own) with a little air.
+            gap = listView and path[1] == 'rotation' and 6 or gap,
         }
 
         for position, step in ipairs(list) do
@@ -328,6 +329,10 @@ function addon:BuildRotationCanvas(body, view)
             canMoveDown = node.canMoveDown,
             step = data.CopyData(shallow),
             mode = mode,
+            -- In the list a branch's group frame draws its outline, with the header inside it: no border of its own.
+            listBranch = (listView and node.yes ~= nil) or nil,
+            groupWidth = listView and node.yes ~= nil and node.width or nil,
+            groupHeight = listView and node.yes ~= nil and node.height or nil,
             inactive = inactive,
             border = inactive and "gray" or tone,
             collapsed = branch and ((view.hiddenChildren or {})[step.id] or collapsed[step.id]) == true,

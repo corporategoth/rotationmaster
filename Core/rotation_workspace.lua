@@ -397,14 +397,16 @@ local function scopedWorkspace(owner, coordinator, spec, value)
     -- @return string|nil  The reason when the first return is nil; nil otherwise.
     -- @return table|nil  The saved reference on success; the session's details (a validation report) on failure.
     --
-    -- A new rotation needs a real name (not the placeholders). On success the workspace re-baselines on the saved
+    -- The name is only a description and never blocks a save. On success the workspace re-baselines on the saved
     -- record and opens a fresh session, so it can be edited and applied again.
     function workspace:Apply()
+        -- The identifier is what identifies a rotation; the name is only a description, so any name saves (a blank one
+        -- falls back to the placeholder).
         if self.pending and not self.fallback then
             local name = self:Snapshot().name
 
-            if type(name) ~= 'string' or not name:find('%S') or name == NEW or name == DEFAULT then
-                return nil, 'invalid-rotation-name'
+            if type(name) ~= 'string' or not name:find('%S') then
+                self:Command('SetBodyField', 'name', NEW)
             end
         end
 
@@ -704,11 +706,13 @@ function addon:GetRotationEditWorkspace(spec, id)
     -- @return string|nil  The reason when the first return is nil; nil otherwise.
     -- @return table|nil  The session's details (a validation report) on failure.
     function workspace:Apply()
+        -- The identifier is what identifies a rotation; the name is only a description, so any name saves (a blank one
+        -- falls back to the placeholder).
         if self.pending and id ~= DEFAULT then
             local name = self:Snapshot().name
 
-            if type(name) ~= 'string' or not name:find('%S') or name == NEW or name == DEFAULT then
-                return nil, 'invalid-rotation-name'
+            if type(name) ~= 'string' or not name:find('%S') then
+                self:Command('SetBodyField', 'name', NEW)
             end
         end
 
@@ -974,6 +978,21 @@ function addon:NewRotationPreviewWorkspace(spec, preview)
     end
 
     return workspace
+end
+
+-- Tells whether a rotation has a draft with unsaved changes kept open (leaving it with Keep Unsaved, or closing the
+-- window, does not discard it). A Built In or other read-only rotation never does.
+-- @param spec number  The specialization ID or talent group.
+-- @param value any  A rotation id or reference.
+-- @return boolean  True when a workspace is open for it and differs from what is saved.
+function addon:HasKeptDraft(spec, value)
+    local workspace = self:GetRotationWorkspace(spec, value)
+
+    if not workspace or workspace.readOnly or workspace.fallback and not workspace.session then
+        return false
+    end
+
+    return workspace.pending == true or workspace.session ~= nil and workspace.session:IsDirty() == true
 end
 
 -- Returns the live, still-valid workspace already open for a specialization and id or reference. It never creates one.

@@ -365,54 +365,10 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
         end
 
         local snapshot = draft:Snapshot()
-        local body = { name = "Condition draft", switch = snapshot, rotation = {}, cooldowns = {} }
-        local result = data.ValidateBody(body, addon:GetImportValidationOptions())
 
-        if not result.valid then
-            return nil, "invalid-condition-data", result
-        end
-        if not result.supported then
-            return nil, "unsupported-condition-data", result
-        end
-        if not result.resolved then
-            return nil, "unresolved-condition-data", result
-        end
-
-        local candidate = data.CopyData(snapshot)
-
-        -- Runs the announcement or the ordinary condition validator on the candidate copy.
-        -- @return boolean  The validator's answer.
-        --
-        -- It may run custom code, hence the checks around it.
-        local function validate()
-            if options.announcementTarget then
-                return addon:validateAnnouncementCondition(candidate, spec)
-            end
-
-            return addon:validateCondition(candidate, spec)
-        end
-
-        local ok, valid
-
-        if addon.Diagnostics then
-            ok, valid = addon.Diagnostics:Call({
-                module = "condition-editor",
-                operation = "validate",
-                customCode = true,
-            }, validate)
-        else
-            ok, valid = pcall(validate)
-        end
-
-        if not ok then
-            return nil, "condition-validation-error"
-        end
-        if not unchanged(snapshot, candidate) then
-            return nil, "validation-mutated-condition"
-        end
-        if not valid then
-            return nil, "invalid-condition-fields"
-        end
+        -- An incomplete condition (a missing spell, an unresolved or unsupported field) is applied all the same: the
+        -- editor, the cards and the rotation list show it as an error, so work in progress is never refused. Only a
+        -- closed, read-only or stale target stops an apply.
         if not targetExists() then
             return nil, "condition-target-missing"
         end

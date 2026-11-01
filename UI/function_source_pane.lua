@@ -183,7 +183,7 @@ function addon:InstallInlineFunctionNavigation(p)
         local d = self.inlineFunction
 
         if d and not d.closed and d.OwnerValid() then
-            d.frame:SetHeight(math.max(160, self.frame:GetHeight() - 36))
+            d.frame:SetHeight(math.max(160, self.frame:GetHeight() - 16))
             d.form:SetHeight(d.frame:GetHeight())
             d.form:Layout()
         end
@@ -285,7 +285,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
     d.frame:SetSize(geometry.detailWidth - self:GetWorkbenchHelpReserve(p.frame), math.max(
         160,
-        p.frame:GetHeight() - 36
+        p.frame:GetHeight() - 16
     ))
 
     d.form = d.form or self:CreateSettingsForm(d.frame)
@@ -1336,7 +1336,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
         control:Show()
     end
 
-    d.cancel:SetPoint('BOTTOMRIGHT', -8, 4)
+    d.cancel:SetPoint('BOTTOMRIGHT', -8, 8)
     d.apply:SetPoint('RIGHT', d.cancel, 'LEFT', -6, 0)
     d.viewChanges:SetPoint('RIGHT', d.apply, 'LEFT', -6, 0)
 
@@ -1376,7 +1376,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
     form.message:SetParent(p.frame)
     form.message:ClearAllPoints()
-    form.message:SetPoint('BOTTOMLEFT', geometry.detailX, 4)
+    form.message:SetPoint('BOTTOMLEFT', geometry.detailX, 8)
     form.message:SetPoint('RIGHT', d.viewChanges, 'LEFT', -8, 0)
     form.message:SetHeight(20)
     form.message:Show()

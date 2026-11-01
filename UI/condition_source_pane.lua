@@ -45,7 +45,7 @@ function addon:InstallInlineConditionNavigation(p)
         local editor = self.inlineCondition
 
         if editor and not editor.closed and editor.OwnerValid() then
-            editor:ResizeHeight(math.max(160, self.frame:GetHeight() - 34))
+            editor:ResizeHeight(math.max(160, self.frame:GetHeight() - 46))
         end
     end
 
@@ -216,7 +216,7 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
         x = geometry.detailX,
         footer = p.frame,
         width = geometry.detailWidth - self:GetWorkbenchHelpReserve(p.frame),
-        height = math.max(160, p.frame:GetHeight() - 34),
+        height = math.max(160, p.frame:GetHeight() - 46),
         editor = p.inlineEditorCache,
         resume = p.inlineResume,
     }

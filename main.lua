@@ -1485,14 +1485,20 @@ function minimapInitialize()
     local entries = {}
 
     for id, rot in pairs(runtimeRows(addon, addon.currentSpec)) do
-        if id ~= DEFAULT then
+        -- A switched-off rotation is not offered here; it is turned on from the rotation list.
+        if id ~= DEFAULT and rot.enabled ~= false then
             local priority = addon.RotationData
                 and addon.RotationData.GetRotationPriority
                 and addon.RotationData.GetRotationPriority(rot.priority)
                 or tonumber(rot.priority)
                 or 0
 
-            entries[#entries + 1] = { id = id, rot = rot, priority = priority, name = tostring(rot.name):lower() }
+            entries[#entries + 1] = {
+                id = id,
+                rot = rot,
+                priority = priority,
+                name = tostring(rot.identifier or id):lower(),
+            }
         end
     end
 
@@ -1532,35 +1538,6 @@ function minimapInitialize()
         "|cff73d999" .. DEFAULT .. "|r", DEFAULT, (addon.manualRotation == true and addon.currentRotation == DEFAULT)
 
     UIDropDownMenu_AddButton(info)
-
-    -- A Built In that would apply now but is switched off is not offered;
-    -- say so, so a forgotten toggle is not mistaken for a missing rotation.
-    local hidden = addon.GetDisabledApplicableBuiltins and addon:GetDisabledApplicableBuiltins(addon.currentSpec)
-
-    if hidden and #hidden > 0 then
-        local names = {}
-
-        for _, row in ipairs(hidden) do
-            names[#names + 1] = row.name
-        end
-
-        info = UIDropDownMenu_CreateInfo()
-        info.notCheckable = true
-
-        info.text = "|cff808080"
-            .. string.format(L["%d Built In disabled: %s"], #hidden, table.concat(names, ", "))
-            .. "|r"
-
-        info.tooltipTitle = L["Disabled Built In rotations"]
-        info.tooltipText = L["Open Rotations, select the Built In and turn it back on to make it selectable."]
-        info.tooltipOnButton = true
-
-        info.func = function()
-            addon:ShowConfig("Rotations")
-        end
-
-        UIDropDownMenu_AddButton(info)
-    end
 end
 
 -- Handles a broker click: right opens the rotation menu, left toggles the configuration window.

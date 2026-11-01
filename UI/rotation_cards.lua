@@ -179,18 +179,93 @@ function addon:DescribeLiveStatus(state)
         headline = string.format(L['Unavailable: %s'], tostring(state.reason or L['unreadable right now']))
     end
 
+    -- When it was checked is shown by the editor's live dial, not in the tooltip.
     local details = {}
 
     if state.chosen then
         details[#details + 1] = state.chosen
     end
-    if type(state.at) == 'number' and type(GetTime) == 'function' then
-        details[#details + 1] = string.format(L['Checked %d seconds ago.'], math.max(0, math.floor(
-            GetTime() - state.at + .5
-        )))
-    end
 
     return headline, details
+end
+
+-- Creates the live dial: a small circle that is empty when a live check happens and fills clockwise until the next one.
+-- The frame has :Restart(start, interval) (a check just happened; the next is `interval` seconds on), :Clear() (no
+-- checks are running: hidden) and tooltips of its own. Without a Cooldown frame (an unsupported client) it stays hidden.
+-- @param parent table  The frame it lives in.
+-- @return table  The dial frame, initially hidden.
+function addon:CreateLiveClock(parent)
+    local clock = CreateFrame('Frame', nil, parent)
+    clock:SetSize(14, 14)
+    clock:Hide()
+    clock:EnableMouse(true)
+
+    clock:SetScript('OnEnter', function(self)
+        if GameTooltip then
+            GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+            GameTooltip:SetText(L['Live Status Update Check'], 1, 1, 1, 1, true)
+            GameTooltip:Show()
+        end
+    end)
+
+    clock:SetScript('OnLeave', function()
+        if GameTooltip then
+            GameTooltip:Hide()
+        end
+    end)
+
+    local back = clock:CreateTexture(nil, 'BACKGROUND')
+    back:SetAllPoints()
+    back:SetTexture('Interface\\CHARACTERFRAME\\TempPortraitAlphaMask')
+    back:SetVertexColor(.2, .22, .26, .9)
+
+    local ok, dial = pcall(CreateFrame, 'Cooldown', nil, clock, 'CooldownFrameTemplate')
+    clock.dial = ok and dial or nil
+
+    if clock.dial then
+        local dial = clock.dial
+        dial:SetAllPoints()
+
+        for _, call in ipairs({
+            { 'SetDrawEdge', false },
+            { 'SetDrawBling', false },
+            { 'SetHideCountdownNumbers', true },
+            { 'SetReverse', true },
+            { 'SetSwipeTexture', 'Interface\\CHARACTERFRAME\\TempPortraitAlphaMask' },
+        }) do
+            if type(dial[call[1]]) == 'function' then
+                dial[call[1]](dial, call[2])
+            end
+        end
+
+        if type(dial.SetSwipeColor) == 'function' then
+            dial:SetSwipeColor(.36, .75, .92, .95)
+        end
+    end
+
+    -- Starts a fresh fill: empty now, full when the next check is due.
+    -- @param start number|nil  GetTime() of the check.
+    -- @param interval number|nil  Seconds until the next check; nil hides the dial.
+    function clock:Restart(start, interval)
+        if not self.dial or not start or not interval then
+            self:Hide()
+            return
+        end
+
+        self:Show()
+        self.dial:SetCooldown(start, interval)
+    end
+
+    -- Hides the dial and stops its fill.
+    function clock:Clear()
+        if self.dial and type(self.dial.Clear) == 'function' then
+            self.dial:Clear()
+        end
+
+        self:Hide()
+    end
+
+    return clock
 end
 
 -- Shows a condition field's tooltip: the live headline on its own line, coloured like the bar, then the field's text,
@@ -219,9 +294,10 @@ function addon:ShowConditionFieldTooltip(owner, text, state)
     end
 
     for _, line in ipairs(details) do
-        GameTooltip:AddLine(line, .85, .85, .85, true)
+        GameTooltip:AddLine(line, 1, 1, 1, true)
     end
 
+    self:UseBodyFontOnTooltipTitle(color)
     GameTooltip:Show()
 end
 
@@ -253,7 +329,7 @@ function addon:CreateLiveStatusBar(field)
                 local lines = { headline }
 
                 for _, line in ipairs(details) do
-                    lines[#lines + 1] = { text = line, color = { .85, .85, .85, 1 } }
+                    lines[#lines + 1] = line
                 end
 
                 return lines
@@ -289,8 +365,21 @@ end
 function addon:CreateRotationCard(parent)
     local card = { frame = CreateFrame('Frame', nil, parent), controls = {} }
     local frame = card.frame
+    -- A card marks unsaved changes with a border (below), never a bar.
+    frame.unsavedNoBar = true
     frame:EnableMouse(true)
     card.decoration = self:CreateRoundedCardDecoration(frame)
+
+    -- The unsaved border: a second rounded border just outside the card's own (see addon:SetWorkbenchUnsaved).
+    local ring = CreateFrame('Frame', nil, frame)
+    ring:SetPoint('TOPLEFT', frame, 'TOPLEFT', -3, 3)
+    ring:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', 3, -3)
+    ring:EnableMouse(false)
+    -- However it is anchored, the ring never takes a click: its hit rectangle is empty.
+    ring:SetHitRectInsets(10000, 10000, 10000, 10000)
+    ring.decoration = self:CreateRoundedCardDecoration(ring)
+    ring:Hide()
+    frame.unsavedRingFrame = ring
     card.expand = self:CreateConditionChevron(frame)
     card.expand:SetPoint('TOPLEFT', 4, -4)
     card.expand.tooltip = L['Expand or collapse the card. Click action or condition text for details.']
@@ -313,7 +402,7 @@ function addon:CreateRotationCard(parent)
     card.action:SetPoint('TOPLEFT', 48, -25)
     card.action.art:SetAlpha(.08)
     card.condition = self:CreateWorkbenchButton(frame, '', 280)
-    card.condition.tooltip = L['Click condition text on any card to view or edit its conditions.']
+    card.condition.tooltip = L['Click to edit']
     card.condition:SetPoint('TOPLEFT', 26, -46)
     card.condition:SetHeight(24)
     local caption = card.condition:GetFontString()
@@ -322,6 +411,8 @@ function addon:CreateRotationCard(parent)
     caption:SetWidth(274)
     caption:SetJustifyH('LEFT')
     caption:SetWordWrap(true)
+    -- The live bar sits left of the condition text, which keeps clear of it (as on the switch condition).
+    self:EnableMarkerLane(card.condition, caption)
 
     for _, entry in ipairs({
         { 'up', 'up', L['Move Up'] },
@@ -367,6 +458,27 @@ function addon:CreateRotationCard(parent)
     -- @param readOnly boolean|nil  True disables every control but Help.
     function card:Place(model, readOnly)
         self.model = model
+
+        -- A list branch's unsaved border surrounds the whole branch (header and arms), not just its header.
+        local ring = frame.unsavedRingFrame
+
+        if ring then
+            ring:ClearAllPoints()
+            ring:SetPoint('TOPLEFT', frame, 'TOPLEFT', -3, 3)
+
+            if model.groupHeight then
+                -- The card's width follows the viewport; only the branch's height is taller than the card.
+                ring:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', 3, 3)
+                ring:SetHeight(model.groupHeight + 6)
+            else
+                ring:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', 3, -3)
+            end
+        end
+
+        -- A read-only rotation's condition says nothing: there is nothing to click.
+        self.condition.tooltip = not readOnly and L['Click to edit'] or nil
+        -- Above the branch frames drawn behind the cards (those sit one level above the canvas).
+        frame:SetFrameLevel(parent:GetFrameLevel() + 2)
         frame:ClearAllPoints()
         frame:SetPoint('TOPLEFT', parent, 'TOPLEFT', model.x, -model.y)
         frame:SetSize(model.width, model.height)
@@ -446,9 +558,9 @@ function addon:CreateRotationCard(parent)
         ))
 
         self.condition:GetFontString():SetTextColor(
-            model.invalid and 1 or .7,
-            model.invalid and .35 or .75,
-            model.invalid and .3 or .7
+            model.conditionInvalid and 1 or .7,
+            model.conditionInvalid and .35 or .75,
+            model.conditionInvalid and .3 or .7
         )
 
         local spell = addon.Platform and addon.Platform:GetSpellInfo(step.action)
@@ -675,15 +787,29 @@ function addon:CreateRotationCard(parent)
     -- Colors the card border: red for invalid data, amber when no action button holds its action, else the model's own
     -- border tone.
     -- @param invalid boolean|nil  True when the step has invalid data.
-    function card:SetValidation(invalid)
+    -- @param conditionInvalid boolean|nil  True when the step's condition itself has a problem; nil leaves the text colour.
+    function card:SetValidation(invalid, conditionInvalid)
         self.model.invalid = invalid
+
+        -- The condition text is red only for a problem in the condition itself; it repaints with the border.
+        if conditionInvalid ~= nil then
+            self.model.conditionInvalid = conditionInvalid
+
+            self.condition:GetFontString():SetTextColor(
+                conditionInvalid and 1 or .7,
+                conditionInvalid and .35 or .75,
+                conditionInvalid and .3 or .7
+            )
+        end
 
         local tone = invalid and tones.red
             or self.model.unbound and not self.model.inactive and tones.amber
             or tones[self.model.border]
             or tones.green
 
-        self.decoration:SetColors(tone[1], tone[2], tone[3], .75, .06)
+        -- A list branch's header sits inside the branch's own frame, so it draws no border unless it has a problem.
+        local hidden = self.model.listBranch and not invalid and not (self.model.unbound and not self.model.inactive)
+        self.decoration:SetColors(tone[1], tone[2], tone[3], hidden and 0 or .75, .06)
     end
 
     -- Returns the card to the pool: hides it, drops focus, selection and the glow preview, and clears every script the

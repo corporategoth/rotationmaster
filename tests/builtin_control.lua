@@ -442,7 +442,7 @@ test(
                 and ww.nameLabel.alpha == .5
                 and ww.tooltip:find('Disabled by you', 1, true)
                 and not ww.statusLabel:GetText():find('Disabled', 1, true)
-                and ww.enableButton:IsShown()
+                and not (ww.enableButton and ww.enableButton:IsShown())
         )
 
         local mw = controls[key(a, 'rm.retail.monk.mistweaver')]
@@ -456,9 +456,10 @@ test(
             )
         )
 
-        -- Alpha low and Zulu high both match from level 1 but differ in priority: no bar, the tooltip names each other.
+        -- Alpha low and Zulu high have the identical switch, so which one wins is ambiguous even at different
+        -- priorities: the bar shows and the tooltip names each other.
         assert(
-            not (controls[low].noticeBar and controls[low].noticeBar:IsShown()) and controls[low].tooltip:find(
+            controls[low].noticeBar and controls[low].noticeBar:IsShown() and controls[low].tooltip:find(
                 'Zulu high',
                 1,
                 true
@@ -467,8 +468,6 @@ test(
 
         local brew = controls[key(a, 'rm.retail.monk.brewmaster')]
         assert(brew.tooltip:find('Reference (Icy Veins)', 1, true))
-        ww.enableButton:Click()
-        assert(prefs(a)['rm.retail.monk.windwalker'] == nil, 'one click did not turn it back on')
         browser:Release()
     end
 )

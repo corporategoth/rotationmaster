@@ -63,12 +63,77 @@ function addon:RotationUnsavedState(before, after)
     local old = self.RotationData.IndexRotationSteps(before, { allowMissingIds = true })
     local current = self.RotationData.IndexRotationSteps(after)
 
+    -- A card is moved when it changed parent or arm, or fell out of the longest run of its siblings that kept their
+    -- relative order. Cards that merely shifted because something else moved (or because an ancestor moved) are not.
+    local moved = {}
+    local groups, order = {}, {}
+
+    for _, row in ipairs(current and current.rows or {}) do
+        local previous = old and old.byId[row.step.id]
+
+        if previous then
+            local sameParent = previous.parentId == row.parentId
+                and previous.arm == row.arm
+                and previous.section == row.section
+
+            if sameParent then
+                local key = tostring(row.section) .. '|' .. tostring(row.parentId) .. '|' .. tostring(row.arm)
+
+                if not groups[key] then
+                    groups[key] = {}
+                    order[#order + 1] = key
+                end
+
+                groups[key][#groups[key] + 1] = { id = row.step.id, rank = previous.ordinal or 0 }
+            else
+                moved[row.step.id] = true
+            end
+        end
+    end
+
+    -- Marks every sibling outside the longest increasing run of baseline ranks (the fewest cards that moved).
+    for _, key in ipairs(order) do
+        local items = groups[key]
+        local tails, link = {}, {}
+
+        for index, item in ipairs(items) do
+            local low, high = 1, #tails
+
+            while low <= high do
+                local mid = math.floor((low + high) / 2)
+
+                if items[tails[mid]].rank < item.rank then
+                    low = mid + 1
+                else
+                    high = mid - 1
+                end
+            end
+
+            tails[low] = index
+            link[index] = low > 1 and tails[low - 1] or nil
+        end
+
+        local keep = {}
+        local at = tails[#tails]
+
+        while at do
+            keep[at] = true
+            at = link[at]
+        end
+
+        for index, item in ipairs(items) do
+            if not keep[index] then
+                moved[item.id] = true
+            end
+        end
+    end
+
     for _, row in ipairs(current and current.rows or {}) do
         local previous = old and old.byId[row.step.id]
 
         result.cards[row.step.id] = not previous
             or not self:UnsavedDataEqual(previous.step, row.step)
-            or not self:UnsavedDataEqual(previous.path, row.path)
+            or moved[row.step.id] == true
     end
 
     return result

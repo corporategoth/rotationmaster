@@ -693,7 +693,8 @@ end
 -- @param control Frame  The control to mark.
 -- @param text string|nil  The problem text shown as the tooltip; nil or a non-string clears the outline and restores
 --   the control's own tooltip.
-function addon:SetWorkbenchProblem(control, text)
+-- @param bar boolean|nil  True marks a list row with a red bar down its left edge instead of the outline.
+function addon:SetWorkbenchProblem(control, text, bar)
     if type(text) ~= 'string' then
         text = nil
     end
@@ -702,7 +703,16 @@ function addon:SetWorkbenchProblem(control, text)
         return
     end
 
-    if text and not control.problemEdges then
+    -- A list row marks its problem with a red bar down the left edge (like its other markers), not a box.
+    if bar then
+        if text and not control.problemBar then
+            control.problemBar = control:CreateTexture(nil, 'OVERLAY')
+            control.problemBar:SetPoint('TOPLEFT')
+            control.problemBar:SetPoint('BOTTOMLEFT')
+            control.problemBar:SetWidth(3)
+            control.problemBar:SetColorTexture(.9, .25, .2, 1)
+        end
+    elseif text and not control.problemEdges then
         control.problemEdges = {}
 
         for _, side in ipairs({
@@ -740,6 +750,17 @@ function addon:SetWorkbenchProblem(control, text)
         end
     end
 
+    if control.problemBar then
+        if text then
+            control.problemBar:Show()
+        else
+            control.problemBar:Hide()
+        end
+
+        -- The row's conflict bar steps in beside it.
+        addon:SetWorkbenchNotice(control, control.noticeShown, control.noticeStrong)
+    end
+
     if text then
         control.tooltip = text
     else
@@ -748,10 +769,10 @@ function addon:SetWorkbenchProblem(control, text)
     end
 end
 
--- Shows an amber bar down a row's left edge: a notice, not a blocking problem.
+-- Shows a violet bar down a row's left edge, marking a conflict (not a blocking problem, which is the red bar).
 -- @param control Frame  The row.
 -- @param shown boolean|nil  True to show the bar.
--- @param strong boolean|nil  True (a tie) makes it wider and brighter.
+-- @param strong boolean|nil  Kept for callers; every bar is the same width.
 function addon:SetWorkbenchNotice(control, shown, strong)
     if not shown and not control.noticeBar then
         return
@@ -759,19 +780,68 @@ function addon:SetWorkbenchNotice(control, shown, strong)
 
     if not control.noticeBar then
         control.noticeBar = control:CreateTexture(nil, 'OVERLAY')
-        control.noticeBar:SetPoint('TOPLEFT')
-        control.noticeBar:SetPoint('BOTTOMLEFT')
     end
 
-    -- Violet, not the amber of the unsaved-changes rail: this one marks an ambiguous switch.
-    control.noticeBar:SetWidth(strong and 5 or 3)
-    control.noticeBar:SetColorTexture(.74, .5, 1, strong and 1 or .7)
+    -- Violet, not the amber of the unsaved-changes rail: this one marks a conflict. It sits right of the red problem
+    -- bar when both show.
+    local inset = control.problemBar and control.problemBar:IsShown() and 4 or 0
+    control.noticeBar:ClearAllPoints()
+    control.noticeBar:SetPoint('TOPLEFT', inset, 0)
+    control.noticeBar:SetPoint('BOTTOMLEFT', inset, 0)
+    control.noticeBar:SetWidth(3)
+    control.noticeBar:SetColorTexture(.74, .5, 1, 1)
+    control.noticeShown = shown == true
     control.noticeStrong = shown and strong or nil
 
     if shown then
         control.noticeBar:Show()
     else
         control.noticeBar:Hide()
+    end
+end
+
+-- Wraps text in the colour escape for a { r, g, b } colour (components 0 to 1), for tooltip headers.
+-- @param color table  { r, g, b }.
+-- @param text string  The text.
+-- @return string  The coloured text.
+function addon:ColorizeText(color, text)
+    return string.format(
+        '|cff%02x%02x%02x%s|r',
+        math.floor(color[1] * 255 + .5),
+        math.floor(color[2] * 255 + .5),
+        math.floor(color[3] * 255 + .5),
+        text
+    )
+end
+
+-- Lays out a list row's left-edge bars side by side, always in the same order (conflict violet, problem red, unsaved
+-- pink; 3 px wide, full height, 2 px apart) and
+-- moves the row's text clear of them.
+-- @param control table  The row.
+-- @param texts table[]  The row's text regions, each as { region, baseX }; they move right by the bars' width.
+function addon:LayoutRowBars(control, texts)
+    local x = 0
+
+    -- Indexed, not ipairs: the first bar may be missing while a later one shows.
+    local order = { control.noticeBar, control.problemBar, control.unsavedMark }
+
+    for index = 1, 3 do
+        local bar = order[index]
+
+        if bar and bar:IsShown() then
+            bar:ClearAllPoints()
+            bar:SetPoint('TOPLEFT', x, 0)
+            bar:SetPoint('BOTTOMLEFT', x, 0)
+            bar:SetWidth(3)
+            x = x + 5
+        end
+    end
+
+    for _, entry in ipairs(texts or {}) do
+        local region, base = entry[1], entry[2]
+        local point, relative, relativePoint, _, y = region:GetPoint(1)
+        region:ClearAllPoints()
+        region:SetPoint(point, relative, relativePoint, base + x, y)
     end
 end
 

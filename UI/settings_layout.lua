@@ -670,7 +670,8 @@ function addon:InstallSettingsLayout(p)
         local geometry = addon:GetWorkbenchRosterGeometry(self.frame:GetWidth(), self.frame:GetHeight())
         self.rosterGeometry = geometry
         local side = geometry.sidebarWidth
-        local height = math.max(1, self.frame:GetHeight() - 38)
+        -- The footer row (buttons 8 px up, 24 tall) and its gap take 46 px, as in the rotation editor.
+        local height = math.max(1, self.frame:GetHeight() - 46)
         local sidebarHeight = geometry.sidebarHeight
         r.frame:SetSize(side, sidebarHeight)
         r.category:SetWidth(side)
