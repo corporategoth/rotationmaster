@@ -681,6 +681,11 @@ class Fast(unittest.TestCase):
         self.assertEqual(fast_tests.select(['tests/other.lua'], self.COMMANDS), [['lua5.1', 'tests/other.lua']])
         self.assertEqual(fast_tests.select(['Core/nothing.lua', 'Libs/X/a.lua'], self.COMMANDS), [])
 
+    def test_fast_selection_excludes_the_slow_corpus(self):
+        commands = [['lua5.1', 'tests/default_corpus.lua'], ['lua5.1', 'tests/other.lua']]
+        self.assertEqual(fast_tests.select(['tests/default_corpus.lua'], commands), [])
+        self.assertEqual(fast_tests.select(['tests/other.lua'], commands), [['lua5.1', 'tests/other.lua']])
+
     def test_a_locale_or_text_bundle_edit_picks_the_locale_suites(self):
         commands = [['lua5.1', 'tests/client_locale.lua'], ['lua5.1', 'tests/text_bundles.lua'], ['lua5.1', 'tests/other.lua']]
         for changed in ('Locales/deDE.lua', 'Modules/RotationMaster_HelpText/frFR.lua', 'Core/text_bundles.lua'):

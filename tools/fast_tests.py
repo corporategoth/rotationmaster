@@ -12,6 +12,7 @@ A suite is picked when it is in tools/check's command list and
   - its name is the changed file's name, starts with it (`tests/rotation_scope_*.lua`), ends with it, or is
     prefixed by the file's folder (`Platform/unit_health.lua` -> `tests/platform_unit_health.lua`), or
   - for a Built In pack, it is the class scenario suite for that edition (`tests/defaults_tbc_mage.lua`).
+Suites listed in tools/slow_tests.txt are left to CI, including its sharded corpus gate.
 Nothing is picked for a file with no suite of its own; that is what the full suite at push time and CI are for.
 At most --max suites run (default 25); more than that means a shared file changed and the full suite is the
 right tool. A failing suite prints its output and the exit status is 1.
@@ -61,7 +62,10 @@ def candidates(changed):
 def select(changed, commands):
     exact, loose = candidates(changed)
     picked = []
+    slow = check_all.load_baseline(ROOT / 'tools/slow_tests.txt')
     for command in commands:
+        if check_all.label(command) in slow:
+            continue
         if command[0] != 'lua5.1' or len(command) < 2 or not command[1].startswith('tests/'):
             continue
         stem = command[1][len('tests/'):].rsplit('.', 1)[0]
