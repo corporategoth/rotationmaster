@@ -456,9 +456,9 @@ test(
             )
         )
 
-        -- Alpha low and Zulu high both match from level 1: amber, naming each other.
+        -- Alpha low and Zulu high both match from level 1 but differ in priority: no bar, the tooltip names each other.
         assert(
-            controls[low].noticeBar and controls[low].noticeBar:IsShown() and controls[low].tooltip:find(
+            not (controls[low].noticeBar and controls[low].noticeBar:IsShown()) and controls[low].tooltip:find(
                 'Zulu high',
                 1,
                 true
@@ -466,7 +466,7 @@ test(
         )
 
         local brew = controls[key(a, 'rm.retail.monk.brewmaster')]
-        assert(brew.noticeBar:IsShown() and brew.tooltip:find('Reference (Icy Veins)', 1, true))
+        assert(brew.tooltip:find('Reference (Icy Veins)', 1, true))
         ww.enableButton:Click()
         assert(prefs(a)['rm.retail.monk.windwalker'] == nil, 'one click did not turn it back on')
         browser:Release()

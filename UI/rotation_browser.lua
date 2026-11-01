@@ -587,8 +587,8 @@ local function create(parent)
 
         addon:SetWorkbenchProblem(control, blockedText)
         -- Grey when it is switched off (by you, or as it ships); amber when
-        -- its switch can match together with another rotation, so only
-        -- priority decides (stronger on a tie). The tooltip says which apply.
+        -- its switch ties on priority with another rotation that can match
+        -- with it. The tooltip says which apply.
         local disabledText
 
         if entry.readOnly and entry.builtinState == 'user-disabled' then
@@ -614,7 +614,8 @@ local function create(parent)
         end
 
         if addon.SetWorkbenchNotice then
-            addon:SetWorkbenchNotice(control, overlapText and true or false, tie)
+            -- Only an exact tie is flagged: any other overlap is decided by priority and reads in the tooltip.
+            addon:SetWorkbenchNotice(control, tie == true, true)
         end
 
         local lines = {}
