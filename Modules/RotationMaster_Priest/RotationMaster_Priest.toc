@@ -1,6 +1,6 @@
 ## Interface: 11509, 20506, 50504, 120105, 16001
 ## X-Copyright: Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
-## Title: Rotation Master [|cffffffffPriest|r] |cff00aa00@project-version@|r
+## Title: Rotation Master [|cffffffffPriest|r]
 ## IconTexture: Interface\Icons\ClassIcon_Priest
 ## Notes: Rotation Master's Built In Priest rotations. Rotation Master loads this itself, only for a Priest, and only this edition's files.
 ## Author: PreZ
