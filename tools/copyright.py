@@ -171,11 +171,11 @@ def fixed(kind, text):
 
 
 def toc_problem(text):
-    if not text.startswith('## '):
-        return 'a TOC must start with a ## field: a leading # comment makes the client ignore every field in the file'
     fields = [line for line in text.split('\n') if line.startswith('## X-License:')]
     if fields != [TOC_LICENSE_FIELD]:
         return f'TOC licence field must be exactly "{TOC_LICENSE_FIELD}"'
+    if not text.startswith('## '):
+        return 'a TOC must start with a ## field: a leading # comment makes the client ignore every field in the file'
     return None
 
 
