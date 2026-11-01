@@ -368,7 +368,38 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
 
         -- An incomplete condition (a missing spell, an unresolved or unsupported field) is applied all the same: the
         -- editor, the cards and the rotation list show it as an error, so work in progress is never refused. Only a
-        -- closed, read-only or stale target stops an apply.
+        -- closed, read-only or stale target, or a validator that rewrites the draft, stops an apply.
+        local candidate = data.CopyData(snapshot)
+
+        -- Runs the announcement or the ordinary condition validator on the candidate copy, only to be sure it cannot
+        -- change the draft; what it answers does not matter.
+        -- @return boolean  The validator's answer.
+        local function validate()
+            if options.announcementTarget then
+                return addon:validateAnnouncementCondition(candidate, spec)
+            end
+
+            return addon:validateCondition(candidate, spec)
+        end
+
+        local ok
+
+        if addon.Diagnostics then
+            ok = addon.Diagnostics:Call({
+                module = "condition-editor",
+                operation = "validate",
+                customCode = true,
+            }, validate)
+        else
+            ok = pcall(validate)
+        end
+
+        if not ok then
+            return nil, "condition-validation-error"
+        end
+        if not unchanged(snapshot, candidate) then
+            return nil, "validation-mutated-condition"
+        end
         if not targetExists() then
             return nil, "condition-target-missing"
         end

@@ -288,11 +288,16 @@ test(
         local report = why(f)
         assert(report:find('Blizzard Assisted with brews (Built In) [brewmaster]: disabled by you', 1, true), report)
         local text = menuText(menu(f))
-        -- No Brewmaster pack is on, so the alternative that ships off is named too.
-        assert(text:find('2 Built In disabled: Blizzard Assisted with brews, Reference (Icy Veins)', 1, true), text)
+
+        -- A switched-off Built In is not offered in the menu, and the menu no longer carries a note about them.
+        assert(
+            not text:find('Built In disabled', 1, true) and not text:find('Blizzard Assisted with brews', 1, true),
+            text
+        )
+
         assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster.guide', true))
         text = menuText(menu(f))
-        assert(text:find('1 Built In disabled: Blizzard Assisted with brews|r', 1, true), text)
+        assert(not text:find('Built In disabled', 1, true), text)
         assert(a:SetDefaultRotationEnabled('rm.retail.monk.brewmaster.guide', false))
         -- A profile saved before the repair: a shipped-enabled pack off, a shipped-off pack off
         -- and on, and another class's pack off (unknown here, left alone).

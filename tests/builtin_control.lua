@@ -456,18 +456,15 @@ test(
             )
         )
 
-        -- Alpha low and Zulu high have the identical switch, so which one wins is ambiguous even at different
-        -- priorities: the bar shows and the tooltip names each other.
+        -- Alpha low and Zulu high can both match but differ in priority, so priority decides: that is no conflict, and
+        -- neither the bar nor the tooltip mention it.
         assert(
-            controls[low].noticeBar and controls[low].noticeBar:IsShown() and controls[low].tooltip:find(
-                'Zulu high',
-                1,
-                true
-            )
+            not (controls[low].noticeBar and controls[low].noticeBar:IsShown())
+                and not controls[low].tooltip:find('Zulu high', 1, true)
         )
 
         local brew = controls[key(a, 'rm.retail.monk.brewmaster')]
-        assert(brew.tooltip:find('Reference (Icy Veins)', 1, true))
+        assert(not (brew.noticeBar and brew.noticeBar:IsShown()) and not brew.tooltip:find('Conflict', 1, true))
         browser:Release()
     end
 )

@@ -180,7 +180,7 @@ test('actual minimap selection shares persistence and Auto path', function()
     for _, row in ipairs(rows) do
         if row.arg1 == key then
             choose = row
-        elseif row.text == 'Automatic Switching' then
+        elseif row.text and row.text:find('Automatic Switching', 1, true) then
             auto = row
         end
     end

@@ -310,7 +310,7 @@ test('list siblings touch and branch arms have nested passive bounds with exact 
     local before, b, t1, t2, f1, after =
         byId(s, 'before'), byId(s, 'b'), byId(s, 't1'), byId(s, 't2'), byId(s, 'f1'), byId(s, 'after')
 
-    assert(before.y + before.height == b.y and t1.y + t1.height == t2.y, 'list retained diagram gaps')
+    assert(before.y + before.height + 6 == b.y and t1.y + t1.height + 6 == t2.y, 'list cards are not 6 apart')
     local parent, yes, no
 
     for _, group in ipairs(s.groups or {}) do
@@ -325,7 +325,7 @@ test('list siblings touch and branch arms have nested passive bounds with exact 
         end
     end
 
-    assert(parent and yes and no and no.y + no.height == yes.y and parent.y + parent.height == after.y)
+    assert(parent and yes and no and no.y + no.height == yes.y and parent.y + parent.height + 6 == after.y)
 
     assert(
         no.y < f1.y and f1.y + f1.height <= no.y + no.height and yes.y < t1.y and t2.y + t2.height <= yes.y + yes.height

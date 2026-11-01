@@ -221,8 +221,9 @@ test('scoped staged commands apply once and discard/readonly/failed validation d
     assert(body(a).revision == 2)
     assert(not w:Command('SetBodyField', 'revision', 80))
     assert(w:Command('SetBodyField', 'priority', 'bad'))
-    assert(not w:Apply())
-    assert(body(a).revision == 2)
+    -- An incomplete or invalid rotation is saved all the same (the list marks it unselectable), so this apply advances.
+    assert(w:Apply())
+    assert(body(a).revision == 3)
 end)
 
 test('pending workspace first save is one then next real apply is two', function()

@@ -24,7 +24,7 @@ local function body(name, priority)
     }
 end
 
-test('explicit priorities sort high first, packs and yours alike, with stable name and identity ties', function()
+test('explicit priorities sort high first, packs and yours alike, with stable identifier ties', function()
     local a = fixture()
 
     local rows = {
@@ -37,7 +37,7 @@ test('explicit priorities sort high first, packs and yours alike, with stable na
     }
 
     local order = a:GetOrderedAutoSwitchRotations(0, rows)
-    assert(table.concat(order, ',') == 'pack:high,b,pack:tie,a,z,low', table.concat(order, ','))
+    assert(table.concat(order, ',') == 'pack:high,a,b,pack:tie,z,low', table.concat(order, ','))
     assert(rows.low.priority == -2 and rows.a.name == 'Same', 'selection mutated saved rotations')
 end)
 

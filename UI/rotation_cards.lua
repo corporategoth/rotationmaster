@@ -220,7 +220,7 @@ function addon:CreateLiveClock(parent)
     back:SetVertexColor(.2, .22, .26, .9)
 
     local ok, dial = pcall(CreateFrame, 'Cooldown', nil, clock, 'CooldownFrameTemplate')
-    clock.dial = ok and dial or nil
+    clock.dial = ok and type(dial) == 'table' and type(dial.SetCooldown) == 'function' and dial or nil
 
     if clock.dial then
         local dial = clock.dial
@@ -375,8 +375,12 @@ function addon:CreateRotationCard(parent)
     ring:SetPoint('TOPLEFT', frame, 'TOPLEFT', -3, 3)
     ring:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', 3, -3)
     ring:EnableMouse(false)
+
     -- However it is anchored, the ring never takes a click: its hit rectangle is empty.
-    ring:SetHitRectInsets(10000, 10000, 10000, 10000)
+    if ring.SetHitRectInsets then
+        ring:SetHitRectInsets(10000, 10000, 10000, 10000)
+    end
+
     ring.decoration = self:CreateRoundedCardDecoration(ring)
     ring:Hide()
     frame.unsavedRingFrame = ring

@@ -257,7 +257,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             end
         end
 
-        self.view.viewportWidth = self.canvas and self.canvas.frame:GetWidth() - 12 or 720
+        self.view.viewportWidth = self.canvas and self.canvas.frame:GetWidth() or 720
         self.view.unbound, self.bindingSignature = self:CollectBindings(snapshot)
         local scene, problem = addon:BuildRotationCanvas(snapshot, self.view)
 
@@ -266,7 +266,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             return
         end
 
-        addon:FitRotationSceneWidth(scene, self.view.viewportWidth)
+        -- The list keeps a 6 px gutter on each side for a card's unsaved border, so cards fill 12 px less than the viewport.
+        addon:FitRotationSceneWidth(scene, self.view.viewportWidth - 12)
         local validation = data.ValidateBody(snapshot, addon:GetImportValidationOptions())
         self.validation = validation
         self:CollectSectionProblems(snapshot, validation)

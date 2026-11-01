@@ -233,14 +233,14 @@ test('the rotation editor reflows live and list or grid cards fill the canvas',f
     -- Diagram cards keep their design width; the list fills the viewport.
     for _,card in ipairs(pane.canvas.cards) do assert(card.frame:GetWidth()==340,'diagram card changed width') end
     pane.view.layout='list';pane:Render();layout.settle()
-    local right=pane.canvas.frame:GetWidth()-4
+    local right=pane.canvas.frame:GetWidth()-4-12
     for _,card in ipairs(pane.canvas.cards) do
         local model=card.model;local nested=model.x>0
         assert(model.x+model.width==right-(nested and 8 or 0),'list card does not reach the viewport edge')
         assert(card.fields:GetWidth()==model.width-56,'card fields do not follow the card')
     end
     browser:SetWidth(776);layout.settle();assertEditor(browser,frames,'narrow list')
-    right=pane.canvas.frame:GetWidth()-4;assert(pane.canvas.cards[1].model.x+pane.canvas.cards[1].model.width==right,'list card did not narrow with the pane')
+    right=pane.canvas.frame:GetWidth()-4-12;assert(pane.canvas.cards[1].model.x+pane.canvas.cards[1].model.width==right,'list card did not narrow with the pane')
     pane.contentTabs.cooldowns:Click();layout.settle();browser:SetWidth(1400);layout.settle();assertEditor(browser,frames,'cooldown grid')
     local first,second=pane.canvas.cards[1].model,pane.canvas.cards[2].model
     assert(first.width>340 and first.width==second.width and second.x==first.width+24,'cooldown grid does not share the row')

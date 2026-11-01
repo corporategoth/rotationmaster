@@ -204,14 +204,19 @@ local function card(pane, id)
     return visibleCard(pane, id)
 end
 
+-- A card's live bar is drawn in its condition field's marker lane, beside any other marker.
+local function shown(c)
+    return c.condition.markerLane.shown.live == true
+end
+
 local function bar(c)
-    return c.liveBar:IsShown() and c.liveBar.state
+    return shown(c) and c.liveBar.state
 end
 
 local GREEN, RED, GREY = { .3, .85, .4, 1 }, { .9, .27, .22, 1 }, { .55, .55, .55, .55 }
 
 local function painted(c, want)
-    local got = c.liveBar.color
+    local got = c.condition.markerLane.color.live
     return got and got[1] == want[1] and got[2] == want[2] and got[3] == want[3] and got[4] == want[4]
 end
 
@@ -238,7 +243,7 @@ local function tooltip(f)
     return lines
 end
 
-local CLICK = 'Click condition text on any card to view or edit its conditions.'
+local CLICK = 'Click to edit'
 
 test('bars show matching, not matching and unavailable; no condition shows nothing; no dot remains', function()
     local f, parent, env = fixture(2)
@@ -248,7 +253,7 @@ test('bars show matching, not matching and unavailable; no condition shows nothi
     assert(bar(yes).status == 'satisfied' and painted(yes, GREEN), 'yes')
     assert(bar(no).status == 'unsatisfied' and painted(no, RED), 'no')
     assert(bar(odd).status == 'unavailable' and painted(odd, GREY) and bar(odd).reason == 'target-unreadable', 'odd')
-    assert(not card(pane, 'plain').liveBar:IsShown(), 'a card with no condition has a bar')
+    assert(not shown(card(pane, 'plain')), 'a card with no condition has a bar')
     assert(bar(card(pane, 'stop')).status == 'satisfied', 'Stop')
 
     assert(
@@ -256,7 +261,7 @@ test('bars show matching, not matching and unavailable; no condition shows nothi
         'Branch and its child'
     )
 
-    assert(not card(pane, 'forced').liveBar:IsShown(), 'a forced branch (condition skipped) has a bar')
+    assert(not shown(card(pane, 'forced')), 'a forced branch (condition skipped) has a bar')
     assert(yes.live == nil and pane.switchLive == nil, 'the old dot is still there')
 end)
 
@@ -266,8 +271,8 @@ test('the bar is a thin stripe inside the condition field, on its left edge', fu
 
     for _, id in ipairs({ 'yes', 'branch', 'inner', 'stop', 'cd' }) do
         local c = card(pane, id)
-        local stripe = c.liveBar
-        assert(stripe:GetParent() == c.condition, id .. ': bar is not inside the condition field')
+        local stripe = c.condition.markerLane.textures.live
+        assert(stripe and stripe:GetParent() == c.condition, id .. ': bar is not inside the condition field')
         local point, relative, relativePoint, x, y = stripe:GetPoint(1)
 
         assert(
@@ -299,7 +304,8 @@ test(
         )
 
         assert(lines[2][1] == CLICK, 'second line ' .. tostring(lines[2] and lines[2][1]))
-        assert(lines[3][1] == 'Checked 3 seconds ago.', 'third line ' .. tostring(lines[3] and lines[3][1]))
+        -- When it was checked is shown by the editor's live dial, no longer in the tooltip.
+        assert(lines[3] == nil, 'third line ' .. tostring(lines[3] and lines[3][1]))
         lines = tooltip(f)
         local no = card(pane, 'no')
         no.condition.scripts.OnEnter(no.condition)
@@ -382,7 +388,7 @@ test('0 turns the bars off: no timer, no evaluation, no bars', function()
     local f, parent, env = fixture(0)
     local pane = assert(f.addon:CreateRotationEditor(parent, 0, 'mine'))
     assert(env.running() == 0 and env.evaluated() == 0)
-    assert(not card(pane, 'yes').liveBar:IsShown() and not pane.switchLiveBar:IsShown())
+    assert(not shown(card(pane, 'yes')) and not pane.switchLiveBar:IsShown())
 end)
 
 test('changing the frequency restarts the open editor\'s timer; 0 clears the bars', function()
@@ -393,7 +399,7 @@ test('changing the frequency restarts the open editor\'s timer; 0 clears the bar
     assert(env.running() == 1 and env.timers[#env.timers].delay == 5)
     f.addon.db.profile.live_config_update = 0
     f.addon:RestartLiveStatus()
-    assert(env.running() == 0 and not card(pane, 'yes').liveBar:IsShown())
+    assert(env.running() == 0 and not shown(card(pane, 'yes')))
     pane:Release()
     f.addon.db.profile.live_config_update = 3
     f.addon:RestartLiveStatus()
