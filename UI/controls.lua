@@ -763,8 +763,9 @@ function addon:SetWorkbenchNotice(control, shown, strong)
         control.noticeBar:SetPoint('BOTTOMLEFT')
     end
 
+    -- Violet, not the amber of the unsaved-changes rail: this one marks an ambiguous switch.
     control.noticeBar:SetWidth(strong and 5 or 3)
-    control.noticeBar:SetColorTexture(1, .72, .25, strong and 1 or .7)
+    control.noticeBar:SetColorTexture(.74, .5, 1, strong and 1 or .7)
     control.noticeStrong = shown and strong or nil
 
     if shown then

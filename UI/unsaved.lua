@@ -5,7 +5,8 @@
 -- never share a meaning. It only draws and reads the draft; the comparison itself is addon:RotationUnsavedState in
 -- Core/unsaved_changes.lua, and nothing here saves or discards. Loaded in the UI/ block of RotationMaster.toc after
 -- UI/drag_presentation.lua.
-local _, addon = ...
+local addon_name, addon = ...
+local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Shows or hides a red border on a control and records the validation message. Safe on nil; textures are created the
 -- first time a control is marked invalid.
@@ -53,6 +54,116 @@ function addon:SetWorkbenchInvalid(control, invalid, message)
     end
 end
 
+-- Marker lanes. A field that can carry several left-edge bars (ambiguous, live, unsaved) lays them out side by side in
+-- this fixed order, 3 pixels each with a 1 pixel gap, and moves its text clear of them, so the bars never overlap the
+-- text or each other. The field's tooltip lists the same markers top to bottom in the same order, each line in its bar's
+-- colour. Fields without a lane keep their single bar over the edge.
+local MARKER_ORDER = { 'ambiguous', 'live', 'unsaved' }
+local MARKER_WIDTH, MARKER_GAP = 3, 1
+local UNSAVED_COLOR = { 1, .7, .15, .95 }
+addon.AMBIGUOUS_COLOR = { .74, .5, 1, 1 }
+
+-- Opts a field into a marker lane; `text` is the field's text region, which the lane keeps clear of the bars.
+-- @param control table  The field.
+-- @param text table  The text region (a FontString) anchored to the field's left edge.
+function addon:EnableMarkerLane(control, text)
+    local base = {}
+
+    for index = 1, text:GetNumPoints() do
+        base[index] = { text:GetPoint(index) }
+    end
+
+    control.markerLane = { text = text, base = base, shown = {}, color = {}, tip = {}, textures = {} }
+end
+
+-- Positions the lane's visible bars and shifts the text right of them.
+-- @param control table  The field with a lane.
+local function layoutLane(control)
+    local lane = control.markerLane
+    local x = 0
+
+    for _, kind in ipairs(MARKER_ORDER) do
+        local texture = lane.textures[kind]
+
+        if texture then
+            if lane.shown[kind] then
+                texture:ClearAllPoints()
+                texture:SetPoint('TOPLEFT', control, 'TOPLEFT', x, 0)
+                texture:SetPoint('BOTTOMLEFT', control, 'BOTTOMLEFT', x, 0)
+                texture:SetWidth(MARKER_WIDTH)
+                texture:Show()
+                x = x + MARKER_WIDTH + MARKER_GAP
+            else
+                texture:Hide()
+            end
+        end
+    end
+
+    lane.inset = x
+    lane.text:ClearAllPoints()
+
+    for _, point in ipairs(lane.base) do
+        lane.text:SetPoint(point[1], point[2], point[3], (point[4] or 0) + x, point[5] or 0)
+    end
+end
+
+-- Shows or hides one marker in the field's lane.
+-- @param control table  The field with a lane.
+-- @param kind string  'ambiguous', 'live' or 'unsaved'.
+-- @param shown boolean  Whether the bar shows.
+-- @param color table  { r, g, b, a } of the bar and its tooltip line.
+-- @param tip string|function|nil  The tooltip line (or a function returning lines) for this marker.
+function addon:SetLaneMarker(control, kind, shown, color, tip)
+    local lane = control.markerLane
+
+    if not lane then
+        return
+    end
+
+    if shown and not lane.textures[kind] then
+        lane.textures[kind] = control:CreateTexture(nil, 'OVERLAY')
+    end
+
+    lane.shown[kind] = shown == true
+    lane.color[kind] = color
+    lane.tip[kind] = tip
+
+    if lane.textures[kind] and color then
+        lane.textures[kind]:SetColorTexture(color[1], color[2], color[3], color[4] or 1)
+    end
+
+    layoutLane(control)
+end
+
+-- The tooltip lines of a lane's visible markers in bar order, each with its colour.
+-- @param control table  The field with a lane.
+-- @return table[]  Entries { text, color } top to bottom.
+function addon:LaneTooltipLines(control)
+    local lines = {}
+    local lane = control.markerLane
+
+    for _, kind in ipairs(MARKER_ORDER) do
+        local tip = lane and lane.shown[kind] and lane.tip[kind]
+
+        if type(tip) == 'function' then
+            tip = tip()
+        end
+        if type(tip) == 'string' then
+            tip = { tip }
+        end
+
+        for _, text in ipairs(tip or {}) do
+            if type(text) == 'table' then
+                lines[#lines + 1] = text
+            else
+                lines[#lines + 1] = { text = text, color = lane.color[kind] }
+            end
+        end
+    end
+
+    return lines
+end
+
 -- Shows or hides the amber unsaved rail on a control (safe on nil); the texture is created on first use. A separate
 -- amber rail preserves the meaning of validation/negation borders.
 -- @param control table|nil  The control.
@@ -63,6 +174,11 @@ function addon:SetWorkbenchUnsaved(control, changed)
     end
 
     control.rmUnsaved = changed == true
+
+    if control.markerLane then
+        self:SetLaneMarker(control, 'unsaved', changed == true, UNSAVED_COLOR, L['Unsaved'])
+        return
+    end
 
     if not control.unsavedMark then
         control.unsavedMark = control:CreateTexture(nil, 'OVERLAY')

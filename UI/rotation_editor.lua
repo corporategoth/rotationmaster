@@ -1008,7 +1008,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     pane.switchLabel.art:SetAlpha(.1)
     addon:AlignWorkbenchTextLeft(pane.switchLabel, 0)
     pane.switch.tooltip = L['Click condition text on any card to view or edit its conditions.']
-    -- The switch condition's live bar, and its state first in the tooltip.
+    -- The switch condition's markers (ambiguous, live, unsaved) sit side by side left of its text, and the tooltip lists
+    -- them in the same order.
+    addon:EnableMarkerLane(pane.switch, pane.switchText)
     pane.switchLiveBar = addon:CreateLiveStatusBar(pane.switch)
 
     do
@@ -1018,8 +1020,24 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             if enter then
                 enter(control, ...)
             end
-            if pane.switchLiveBar.state then
-                addon:ShowConditionFieldTooltip(control, control.tooltip, pane.switchLiveBar.state)
+
+            local lines = addon:LaneTooltipLines(control)
+
+            if #lines > 0 and GameTooltip then
+                -- One line per marker in bar order, each in its bar's colour; the field's own text comes last.
+                GameTooltip:SetOwner(control, 'ANCHOR_RIGHT')
+                GameTooltip:SetText(lines[1].text, lines[1].color[1], lines[1].color[2], lines[1].color[3], 1, true)
+
+                for index = 2, #lines do
+                    local color = lines[index].color
+                    GameTooltip:AddLine(lines[index].text, color[1], color[2], color[3], true)
+                end
+
+                if control.tooltip then
+                    GameTooltip:AddLine(control.tooltip, 1, 1, 1, true)
+                end
+
+                GameTooltip:Show()
             end
         end)
     end
@@ -1151,12 +1169,12 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     -- Collects what else bears on selection, kept off the page (vertical space is scarce): where it loads (the
     -- Read-Only pill's tooltip), and the specialization being played and overlapping switches (the switch's tooltip,
-    -- with an amber edge on the switch for an overlap).
+    -- with an ambiguous bar on the switch for an overlap).
     -- @return string|nil  The notes joined by newlines; nil when there are none.
-    -- @return boolean  True when the switch overlaps another rotation's (the amber edge).
+    -- @return string|nil  What the switch overlaps with (the ambiguous bar's tooltip line); nil when nothing.
     -- @return string|nil  Where the rotation loads, from its applicability; nil when unknown.
     function pane:SwitchNotes()
-        local lines, amber = {}, false
+        local lines, ambiguous = {}, nil
         local scope
 
         if self.workspace.readOnly and not self.workspace.preview and addon.GetDefaultRotation then
@@ -1204,35 +1222,30 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             and spec == addon.currentSpec
             and addon.GetSwitchOverlaps
         then
-            local overlap = addon:DescribeSwitchOverlap(addon:GetSwitchOverlaps(spec)[self.workspace.id])
+            local overlap, tie = addon:DescribeSwitchOverlap(addon:GetSwitchOverlaps(spec)[self.workspace.id])
 
-            if overlap then
+            -- Only an exact priority tie is ambiguous (as in the rotation list); other overlaps are decided by
+            -- priority and stay plain notes.
+            if overlap and tie then
+                ambiguous = overlap
+            elseif overlap then
                 lines[#lines + 1] = overlap
-                amber = true
             end
         end
 
-        return #lines > 0 and table.concat(lines, '\n') or nil, amber, where
+        return #lines > 0 and table.concat(lines, '\n') or nil, ambiguous, where
     end
 
-    -- Puts the selection notes into the switch tooltip, the amber overlap edge on the switch, and the Read-Only pill's
+    -- Puts the selection notes into the switch tooltip, the ambiguous marker on the switch, and the Read-Only pill's
     -- tooltip.
     function pane:ApplySwitchNotes()
-        local note, amber, where = self:SwitchNotes()
+        local note, ambiguous, where = self:SwitchNotes()
 
         self.switch.tooltip = note and (self.switchBaseTooltip and self.switchBaseTooltip .. '\n\n' .. note or note)
             or self.switchBaseTooltip
 
-        if addon.SetWorkbenchNotice then
-            addon:SetWorkbenchNotice(self.switch, amber, false)
-        end
-
-        -- The live bar steps inside the amber overlap edge when that shows.
-        local inset = amber and 4 or 0
-        local bar = self.switchLiveBar
-        bar:ClearAllPoints()
-        bar:SetPoint('TOPLEFT', self.switch, 'TOPLEFT', inset, 0)
-        bar:SetPoint('BOTTOMLEFT', self.switch, 'BOTTOMLEFT', inset, 0)
+        -- The ambiguous bar is the first marker: it explains the conflict in its own colour above the live state.
+        addon:SetLaneMarker(self.switch, 'ambiguous', ambiguous ~= nil, addon.AMBIGUOUS_COLOR, ambiguous)
 
         local pill = self.workspace.preview
             and L['Import preview: this is the incoming rotation, read-only. Nothing is saved until you click Import.']

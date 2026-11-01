@@ -7,6 +7,7 @@
 ## Version: @project-version@
 ## Dependencies: RotationMaster
 ## LoadOnDemand: 1
+## AllowLoadGameType: standard, mists, wrath, cata
 ## Group: RotationMaster
 ## X-Category: Action Bars
 ## Category: Action Bars

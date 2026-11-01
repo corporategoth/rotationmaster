@@ -240,6 +240,29 @@ function addon:CreateLiveStatusBar(field)
     function bar:SetState(state)
         self.state = state
 
+        if field.markerLane then
+            -- In a marker lane the field draws the bar beside its other markers, and its tooltip carries the headline.
+            local color = type(state) == 'table' and addon:LiveStatusColor(state.status)
+
+            addon:SetLaneMarker(field, 'live', type(state) == 'table', color or LIVE_COLORS.unavailable, function()
+                if type(state) ~= 'table' then
+                    return nil
+                end
+
+                local headline, details = addon:DescribeLiveStatus(state)
+                local lines = { headline }
+
+                for _, line in ipairs(details) do
+                    lines[#lines + 1] = { text = line, color = { .85, .85, .85, 1 } }
+                end
+
+                return lines
+            end)
+
+            self:Hide()
+            return
+        end
+
         if type(state) ~= 'table' then
             self:Hide()
             return
