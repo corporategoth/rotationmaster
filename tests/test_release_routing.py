@@ -84,7 +84,7 @@ elif args[:2] == ['release', 'download']:
 
     def test_github_publisher_gates_on_all_corpus_shards(self):
         workflow = (ROOT / '.github/workflows/release.yml').read_text(encoding='utf-8')
-        self.assertIn('run: python3 tools/check_all.py --skip-slow tools/corpus_ci_skip.txt --runtime "${RUNTIME}"', workflow)
+        self.assertIn('run: python3 tools/check_all.py --jobs 2 --skip-slow tools/corpus_ci_skip.txt --runtime "${RUNTIME}"', workflow)
         self.assertIn("run: python3 tools/check_all.py --only 'lua5.1 tests/default_corpus.lua'", workflow)
         self.assertIn('RM_CORPUS_CLASS: ${{ matrix.class }}', workflow)
         self.assertIn('needs: [static, tests, corpus]', workflow)

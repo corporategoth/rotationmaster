@@ -90,7 +90,9 @@ end
 -- English and German entries, read without AceLocale's selection.
 local english = E.entries('enUS')
 local german = E.entries('deDE')
+local korean = E.entries('koKR')
 local translated, untranslated
+local koreanTranslated
 
 for key, value in pairs(german) do
     if value ~= english[key] then
@@ -106,8 +108,16 @@ for key in pairs(english) do
     end
 end
 
+for key, value in pairs(korean) do
+    if value ~= english[key] then
+        koreanTranslated = key
+        break
+    end
+end
+
 -- A complete translation lacks no key; the fall-back check then has nothing to prove.
 assert(translated, 'need a key German translates')
+assert(koreanTranslated, 'need a key Korean translates')
 
 local count = 0
 
@@ -143,7 +153,7 @@ test('the game language is used and missing keys fall back to English', function
     end
 
     L = boot('koKR')
-    assert(L[translated] ~= english[translated], 'Korean game did not show Korean')
+    assert(L[koreanTranslated] == korean[koreanTranslated], 'Korean game did not show Korean')
 end)
 
 test('the translation is applied when the files load: no lazy resolution, no tables left behind', function()

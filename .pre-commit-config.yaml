@@ -126,10 +126,11 @@ repos:
 
       # The real gate, at push time: every test on Lua 5.1 and LuaJIT and every Python test, not stopping at the
       # first failure (tools/check_all.py runs tools/check's own command list), minus the five commands that take
-      # over thirty seconds each (tools/slow_tests.txt: default_corpus alone is many minutes). CI runs those too.
+      # over thirty seconds each (tools/slow_tests.txt: default_corpus alone is many minutes). Lua tests run in
+      # four worker processes; Python checks stay serial. CI runs the omitted tests too.
       - id: full-suite
         name: Full test suite (Lua 5.1 and LuaJIT, without the slowest five)
-        entry: python3 tools/check_all.py --baseline tools/known_failures.txt --skip-slow tools/slow_tests.txt
+        entry: python3 tools/check_all.py --jobs 4 --baseline tools/known_failures.txt --skip-slow tools/slow_tests.txt
         language: system
         pass_filenames: false
         always_run: true

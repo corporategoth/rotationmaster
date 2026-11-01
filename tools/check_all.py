@@ -13,21 +13,24 @@ red rather than only what is first. The command list stays in one place.
   python3 tools/check_all.py --runtime lua5.1      only the commands that run under lua5.1
   python3 tools/check_all.py --runtime luajit      only luajit
   python3 tools/check_all.py --runtime python      only python (static checks and python suites)
+  python3 tools/check_all.py --jobs 4              run up to four Lua tests concurrently
   python3 tools/check_all.py --list                print the selected commands and exit
   python3 tools/check_all.py --baseline FILE       fail only on suites not listed in FILE (known red)
   python3 tools/check_all.py --skip-slow FILE      leave out the commands listed in FILE (tools/slow_tests.txt)
   python3 tools/check_all.py --only 'python3 tests/test_us_spelling.py'   run just that command (repeatable); hooks use this
 
 Output of a passing or known-failing command is dropped; any other failing command's output is printed in full after it.
-Exit status is 0 when nothing outside the baseline failed. Commands run serially.
+Exit status is 0 when nothing outside the baseline failed. Lua commands can run concurrently with --jobs.
 """
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 from pathlib import Path
 import runpy
 import subprocess
 import sys
+import threading
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -84,6 +87,7 @@ def main(argv=None):
     parser.add_argument('--runtime', choices=['all', 'lua5.1', 'luajit', 'python'], default='all')
     parser.add_argument('--list', action='store_true', help='Print the selected commands and exit.')
     parser.add_argument('--timeout', type=int, default=3600, help='Seconds one command may run (default 3600).')
+    parser.add_argument('--jobs', type=int, default=1, help='Maximum concurrent Lua test processes (default 1).')
     parser.add_argument('--baseline', help='File of command labels (one per line) known to fail; they do not fail the run.')
     parser.add_argument('--only', action='append', default=[], metavar='COMMAND',
                         help='Run only the command(s) with exactly this label, as printed by --list; repeatable.')
@@ -91,6 +95,8 @@ def main(argv=None):
     parser.add_argument('--json', dest='json_path', help='Write a machine-readable summary here.')
     parser.add_argument('--verbose', action='store_true', help='Print the output of passing commands too.')
     args = parser.parse_args(argv)
+    if args.jobs < 1:
+        parser.error('--jobs must be at least 1')
 
     namespace = runpy.run_path(str(ROOT / 'tools' / 'check'), run_name='rotationmaster_tools_check')
     check_main = namespace['main']
@@ -100,18 +106,15 @@ def main(argv=None):
     results = []
     real_run = subprocess.run
     started = time.time()
+    output_lock = threading.Lock()
+    pending = []
+    pool = ThreadPoolExecutor(max_workers=args.jobs)
 
     def selected(command):
         return ((args.runtime == 'all' or runtime_of(command) == args.runtime) and label(command) not in slow
                 and (not args.only or label(command) in args.only))
 
-    def recording_run(command, **kwargs):
-        if args.list:
-            if selected(command):
-                print(label(command), file=out_stream)
-            return subprocess.CompletedProcess(command, 0)
-        if not selected(command):
-            return subprocess.CompletedProcess(command, 0)
+    def execute(command, kwargs):
         began = time.time()
         try:
             env = {key: value for key, value in os.environ.items()
@@ -124,12 +127,31 @@ def main(argv=None):
             code, out = 124, ((error.stdout or b'') + (error.stderr or b'') + f'\ntimed out after {args.timeout}s\n'.encode())
         elapsed = time.time() - began
         text = out.decode('utf-8', 'replace')
-        results.append({'command': label(command), 'runtime': runtime_of(command), 'code': code, 'seconds': round(elapsed, 2)})
-        status = 'ok  ' if code == 0 else ('known' if label(command) in baseline else 'FAIL')
-        print(f'{status} {elapsed:6.1f}s  {label(command)}', file=out_stream, flush=True)
-        if (code != 0 and label(command) not in baseline) or args.verbose:
-            out_stream.write(text if text.endswith('\n') or not text else text + '\n')
-            out_stream.flush()
+        with output_lock:
+            results.append({'command': label(command), 'runtime': runtime_of(command), 'code': code, 'seconds': round(elapsed, 2)})
+            status = 'ok  ' if code == 0 else ('known' if label(command) in baseline else 'FAIL')
+            print(f'{status} {elapsed:6.1f}s  {label(command)}', file=out_stream, flush=True)
+            if (code != 0 and label(command) not in baseline) or args.verbose:
+                out_stream.write(text if text.endswith('\n') or not text else text + '\n')
+                out_stream.flush()
+
+    def drain():
+        for future in pending:
+            future.result()
+        pending.clear()
+
+    def recording_run(command, **kwargs):
+        if args.list:
+            if selected(command):
+                print(label(command), file=out_stream)
+            return subprocess.CompletedProcess(command, 0)
+        if not selected(command):
+            return subprocess.CompletedProcess(command, 0)
+        if args.jobs > 1 and runtime_of(command) in ('lua5.1', 'luajit'):
+            pending.append(pool.submit(execute, list(command), kwargs))
+        else:
+            drain()
+            execute(command, kwargs)
         return subprocess.CompletedProcess(command, 0)
 
     class Sink:
@@ -146,7 +168,9 @@ def main(argv=None):
     sys.stdout = Sink()
     try:
         check_main()
+        drain()
     finally:
+        pool.shutdown(wait=True)
         sys.stdout = out_stream
         subprocess.run = real_run
         sys.argv = saved_argv

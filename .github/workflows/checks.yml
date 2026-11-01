@@ -45,7 +45,7 @@ jobs:
       - name: Run the suite
         env:
           RUNTIME: ${{ matrix.runtime }}
-        run: python3 tools/check_all.py --skip-slow tools/corpus_ci_skip.txt --runtime "${RUNTIME}" --baseline tools/known_failures.txt
+        run: python3 tools/check_all.py --jobs 2 --skip-slow tools/corpus_ci_skip.txt --runtime "${RUNTIME}" --baseline tools/known_failures.txt
 
   corpus:
     name: Default corpus (${{ matrix.class }})
