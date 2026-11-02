@@ -23,7 +23,7 @@ a real client. Your reports are what turn it into a release.
 ## What is in 2.0 (at a glance)
 
 - **A new rotation editor** with cards and a tree, a library of rotations with Class and Character scopes, tags and search,
-  drafts with undo and redo, unsaved-change guards, and Compare / Preview / Check for imported rotations.
+  drafts with undo and redo, unsaved-change guards, and Compare / Preview for imported rotations (a rotation with conditions your client lacks imports disabled, to be repaired in the editor).
 - **Built In rotations** for Classic Era / Season of Discovery, TBC Anniversary, Mists, Forever and Retail, shipped as
   one small add-on per class so only your class and client load. Enable, disable and re-prioritize them per profile; each
   specialization has one recommended premade enabled and alternatives off.
