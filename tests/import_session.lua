@@ -54,10 +54,29 @@ test('invalid unsupported and unresolved imports stay inspectable but cannot be 
     value, why = session:GetReady(candidate.token)
     assert(not value and why == 'unsupported-import')
     objects.legacy.future = nil
-    objects.legacy.rotation[1].conditions = { type = 'FUTURE_CONDITION' }
+    objects.legacy.rotation[1].effect = 'GONE'
     candidate = assert(session:Stage('legacy'))
     value, why = session:GetReady(candidate.token)
-    assert(not value and why == 'unresolved-import')
+    assert(not value and why == 'unresolved-import', 'a missing effect has nothing to repair it with')
+end)
+
+test('a condition this client does not have is imported as it came, with the rotation disabled', function()
+    local session, objects = fixture()
+    objects.legacy.rotation[1].conditions = { type = 'FUTURE_CONDITION', unit = 'player', value = 4 }
+    local candidate = assert(session:Stage('legacy'))
+    assert(candidate.validation.valid and not candidate.validation.resolved)
+    local ready, why = session:GetReady(candidate.token)
+    assert(ready, why)
+    assert(ready.body.disabled == true, 'the imported rotation must start disabled')
+    assert(ready.body.rotation[1].conditions.type == 'FUTURE_CONDITION', 'the condition must be kept, not dropped')
+    assert(ready.body.rotation[1].conditions.value == 4)
+    assert(#ready.unresolved == 1 and ready.unresolved[1].code == 'unknown-condition')
+    assert(ready.unresolved[1].path == '$.body.rotation[1].conditions.type', ready.unresolved[1].path)
+    assert(session:GetCandidate().value.disabled == nil, 'the staged candidate must stay untouched')
+    objects.legacy.rotation[1].conditions = nil
+    candidate = assert(session:Stage('legacy'))
+    ready = assert(session:GetReady(candidate.token))
+    assert(ready.body.disabled == nil and #ready.unresolved == 0, 'a clean import is not disabled')
 end)
 
 test('preview compares the incoming body without applying it and stale tokens are refused', function()

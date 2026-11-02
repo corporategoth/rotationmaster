@@ -7806,8 +7806,8 @@ T["Export produces a function or condition bundle, optionally with its custom fu
 T["Explain rotation preview, destination, and import scope."] = 2698
 -- fe3fd231
 T["Copy the text to export the current rotation, or paste a rotation to import. Choose replacement of the selected editable rotation or a new named copy. Class and This character set the owner of a new copy; replacement keeps the original owner. The imported rotation is opened for editing after a successful import."] = 2699
--- d6789183
-T["With Replace selected entry ticked, the button reads Compare import and shows what would change in that rotation. For a new named copy it reads Preview import and shows everything the import contains, read-only, as the rotation editor shows it. Neither saves anything. Import is enabled only for a ready preview or comparison; changing the text requires another one. Check import shows read-only diagnostics, including unsupported data that prevents import."] = 2700
+-- 2fcca938
+T["With Replace selected entry ticked, the button reads Compare import and shows what would change in that rotation. For a new named copy it reads Preview import and shows everything the import contains, read-only, as the rotation editor shows it. Neither saves anything. Import is enabled for a staged preview or comparison; changing the text requires another one. Pressing Import lists anything that stops it. A rotation that uses conditions this client cannot use can still be imported: you are asked first, it is saved disabled, and you replace the conditions in the editor."] = 2700
 -- 9a2297f1
 T["Explain this read-only incoming rotation comparison."] = 2701
 -- 4f0c847b
@@ -10029,6 +10029,22 @@ T["Live Status Update Check"] = 3457
 T["Click to edit"] = 3458
 -- f3d230a2
 T["Keep Unsaved"] = 3459
+-- 7a2845fc
+T["Ready to import, with a warning: %d condition(s) cannot work on this client. They are kept as imported and the rotation is saved disabled. Replace them in the editor to use it."] = 3460
+-- 66c91983
+T["... and %d more"] = 3463
+-- fe900ffb
+T["This rotation will be imported disabled. %s."] = 3464
+-- e06eac7e
+T["Import anyway"] = 3465
+-- 0cb7c36b
+T["This rotation cannot be imported:"] = 3466
+-- edf3f88a
+T["These conditions cannot work on this client. They are kept as imported and the rotation is imported disabled. Replace them in the editor before enabling it:"] = 3467
+-- bf69017f
+T["This import cannot be shown in full (%s)."] = 3468
+-- e981ddae
+T["Warning"] = 3469
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

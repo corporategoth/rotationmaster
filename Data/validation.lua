@@ -1081,3 +1081,66 @@ end
 function data.ValidateBody(body, options)
     return validate({ body = body }, options, true)
 end
+
+-- Diagnostic codes for a condition that cannot work here: the type is not registered on this client, is switched off in
+-- Settings, needs a custom function that is unavailable, or can never work on this client. The condition's data is intact,
+-- so an import keeps it and only leaves the rotation disabled until the condition is replaced.
+local conditionCodes = {
+    ['unknown-condition'] = true,
+    ['disabled-condition'] = true,
+    ['unavailable-function'] = true,
+    ['unsupported-condition'] = true,
+}
+
+-- Diagnostic codes for unresolved data that is not a condition (an item set, an effect, a Set Mark step); these still
+-- stop an import, because there is nothing for the editor to repair them with.
+local blockingCodes = {
+    ['missing-itemset'] = true,
+    ['missing-effect'] = true,
+    ['unsupported-mark-step'] = true,
+}
+
+-- Validation keeps at most this many diagnostics; a result at the cap may hide a blocking one.
+local DIAGNOSTIC_LIMIT = 100
+
+-- Lists the conditions in a validation result that cannot work on this client.
+-- @param validation table  A validation result.
+-- @return table[]  Copies of the diagnostics { code, path, severity, condition, reason } for those conditions, in order.
+function data.UnresolvedConditionIssues(validation)
+    local list = {}
+
+    for _, diagnostic in ipairs(type(validation) == 'table' and validation.diagnostics or {}) do
+        if conditionCodes[diagnostic.code] then
+            list[#list + 1] = data.CopyData(diagnostic)
+        end
+    end
+
+    return list
+end
+
+-- Tells whether a validation result lets an import go ahead. Invalid or unsupported data never does; unresolved data
+-- does only when every unresolved thing is a condition that cannot work here, because the editor can replace those.
+-- @param validation table  A validation result.
+-- @return string|nil  'invalid-import', 'unsupported-import' or 'unresolved-import' when it is blocked; nil otherwise.
+function data.ImportBlockReason(validation)
+    if not validation.valid then
+        return 'invalid-import'
+    end
+    if not validation.supported then
+        return 'unsupported-import'
+    end
+    if validation.resolved then
+        return nil
+    end
+    if #validation.diagnostics >= DIAGNOSTIC_LIMIT then
+        return 'unresolved-import'
+    end
+
+    for _, diagnostic in ipairs(validation.diagnostics) do
+        if blockingCodes[diagnostic.code] then
+            return 'unresolved-import'
+        end
+    end
+
+    return nil
+end

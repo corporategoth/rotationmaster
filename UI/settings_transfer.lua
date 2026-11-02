@@ -719,12 +719,11 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
             end
         end
 
-        local needed = TRANSFER_REVIEW_LEFT
-            + d.preview:GetWidth()
-            + TRANSFER_BUTTON_GAP
-            + d.inspect:GetWidth()
-            + TRANSFER_BUTTON_GAP
-            + TRANSFER_APPLY_RIGHT
+        local needed = TRANSFER_REVIEW_LEFT + d.preview:GetWidth() + TRANSFER_BUTTON_GAP + TRANSFER_APPLY_RIGHT
+
+        if options.review or options.inspect then
+            needed = needed + d.inspect:GetWidth() + TRANSFER_BUTTON_GAP
+        end
 
         setTransferWidth(d, math.max(TRANSFER_WIDTH, needed))
     end
@@ -840,9 +839,15 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
 
     if options and options.requirePreview then
         d.preview:Show()
-        d.inspect:Show()
         d.apply:Disable()
         d.inspect:Disable()
+
+        -- Only a kind that reports problems itself has Check import; the rotation reports them when Import is pressed.
+        if options.inspect then
+            d.inspect:Show()
+        else
+            d.inspect:Hide()
+        end
 
         addon:SetUIScript(d.preview, 'OnClick', function()
             run(options.preview, d)

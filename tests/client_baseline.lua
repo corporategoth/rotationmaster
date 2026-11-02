@@ -217,7 +217,18 @@ for _, case in ipairs(cases) do
             local parent = a:CreateConditionGroup()
             a:CreateRotationReference(parent, custom, 0)
             a:ReleaseConditionWidget(parent)
+            -- A condition this client does not have is kept and imported disabled (it cannot be selected until replaced).
             body.rotation[1].conditions.type = 'MISSING_BASELINE_DEFINITION'
+            candidate = assert(session:Stage(assert(codec:Encode(body))))
+            assert(not candidate.validation.resolved)
+            local kept, keptWhy = a:ApplyRotationImport(session, candidate.token, 0, 'Kept unresolved')
+            assert(kept, keptWhy)
+            local keptBody = assert(a:GetEditableRotation(0, kept))
+            assert(keptBody.disabled == true and keptBody.rotation[1].conditions.type == 'MISSING_BASELINE_DEFINITION')
+
+            -- Unresolved data that is not a condition still refuses the import and leaves saved state alone.
+            body.rotation[1].conditions.type = 'BASELINE_NOEXEC'
+            body.rotation[1].effect = 'MISSING_BASELINE_EFFECT'
             local unresolved = assert(codec:Encode(body))
             candidate = assert(session:Stage(unresolved))
             local saved = a:CopySettingsData(a.db.profile)

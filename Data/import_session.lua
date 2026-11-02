@@ -89,27 +89,24 @@ function data.NewImportSession(codec, options)
 
     -- Re-validates the candidate and returns the importable pieces.
     -- @param token number  The token of the candidate being asked about.
-    -- @return table|nil  { kind, body (a detached copy), manifest (the body-free envelope, or nil) }; nil when the
-    --   candidate is not ready.
+    -- @return table|nil  { kind, body (a detached copy), manifest (the body-free envelope, or nil), unresolved (the
+    --   diagnostics of conditions that cannot work here; the body is then flagged disabled) }; nil when the candidate
+    --   is not ready.
     -- @return string|nil  'stale-import', 'invalid-import', 'unsupported-import' or 'unresolved-import' when the first
     --   return is nil; nil otherwise.
     --
-    -- Only a ready candidate may be applied.
+    -- Only a ready candidate may be applied. A candidate whose only unresolved data is conditions that cannot work here
+    -- is ready, with the body disabled.
     function session:GetReady(token)
         if not current or token ~= current.token then
             return nil, "stale-import"
         end
 
         local result = validation(current)
+        local blocked = data.ImportBlockReason(result)
 
-        if not result.valid then
-            return nil, "invalid-import"
-        end
-        if not result.supported then
-            return nil, "unsupported-import"
-        end
-        if not result.resolved then
-            return nil, "unresolved-import"
+        if blocked then
+            return nil, blocked
         end
 
         local envelope = current.kind == "envelope" and data.CopyData(current.value) or nil
@@ -119,7 +116,15 @@ function data.NewImportSession(codec, options)
             envelope.body = nil
         end
 
-        return { kind = current.kind, body = body, manifest = envelope }
+        -- A condition that cannot work here is kept as it came, so nothing is lost, and the rotation is imported
+        -- disabled; the editor shows each one so it can be replaced.
+        local unresolved = data.UnresolvedConditionIssues(result)
+
+        if not result.resolved then
+            body.disabled = true
+        end
+
+        return { kind = current.kind, body = body, manifest = envelope, unresolved = unresolved }
     end
 
     -- Compares a saved rotation body (left) with the staged candidate (right).

@@ -193,6 +193,8 @@ function addon:ShowNativeImportContent(p, preview, spec)
         return nil, why
     end
 
+    workspace.importDisabled = preview.importDisabled == true
+
     local pane, problem = self:CreateRotationEditor(d.host, spec, workspace.id, nil, workspace)
 
     if not pane then
@@ -351,7 +353,7 @@ function addon:ShowRotationTransfer(spec, id)
                 },
                 {
                     title = L['Preview import'],
-                    text = L["With Replace selected entry ticked, the button reads Compare import and shows what would change in that rotation. For a new named copy it reads Preview import and shows everything the import contains, read-only, as the rotation editor shows it. Neither saves anything. Import is enabled only for a ready preview or comparison; changing the text requires another one. Check import shows read-only diagnostics, including unsupported data that prevents import."],
+                    text = L["With Replace selected entry ticked, the button reads Compare import and shows what would change in that rotation. For a new named copy it reads Preview import and shows everything the import contains, read-only, as the rotation editor shows it. Neither saves anything. Import is enabled for a staged preview or comparison; changing the text requires another one. Pressing Import lists anything that stops it. A rotation that uses conditions this client cannot use can still be imported: you are asked first, it is saved disabled, and you replace the conditions in the editor."],
                 },
                 {
                     title = L['Applies to'],
@@ -399,6 +401,125 @@ function addon:ShowRotationTransfer(spec, id)
         end
     end
 
+    -- Names one validation diagnostic in words: where it is in the rotation and what is wrong.
+    -- @param issue table  The diagnostic.
+    -- @param body table  The staged rotation body, used to name the step.
+    -- @return string  The text.
+    local function describe(issue, body)
+        local text = self.DescribeRotationIssue and self:DescribeRotationIssue(issue, body)
+
+        return text or string.format(L['has a problem (%s)'], tostring(issue.code))
+    end
+
+    -- Splits the staged candidate's diagnostics into what stops the import and the conditions that are kept but cannot
+    -- work on this client.
+    -- @return string[]  The problems, in words.
+    -- @return string[]  The unusable conditions, in words.
+    local function issueLists()
+        local body = candidate.kind == 'envelope' and candidate.value.body or candidate.value
+        local conditions = self.RotationData.UnresolvedConditionIssues(candidate.validation)
+        local kept, problems, warnings = {}, {}, {}
+
+        for _, issue in ipairs(conditions) do
+            kept[issue.code .. '|' .. tostring(issue.path)] = true
+            warnings[#warnings + 1] = describe(issue, body)
+        end
+
+        for _, issue in ipairs(candidate.validation.diagnostics) do
+            if not kept[issue.code .. '|' .. tostring(issue.path)] then
+                problems[#problems + 1] = describe(issue, body)
+            end
+        end
+
+        return problems, warnings
+    end
+
+    -- Shows the Import prompt: a heading and the issues found, with Import anyway when the import can still go ahead,
+    -- and Cancel (Close when nothing can be imported).
+    -- @param d table  The transfer dialog.
+    -- @param heading string  The text above the list.
+    -- @param items string[]  The issues, in words.
+    -- @param confirm function|nil  Called on Import anyway; nil when the import cannot go ahead.
+    local function showImportNotice(d, heading, items, confirm)
+        local prompt = p.importNotice
+
+        if not prompt then
+            prompt = { frame = CreateFrame('Frame', nil, d.frame) }
+            p.importNotice = prompt
+            prompt.frame:SetSize(560, 200)
+            prompt.frame:SetPoint('CENTER')
+            prompt.frame:SetClampedToScreen(true)
+            prompt.frame:EnableMouse(true)
+            self:MakeWindowOpaque(prompt.frame)
+            prompt.title = prompt.frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+            prompt.chrome = self:CreateWorkbenchDialogChrome(prompt.frame, prompt.title)
+            prompt.close = self:CreateWorkbenchIconButton(prompt.frame, 'close', L['Close'])
+            prompt.close:SetPoint('TOPRIGHT', -5, -5)
+            prompt.text = prompt.frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+            prompt.text:SetPoint('TOPLEFT', 16, -44)
+            prompt.text:SetJustifyH('LEFT')
+            prompt.text:SetJustifyV('TOP')
+            prompt.text:SetWordWrap(true)
+            prompt.accept = self:CreateWorkbenchButton(prompt.frame, L['Import anyway'], 130)
+            prompt.cancel = self:CreateWorkbenchButton(prompt.frame, L['Cancel'], 100)
+            prompt.cancel:SetPoint('BOTTOMRIGHT', -16, 30)
+            prompt.accept:SetPoint('RIGHT', prompt.cancel, 'LEFT', -8, 0)
+
+            self:SetUIScript(prompt.cancel, 'OnClick', function()
+                prompt.frame:Hide()
+            end)
+
+            self:SetUIScript(prompt.close, 'OnClick', function()
+                prompt.frame:Hide()
+            end)
+
+            prompt.frame:Hide()
+        end
+
+        local body = candidate.kind == 'envelope' and candidate.value.body or candidate.value
+
+        prompt.chrome:SetContext(
+            L['Import'],
+            confirm and L['Warning'] or L['Problems'],
+            type(body) == 'table' and body.name or nil
+        )
+
+        local lines = { heading, '' }
+
+        for index, text in ipairs(items) do
+            if index > 12 then
+                lines[#lines + 1] = string.format(L['... and %d more'], #items - 12)
+                break
+            end
+
+            lines[#lines + 1] = '- ' .. text
+        end
+
+        prompt.text:SetWidth(528)
+        prompt.text:SetText(table.concat(lines, '\n'))
+        local height = prompt.text.GetStringHeight and prompt.text:GetStringHeight() or 16 * #lines
+        prompt.text:SetHeight(height)
+        prompt.frame:SetHeight(math.max(150, math.ceil(height) + 112))
+        prompt.cancel:SetText(confirm and L['Cancel'] or L['Close'])
+
+        if confirm then
+            prompt.accept:Show()
+
+            self:SetUIScript(prompt.accept, 'OnClick', function()
+                prompt.frame:Hide()
+
+                if valid() then
+                    confirm()
+                end
+            end)
+        else
+            prompt.accept:Hide()
+        end
+
+        prompt.frame:Show()
+        self:OpenPopup(prompt, p)
+    end
+
     -- Stages the pasted text and opens the matching preview: a comparison when replacing, the full content for a copy.
     -- Apply is enabled only when the session reports the candidate ready.
     -- @param d table  The transfer dialog.
@@ -417,19 +538,23 @@ function addon:ShowRotationTransfer(spec, id)
             return
         end
 
-        d.inspect:Enable()
         local ready, reason = session:GetReady(candidate.token)
+        local unresolved = ready and #ready.unresolved or 0
+        local problems = ready and {} or issueLists()
 
         d.status:SetText(
-            ready and L['Ready to import. Choose replacement or a named copy.'] or string.format(
-                L['This import cannot be applied: %s'],
-                reason
-            )
+            ready
+                and (unresolved > 0 and string.format(
+                    L['Ready to import, with a warning: %d condition(s) cannot work on this client. They are kept as imported and the rotation is saved disabled. Replace them in the editor to use it.'],
+                    unresolved
+                )
+                    or L['Ready to import. Choose replacement or a named copy.'])
+                or string.format(L['This import cannot be applied: %s'], problems[1] or tostring(reason))
         )
 
-        if ready then
-            d.apply:Enable()
-        end
+        -- Import is always pressable once something is staged: pressing it says what is wrong when it cannot go ahead.
+        d.apply:Enable()
+
         if p.importPreview then
             p.importPreview.frame:Hide()
         end
@@ -451,6 +576,7 @@ function addon:ShowRotationTransfer(spec, id)
             local shown, problem
 
             if incoming then
+                incoming.importDisabled = unresolved > 0
                 local ok, result, reason = pcall(self.ShowNativeImportContent, self, p, incoming, spec)
 
                 if ok then
@@ -465,29 +591,12 @@ function addon:ShowRotationTransfer(spec, id)
             if not shown and valid() then
                 d.status:SetText(
                     (d.status:GetText() or '') .. '\n' .. string.format(
-                        L['This import cannot be shown in full (%s). Use Check import for details.'],
+                        L['This import cannot be shown in full (%s).'],
                         tostring(problem)
                     )
                 )
             end
         end
-    end
-
-    -- Opens the check-import report: the diagnostics and diff of the staged candidate.
-    -- @return any  What ShowComparisonReport returns; nothing when the window is stale or nothing is staged.
-    options.inspect = function()
-        if not valid() or not candidate then
-            return
-        end
-
-        local object = candidate.kind == 'envelope' and candidate.value or { body = candidate.value }
-        local report = self.RotationData.DiffRotations({}, object)
-
-        for _, diagnostic in ipairs(candidate.validation.diagnostics) do
-            report.diagnostics[#report.diagnostics + 1] = diagnostic
-        end
-
-        return self:ShowComparisonReport(self:FormatRotationComparison(report))
     end
 
     -- Handles the window closing: marks it inactive and releases the import session and the form.
@@ -612,6 +721,40 @@ function addon:ShowRotationTransfer(spec, id)
         if valid() and dialog.options == options and dialog.mode == 'new' then
             dialog.scope:SetChecked(false)
             scopeState()
+        end
+    end)
+
+    local importClick = dialog.apply:GetScript('OnClick')
+
+    -- Pressing Import first says what is wrong. An import that cannot go ahead lists why; one with conditions this
+    -- client cannot use asks whether to import it anyway (it is saved disabled); a clean one imports at once.
+    -- @param ... any  The click arguments, passed on to the original handler.
+    self:SetUIScript(dialog.apply, 'OnClick', function(...)
+        if dialog.options ~= options or not valid() or not candidate then
+            return importClick(...)
+        end
+
+        local ready, reason = session:GetReady(candidate.token)
+        local problems, warnings = issueLists()
+        local args = { ... }
+
+        if not ready then
+            showImportNotice(
+                dialog,
+                L['This rotation cannot be imported:'],
+                #problems > 0 and problems or { tostring(reason) }
+            )
+        elseif #warnings > 0 then
+            showImportNotice(
+                dialog,
+                L['These conditions cannot work on this client. They are kept as imported and the rotation is imported disabled. Replace them in the editor before enabling it:'],
+                warnings,
+                function()
+                    importClick(unpack(args))
+                end
+            )
+        else
+            return importClick(...)
         end
     end)
 

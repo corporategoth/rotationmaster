@@ -277,18 +277,14 @@ test(
             d.preview:GetText()
         ))
 
-        assert(
-            d.inspect:GetText() == 'Check import',
-            'the diagnostics button is named for what it does: ' .. tostring(d.inspect:GetText())
-        )
+        assert(not d.inspect:IsShown(), 'a rotation has no Check import; pressing Import says what is wrong')
 
         d.destination:Click()
         assert(d.mode == 'new' and d.preview:GetText() == 'Preview import')
         d.destination:Click()
         assert(d.mode == 'replace' and d.preview:GetText() == 'Compare import')
         d.destination:Click()
-        assert(d.preview:GetText() == 'Preview import' and d.inspect:GetText() == 'Check import')
-        assert(d.preview:IsShown() and d.inspect:IsShown(), 'both buttons stay')
+        assert(d.preview:GetText() == 'Preview import' and d.preview:IsShown() and not d.inspect:IsShown())
     end
 )
 
@@ -315,36 +311,30 @@ test('tooltips and help tell the two actions apart: what you would get, and what
     local L = f.libraries['AceLocale-3.0'].GetLocale()
     local d = a:ShowRotationTransfer(0, reference(a))
 
-    local compare, preview, inspect =
+    local compare, preview =
         L["Compare import shows what would change in the entry you are replacing, side by side with its current content. Nothing is saved."],
-        L["Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."],
-        L["Check import lists problems with the text instead of its content: why it cannot be imported and any unsupported data. It does not import or change anything."]
+        L["Preview import shows everything this import contains, read-only, the way the editor shows it. Nothing is saved."]
 
     local entries = dofile('tests/fixtures/locale_entries.lua').entries('enUS', true)
 
     assert(
-        entries[compare] == compare and entries[preview] == preview and entries[inspect] == inspect,
+        entries[compare] == compare and entries[preview] == preview,
         'help texts are registered with their exact English source'
     )
 
-    assert(
-        compare:find('would change', 1, true)
-            and preview:find('everything this import contains', 1, true)
-            and inspect:find('problems', 1, true)
-            and inspect:find('unsupported', 1, true)
-    )
+    assert(compare:find('would change', 1, true) and preview:find('everything this import contains', 1, true))
 
-    assert(d.preview.tooltip == compare and d.inspect.tooltip == inspect)
+    assert(d.preview.tooltip == compare)
     local briefs = a:TransferHelpBriefs()
-    assert(briefs.preview(d) == compare and briefs.inspect == inspect)
+    assert(briefs.preview(d) == compare)
     d.destination:Click()
     assert(d.preview.tooltip == preview and briefs.preview(d) == preview)
-    local general = L["With Replace selected entry ticked, the button reads Compare import and shows what would change in that rotation. For a new named copy it reads Preview import and shows everything the import contains, read-only, as the rotation editor shows it. Neither saves anything. Import is enabled only for a ready preview or comparison; changing the text requires another one. Check import shows read-only diagnostics, including unsupported data that prevents import."]
+    local general = L["With Replace selected entry ticked, the button reads Compare import and shows what would change in that rotation. For a new named copy it reads Preview import and shows everything the import contains, read-only, as the rotation editor shows it. Neither saves anything. Import is enabled for a staged preview or comparison; changing the text requires another one. Pressing Import lists anything that stops it. A rotation that uses conditions this client cannot use can still be imported: you are asked first, it is saved disabled, and you replace the conditions in the editor."]
 
     assert(
         general:find('Compare import', 1, true)
             and general:find('Preview import', 1, true)
-            and general:find('Check import', 1, true)
+            and general:find('Pressing Import', 1, true)
             and not general:find('Inspect', 1, true)
     )
 
@@ -410,7 +400,7 @@ test('Compare import (replacing) still shows the comparison and never the full v
     )
 
     assert(not a.rotationTransferForm.importContent, 'replace mode opened the full view')
-    assert(d.apply:IsEnabled() and d.inspect:IsEnabled())
+    assert(d.apply:IsEnabled())
 end)
 
 test('Preview import (new copy) opens the full content in the read-only editor view and no comparison', function()
@@ -734,24 +724,109 @@ test('invalid text gives no view, no Import and says why', function()
     assert(d.status:GetText():find('unavailable', 1, true), tostring(d.status:GetText()))
     paste(d, 'scalar')
     d.preview:Click()
-    assert(not d.apply:IsEnabled())
     assert(not p.importContent or not p.importContent.frame:IsShown(), 'scalar text produced a view')
 end)
 
-test('unsupported data blocks Import, still shows what it can, and Check import explains it', function()
-    local _, a = fixture()
+test('unsupported data still shows what it can, and pressing Import explains why it cannot go ahead', function()
+    local f, a = fixture()
+    f.load('Core/rotation_selection.lua')
     local d = a:ShowRotationTransfer(0, reference(a))
     d.destination:Click()
     paste(d, 'future')
     d.preview:Click()
-    assert(not d.apply:IsEnabled(), 'unsupported data can be imported')
     assert(d.status:GetText():find('cannot be applied', 1, true), tostring(d.status:GetText()))
-    assert(d.inspect:IsEnabled())
-    local details = d.inspect.scripts.OnClick()
-    assert(details:find('futureMetadata', 1, true), 'diagnostics do not name the unsupported data')
+    assert(d.apply:IsEnabled(), 'Import must be pressable so it can say why it cannot go ahead')
+    local rows = 0
+
+    for _ in pairs(a.db.profile.rotationStore.classes.SHAMAN[0]) do
+        rows = rows + 1
+    end
+
+    d.name:SetText('Future copy')
+    d.name.scripts.OnTextChanged(d.name, true)
+    d.apply:Click()
+    local notice = a.rotationTransferForm.importNotice
+    assert(notice and notice.frame:IsShown(), 'pressing Import gave no explanation')
+    local text = notice.text:GetText()
+    assert(text:find('cannot be imported', 1, true) and text:find('futureMetadata', 1, true), tostring(text))
+    assert(not text:find('$.body', 1, true), 'the explanation shows a raw data path')
+    assert(not notice.accept:IsShown(), 'an import that cannot go ahead offers Import anyway')
+    local after = 0
+
+    for _ in pairs(a.db.profile.rotationStore.classes.SHAMAN[0]) do
+        after = after + 1
+    end
+
+    assert(after == rows, 'a refused import saved something')
 end)
 
-test('a body that cannot be shown in full points to Check import and keeps Import off', function()
+test('a condition this client does not have still allows Import, with a warning in every place that reports', function()
+    local f, a, data, _, wire = fixture()
+    f.load('Core/rotation_selection.lua')
+    local unresolved = data.CopyData(wire.incoming)
+    unresolved.rotation[1].onTrue[1].conditions = { type = 'BURNING_EMBERS', unit = 'player', value = 4 }
+    wire.unresolved = unresolved
+    local d = a:ShowRotationTransfer(0, reference(a))
+    d.destination:Click()
+    paste(d, 'incoming')
+    d.preview:Click()
+
+    assert(
+        d.status:GetText():find('Ready to import.', 1, true) and not d.status:GetText():find('warning', 1, true),
+        'a clean import must not warn'
+    )
+
+    paste(d, 'unresolved')
+    d.preview:Click()
+    assert(d.apply:IsEnabled(), 'an unresolved condition must not block the import')
+    local status = d.status:GetText()
+    assert(status:find('with a warning', 1, true) and status:find('saved disabled', 1, true), tostring(status))
+    local pane = a.rotationTransferForm.importContent.pane
+
+    assert(
+        not pane.apply:IsShown()
+            and not pane.discard:IsShown()
+            and not (pane.viewChanges and pane.viewChanges:IsShown()),
+        'a read-only preview has Apply, Discard or View Changes'
+    )
+
+    assert(pane.validationButton:GetText():find('will be imported disabled', 1, true), tostring(
+        pane.validationButton:GetText()
+    ))
+
+    d.name:SetText('Needs repair')
+    d.name.scripts.OnTextChanged(d.name, true)
+    d.apply:Click()
+    local notice = a.rotationTransferForm.importNotice
+    assert(notice and notice.frame:IsShown(), 'Import did not ask first')
+    assert(notice.chrome and notice.close, 'the prompt is not drawn as a standard dialog with a title bar and close')
+    local text = notice.text:GetText()
+    assert(text:find('imported disabled', 1, true) and text:find('BURNING_EMBERS', 1, true), tostring(text))
+    assert(not text:find('$.body', 1, true), 'the prompt shows a raw data path')
+    assert(notice.accept:IsShown())
+    assert(a.db.profile.rotationStore.classes.SHAMAN[0].mine and not text:find('Needs repair', 1, true))
+    notice.cancel:Click()
+    assert(not notice.frame:IsShown())
+
+    for _, row in pairs(a.db.profile.rotationStore.classes.SHAMAN[0]) do
+        assert(row.body.name ~= 'Needs repair', 'cancel still imported')
+    end
+
+    d.apply:Click()
+    notice.accept:Click()
+    local saved
+
+    for _, row in pairs(a.db.profile.rotationStore.classes.SHAMAN[0]) do
+        if row.body.name == 'Needs repair' then
+            saved = row.body
+        end
+    end
+
+    assert(saved and saved.disabled == true, 'the imported copy must be saved disabled')
+    assert(saved.rotation[1].onTrue[1].conditions.type == 'BURNING_EMBERS', 'the condition was not kept')
+end)
+
+test('a body that cannot be shown in full says so and keeps Import ready', function()
     local f, a = fixture()
     local d = a:ShowRotationTransfer(0, reference(a))
     d.destination:Click()
@@ -765,7 +840,11 @@ test('a body that cannot be shown in full points to Check import and keeps Impor
     d.preview:Click()
 
     assert(
-        d.status:GetText():find('Check import', 1, true) and d.status:GetText():find('Ready to import', 1, true),
+        d.status:GetText():find('cannot be shown in full', 1, true) and d.status:GetText():find(
+            'Ready to import',
+            1,
+            true
+        ),
         tostring(d.status:GetText())
     )
 
@@ -920,7 +999,7 @@ local function assertRow(name, label, d, model)
         return assert(resolve(button), name .. ' ' .. label .. ': a bottom-row button has no resolved rectangle')
     end
 
-    local order = { d.copy, d.clear, d.preview, d.inspect, d.apply, d.cancel }
+    local order = { d.copy, d.clear, d.preview, d.apply, d.cancel }
     local frameWidth = d.frame:GetWidth()
 
     for index, button in ipairs(order) do
@@ -953,7 +1032,7 @@ local function assertRow(name, label, d, model)
         end
     end
 
-    for _, button in ipairs({ d.preview, d.inspect }) do
+    for _, button in ipairs({ d.preview }) do
         local need = model and model(button:GetText()) or #button:GetText() * 7
 
         assert(

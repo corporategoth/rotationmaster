@@ -9166,13 +9166,14 @@ addon.translation = {
 --     character set the owner of a new copy; replacement keeps the original owner. The imported
 --     rotation is opened for editing after a successful import.
 [2699] = "Скопируйте текст, чтобы экспортировать текущую ротацию, или вставьте ротацию для импорта. Выберите замену выбранной редактируемой ротации или новую именованную копию. «Класс» и «Этот персонаж» задают владельца новой копии; при замене сохраняется исходный владелец. После успешного импорта импортированная ротация открывается для правки.",
--- d6789183 English: With Replace selected entry ticked, the button reads Compare import and shows
+-- 2fcca938 English: With Replace selected entry ticked, the button reads Compare import and shows
 --     what would change in that rotation. For a new named copy it reads Preview import and shows
 --     everything the import contains, read-only, as the rotation editor shows it. Neither saves
---     anything. Import is enabled only for a ready preview or comparison; changing the text
---     requires another one. Check import shows read-only diagnostics, including unsupported data
---     that prevents import.
-[2700] = "Если отмечено «Заменить выбранный элемент», кнопка называется «Сравнить импорт» и показывает, что изменится в этой ротации. Для новой именованной копии она называется «Просмотреть импорт» и показывает только для чтения всё содержимое импорта так, как его показывает редактор ротаций. Ни одна из них ничего не сохраняет. Импорт доступен только при готовом просмотре или сравнении; после изменения текста нужен новый. «Проверить импорт» показывает диагностику только для чтения, включая неподдерживаемые данные, которые мешают импорту.",
+--     anything. Import is enabled for a staged preview or comparison; changing the text requires
+--     another one. Pressing Import lists anything that stops it. A rotation that uses conditions
+--     this client cannot use can still be imported: you are asked first, it is saved disabled, and
+--     you replace the conditions in the editor.
+[2700] = "Если отмечено «Заменить выбранный элемент», кнопка называется «Сравнить импорт» и показывает, что изменится в этой ротации. Для новой именованной копии она называется «Просмотреть импорт» и показывает только для чтения всё содержимое импорта так, как его показывает редактор ротаций. Ни одна из них ничего не сохраняет. Импорт доступен при подготовленном просмотре или сравнении; после изменения текста нужен новый. При нажатии «Импорт» показывается всё, что ему мешает. Ротацию с условиями, которые этот клиент не может использовать, всё равно можно импортировать: сначала Вас спросят, она будет сохранена отключённой, а условия Вы замените в редакторе.",
 -- 9a2297f1 English: Explain this read-only incoming rotation comparison.
 [2701] = "Пояснить это сравнение с входящей ротацией (только чтение).",
 -- 4f0c847b English: This view compares the saved or exported rotation with the current incoming
@@ -11762,4 +11763,23 @@ addon.translation = {
 [3458] = "Нажмите, чтобы изменить",
 -- f3d230a2 English: Keep Unsaved
 [3459] = "Оставить несохранённым",
+-- 7a2845fc English: Ready to import, with a warning: %d condition(s) cannot work on this client.
+--     They are kept as imported and the rotation is saved disabled. Replace them in the editor to
+--     use it.
+[3460] = "Готово к импорту, с предупреждением: условия (%d) не работают на этом клиенте. Они сохраняются в том виде, в каком были импортированы, а ротация сохраняется отключённой. Замените их в редакторе, чтобы использовать ротацию.",
+-- 66c91983 English: ... and %d more
+[3463] = "... и ещё %d",
+-- fe900ffb English: This rotation will be imported disabled. %s.
+[3464] = "Эта ротация будет импортирована отключённой. %s.",
+-- e06eac7e English: Import anyway
+[3465] = "Всё равно импортировать",
+-- 0cb7c36b English: This rotation cannot be imported:
+[3466] = "Эту ротацию нельзя импортировать:",
+-- edf3f88a English: These conditions cannot work on this client. They are kept as imported and the
+--     rotation is imported disabled. Replace them in the editor before enabling it:
+[3467] = "Эти условия не работают на этом клиенте. Они сохраняются в том виде, в каком были импортированы, а ротация импортируется отключённой. Замените их в редакторе, прежде чем включать ротацию:",
+-- bf69017f English: This import cannot be shown in full (%s).
+[3468] = "Этот импорт нельзя показать полностью (%s).",
+-- e981ddae English: Warning
+[3469] = "Предупреждение",
 }

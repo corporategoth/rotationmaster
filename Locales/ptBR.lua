@@ -9166,13 +9166,14 @@ addon.translation = {
 --     character set the owner of a new copy; replacement keeps the original owner. The imported
 --     rotation is opened for editing after a successful import.
 [2699] = "Copie o texto para exportar a rotação atual ou cole uma rotação para importar. Escolha substituir a rotação editável selecionada ou criar uma nova cópia nomeada. Classe e Este personagem definem o proprietário de uma nova cópia; a substituição mantém o proprietário original. A rotação importada é aberta para edição após uma importação bem-sucedida.",
--- d6789183 English: With Replace selected entry ticked, the button reads Compare import and shows
+-- 2fcca938 English: With Replace selected entry ticked, the button reads Compare import and shows
 --     what would change in that rotation. For a new named copy it reads Preview import and shows
 --     everything the import contains, read-only, as the rotation editor shows it. Neither saves
---     anything. Import is enabled only for a ready preview or comparison; changing the text
---     requires another one. Check import shows read-only diagnostics, including unsupported data
---     that prevents import.
-[2700] = "Com Substituir a entrada selecionada marcado, o botão se chama Comparar importação e mostra o que mudaria nessa rotação. Para uma nova cópia nomeada, ele se chama Pré-visualizar importação e mostra, somente leitura, tudo o que a importação contém, como o editor de rotações mostra. Nenhum dos dois salva nada. Importar só fica ativado com uma pré-visualização ou comparação pronta; alterar o texto exige outra. Verificar importação mostra diagnósticos somente leitura, incluindo dados não compatíveis que impedem a importação.",
+--     anything. Import is enabled for a staged preview or comparison; changing the text requires
+--     another one. Pressing Import lists anything that stops it. A rotation that uses conditions
+--     this client cannot use can still be imported: you are asked first, it is saved disabled, and
+--     you replace the conditions in the editor.
+[2700] = "Com Substituir a entrada selecionada marcado, o botão se chama Comparar importação e mostra o que mudaria nessa rotação. Para uma nova cópia nomeada, ele se chama Pré-visualizar importação e mostra, somente leitura, tudo o que a importação contém, como o editor de rotações mostra. Nenhum dos dois salva nada. Importar fica ativado com uma pré-visualização ou comparação preparada; alterar o texto exige outra. Ao clicar em Importar, você vê tudo o que o impede. Uma rotação que usa condições que este cliente não pode usar ainda pode ser importada: você é perguntado antes, ela é salva desativada e você substitui as condições no editor.",
 -- 9a2297f1 English: Explain this read-only incoming rotation comparison.
 [2701] = "Explica esta comparação somente leitura da rotação recebida.",
 -- 4f0c847b English: This view compares the saved or exported rotation with the current incoming
@@ -11762,4 +11763,23 @@ addon.translation = {
 [3458] = "Clique para editar",
 -- f3d230a2 English: Keep Unsaved
 [3459] = "Manter sem salvar",
+-- 7a2845fc English: Ready to import, with a warning: %d condition(s) cannot work on this client.
+--     They are kept as imported and the rotation is saved disabled. Replace them in the editor to
+--     use it.
+[3460] = "Pronto para importar, com um aviso: %d condição(ões) não funcionam neste cliente. Elas são mantidas como importadas e a rotação é salva desativada. Substitua-as no editor para usá-la.",
+-- 66c91983 English: ... and %d more
+[3463] = "... e mais %d",
+-- fe900ffb English: This rotation will be imported disabled. %s.
+[3464] = "Esta rotação será importada desativada. %s.",
+-- e06eac7e English: Import anyway
+[3465] = "Importar mesmo assim",
+-- 0cb7c36b English: This rotation cannot be imported:
+[3466] = "Esta rotação não pode ser importada:",
+-- edf3f88a English: These conditions cannot work on this client. They are kept as imported and the
+--     rotation is imported disabled. Replace them in the editor before enabling it:
+[3467] = "Estas condições não funcionam neste cliente. Elas são mantidas como importadas e a rotação é importada desativada. Substitua-as no editor antes de ativá-la:",
+-- bf69017f English: This import cannot be shown in full (%s).
+[3468] = "Esta importação não pode ser exibida por completo (%s).",
+-- e981ddae English: Warning
+[3469] = "Aviso",
 }

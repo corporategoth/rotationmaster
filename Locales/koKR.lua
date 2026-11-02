@@ -9166,13 +9166,14 @@ addon.translation = {
 --     character set the owner of a new copy; replacement keeps the original owner. The imported
 --     rotation is opened for editing after a successful import.
 [2699] = "현재 로테이션을 내보내려면 텍스트를 복사하고, 가져오려면 로테이션을 붙여 넣으세요. 선택한 편집 가능 로테이션을 대체할지, 이름 있는 새 사본을 만들지 고르세요. 직업과 이 캐릭터는 새 사본의 소유자를 정하며, 대체하면 원래 소유자가 유지됩니다. 가져오기에 성공하면 가져온 로테이션이 편집용으로 열립니다.",
--- d6789183 English: With Replace selected entry ticked, the button reads Compare import and shows
+-- 2fcca938 English: With Replace selected entry ticked, the button reads Compare import and shows
 --     what would change in that rotation. For a new named copy it reads Preview import and shows
 --     everything the import contains, read-only, as the rotation editor shows it. Neither saves
---     anything. Import is enabled only for a ready preview or comparison; changing the text
---     requires another one. Check import shows read-only diagnostics, including unsupported data
---     that prevents import.
-[2700] = "선택한 항목 대체를 선택하면 이 버튼은 가져오기 비교가 되어 해당 로테이션에서 무엇이 바뀌는지 보여 줍니다. 이름 있는 새 사본일 때는 가져오기 미리보기가 되어 로테이션 편집기가 보여 주는 방식 그대로 가져오기에 담긴 모든 내용을 읽기 전용으로 보여 줍니다. 둘 다 아무것도 저장하지 않습니다. 가져오기는 미리보기나 비교가 준비되었을 때만 활성화되며, 텍스트를 바꾸면 다시 해야 합니다. 가져오기 확인은 가져오기를 막는 지원되지 않는 데이터를 포함한 읽기 전용 진단을 보여 줍니다.",
+--     anything. Import is enabled for a staged preview or comparison; changing the text requires
+--     another one. Pressing Import lists anything that stops it. A rotation that uses conditions
+--     this client cannot use can still be imported: you are asked first, it is saved disabled, and
+--     you replace the conditions in the editor.
+[2700] = "선택한 항목 대체를 선택하면 이 버튼은 가져오기 비교가 되어 해당 로테이션에서 무엇이 바뀌는지 보여 줍니다. 이름 있는 새 사본일 때는 가져오기 미리보기가 되어 로테이션 편집기가 보여 주는 방식 그대로 가져오기에 담긴 모든 내용을 읽기 전용으로 보여 줍니다. 둘 다 아무것도 저장하지 않습니다. 가져오기는 준비된 미리보기나 비교가 있을 때 활성화되며, 텍스트를 바꾸면 다시 해야 합니다. 가져오기를 누르면 가져오기를 막는 모든 문제가 나열됩니다. 이 클라이언트에서 사용할 수 없는 조건이 있는 로테이션도 가져올 수 있습니다. 먼저 확인을 묻고, 비활성 상태로 저장되며, 편집기에서 해당 조건을 교체하면 됩니다.",
 -- 9a2297f1 English: Explain this read-only incoming rotation comparison.
 [2701] = "가져올 로테이션과의 읽기 전용 비교를 설명합니다.",
 -- 4f0c847b English: This view compares the saved or exported rotation with the current incoming
@@ -11762,4 +11763,23 @@ addon.translation = {
 [3458] = "클릭하여 편집",
 -- f3d230a2 English: Keep Unsaved
 [3459] = "저장하지 않은 상태로 유지",
+-- 7a2845fc English: Ready to import, with a warning: %d condition(s) cannot work on this client.
+--     They are kept as imported and the rotation is saved disabled. Replace them in the editor to
+--     use it.
+[3460] = "가져올 준비가 되었습니다. 경고: 조건 %d개를 이 클라이언트에서 사용할 수 없습니다. 조건은 가져온 그대로 유지되고 로테이션은 비활성 상태로 저장됩니다. 사용하려면 편집기에서 해당 조건을 교체하세요.",
+-- 66c91983 English: ... and %d more
+[3463] = "... 외 %d개",
+-- fe900ffb English: This rotation will be imported disabled. %s.
+[3464] = "이 로테이션은 비활성 상태로 가져옵니다. %s.",
+-- e06eac7e English: Import anyway
+[3465] = "그래도 가져오기",
+-- 0cb7c36b English: This rotation cannot be imported:
+[3466] = "이 로테이션은 가져올 수 없습니다:",
+-- edf3f88a English: These conditions cannot work on this client. They are kept as imported and the
+--     rotation is imported disabled. Replace them in the editor before enabling it:
+[3467] = "이 조건들은 이 클라이언트에서 사용할 수 없습니다. 가져온 그대로 유지되며 로테이션은 비활성 상태로 가져옵니다. 활성화하기 전에 편집기에서 교체하세요:",
+-- bf69017f English: This import cannot be shown in full (%s).
+[3468] = "이 가져오기를 전체 표시할 수 없습니다 (%s).",
+-- e981ddae English: Warning
+[3469] = "경고",
 }

@@ -2154,7 +2154,7 @@ function addon:BindRotationProfile()
             validation = data.ValidateBody(body, owner:GetRotationValidationOptions())
         end
 
-        if not validation.valid or not validation.supported or not validation.resolved then
+        if data.ImportBlockReason(validation) then
             return nil, 'import-not-ready'
         end
 

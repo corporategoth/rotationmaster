@@ -177,7 +177,7 @@ function addon:CreateImportedRotation(prepared, spec, name, replacement, options
         result = data.ValidateBody(body, settings(self))
     end
 
-    if not result.valid or not result.supported or not result.resolved then
+    if data.ImportBlockReason(result) then
         return nil, "import-not-ready"
     end
 

@@ -425,7 +425,11 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
         local first = problems.record or problems.rotation or problems.cooldowns
 
-        local problem = first and string.format(L['This rotation cannot be selected. %s.'], first)
+        local problem = first and string.format(
+            self.workspace.importDisabled and L['This rotation will be imported disabled. %s.']
+                or L['This rotation cannot be selected. %s.'],
+            first
+        )
             or L['This rotation cannot run until its incomplete or unavailable data is resolved.']
 
         self.validationButton:SetText(problem)
@@ -1379,10 +1383,24 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     function pane:LayoutFooter()
         local frame = self.frame
         local width = frame:GetWidth()
+        local preview = self.workspace.preview
         local discardWidth = fitButton(self.discard, 70)
         local applyWidth = fitButton(self.apply, 70)
         local viewChanges = self.viewChanges
         local viewWidth = viewChanges and fitButton(viewChanges, 90) or 0
+
+        -- An import preview saves nothing and has no draft, so it has no Apply, Discard or View Changes; the rest of
+        -- the footer uses the whole row.
+        if preview then
+            self.apply:Hide()
+            self.discard:Hide()
+            discardWidth, applyWidth, viewWidth = 0, 0, 0
+
+            if viewChanges then
+                viewChanges:Hide()
+            end
+        end
+
         self.discard:ClearAllPoints()
         self.discard:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -8, 8)
         self.apply:ClearAllPoints()
@@ -1393,7 +1411,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             viewChanges:SetPoint('RIGHT', self.apply, 'LEFT', -FOOTER_GAP, 0)
         end
 
-        local lead = viewChanges or self.apply
+        local lead = not preview and (viewChanges or self.apply) or nil
         local barWidth = 0
         local stacked = false
 
@@ -1428,8 +1446,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
             if stacked then
                 bar:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -8, 36)
-            else
+            elseif lead then
                 bar:SetPoint('RIGHT', lead, 'LEFT', -12, 0)
+            else
+                bar:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -8, 8)
             end
         end
 
@@ -1439,13 +1459,23 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         for _, label in ipairs({ self.status, self.hint }) do
             label:ClearAllPoints()
             label:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 8, 12)
-            label:SetPoint('RIGHT', right, 'LEFT', -10, 0)
+
+            if right then
+                label:SetPoint('RIGHT', right, 'LEFT', -10, 0)
+            else
+                label:SetPoint('RIGHT', frame, 'RIGHT', -8, 0)
+            end
         end
 
         -- The problem line (red, with a warning icon) takes the same space, level with the buttons.
         self.validationButton:ClearAllPoints()
         self.validationButton:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 8, 8)
-        self.validationButton:SetPoint('BOTTOMRIGHT', right, 'BOTTOMLEFT', -10, 0)
+
+        if right then
+            self.validationButton:SetPoint('BOTTOMRIGHT', right, 'BOTTOMLEFT', -10, 0)
+        else
+            self.validationButton:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -8, 8)
+        end
 
         local changed = self.footerStacked ~= stacked
         self.footerStacked = stacked

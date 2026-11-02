@@ -9166,13 +9166,14 @@ addon.translation = {
 --     character set the owner of a new copy; replacement keeps the original owner. The imported
 --     rotation is opened for editing after a successful import.
 [2699] = "複製文字以匯出目前循環，或貼上一個循環以匯入。選擇取代所選的可編輯循環，或建立一個新的命名複本。「職業」與「此角色」用於設定新複本的擁有者；取代會保留原始擁有者。匯入成功後會開啟匯入的循環進行編輯。",
--- d6789183 English: With Replace selected entry ticked, the button reads Compare import and shows
+-- 2fcca938 English: With Replace selected entry ticked, the button reads Compare import and shows
 --     what would change in that rotation. For a new named copy it reads Preview import and shows
 --     everything the import contains, read-only, as the rotation editor shows it. Neither saves
---     anything. Import is enabled only for a ready preview or comparison; changing the text
---     requires another one. Check import shows read-only diagnostics, including unsupported data
---     that prevents import.
-[2700] = "勾選「取代所選項目」時，該按鈕顯示為「比較匯入」，並顯示該循環會有哪些變化。建立新的命名複本時，它顯示為「預覽匯入」，並以循環編輯器的方式唯讀顯示匯入包含的全部內容。兩者都不會儲存任何內容。只有在預覽或比較就緒時才能匯入；變更文字後需要重新操作。「檢查匯入內容」會顯示唯讀的診斷資訊，包括阻止匯入的不受支援資料。",
+--     anything. Import is enabled for a staged preview or comparison; changing the text requires
+--     another one. Pressing Import lists anything that stops it. A rotation that uses conditions
+--     this client cannot use can still be imported: you are asked first, it is saved disabled, and
+--     you replace the conditions in the editor.
+[2700] = "勾選「取代所選項目」時，該按鈕顯示為「比較匯入」，並顯示該循環會有哪些變化。建立新的命名複本時，它顯示為「預覽匯入」，並以循環編輯器的方式唯讀顯示匯入包含的全部內容。兩者都不會儲存任何內容。有預覽或比較時即可匯入；變更文字後需要重新操作。點擊「匯入」會列出阻止匯入的所有問題。包含此客戶端無法使用之條件的循環仍可匯入：會先詢問你，它會以停用狀態儲存，之後你在編輯器中替換這些條件。",
 -- 9a2297f1 English: Explain this read-only incoming rotation comparison.
 [2701] = "說明此唯讀的傳入循環比較。",
 -- 4f0c847b English: This view compares the saved or exported rotation with the current incoming
@@ -11762,4 +11763,23 @@ addon.translation = {
 [3458] = "點擊以編輯",
 -- f3d230a2 English: Keep Unsaved
 [3459] = "保留未儲存的變更",
+-- 7a2845fc English: Ready to import, with a warning: %d condition(s) cannot work on this client.
+--     They are kept as imported and the rotation is saved disabled. Replace them in the editor to
+--     use it.
+[3460] = "可以匯入，但有警告：%d 個條件無法在此客戶端上使用。它們會依匯入時的樣子保留，循環將以停用狀態儲存。請在編輯器中替換它們後再使用。",
+-- 66c91983 English: ... and %d more
+[3463] = "... 以及另外 %d 項",
+-- fe900ffb English: This rotation will be imported disabled. %s.
+[3464] = "此循環將以停用狀態匯入。%s。",
+-- e06eac7e English: Import anyway
+[3465] = "仍然匯入",
+-- 0cb7c36b English: This rotation cannot be imported:
+[3466] = "無法匯入此循環：",
+-- edf3f88a English: These conditions cannot work on this client. They are kept as imported and the
+--     rotation is imported disabled. Replace them in the editor before enabling it:
+[3467] = "這些條件無法在此客戶端上使用。它們會依匯入時的樣子保留，循環將以停用狀態匯入。請在啟用之前於編輯器中替換它們：",
+-- bf69017f English: This import cannot be shown in full (%s).
+[3468] = "無法完整顯示此匯入內容（%s）。",
+-- e981ddae English: Warning
+[3469] = "警告",
 }
