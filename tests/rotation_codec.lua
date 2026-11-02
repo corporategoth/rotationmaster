@@ -175,7 +175,12 @@ test('actual legacy transports enter the session preview without rewriting their
         assert(candidate.original == golden.text and candidate.scopeStatus == 'unknown')
         assert(candidate.value.name == 'Legacy Shaman 雪' and #candidate.value.rotation == 12)
         assert(candidate.value.rotation[1].action == 404 and candidate.value.rotation[12].action == 415)
-        assert(not session:GetReady(candidate.token), 'unresolved condition schemas must not be applied')
+        local ready = assert(session:GetReady(candidate.token), 'unresolved conditions must still import')
+
+        assert(
+            ready.body.disabled == true and #ready.unresolved > 0,
+            'an import with unusable conditions must be disabled'
+        )
     end
 end)
 
