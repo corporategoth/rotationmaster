@@ -51,7 +51,7 @@ local identities = {
     -- (126b58e3), the drawn tree (97274eb1).
     ['Conditions/talent.lua'] = {
         dropdown = 'fc359881',
-        gridWidget = 'e72d8427',
+        gridWidget = '59880be4',
         group = 'd6f4e415',
         icon = '96cba83c',
         info = '06ddaa40',
@@ -63,7 +63,7 @@ local identities = {
         treeName = '7472cbbc',
         treePicker = '6ac3f081',
         treeShape = 'f0ba2bf9',
-        treeWidget = '0865edd9',
+        treeWidget = '3d88788d',
     },
     ['Conditions/weapon.lua'] = {
         enchantObservation = '5abf63f3',
