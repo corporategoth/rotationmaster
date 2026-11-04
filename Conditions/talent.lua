@@ -359,39 +359,128 @@ local GRID_TIER_LEVELS = { 15, 30, 45, 60, 75, 90 }
 -- Choosing a talent saves slot (tier - 1) * 3 + column in `value` and clears the tree fields, because a grid reference
 -- has no operator.
 local function gridWidget(parent, spec, value, update)
-    local tiers,tierOrder={},{}
-    for tier,level in ipairs(GRID_TIER_LEVELS) do tiers[tier]=string.format(L["Tier %d (level %d)"],tier,level);tierOrder[tier]=tier end
-    local chosen=value.layout=="grid" and integer(value.value,1,18) and value.value or nil
-    local shownTier=chosen and math.ceil(chosen/3) or 1
-    local choices,order={},{}
+    local tiers, tierOrder = {}, {}
+
+    for tier, level in ipairs(GRID_TIER_LEVELS) do
+        tiers[tier] = string.format(L["Tier %d (level %d)"], tier, level)
+        tierOrder[tier] = tier
+    end
+
+    local chosen = value.layout == "grid" and integer(value.value, 1, 18) and value.value or nil
+    local shownTier = chosen and math.ceil(chosen / 3) or 1
+    local choices, order = {}, {}
+
+    -- Refills the talent list with the shown tier's three talents.
     local function load()
-        choices,order={},{}
-        for column=1,3 do
-            local talent=platform:GetGridTalentInfo((shownTier-1)*3+column,group(spec))
-            if talent then choices[column]={text=talent.name,icon=talent.icon};order[#order+1]=column end
+        choices, order = {}, {}
+
+        for column = 1, 3 do
+            local talent = platform:GetGridTalentInfo((shownTier - 1) * 3 + column, group(spec))
+
+            if talent then
+                choices[column] = { text = talent.name, icon = talent.icon }
+                order[#order + 1] = column
+            end
         end
     end
+
     load()
-    if value.layout~="grid" and (value.tree~=nil or value.value~=nil) then
-        text(parent,L["This reference belongs to another talent layout. Selecting a talent explicitly replaces it; viewing does not convert it."])
+
+    if value.layout ~= "grid" and (value.tree ~= nil or value.value ~= nil) then
+        text(
+            parent,
+            L["This reference belongs to another talent layout. Selecting a talent explicitly replaces it; viewing does not convert it."]
+        )
     end
-    local box=block(parent)
-    local talentIcon=icon(box,value,spec)
-    local tierPicker,picker
-    tierPicker=dropdown(box,L["Tier"],function(selected)
-        if selected==shownTier then return end
-        shownTier=selected;load();picker:SetList(choices,order)
-        picker:SetValue(chosen and math.ceil(chosen/3)==shownTier and (chosen-1)%3+1 or nil);picker:SetDisabled(#order==0)
+
+    local box = block(parent)
+    local talentIcon = icon(box, value, spec)
+    local tierPicker, picker
+
+    tierPicker = dropdown(box, L["Tier"], function(selected)
+        if selected == shownTier then
+            return
+        end
+
+        shownTier = selected
+        load()
+        picker:SetList(choices, order)
+        picker:SetValue(chosen and math.ceil(chosen / 3) == shownTier and (chosen - 1) % 3 + 1 or nil)
+        picker:SetDisabled(#order == 0)
     end)
-    tierPicker.configure=function() tierPicker:SetList(tiers,tierOrder);tierPicker:SetValue(shownTier) end
-    picker=dropdown(box,L["Talent"],function(selected)
-        chosen=(shownTier-1)*3+selected
-        value.layout,value.value="grid",chosen
-        value.tree,value.talent,value.operator=nil,nil,nil
-        local talent=info(value,spec);talentIcon:SetImage(talent and talent.icon or PLACEHOLDER);update()
+
+    tierPicker.configure = function()
+        tierPicker:SetList(tiers, tierOrder)
+        tierPicker:SetValue(shownTier)
+    end
+
+    picker = dropdown(box, L["Talent"], function(selected)
+        chosen = (shownTier - 1) * 3 + selected
+        value.layout, value.value = "grid", chosen
+        value.tree, value.talent, value.operator = nil, nil, nil
+        local talent = info(value, spec)
+        talentIcon:SetImage(talent and talent.icon or PLACEHOLDER)
+        update()
     end)
-    picker:SetDisabled(#order==0)
-    picker.configure=function() picker:SetList(choices,order);picker:SetValue(chosen and math.ceil(chosen/3)==shownTier and (chosen-1)%3+1 or nil) end
+
+    picker:SetDisabled(#order == 0)
+
+    picker.configure = function()
+        picker:SetList(choices, order)
+        picker:SetValue(chosen and math.ceil(chosen / 3) == shownTier and (chosen - 1) % 3 + 1 or nil)
+    end
+
+    -- A button for the tree sits beside the talent list when the client can show one: Blizzard's own rows, with every
+    -- talent open to choose.
+    if platform.HasTalentTreeProvider and addon.OpenTalentTree and platform:HasTalentTreeProvider() then
+        local treeOwner = {}
+        local treeButton = addon:CreateConditionButton()
+        treeButton:SetText(L["Show talent tree"])
+        treeButton:SetAutoWidth(true)
+        treeButton:SetUserData("side", true)
+        treeButton.frame.tooltip = L["Opens the talent tree of your class. Click a talent to choose it for this condition."]
+
+        treeButton:SetCallback("OnClick", function()
+            local current = info(value, spec)
+
+            addon:OpenTalentTree({
+                owner = treeOwner,
+                group = group(spec),
+                selection = chosen and { slot = chosen } or nil,
+                selectionName = current and current.name,
+                -- Writes the slot the player clicked into the condition and follows it in the lists (false clears it).
+                -- @param picked table|boolean  The chosen { slot, name, icon }, or false.
+                onSelect = function(picked)
+                    if not picked then
+                        chosen = nil
+                        value.value = nil
+                        picker:SetValue(nil)
+                        talentIcon:SetImage(PLACEHOLDER)
+                        update()
+                        return
+                    end
+
+                    chosen = picked.slot
+                    value.layout, value.value = "grid", chosen
+                    value.tree, value.talent, value.operator = nil, nil, nil
+                    shownTier = math.ceil(chosen / 3)
+                    load()
+                    tierPicker:SetValue(shownTier)
+                    picker:SetList(choices, order)
+                    picker:SetValue((chosen - 1) % 3 + 1)
+                    picker:SetDisabled(#order == 0)
+                    talentIcon:SetImage(picked.icon or PLACEHOLDER)
+                    update()
+                end,
+            })
+        end)
+
+        treeButton:SetCallback("OnRelease", function()
+            addon:CloseTalentTree(treeOwner)
+        end)
+
+        box:AddChild(treeButton)
+    end
 end
 
 -- Lists the specializations of the player's class (Retail), for the list of talents to show.

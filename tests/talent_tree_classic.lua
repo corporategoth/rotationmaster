@@ -116,6 +116,52 @@ local function client(product, expansion, options)
 
         function frame:RegisterEvent() end
 
+        if template == 'PlayerTalentRowTemplate' then
+            frame.level = region(native('FontString', name .. 'Level', frame), name .. 'Level')
+
+            function frame.level:SetText(text)
+                self.text = text
+            end
+
+            function frame.level:SetTextColor() end
+
+            for column = 1, 3 do
+                local button = region(native('Button', name .. 'Talent' .. column, frame), name .. 'Talent' .. column)
+
+                button.icon, button.highlight = region(native('Texture', nil, button)), region(native(
+                    'Texture',
+                    nil,
+                    button
+                ))
+
+                button.knownSelection, button.learnSelection = region(native('Texture', nil, button)), region(native(
+                    'Texture',
+                    nil,
+                    button
+                ))
+
+                button.name = region(native('FontString', nil, button))
+
+                function button.name:SetText(text)
+                    self.text = text
+                end
+
+                function button.highlight:SetAlpha(alpha)
+                    self.alpha = alpha
+                end
+
+                function button.knownSelection:SetDesaturated(flag)
+                    self.desaturated = flag
+                end
+
+                button.knownSelection:Hide()
+                button.learnSelection:Hide()
+                frame['talent' .. column] = button
+                made.mists = made.mists or {}
+                made.mists[#made.mists + 1] = button
+            end
+        end
+
         if template == 'TalentButtonTemplate' then
             for _, suffix in ipairs({ 'Slot', 'Rank', 'RankBorder' }) do
                 local child = region(native('Texture', name .. suffix, frame), name .. suffix)
@@ -278,6 +324,55 @@ local function client(product, expansion, options)
     return f, f.addon, e
 end
 
+-- A Mists client: six tiers of three, the second tier's first talent learned, tiers 3 and up not yet open. The model of
+-- TalentFrame_Update follows the pinned Mists/TalentFrameBase.lua: it numbers each button with its talent id, grays the
+-- icon of a locked tier or of an unchosen talent in a tier that has a choice, and shows the learned one.
+local function mistsClient(group)
+    local f, a, e = client(19, 4)
+    local state = f.state
+
+    e.SetDesaturation = function(texture, flag)
+        texture.desaturated = flag
+    end
+
+    e.C_SpecializationInfo.GetTalentInfo = function(query)
+        local slot = (query.tier - 1) * 3 + query.column
+
+        return {
+            talentID = 1000 + slot,
+            spellID = 2000 + slot,
+            name = 'Talent ' .. slot,
+            icon = 5000 + slot,
+            selected = slot == 4,
+            available = query.tier > 2,
+        }
+    end
+
+    e.GetTalentTierInfo = function(tier)
+        return tier <= 2, tier == 2 and 1004 or 0, tier * 15
+    end
+
+    e.TalentFrame_Update = function(frame, unit)
+        assert(unit == 'player' and not frame.inspect and frame.tier1.talent1 and frame.tier6.talent3)
+        state.updates = (state.updates or 0) + 1
+
+        for tier = 1, 6 do
+            for column = 1, 3 do
+                local button = frame['tier' .. tier]['talent' .. column]
+                local info = e.C_SpecializationInfo.GetTalentInfo({ tier = tier, column = column })
+                button:SetID(info.talentID)
+                button.tier, button.column = tier, column
+                button.icon.desaturated = tier > 2 or info.talentID ~= 1004 and tier == 2
+                button.knownSelection:Hide()
+                button.learnSelection:Show()
+                button.highlight.alpha = 0
+            end
+        end
+    end
+
+    return f, a, e
+end
+
 local function open(f, request)
     request = request or {}
     local picks = {}
@@ -296,6 +391,12 @@ local function open(f, request)
     return window, picks
 end
 
+-- Clicks a button the way the game does.
+-- @param button table  The button.
+local function click(button)
+    button.scripts.OnClick(button)
+end
+
 local function shown(f, tab)
     local out = {}
 
@@ -308,18 +409,17 @@ local function shown(f, tab)
     return out
 end
 
-test('the classic provider serves Era, TBC and Wrath, and no other client', function()
-    for _, case in ipairs({ { 2, 1 }, { 5, 1 }, { 11, 2 } }) do
+test('the classic provider serves Era, TBC, Wrath and Cataclysm; Mists belongs to the grid provider', function()
+    for _, case in ipairs({ { 2, 1 }, { 5, 1 }, { 11, 2 }, { 14, 3 } }) do
         local f, a = client(case[1], case[2])
         local list = a.Platform:GetTalentTreeProviders()
         assert(#list == 1 and list[1].id == 'classic', 'product ' .. case[1])
         assert(a.Platform:HasTalentTreeProvider())
     end
 
-    for _, case in ipairs({ { 14, 3 }, { 19, 4 } }) do
-        local _, a = client(case[1], case[2])
-        assert(#a.Platform:GetTalentTreeProviders() == 0, 'no classic tree on product ' .. case[1])
-    end
+    local _, mists = client(19, 4)
+    local list = mists.Platform:GetTalentTreeProviders()
+    assert(#list == 0 or list[1].id == 'grid', 'Mists never gets the tree provider')
 
     local _, a, e = client(5, 1)
     e.TalentFrame_Update = nil
@@ -360,13 +460,13 @@ test('a click chooses the talent and closes the window; clicking the saved talen
     local f = client(5, 1)
     local window, picks = open(f, { selection = { tree = 1, talent = 4 } })
     local buttons = shown(f)
-    buttons[2].talentButton_OnClick(buttons[2])
+    click(buttons[2])
     assert(#picks == 1 and picks[1].tree == 1 and picks[1].talent == 2 and picks[1].name == 'Concussion')
     assert(picks[1].icon == 136202)
     assert(not window.frame:IsShown(), 'choosing closes the window')
 
     window, picks = open(f, { selection = { tree = 1, talent = 4 } })
-    shown(f)[4].talentButton_OnClick(shown(f)[4])
+    click(shown(f)[4])
     assert(#picks == 1 and picks[1] == false)
 end)
 
@@ -377,7 +477,7 @@ test('another tab loads that tree and a pick on it names the tab', function()
     local buttons = shown(f)
     assert(#buttons == 1 and window.handle.spec == 2)
     assert(not buttons[1].chosen:IsShown(), 'the saved talent belongs to tree 1')
-    buttons[1].talentButton_OnClick(buttons[1])
+    click(buttons[1])
     assert(picks[1].tree == 2 and picks[1].talent == 1)
 end)
 
@@ -385,10 +485,10 @@ test('the tooltip is the game\'s own talent tooltip, and closing hides the tree 
     local f = client(5, 1)
     local window = open(f)
     local button = shown(f)[1]
-    button.talentButton_OnEnter(button)
+    button.scripts.OnEnter(button)
     assert(f.tip.talent[1] == 101 and f.tip.talent[2] == false and f.tip.talent[3] == false and f.tip.shown)
     window.frame:Hide()
-    assert(button.talentButton_OnClick == nil and button.talentButton_OnEnter == nil)
+    assert(button.scripts.OnClick == nil and button.scripts.OnEnter == nil)
     assert(not f.tip.shown, 'the tooltip does not outlive the window')
 end)
 
@@ -401,6 +501,49 @@ test('a failing Blizzard update leaves the window with the reason and no tree', 
 
     local window = open(f)
     assert(window.handle == nil and window.failure == 'talent-window-unavailable')
+end)
+
+test('on Mists, Blizzard\'s rows are laid out, every talent is selectable and a click names the slot', function()
+    local f, a = mistsClient()
+    local list = a.Platform:GetTalentTreeProviders()
+    assert(#list == 1 and list[1].id == 'grid')
+    local picks = {}
+
+    local window = a:OpenTalentTree({
+        owner = {},
+        selection = { slot = 4 },
+        onSelect = function(pick)
+            picks[#picks + 1] = pick
+        end,
+    })
+
+    assert(window.mode == 'grid' and window.handle and window.canvasHeight >= 5 * 58 + 50)
+    local buttons = f.made.mists
+    assert(#buttons == 18)
+
+    for index, button in ipairs(buttons) do
+        assert(button.icon.desaturated == false, 'slot ' .. index .. ' stays gray')
+        assert(button.highlight.alpha == 1 and not button.learnSelection:IsShown())
+        assert(button.knownSelection:IsShown() == (index == 4), 'only the saved slot is marked')
+    end
+
+    buttons[5].scripts.OnClick(buttons[5])
+    assert(#picks == 1 and picks[1].slot == 5 and picks[1].name == 'Talent 5' and picks[1].icon == 5005)
+    assert(not window.frame:IsShown())
+
+    window = a:OpenTalentTree({
+        owner = {},
+        selection = { slot = 4 },
+        onSelect = function(pick)
+            picks[#picks + 1] = pick
+        end,
+    })
+
+    assert(buttons[4].scripts.OnEvent == nil and buttons[4].scripts.OnDragStart == nil)
+    buttons[4].scripts.OnEnter(buttons[4])
+    assert(f.tip.talent[1] == 1004 and f.tip.talent[2] == false)
+    buttons[4].scripts.OnClick(buttons[4])
+    assert(picks[2] == false)
 end)
 
 finish()

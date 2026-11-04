@@ -288,8 +288,8 @@ local function layout(d)
         d.canvas:SetSize(d.canvasWidth, d.canvasHeight)
         d.canvas:Show()
         frame:SetSize(width, height)
-    elseif d.mode == 'classic' and handle and handle.canvasSize then
-        width = 520
+    elseif handle and handle.canvasSize then
+        width = math.max(520, handle.canvasSize.width + 40)
         d.canvasWidth, d.canvasHeight = handle.canvasSize.width, handle.canvasSize.height
         d.canvas:ClearAllPoints()
         d.canvas:SetPoint('TOP', frame, 'TOP', 0, y)

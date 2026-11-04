@@ -77,8 +77,8 @@ hero trees, active or view loadout; never in combat), `FindTraitViewSelection` (
 | --- | --- | --- | --- |
 | `drawn` | Retail, Forever | 50 | whenever the trait tree can be read |
 | `blizzard` | Retail, Forever | 10 | only when `RotationMaster.db.global.talent_popup_provider == 'blizzard'` |
-| `classic` | Era, SoD, TBC, Wrath | 50 | Blizzard's `TalentFrame_Update` and the `TalentButtonTemplate` family are present (section 4) |
-| (none) | Cataclysm, Mists | | the button is hidden; the dropdowns serve |
+| `classic` | Era, SoD, TBC, Wrath, Cataclysm | 50 | Blizzard's `TalentFrame_Update` and the `TalentButtonTemplate` family are present (section 4) |
+| `grid` | Mists | 50 | Blizzard's `TalentFrame_Update(frame, "player")` is present; `Blizzard_TalentUI` is loaded on demand for its row template |
 
 The window itself (the control strip: specialization and hero tree switchers, the current choice, the reason a tree cannot be shown)
 is movable, uses the same chrome and Escape handling as the other windows, and closes when the editor that opened it is released.
@@ -158,9 +158,19 @@ What Blizzard's update does that the picker undoes afterwards (the point of usin
 
 The tab buttons are the window's specialization row (labeled "Talent Tree"), one per tree. Choosing a talent writes `tree`,
 `talent` and `layout="tree"` as the dropdowns do, and the lists follow; clicking the saved talent clears the talent and keeps the
-tree. The button is offered only for the player's own class (the game answers for no other). Cataclysm uses another frame base
-(`Cata/TalentFrameBase.lua`, `Cata/Blizzard_TalentUITemplates.xml`) and Mists a row frame defined in the load-on-demand
-`Blizzard_TalentUI`; neither is served yet.
+tree. The button is offered only for the player's own class (the game answers for no other).
+
+Cataclysm is the same provider: `Cata/TalentFrameBase.lua` is parameterized (button size, offsets and spacing come from the frame,
+the buttons find `Slot`, `Rank` and `RankBorder` by parent key and name) and needs no points text or scroll button. It has 28 buttons
+(`MAX_NUM_TALENTS`), Era to Wrath 40; the provider creates as many as the client declares.
+
+**Mists** (`grid` provider) reads the same way with Blizzard's row template: `Blizzard_TalentUI` is loaded (it is load-on-demand),
+RM creates `RotationMasterClassicTalentTreeGrid` with six `PlayerTalentRowTemplate` rows (Blizzard's row holds the three talent
+buttons, `talent1` to `talent3`) as `frame.tier1` to `frame.tier6`, sets `talentGroup` and calls `TalentFrame_Update(frame, "player")`
+(`Mists/TalentFrameBase.lua`). Blizzard's button template runs `PlayerTalentFrameTalent_OnClick` on click, which makes a real choice, so
+RM replaces `OnClick`, `OnEnter`, `OnEvent` and the drag scripts on its own buttons. After the update RM clears the icon desaturation,
+the row "learn" glow and the locked-tier dimming, and marks the saved slot with Blizzard's own "known" selection texture. A click
+returns the slot (`(tier - 1) * 3 + column`, 1 to 18), which is what the grid reference stores.
 
 What the classic frames cannot do (read in classic_era 8165d4c, classic 15c8a754 and anniversary 2cfec7c):
 
@@ -189,7 +199,7 @@ a tree RM is showing. If it is ever embedded, record exactly that and keep its h
 
 ## 6. Not built
 
-* A tree for another class on a classic client (an addon provider), and the Cataclysm and Mists trees.
+* A tree for another class on a classic client (an addon provider).
 * A single catalog structure shared by all layouts. Each layout keeps its own reference; the trait view is the only structured tree.
 * Storing a stable `talentID` next to the classic `tree` and `talent` indices, which would survive an index shift between builds.
 * Talent catalogs for the website. The web editor cannot read game data, so it keeps the numeric-field form for talents; the data

@@ -70,6 +70,14 @@ local GUARDED = {
         'Glyph reader is gated on the client\'s glyph layout (Mists); missing-api elsewhere.',
         { 'Platform/glyphs.lua' },
     },
+    MAX_NUM_TALENTS = {
+        'Read as tonumber(MAX_NUM_TALENTS) or 40: the tree clients define it, the trait clients never reach that code.',
+        { 'UI/talent_popup_classic.lua' },
+    },
+    SetDesaturation = {
+        'The Mists talent grid only; the provider is gated on the grid layout and type-checks the function.',
+        { 'UI/talent_popup_classic.lua' },
+    },
     GetNumTalentTabs = {
         'Tree talent layout only (Era/TBC); Retail/Forever read trait trees.',
         { 'Platform/talents.lua' },
