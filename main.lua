@@ -474,6 +474,8 @@ local defaults = {
         loglevel = 2,
         detailed_profiling = false,
         disable_autoswitch = false,
+        metrics_adherence = false,
+        metrics_effectiveness = false,
         live_config_update = 2,
         spell_history = 60,
         combat_history = 10,
@@ -1901,6 +1903,10 @@ function addon:enable()
     -- END EQUIPMENT ENABLE COMMIT
     if activeChangeCurrent(self, change) then
         self:StartAutoSwitchTimer()
+
+        if self.ApplyMetricsSettings then
+            self:ApplyMetricsSettings()
+        end
     end
 end
 
@@ -1914,6 +1920,11 @@ function addon:disable()
     end
 
     self:StopAutoSwitchTimer()
+
+    if self.ApplyMetricsSettings then
+        self:ApplyMetricsSettings(true)
+    end
+
     local change = beginActive(self)
 
     if not activeChangeCurrent(self, change) then

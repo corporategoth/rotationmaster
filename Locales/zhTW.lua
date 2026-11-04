@@ -11785,4 +11785,58 @@ addon.translation = {
 -- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
 --     condition.
 [3470] = "開啟你職業的天賦樹。點擊一個天賦，即可為此條件選擇它。",
+-- a58da793 English: Metrics
+[3471] = "指標",
+-- 7d510fae English: Track how closely I follow the advice
+[3472] = "統計我遵循建議的程度",
+-- 12ccb9c7 English: Track damage and healing per fight
+[3473] = "統計每場戰鬥的傷害與治療",
+-- 95e66e46 English: Metrics report
+[3474] = "指標報告",
+-- 3b5e938d English: Export for the website
+[3475] = "匯出給網站",
+-- 81d1f0a3 English: Export for a language model
+[3476] = "匯出給語言模型",
+-- 71116db8 English: Clear metrics
+[3477] = "清除指標",
+-- a42bb91e English: Metrics export
+[3478] = "指標匯出",
+-- 9573bb88 English: Metrics for a language model
+[3479] = "給語言模型的指標",
+-- 03823b68 English: Rotation metrics
+[3480] = "循環指標",
+-- f0ad8ea7 English: No metrics have been recorded yet.
+[3481] = "尚未記錄任何指標。",
+-- 3440f7f0 English: Metrics cleared.
+[3482] = "指標已清除。",
+-- 62016fff English: %d fights, %d seconds, %d casts
+[3483] = "%d 場戰鬥，%d 秒，%d 次施法",
+-- 22744626 English: Followed the advice for %s%% of casts; %d out of order, %d outside the
+--     rotation, %d with no advice
+[3484] = "%s%% 的施法遵循了建議；%d 次順序不同，%d 次在循環之外，%d 次沒有建議",
+-- fc6ca8ad English: Average time to act on a recommendation: %s seconds
+[3485] = "執行建議的平均用時：%s 秒",
+-- 7a3edc19 English: Damage per second: %d, healing per second: %d
+[3486] = "每秒傷害：%d，每秒治療：%d",
+-- 70c176f6 English: %s: %d fights, %d damage per second, %d healing per second
+[3487] = "%s：%d 場戰鬥，每秒傷害 %d，每秒治療 %d",
+-- f0de80e3 English:   %s: followed %d, not acted on %d, instead: %s
+[3488] = "  %s：已遵循 %d，未執行 %d，改為：%s",
+-- a84f13b5 English: Low adherence
+[3489] = "遵循度低",
+-- 49e9ada4 English: Medium adherence
+[3490] = "遵循度中",
+-- 49239376 English: High adherence
+[3491] = "遵循度高",
+-- 55452005 English: While the rotation is on and you are in combat, record which spell was
+--     recommended when you pressed a spell, how long after the recommendation appeared you pressed
+--     it, and what you cast instead when you did not follow it. Only totals are kept, per rotation,
+--     in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or
+--     export them for the website or a language model.
+[3492] = "循環開啟且你處於戰鬥中時，會記錄你使用法術時推薦的是哪個法術、推薦出現多久後你才使用，以及你沒有遵循時改用了什麼。只會在你的已儲存變數中依循環保存合計資料，不會向任何地方傳送。開啟指標報告即可查看，也可以匯出給網站或語言模型。",
+-- 7566cb83 English: Record the damage and healing you do in each fight so the metrics can compare
+--     fights where you followed the advice closely with fights where you did not. This reads the
+--     combat log, which Retail and Forever hide from addons, so it records nothing on those
+--     clients.
+[3493] = "記錄你每場戰鬥造成的傷害與治療，讓指標能比較你嚴格遵循建議的戰鬥與沒有遵循的戰鬥。這需要讀取戰鬥記錄，而正式服與 Forever 對插件隱藏了戰鬥記錄，因此在這些用戶端上不會記錄任何內容。",
 }

@@ -11785,4 +11785,58 @@ addon.translation = {
 -- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
 --     condition.
 [3470] = "Ouvre l'arbre de talents de votre classe. Cliquez sur un talent pour le choisir pour cette condition.",
+-- a58da793 English: Metrics
+[3471] = "Métriques",
+-- 7d510fae English: Track how closely I follow the advice
+[3472] = "Mesurer dans quelle mesure je suis les recommandations",
+-- 12ccb9c7 English: Track damage and healing per fight
+[3473] = "Mesurer les dégâts et les soins par combat",
+-- 95e66e46 English: Metrics report
+[3474] = "Rapport de métriques",
+-- 3b5e938d English: Export for the website
+[3475] = "Exporter pour le site web",
+-- 81d1f0a3 English: Export for a language model
+[3476] = "Exporter pour un modèle de langage",
+-- 71116db8 English: Clear metrics
+[3477] = "Effacer les métriques",
+-- a42bb91e English: Metrics export
+[3478] = "Export des métriques",
+-- 9573bb88 English: Metrics for a language model
+[3479] = "Métriques pour un modèle de langage",
+-- 03823b68 English: Rotation metrics
+[3480] = "Métriques de la rotation",
+-- f0ad8ea7 English: No metrics have been recorded yet.
+[3481] = "Aucune métrique n'a encore été enregistrée.",
+-- 3440f7f0 English: Metrics cleared.
+[3482] = "Métriques effacées.",
+-- 62016fff English: %d fights, %d seconds, %d casts
+[3483] = "%d combats, %d secondes, %d incantations",
+-- 22744626 English: Followed the advice for %s%% of casts; %d out of order, %d outside the
+--     rotation, %d with no advice
+[3484] = "Recommandation suivie pour %s %% des incantations ; %d dans le désordre, %d hors de la rotation, %d sans recommandation",
+-- fc6ca8ad English: Average time to act on a recommendation: %s seconds
+[3485] = "Délai moyen pour agir sur une recommandation : %s secondes",
+-- 7a3edc19 English: Damage per second: %d, healing per second: %d
+[3486] = "Dégâts par seconde : %d, soins par seconde : %d",
+-- 70c176f6 English: %s: %d fights, %d damage per second, %d healing per second
+[3487] = "%s : %d combats, %d dégâts par seconde, %d soins par seconde",
+-- f0de80e3 English:   %s: followed %d, not acted on %d, instead: %s
+[3488] = "  %s : suivi %d, sans suite %d, à la place : %s",
+-- a84f13b5 English: Low adherence
+[3489] = "Suivi faible",
+-- 49e9ada4 English: Medium adherence
+[3490] = "Suivi moyen",
+-- 49239376 English: High adherence
+[3491] = "Suivi élevé",
+-- 55452005 English: While the rotation is on and you are in combat, record which spell was
+--     recommended when you pressed a spell, how long after the recommendation appeared you pressed
+--     it, and what you cast instead when you did not follow it. Only totals are kept, per rotation,
+--     in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or
+--     export them for the website or a language model.
+[3492] = "Tant que la rotation est active et que vous êtes en combat, l'addon enregistre quel sort était recommandé lorsque vous avez utilisé un sort, combien de temps après l'apparition de la recommandation vous l'avez utilisé, et ce que vous avez lancé à la place lorsque vous ne l'avez pas suivie. Seuls des totaux, par rotation, sont conservés dans vos variables sauvegardées ; rien n'est envoyé nulle part. Ouvrez le rapport de métriques pour les lire, ou exportez-les pour le site web ou un modèle de langage.",
+-- 7566cb83 English: Record the damage and healing you do in each fight so the metrics can compare
+--     fights where you followed the advice closely with fights where you did not. This reads the
+--     combat log, which Retail and Forever hide from addons, so it records nothing on those
+--     clients.
+[3493] = "Enregistre les dégâts et les soins que vous infligez et prodiguez à chaque combat afin que les métriques puissent comparer les combats où vous avez suivi de près les recommandations à ceux où ce n'était pas le cas. Cela lit le journal de combat, que Retail et Forever cachent aux addons ; rien n'est donc enregistré sur ces clients.",
 }

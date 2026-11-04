@@ -11785,4 +11785,58 @@ addon.translation = {
 -- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
 --     condition.
 [3470] = "당신 직업의 특성 트리를 엽니다. 특성을 클릭하면 이 조건에 사용할 특성으로 선택됩니다.",
+-- a58da793 English: Metrics
+[3471] = "지표",
+-- 7d510fae English: Track how closely I follow the advice
+[3472] = "권장 사항을 얼마나 따르는지 측정",
+-- 12ccb9c7 English: Track damage and healing per fight
+[3473] = "전투별 피해량과 치유량 측정",
+-- 95e66e46 English: Metrics report
+[3474] = "지표 보고서",
+-- 3b5e938d English: Export for the website
+[3475] = "웹사이트용으로 내보내기",
+-- 81d1f0a3 English: Export for a language model
+[3476] = "언어 모델용으로 내보내기",
+-- 71116db8 English: Clear metrics
+[3477] = "지표 삭제",
+-- a42bb91e English: Metrics export
+[3478] = "지표 내보내기",
+-- 9573bb88 English: Metrics for a language model
+[3479] = "언어 모델용 지표",
+-- 03823b68 English: Rotation metrics
+[3480] = "로테이션 지표",
+-- f0ad8ea7 English: No metrics have been recorded yet.
+[3481] = "아직 기록된 지표가 없습니다.",
+-- 3440f7f0 English: Metrics cleared.
+[3482] = "지표를 삭제했습니다.",
+-- 62016fff English: %d fights, %d seconds, %d casts
+[3483] = "전투 %d회, %d초, 시전 %d회",
+-- 22744626 English: Followed the advice for %s%% of casts; %d out of order, %d outside the
+--     rotation, %d with no advice
+[3484] = "시전의 %s%%에서 권장 사항을 따랐습니다. 순서가 다른 시전 %d회, 로테이션 밖의 시전 %d회, 권장 사항이 없었던 시전 %d회",
+-- fc6ca8ad English: Average time to act on a recommendation: %s seconds
+[3485] = "권장 사항에 따라 행동하기까지 평균 시간: %s초",
+-- 7a3edc19 English: Damage per second: %d, healing per second: %d
+[3486] = "초당 피해량: %d, 초당 치유량: %d",
+-- 70c176f6 English: %s: %d fights, %d damage per second, %d healing per second
+[3487] = "%s: 전투 %d회, 초당 피해량 %d, 초당 치유량 %d",
+-- f0de80e3 English:   %s: followed %d, not acted on %d, instead: %s
+[3488] = "  %s: 따름 %d회, 따르지 않음 %d회, 대신: %s",
+-- a84f13b5 English: Low adherence
+[3489] = "낮은 준수율",
+-- 49e9ada4 English: Medium adherence
+[3490] = "보통 준수율",
+-- 49239376 English: High adherence
+[3491] = "높은 준수율",
+-- 55452005 English: While the rotation is on and you are in combat, record which spell was
+--     recommended when you pressed a spell, how long after the recommendation appeared you pressed
+--     it, and what you cast instead when you did not follow it. Only totals are kept, per rotation,
+--     in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or
+--     export them for the website or a language model.
+[3492] = "로테이션이 켜져 있고 전투 중일 때, 주문을 사용한 순간 어떤 주문이 권장되었는지, 권장 사항이 나타난 뒤 얼마 만에 사용했는지, 권장 사항을 따르지 않았을 때 대신 무엇을 시전했는지 기록합니다. 로테이션별 합계만 저장된 변수에 보관되며, 어디로도 전송되지 않습니다. 지표 보고서를 열어 확인하거나 웹사이트 또는 언어 모델용으로 내보내세요.",
+-- 7566cb83 English: Record the damage and healing you do in each fight so the metrics can compare
+--     fights where you followed the advice closely with fights where you did not. This reads the
+--     combat log, which Retail and Forever hide from addons, so it records nothing on those
+--     clients.
+[3493] = "전투마다 입힌 피해량과 치유량을 기록하여, 권장 사항을 가깝게 따른 전투와 그렇지 않은 전투를 지표에서 비교할 수 있게 합니다. 이 기능은 전투 기록을 읽는데, 리테일과 포에버는 애드온에 전투 기록을 숨기므로 해당 클라이언트에서는 아무것도 기록되지 않습니다.",
 }

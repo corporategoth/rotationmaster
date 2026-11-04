@@ -26,7 +26,7 @@ Cold item-cache warmup now uses the existing protected item-display adapter inst
 
 Mode facts are raw: a season ID, hardcore flag, game-mode record and self-found-allowed flag describe different things. Self-found allowed must not become a claim that a character actively uses it. Missing metadata remains absent. Unknown projects keep an explicit unsupported policy rather than borrowing another family's rules.
 
-Current automated guards check Lua/load graph/vendor files, literal English keys and registered help/category metadata. They are not proof of optimal rotations, completed translations, client taint safety, or live API accessibility. Error-report redaction is best effort, with explicit original-text preview/copy; anonymized analytics/LLM exports remain deferred.
+Current automated guards check Lua/load graph/vendor files, literal English keys and registered help/category metadata. They are not proof of optimal rotations, completed translations, client taint safety, or live API accessibility. Error-report redaction is best effort, with explicit original-text preview/copy; the lightweight adherence and output metrics and their JSON and language-model exports are described in [metrics](../architecture/metrics.md).
 
 Development installation: the source directory is symlinked directly into the user's WoW AddOns directory. Edit the source and use `/reload`; no ZIP/deployment step is needed. Do not generate further deployment archives unless requested.
 

@@ -700,6 +700,50 @@ function addon:BuildGeneralSettings(p)
         tooltipsChanged()
     end)
 
+    p:Heading(L['Metrics'])
+
+    p:Check(
+        'metrics_adherence',
+        L['Track how closely I follow the advice'],
+        profile.metrics_adherence == true,
+        function(v)
+            profile.metrics_adherence = v
+
+            p:RunSettingsEffect('metrics_adherence', function()
+                self:ApplyMetricsSettings()
+            end)
+        end
+    )
+
+    p:Check(
+        'metrics_effectiveness',
+        L['Track damage and healing per fight'],
+        profile.metrics_effectiveness == true,
+        function(v)
+            profile.metrics_effectiveness = v
+
+            p:RunSettingsEffect('metrics_effectiveness', function()
+                self:ApplyMetricsSettings()
+            end)
+        end
+    )
+
+    p:Button('metrics_report', L['Metrics report'], function()
+        self:ShowMetricsExport('report')
+    end)
+
+    p:Button('metrics_json', L['Export for the website'], function()
+        self:ShowMetricsExport('json')
+    end)
+
+    p:Button('metrics_prompt', L['Export for a language model'], function()
+        self:ShowMetricsExport('prompt')
+    end)
+
+    p:Button('metrics_clear', L['Clear metrics'], function()
+        self:ClearMetrics()
+    end)
+
     p:Heading(L['Debugging Options'])
 
     local logEntries = {

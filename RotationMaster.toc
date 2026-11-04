@@ -131,7 +131,9 @@ Core/announcements.lua
 Core/macro_announcements.lua
 Analytics/replay.lua
 Analytics/capture.lua
+Analytics/metrics.lua
 Platform/analytics_casts.lua
+Platform/metrics_events.lua
 Core/profile_data.lua
 Core/collection_data.lua
 Core/custom_condition_data.lua
@@ -215,6 +217,7 @@ UI/talent_popup_classic.lua
 UI/errors.lua
 UI/cpu_profile.lua
 UI/analytics_capture.lua
+UI/metrics_report.lua
 UI/settings_launcher.lua
 UI/settings_setup.lua
 UI/settings_roster_order.lua

@@ -11785,4 +11785,58 @@ addon.translation = {
 -- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
 --     condition.
 [3470] = "Открывает дерево талантов Вашего класса. Нажмите на талант, чтобы выбрать его для этого условия.",
+-- a58da793 English: Metrics
+[3471] = "Метрики",
+-- 7d510fae English: Track how closely I follow the advice
+[3472] = "Измерять, насколько точно я следую рекомендациям",
+-- 12ccb9c7 English: Track damage and healing per fight
+[3473] = "Измерять урон и исцеление за бой",
+-- 95e66e46 English: Metrics report
+[3474] = "Отчёт по метрикам",
+-- 3b5e938d English: Export for the website
+[3475] = "Экспорт для сайта",
+-- 81d1f0a3 English: Export for a language model
+[3476] = "Экспорт для языковой модели",
+-- 71116db8 English: Clear metrics
+[3477] = "Очистить метрики",
+-- a42bb91e English: Metrics export
+[3478] = "Экспорт метрик",
+-- 9573bb88 English: Metrics for a language model
+[3479] = "Метрики для языковой модели",
+-- 03823b68 English: Rotation metrics
+[3480] = "Метрики ротации",
+-- f0ad8ea7 English: No metrics have been recorded yet.
+[3481] = "Метрики ещё не записаны.",
+-- 3440f7f0 English: Metrics cleared.
+[3482] = "Метрики очищены.",
+-- 62016fff English: %d fights, %d seconds, %d casts
+[3483] = "Боёв: %d, секунд: %d, применений: %d",
+-- 22744626 English: Followed the advice for %s%% of casts; %d out of order, %d outside the
+--     rotation, %d with no advice
+[3484] = "Рекомендации выполнены в %s%% применений; не по порядку: %d, вне ротации: %d, без рекомендации: %d",
+-- fc6ca8ad English: Average time to act on a recommendation: %s seconds
+[3485] = "Среднее время до выполнения рекомендации: %s сек.",
+-- 7a3edc19 English: Damage per second: %d, healing per second: %d
+[3486] = "Урон в секунду: %d, исцеление в секунду: %d",
+-- 70c176f6 English: %s: %d fights, %d damage per second, %d healing per second
+[3487] = "%s: боёв %d, урон в секунду %d, исцеление в секунду %d",
+-- f0de80e3 English:   %s: followed %d, not acted on %d, instead: %s
+[3488] = "  %s: выполнено %d, не выполнено %d, вместо этого: %s",
+-- a84f13b5 English: Low adherence
+[3489] = "Низкое следование",
+-- 49e9ada4 English: Medium adherence
+[3490] = "Среднее следование",
+-- 49239376 English: High adherence
+[3491] = "Высокое следование",
+-- 55452005 English: While the rotation is on and you are in combat, record which spell was
+--     recommended when you pressed a spell, how long after the recommendation appeared you pressed
+--     it, and what you cast instead when you did not follow it. Only totals are kept, per rotation,
+--     in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or
+--     export them for the website or a language model.
+[3492] = "Пока ротация включена, а Вы находитесь в бою, записывается, какое заклинание рекомендовалось в момент, когда Вы применили заклинание, через сколько времени после появления рекомендации Вы его применили и что Вы применили вместо него, если не последовали рекомендации. В сохранённых переменных хранятся только итоги по каждой ротации; ничто никуда не отправляется. Откройте отчёт по метрикам, чтобы прочитать их, или экспортируйте их для сайта либо языковой модели.",
+-- 7566cb83 English: Record the damage and healing you do in each fight so the metrics can compare
+--     fights where you followed the advice closely with fights where you did not. This reads the
+--     combat log, which Retail and Forever hide from addons, so it records nothing on those
+--     clients.
+[3493] = "Записывает урон и исцеление за каждый бой, чтобы метрики могли сравнивать бои, в которых Вы точно следовали рекомендациям, с боями, в которых это было не так. Для этого читается журнал боя, который Retail и Forever скрывают от аддонов, поэтому на этих клиентах ничего не записывается.",
 }

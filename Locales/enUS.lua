@@ -10047,6 +10047,52 @@ T["This import cannot be shown in full (%s)."] = 3468
 T["Warning"] = 3469
 -- a0d00587
 T["Opens the talent tree of your class. Click a talent to choose it for this condition."] = 3470
+-- a58da793
+T["Metrics"] = 3471
+-- 7d510fae
+T["Track how closely I follow the advice"] = 3472
+-- 12ccb9c7
+T["Track damage and healing per fight"] = 3473
+-- 95e66e46
+T["Metrics report"] = 3474
+-- 3b5e938d
+T["Export for the website"] = 3475
+-- 81d1f0a3
+T["Export for a language model"] = 3476
+-- 71116db8
+T["Clear metrics"] = 3477
+-- a42bb91e
+T["Metrics export"] = 3478
+-- 9573bb88
+T["Metrics for a language model"] = 3479
+-- 03823b68
+T["Rotation metrics"] = 3480
+-- f0ad8ea7
+T["No metrics have been recorded yet."] = 3481
+-- 3440f7f0
+T["Metrics cleared."] = 3482
+-- 62016fff
+T["%d fights, %d seconds, %d casts"] = 3483
+-- 22744626
+T["Followed the advice for %s%% of casts; %d out of order, %d outside the rotation, %d with no advice"] = 3484
+-- fc6ca8ad
+T["Average time to act on a recommendation: %s seconds"] = 3485
+-- 7a3edc19
+T["Damage per second: %d, healing per second: %d"] = 3486
+-- 70c176f6
+T["%s: %d fights, %d damage per second, %d healing per second"] = 3487
+-- f0de80e3
+T["  %s: followed %d, not acted on %d, instead: %s"] = 3488
+-- a84f13b5
+T["Low adherence"] = 3489
+-- 49e9ada4
+T["Medium adherence"] = 3490
+-- 49239376
+T["High adherence"] = 3491
+-- 55452005
+T["While the rotation is on and you are in combat, record which spell was recommended when you pressed a spell, how long after the recommendation appeared you pressed it, and what you cast instead when you did not follow it. Only totals are kept, per rotation, in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or export them for the website or a language model."] = 3492
+-- 7566cb83
+T["Record the damage and healing you do in each fight so the metrics can compare fights where you followed the advice closely with fights where you did not. This reads the combat log, which Retail and Forever hide from addons, so it records nothing on those clients."] = 3493
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

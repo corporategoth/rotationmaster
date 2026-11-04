@@ -225,6 +225,8 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             loglevel = L['Log Level'],
             detailed_profiling = L['Detailed Profiling'],
             disable_autoswitch = L['Disable Auto-Switching'],
+            metrics_adherence = L['Track how closely I follow the advice'],
+            metrics_effectiveness = L['Track damage and healing per fight'],
             live_config_update = L['Live Status Update Frequency (seconds)'],
             spell_history = L['Spell History Memory (seconds)'],
             combat_history = L['Combat History Memory (seconds)'],

@@ -91,6 +91,16 @@ function addon:GetGeneralOptionHelp()
             text = L["Choose how many seconds of observed damage and healing to retain for burn-rate and time-to-die estimates. Recent observations receive more weight. A longer window uses more records and smooths short changes; it cannot supply events the client does not expose."],
         },
         {
+            id = "metrics_adherence",
+            title = L["Track how closely I follow the advice"],
+            text = L["While the rotation is on and you are in combat, record which spell was recommended when you pressed a spell, how long after the recommendation appeared you pressed it, and what you cast instead when you did not follow it. Only totals are kept, per rotation, in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or export them for the website or a language model."],
+        },
+        {
+            id = "metrics_effectiveness",
+            title = L["Track damage and healing per fight"],
+            text = L["Record the damage and healing you do in each fight so the metrics can compare fights where you followed the advice closely with fights where you did not. This reads the combat log, which Retail and Forever hide from addons, so it records nothing on those clients."],
+        },
+        {
             id = "preview_spells",
             title = L["Preview Spells"],
             text = L["Choose a whole number of upcoming recommendations, from zero (hidden) to five. This is the only switch for the preview window: it is shown whenever this is above zero and hidden at zero, and the window has no close button. The preview shows current priority results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."],
