@@ -77,9 +77,8 @@ for _, kind in ipairs({ 'standard', 'lean' }) do
     test(kind .. ' engine: a spell with a cooldown is not predicted straight after being cast', function()
         local c = engine(kind)
         c.on(true)
-        c.e.C_Spell = c.e.C_Spell or {}
 
-        c.e.C_Spell.GetSpellBaseCooldown = function(id)
+        c.e.GetSpellBaseCooldown = function(id)
             return id == 8042 and 6000 or 0, 1500
         end
 

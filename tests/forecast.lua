@@ -37,11 +37,12 @@ local function client()
         return 0, 5
     end
 
+    e.GetSpellBaseCooldown = function(spell)
+        local row = world.base[spell]
+        return row and row[1] or 0, row and row[2] or 1500
+    end
+
     e.C_Spell = {
-        GetSpellBaseCooldown = function(spell)
-            local row = world.base[spell]
-            return row and row[1] or 0, row and row[2] or 1500
-        end,
         GetSpellPowerCost = function(spell)
             return world.cost[spell] and { { type = MANA, cost = world.cost[spell] } } or {}
         end,

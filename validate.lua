@@ -987,6 +987,10 @@ function addon:validate(template, fix)
     glob_template.diagnosticCacheBypass = false
     glob_template.evaluator = ""
     glob_template.talent_popup_provider = ""
+    -- Saved totals the metrics and the forecast keep (Analytics/metrics.lua, Core/forecast.lua); both validate and bound
+    -- themselves when read, so only their type is checked here.
+    glob_template.metrics = {}
+    glob_template.forecast = {}
     validate_basic("global", DB.global, glob_template, fix)
 
     if DB.global.itemsets then

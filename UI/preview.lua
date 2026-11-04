@@ -418,13 +418,15 @@ function addon:CreateNativePreviewWindow()
                 end
             end)
 
-            icon:SetAlpha(
-                type(confidence) == 'number' and self.profile.forecast_confidence ~= false and 0.4 + 0.6 * math.max(
-                    0,
-                    math.min(1, confidence)
-                )
-                    or 1
-            )
+            local alpha = 1
+
+            if type(confidence) == 'number' and self.profile.forecast_confidence ~= false then
+                alpha = 0.4 + 0.6 * math.max(0, math.min(1, confidence))
+            end
+
+            if icon:GetAlpha() ~= alpha then
+                icon:SetAlpha(alpha)
+            end
 
             icon:Show()
             self:DoLayout()
