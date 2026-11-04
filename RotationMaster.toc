@@ -211,6 +211,7 @@ UI/help.lua
 UI/spell_search.lua
 UI/spell_icon.lua
 UI/talent_popup.lua
+UI/talent_popup_classic.lua
 UI/errors.lua
 UI/cpu_profile.lua
 UI/analytics_capture.lua

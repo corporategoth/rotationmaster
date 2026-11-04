@@ -77,7 +77,8 @@ hero trees, active or view loadout; never in combat), `FindTraitViewSelection` (
 | --- | --- | --- | --- |
 | `drawn` | Retail, Forever | 50 | whenever the trait tree can be read |
 | `blizzard` | Retail, Forever | 10 | only when `RotationMaster.db.global.talent_popup_provider == 'blizzard'` |
-| (none) | Era, SoD, TBC, Wrath, Cataclysm, Mists | | the button is hidden; the dropdowns serve |
+| `classic` | Era, SoD, TBC, Wrath | 50 | Blizzard's `TalentFrame_Update` and the `TalentButtonTemplate` family are present (section 4) |
+| (none) | Cataclysm, Mists | | the button is hidden; the dropdowns serve |
 
 The window itself (the control strip: specialization and hero tree switchers, the current choice, the reason a tree cannot be shown)
 is movable, uses the same chrome and Escape handling as the other windows, and closes when the editor that opened it is released.
@@ -137,8 +138,31 @@ Each degrades to the drawn tree, never to a broken window.
 
 ## 4. The classic clients
 
-No provider serves them, so the button is hidden and the dropdowns are the picker. Blizzard's classic frames cannot be driven the
-way the modern one can (read in classic_era 8165d4c, classic 15c8a754 and anniversary 2cfec7c):
+**The `classic` provider** (Era, SoD, TBC, Wrath; `UI/talent_popup_classic.lua`) shows the player's own class: three tabs, the
+talent group of the rotation (the dual-spec slot on Wrath), the saved talent marked. Nothing is shipped; Blizzard lays the tree out:
+RM creates one frame named `RotationMasterClassicTalentTree` with the children `TalentFrame_Update` finds by global name
+(`...BackgroundTopLeft/TopRight/BottomLeft/BottomRight`, `...Talent1..40` from `TalentButtonTemplate`, `...Branch1..30` from
+`TalentBranchTemplate`, `...Arrow1..30` from `TalentArrowTemplate`, `...TalentPointsText`, `...ScrollFrameScrollBarScrollDownButton`),
+calls `TalentFrame_Load` once, sets `selectedTab`, `talentGroup` and an `updateFunction` that reads the tab's points as
+`PlayerTalentFrame_Update` does, and calls `TalentFrame_Update(frame)`. Blizzard's own `PlayerTalentFrame` is never opened, hooked or
+changed: its buttons spend a point, RM's buttons set `talentButton_OnClick` and `talentButton_OnEnter`, the two fields the template's
+scripts call (`Classic/Blizzard_TalentUITemplates.xml`), so a click reports the pick and nothing else.
+
+What Blizzard's update does that the picker undoes afterwards (the point of using the layout and not the graying):
+
+* A talent with no points, a locked tier or an unmet prerequisite is desaturated, its slot gray and its rank hidden. RM clears the
+  desaturation, paints every slot green (gold for the saved talent, with a glow ring) and shows the rank border and rank.
+* Lines and arrows for an unreachable talent use the lower half of the branch sheet. RM moves their texture coordinates back to the
+  upper half (`lighten`), so no line looks locked.
+* The tree needs no scrolling: the frame is as tall as the lowest button, the four background pieces are anchored to its corners.
+
+The tab buttons are the window's specialization row (labeled "Talent Tree"), one per tree. Choosing a talent writes `tree`,
+`talent` and `layout="tree"` as the dropdowns do, and the lists follow; clicking the saved talent clears the talent and keeps the
+tree. The button is offered only for the player's own class (the game answers for no other). Cataclysm uses another frame base
+(`Cata/TalentFrameBase.lua`, `Cata/Blizzard_TalentUITemplates.xml`) and Mists a row frame defined in the load-on-demand
+`Blizzard_TalentUI`; neither is served yet.
+
+What the classic frames cannot do (read in classic_era 8165d4c, classic 15c8a754 and anniversary 2cfec7c):
 
 * `Blizzard_TalentUI` (`PlayerTalentFrame`) shows only the player's own class and talent group, has no view or link mode, and
   `PlayerTalentFrameTalent_OnClick` spends or previews a point; hooking the button cannot stop that. Cataclysm is the same; on Mists
@@ -146,7 +170,8 @@ way the modern one can (read in classic_era 8165d4c, classic 15c8a754 and annive
 * `Blizzard_InspectUI` shows an inspected unit's trees (`NotifyInspect`, `INSPECT_READY`) of that unit's class only.
 * No classic talent API takes a class: `C_SpecializationInfo.GetTalentInfo`, `GetNumTalentTabs`, `GetTalentTabInfo` and
   `TalentFrame_Update` have no class parameter, and there is no `C_ClassTalents` / `C_Traits` view loadout. The player's own class
-  can be read live; any other class would need shipped data. Only Forever, a trait client, reads any class from the game.
+  can be read live; another class's tree needs another source (an addon registered as a provider). Only Forever, a trait client, reads
+  any class from the game.
 
 Every classic talent addon draws its own buttons with Blizzard's textures (Talented, Classic Talent Viewer, Modern Talents TBC for the
 player's own class). Their data is not copied (Talented's licenses conflict, Classic Talent Viewer's table is All Rights Reserved), and
@@ -157,16 +182,14 @@ a tree RM is showing. If it is ever embedded, record exactly that and keep its h
 
 ## 5. Tests and files
 
-* `Platform/talents.lua`, `Platform/talent_tree.lua`, `UI/talent_popup.lua`, `Conditions/talent.lua`, `Diagnostics/talents.lua`.
-* `tests/talent_tree_popup.lua` with `tests/fixtures/blizzard_talent_window.lua` (a model of the window and its events that decodes
+* `Platform/talents.lua`, `Platform/talent_tree.lua`, `UI/talent_popup.lua`, `UI/talent_popup_classic.lua`, `Conditions/talent.lua`, `Diagnostics/talents.lua`.
+* `tests/talent_tree_classic.lua` (a model of `TalentFrame_Update` from the pinned source), `tests/talent_tree_popup.lua` with `tests/fixtures/blizzard_talent_window.lua` (a model of the window and its events that decodes
   the strings independently), `tests/fixtures/retail_traits.lua` (a model of the documented trait API), `tests/retail_talent_picker.lua`,
   `tests/talent_picker_layout.lua`, `tests/talent_diagnostic.lua`, `tests/platform_talents.lua`, `tests/talent_conditions.lua`.
 
 ## 6. Not built
 
-* A classic provider. It would need a shipped per-class table of trees, rows, columns, rank spell IDs and prerequisites (community
-  projects publish MIT-licensed per-class JSON for Classic, Wrath, Cataclysm and Mists, none for TBC; Wrath's index order is
-  not row-major, so the saved `{tree, talent}` indices need an in-game dump to map) and a grid drawn from it.
+* A tree for another class on a classic client (an addon provider), and the Cataclysm and Mists trees.
 * A single catalog structure shared by all layouts. Each layout keeps its own reference; the trait view is the only structured tree.
 * Storing a stable `talentID` next to the classic `tree` and `talent` indices, which would survive an index shift between builds.
 * Talent catalogs for the website. The web editor cannot read game data, so it keeps the numeric-field form for talents; the data

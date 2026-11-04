@@ -189,41 +189,159 @@ end
 --
 -- Changing the tree clears the talent, and a reference saved in another layout is replaced only once a tree is picked.
 local function treeWidget(parent, spec, value, update)
-    local trees,treeOrder={},{}
+    local trees, treeOrder = {}, {}
     -- Names, never positions: the game's for the player's class, the shipped
     -- table's for another class's rotation or before the game has the data.
-    local listed=addon.TalentTrees.Choices(addon.TalentTrees.ContextClass(),group(spec))
-    if listed then trees,treeOrder=listed.choices,listed.order end
-    local talents,talentOrder={},{}
-    local talentIcon,talentPicker,treePicker
+    local listed = addon.TalentTrees.Choices(addon.TalentTrees.ContextClass(), group(spec))
+
+    if listed then
+        trees, treeOrder = listed.choices, listed.order
+    end
+
+    local talents, talentOrder = {}, {}
+    local talentIcon, talentPicker, treePicker
+
+    -- Refills the talent list for the chosen tree (empty for another class's tree, which the game cannot read).
     local function choices()
-        talents,talentOrder={},{}
+        talents, talentOrder = {}, {}
+
         if value.tree and ownTrees() then
-            for index=1,platform:GetTreeTalentCount(value.tree) or 0 do
-                local talent=platform:GetTreeTalentInfo(value.tree,index,group(spec))
-                if talent then talents[index]={text=talent.name,icon=talent.icon};talentOrder[#talentOrder+1]=index end
+            for index = 1, platform:GetTreeTalentCount(value.tree) or 0 do
+                local talent = platform:GetTreeTalentInfo(value.tree, index, group(spec))
+
+                if talent then
+                    talents[index] = { text = talent.name, icon = talent.icon }
+                    talentOrder[#talentOrder + 1] = index
+                end
             end
         end
     end
+
     choices()
-    local box=block(parent)
-    talentIcon=icon(box,value,spec)
-    treePicker=dropdown(box,L["Talent Tree"],function(selected)
-        if selected==value.tree then return end
-        local wasTree=value.layout=="tree" or value.layout==nil and value.tree~=nil
-        value.tree,value.talent,value.layout=selected,nil,"tree"
-        if not wasTree then value.value,value.operator=nil,nil end
-        choices();talentPicker:SetList(talents,talentOrder);talentPicker:SetValue(nil)
-        talentPicker:SetDisabled(#talentOrder==0);talentIcon:SetImage(PLACEHOLDER);update()
+    local box = block(parent)
+    talentIcon = icon(box, value, spec)
+
+    treePicker = dropdown(box, L["Talent Tree"], function(selected)
+        if selected == value.tree then
+            return
+        end
+
+        local wasTree = value.layout == "tree" or value.layout == nil and value.tree ~= nil
+        value.tree, value.talent, value.layout = selected, nil, "tree"
+
+        if not wasTree then
+            value.value, value.operator = nil, nil
+        end
+
+        choices()
+        talentPicker:SetList(talents, talentOrder)
+        talentPicker:SetValue(nil)
+        talentPicker:SetDisabled(#talentOrder == 0)
+        talentIcon:SetImage(PLACEHOLDER)
+        update()
     end)
-    treePicker.configure=function() treePicker:SetList(trees,treeOrder);treePicker:SetValue(value.tree) end
-    talentPicker=dropdown(box,L["Talent"],function(selected)
-        value.talent,value.layout=selected,"tree"
-        local talent=info(value,spec);talentIcon:SetImage(talent and talent.icon or PLACEHOLDER);update()
+
+    treePicker.configure = function()
+        treePicker:SetList(trees, treeOrder)
+        treePicker:SetValue(value.tree)
+    end
+
+    talentPicker = dropdown(box, L["Talent"], function(selected)
+        value.talent, value.layout = selected, "tree"
+        local talent = info(value, spec)
+        talentIcon:SetImage(talent and talent.icon or PLACEHOLDER)
+        update()
     end)
-    talentPicker:SetDisabled(#talentOrder==0)
-    talentPicker.configure=function() talentPicker:SetList(talents,talentOrder);talentPicker:SetValue(value.talent) end
-    parent:AddChild(addon:Widget_OperatorWidget(value,L["Points"],update))
+
+    talentPicker:SetDisabled(#talentOrder == 0)
+
+    talentPicker.configure = function()
+        talentPicker:SetList(talents, talentOrder)
+        talentPicker:SetValue(value.talent)
+    end
+
+    -- A button for the tree sits beside the talent list when the client can show one. The tree shows the player's own
+    -- class (the game answers for no other), so it is off for another class's rotation.
+    if ownTrees() and platform.HasTalentTreeProvider and addon.OpenTalentTree and platform:HasTalentTreeProvider() then
+        local treeOwner, shown = {}, nil
+        local treeButton = addon:CreateConditionButton()
+        treeButton:SetText(L["Show talent tree"])
+        treeButton:SetAutoWidth(true)
+        treeButton:SetUserData("side", true)
+        treeButton.frame.tooltip = L["Opens the talent tree of your class. Click a talent to choose it for this condition."]
+
+        local function selection()
+            if value.tree and value.talent and (value.layout == nil or value.layout == "tree") then
+                return { tree = value.tree, talent = value.talent }
+            end
+        end
+
+        treeButton:SetCallback("OnClick", function()
+            local current = info(value, spec)
+            local specs = {}
+
+            for index = 1, platform:GetTalentTreeCount() or 0 do
+                specs[index] = {
+                    id = index,
+                    name = trees[index] and (type(trees[index]) == "table" and trees[index].text or trees[index])
+                        or tostring(index),
+                }
+            end
+
+            shown = shown or value.tree or 1
+
+            addon:OpenTalentTree({
+                owner = treeOwner,
+                spec = shown,
+                specs = specs,
+                group = group(spec),
+                specLabel = L["Talent Tree"],
+                selection = selection(),
+                selectionName = current and current.name,
+                -- Writes the tree the player clicked into the condition and follows it in the lists (false clears the
+                -- talent, keeping the tree).
+                -- @param chosen table|boolean  The chosen { tree, talent, name, icon }, or false.
+                onSelect = function(chosen)
+                    if not chosen then
+                        value.talent = nil
+                        choices()
+                        talentPicker:SetList(talents, talentOrder)
+                        talentPicker:SetValue(nil)
+                        talentPicker:SetDisabled(#talentOrder == 0)
+                        talentIcon:SetImage(PLACEHOLDER)
+                        update()
+                        return
+                    end
+
+                    local wasTree = value.layout == "tree" or value.layout == nil and value.tree ~= nil
+                    value.tree, value.talent, value.layout = chosen.tree, chosen.talent, "tree"
+
+                    if not wasTree then
+                        value.value, value.operator = nil, nil
+                    end
+
+                    choices()
+                    treePicker:SetValue(value.tree)
+                    talentPicker:SetList(talents, talentOrder)
+                    talentPicker:SetValue(value.talent)
+                    talentPicker:SetDisabled(#talentOrder == 0)
+                    talentIcon:SetImage(chosen.icon or PLACEHOLDER)
+                    update()
+                end,
+                onSpec = function(chosen)
+                    shown = chosen
+                end,
+            })
+        end)
+
+        treeButton:SetCallback("OnRelease", function()
+            addon:CloseTalentTree(treeOwner)
+        end)
+
+        box:AddChild(treeButton)
+    end
+
+    parent:AddChild(addon:Widget_OperatorWidget(value, L["Points"], update))
 end
 
 -- Mists of Pandaria: six tiers, one of three talents in each. The tier is the

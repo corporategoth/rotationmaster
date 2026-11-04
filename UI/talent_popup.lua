@@ -217,6 +217,7 @@ local function layout(d)
     local showSpecs = specs and #specs > 1
     d.specLabel:ClearAllPoints()
     d.specLabel:SetPoint('TOPLEFT', 12, y - 4)
+    d.specLabel:SetText(d.request and d.request.specLabel or L['Specialization'])
     visible(d.specLabel, showSpecs)
     local x = 124
 
@@ -287,6 +288,17 @@ local function layout(d)
         d.canvas:SetSize(d.canvasWidth, d.canvasHeight)
         d.canvas:Show()
         frame:SetSize(width, height)
+    elseif d.mode == 'classic' and handle and handle.canvasSize then
+        width = 520
+        d.canvasWidth, d.canvasHeight = handle.canvasSize.width, handle.canvasSize.height
+        d.canvas:ClearAllPoints()
+        d.canvas:SetPoint('TOP', frame, 'TOP', 0, y)
+        d.canvas:SetSize(d.canvasWidth, d.canvasHeight)
+        d.content:ClearAllPoints()
+        d.content:SetScale(1)
+        d.content:SetAllPoints(d.canvas)
+        d.canvas:Show()
+        frame:SetSize(width, -y + d.canvasHeight + 12)
     else
         d.canvas:Hide()
         frame:SetSize(width, -y + 26)
@@ -320,7 +332,15 @@ end
 -- @return table  The context { spec, hero, selection, specs, window, onSelect, onClose }.
 local function context(d)
     local request, serial = d.request, d.serial
-    local ctx = { spec = d.spec, hero = d.hero, selection = request.selection, specs = request.specs, window = d }
+
+    local ctx = {
+        spec = d.spec,
+        hero = d.hero,
+        selection = request.selection,
+        specs = request.specs,
+        group = request.group,
+        window = d,
+    }
 
     -- A talent was chosen (or `false` to clear it). Only the first choice of a session counts; the callback and the
     -- window close are deferred out of the click.

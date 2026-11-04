@@ -10045,6 +10045,8 @@ T["These conditions cannot work on this client. They are kept as imported and th
 T["This import cannot be shown in full (%s)."] = 3468
 -- e981ddae
 T["Warning"] = 3469
+-- a0d00587
+T["Opens the talent tree of your class. Click a talent to choose it for this condition."] = 3470
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

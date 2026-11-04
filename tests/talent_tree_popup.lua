@@ -190,7 +190,7 @@ local function treeOrder()
 end
 
 test(
-    'providers are chosen per client: Retail and Forever get Blizzard\'s window then the drawn tree, the classic clients none yet',
+    'providers are chosen per client: Retail and Forever get Blizzard\'s window then the drawn tree, the classic clients none without their frame code (tests/talent_tree_classic.lua covers it)',
     function()
         local f, a = client({ spec = FIRE })
         local p = a.Platform
