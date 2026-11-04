@@ -11782,4 +11782,7 @@ addon.translation = {
 [3468] = "Questa importazione non può essere mostrata per intero (%s).",
 -- e981ddae English: Warning
 [3469] = "Avviso",
+-- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
+--     condition.
+[3470] = "Apre l'albero dei talenti della tua classe. Fai clic su un talento per sceglierlo per questa condizione.",
 }

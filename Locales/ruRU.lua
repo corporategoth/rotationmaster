@@ -11782,4 +11782,7 @@ addon.translation = {
 [3468] = "Этот импорт нельзя показать полностью (%s).",
 -- e981ddae English: Warning
 [3469] = "Предупреждение",
+-- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
+--     condition.
+[3470] = "Открывает дерево талантов Вашего класса. Нажмите на талант, чтобы выбрать его для этого условия.",
 }

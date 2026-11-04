@@ -11782,4 +11782,7 @@ addon.translation = {
 [3468] = "无法完整显示此导入内容（%s）。",
 -- e981ddae English: Warning
 [3469] = "警告",
+-- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
+--     condition.
+[3470] = "打开你职业的天赋树。点击一个天赋，即可为此条件选择它。",
 }

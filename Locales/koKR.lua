@@ -11782,4 +11782,7 @@ addon.translation = {
 [3468] = "이 가져오기를 전체 표시할 수 없습니다 (%s).",
 -- e981ddae English: Warning
 [3469] = "경고",
+-- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
+--     condition.
+[3470] = "당신 직업의 특성 트리를 엽니다. 특성을 클릭하면 이 조건에 사용할 특성으로 선택됩니다.",
 }
