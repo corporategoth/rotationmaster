@@ -10093,6 +10093,28 @@ T["High adherence"] = 3491
 T["While the rotation is on and you are in combat, record which spell was recommended when you pressed a spell, how long after the recommendation appeared you pressed it, and what you cast instead when you did not follow it. Only totals are kept, per rotation, in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or export them for the website or a language model."] = 3492
 -- 7566cb83
 T["Record the damage and healing you do in each fight so the metrics can compare fights where you followed the advice closely with fights where you did not. This reads the combat log, which Retail and Forever hide from addons, so it records nothing on those clients."] = 3493
+-- 75205de8
+T["Forecast"] = 3494
+-- 3358a032
+T["Predict upcoming recommendations from the expected state"] = 3495
+-- 999811c8
+T["Fade predictions that are less certain"] = 3496
+-- 94270307
+T["Forget what the forecast has learned"] = 3497
+-- 2dd9064e
+T["Track how accurate the predictions were"] = 3498
+-- 4e461a5e
+T["Forecast learning cleared."] = 3499
+-- 6941525e
+T["Prediction %d recommendations ahead: right %s%% of %d, said it was %s%% sure"] = 3500
+-- d3939aef
+T["Predict the next few recommendations by walking the rotation again as if each earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast time passed, and, for spells the addon has watched leave an aura or do damage or healing, that effect applied. It needs Preview Spells above one and learns from your casts while this is on. Retail and Forever hide most of the numbers it needs, so there it predicts less."] = 3501
+-- 0cf3ef81
+T["Fade the icons of predicted recommendations that the addon is less sure of. The first recommendation is read from the game as it is now and never fades."] = 3502
+-- 3ad1d37e
+T["Compare each forecast with what was highlighted when the time came: the second recommendation against the next highlight, the third against the one after, and so on. The totals appear in Metrics report and the exports, and the forecast's confidence is adjusted by how often it was right."] = 3503
+-- 689efd69
+T["Delete what the forecast has learned about your spells (the auras they leave, the damage and healing they do). It starts learning again if the forecast is on."] = 3504
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

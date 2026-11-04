@@ -82,7 +82,7 @@ end
 ---@field PauseLayout fun(self: RMRecommendationPreview)
 ---@field ResumeLayout fun(self: RMRecommendationPreview)
 ---@field DoLayout fun(self: RMRecommendationPreview)
----@field AddRecommendation fun(self: RMRecommendationPreview, spellId: number, itemId?: number)
+---@field AddRecommendation fun(self: RMRecommendationPreview, spellId: number, itemId?: number, confidence?: number)
 function addon:CreateNativePreviewWindow()
     local window = self.nativePreviewWindow
 
@@ -364,7 +364,9 @@ function addon:CreateNativePreviewWindow()
         -- for each result; ignored when the window is stale or full. The first icon also reports delivery to analytics.
         -- @param spellId number  The spell ID.
         -- @param itemId number|nil  The item ID, when the recommendation is an item.
-        function window:AddRecommendation(spellId, itemId)
+        -- @param confidence number|nil  How sure a predicted recommendation is, 0 to 1; nil for one read from the game as
+        --   it is now. The icon fades with it unless profile.forecast_confidence is off.
+        function window:AddRecommendation(spellId, itemId, confidence)
             if not self:Valid() or self.count >= self.slots then
                 return
             end
@@ -415,6 +417,14 @@ function addon:CreateNativePreviewWindow()
                     GameTooltip:Hide()
                 end
             end)
+
+            icon:SetAlpha(
+                type(confidence) == 'number' and self.profile.forecast_confidence ~= false and 0.4 + 0.6 * math.max(
+                    0,
+                    math.min(1, confidence)
+                )
+                    or 1
+            )
 
             icon:Show()
             self:DoLayout()

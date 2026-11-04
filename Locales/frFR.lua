@@ -11839,4 +11839,35 @@ addon.translation = {
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
 --     clients.
 [3493] = "Enregistre les dégâts et les soins que vous infligez et prodiguez à chaque combat afin que les métriques puissent comparer les combats où vous avez suivi de près les recommandations à ceux où ce n'était pas le cas. Cela lit le journal de combat, que Retail et Forever cachent aux addons ; rien n'est donc enregistré sur ces clients.",
+-- 75205de8 English: Forecast
+[3494] = "Prévision",
+-- 3358a032 English: Predict upcoming recommendations from the expected state
+[3495] = "Prédire les prochaines recommandations à partir de l'état attendu",
+-- 999811c8 English: Fade predictions that are less certain
+[3496] = "Atténuer les prédictions moins certaines",
+-- 94270307 English: Forget what the forecast has learned
+[3497] = "Oublier ce que la prévision a appris",
+-- 2dd9064e English: Track how accurate the predictions were
+[3498] = "Mesurer la justesse des prédictions",
+-- 4e461a5e English: Forecast learning cleared.
+[3499] = "Apprentissage de la prévision effacé.",
+-- 6941525e English: Prediction %d recommendations ahead: right %s%% of %d, said it was %s%% sure
+[3500] = "Prédiction à %d recommandations : juste dans %s %% des %d cas, certitude annoncée de %s %%",
+-- d3939aef English: Predict the next few recommendations by walking the rotation again as if each
+--     earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast
+--     time passed, and, for spells the addon has watched leave an aura or do damage or healing,
+--     that effect applied. It needs Preview Spells above one and learns from your casts while this
+--     is on. Retail and Forever hide most of the numbers it needs, so there it predicts less.
+[3501] = "Prédit les prochaines recommandations en parcourant de nouveau la rotation comme si chacune des précédentes avait été lancée : son temps de recharge lancé, son coût dépensé, le temps de recharge global ou d'incantation écoulé et, pour les sorts dont l'addon a vu qu'ils laissent une aura ou infligent des dégâts ou des soins, cet effet appliqué. Nécessite un aperçu de sorts supérieur à un et apprend de vos incantations tant que l'option est active. Retail et Forever masquent la plupart des chiffres nécessaires ; la prévision y est donc moins poussée.",
+-- 0cf3ef81 English: Fade the icons of predicted recommendations that the addon is less sure of. The
+--     first recommendation is read from the game as it is now and never fades.
+[3502] = "Atténue les icônes des recommandations prédites dont l'addon est moins sûr. La première recommandation est lue dans le jeu tel qu'il est maintenant et n'est jamais atténuée.",
+-- 3ad1d37e English: Compare each forecast with what was highlighted when the time came: the second
+--     recommendation against the next highlight, the third against the one after, and so on. The
+--     totals appear in Metrics report and the exports, and the forecast's confidence is adjusted by
+--     how often it was right.
+[3503] = "Compare chaque prévision à ce qui a été mis en évidence le moment venu : la deuxième recommandation avec la mise en évidence suivante, la troisième avec la suivante, et ainsi de suite. Les totaux apparaissent dans le rapport de métriques et les exports, et la certitude de la prévision est ajustée selon sa fréquence de réussite.",
+-- 689efd69 English: Delete what the forecast has learned about your spells (the auras they leave,
+--     the damage and healing they do). It starts learning again if the forecast is on.
+[3504] = "Supprime ce que la prévision a appris sur vos sorts (les auras qu'ils laissent, les dégâts et les soins qu'ils produisent). Elle recommence à apprendre si la prévision est activée.",
 }

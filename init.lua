@@ -1055,6 +1055,9 @@ function addon:init()
             if addon.ApplyMetricsSettings then
                 addon:ApplyMetricsSettings()
             end
+            if addon.ApplyForecastSettings then
+                addon:ApplyForecastSettings()
+            end
         end)
     end
 

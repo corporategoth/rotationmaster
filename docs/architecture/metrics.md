@@ -6,7 +6,7 @@ produced. This is separate from the TBC cast-receipt diagnostic in [analytics-re
 
 ## Switches and cost
 
-Two profile switches, both **off** by default (General > Metrics): `metrics_adherence` and `metrics_effectiveness`.
+Three profile switches, all **off** by default (General > Metrics): `metrics_adherence`, `metrics_effectiveness` and `metrics_prediction`.
 `addon:ApplyMetricsSettings()` makes the registrations match them and is called from `enable()`, `disable()` (which forces
 everything off), the settings effect and every profile change. With both off no frame, event, message handler or timer exists;
 the first switch turned on creates one frame.
@@ -15,6 +15,7 @@ the first switch turned on creates one frame.
 | --- | --- | --- |
 | adherence | `UNIT_SPELLCAST_SENT` for `player` only, `PLAYER_REGEN_DISABLED/ENABLED`, the `ROTATIONMASTER_SPELL_UPDATE` message the glow already sends | the spell id of the player's own cast, when it is readable (`CanReadValue`) |
 | effectiveness | `COMBAT_LOG_EVENT_UNFILTERED` (plus the combat events) | damage and healing of events whose source is the player: one string comparison for every other event |
+| prediction | the combat events and the `ROTATIONMASTER_SPELL_UPDATE` message | nothing from the game: it compares the forecast ([forecast](forecast.md)) with the highlights that follow |
 
 Retail and Forever hide the combat log payload (`combatDataPolicy="restricted"`), so effectiveness registers nothing there and
 `addon:GetMetricsState()` reports the combat log as unreadable; adherence works wherever the cast spell id is readable.
@@ -33,6 +34,7 @@ Only during a fight (combat), under the rotation that was advising. A cast count
   advises it); the split is made when the report is built, once the rotation's whole advised set is known.
 * **Unadvised**: nothing was advised.
 * **Not acted on** (superseded): the advice changed before the player pressed it.
+* **Prediction accuracy**: per rotation and predicted slot (2 to 5), how many forecasts were checked, how many were right and how sure they said they were; see [forecast](forecast.md).
 * **Fights**: a fight of at least 8 seconds with at least one cast is filed, with its duration, damage, healing, casts and
   followed casts, in a ring of the last 40 per rotation. The report compares output in fights that followed the advice less than
   60 percent, 60 to 85 and 85 or more of casts, each tier shown only with three or more fights.
@@ -47,8 +49,8 @@ General > Metrics has four buttons, each opening the selectable text window (Ctr
 * **Metrics report**: a readable summary per rotation.
 * **Export for the website**: JSON with `format="rm-metrics"` and `version=1`: per rotation `id`, `name`, `fights`, `seconds`, `casts`,
   `followed`, `followedPercent`, `meanDelay`, `delayHistogram`, `dps`, `hps`, `outOfOrder`, `outside`, `unadvised`, `superseded`,
-  `spells[] { spell, name, followed, meanDelay, superseded, replacedBy[] { spell, name, count } }`, `outsideSpells[]`, `byAdherence[]`
-  and `fightList[]`; plus `client { family, interface }`. Keys are sorted, so the same data encodes the same way. The website
+  `spells[] { spell, name, followed, meanDelay, superseded, replacedBy[] { spell, name, count } }`, `outsideSpells[]`, `byAdherence[]`,
+  `predictionAccuracy[] { slot, checked, hitPercent, meanConfidencePercent }` and `fightList[]`; plus `client { family, interface }`. Keys are sorted, so the same data encodes the same way. The website
   imports this to attach adherence and output to a rotation page; it never leaves the game by itself.
 * **Export for a language model**: the same JSON behind plain-English instructions that define each field and ask where the
   player deviates, whether the deviations look deliberate, and where the rotation should change. Both exports are data and stay in English.

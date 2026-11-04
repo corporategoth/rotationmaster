@@ -24,6 +24,10 @@ local EDGES = { 0.25, 0.5, 1, 2, 4 }
 local fight
 -- The advice the player is looking at: the spell, when it appeared, and the rotation it came from.
 local adviceSpell, adviceAt, adviceRotation
+-- Forecasts waiting to be compared with what is highlighted next (see Predicted), whether prediction tracking is on, and
+-- the forecast taken for the advice now showing.
+local pending, predicting, epochForecast = {}, false, nil
+local MAX_PENDING, MAX_SLOT = 4, 5
 
 -- Returns the saved metrics table, creating it.
 -- @return table|nil  { version, rotations = { [id] = record } }; nil before the saved variables exist.
@@ -81,6 +85,7 @@ local function record(id)
         spells = {},
         ring = {},
         ringNext = 1,
+        predict = {},
     }
 
     saved.rotations[id] = rec
@@ -181,8 +186,13 @@ function metrics:Advice(rotation, spell, now)
         return
     end
 
+    if predicting and fight and spell then
+        metrics:ResolvePredictions(rotation, spell)
+    end
+
     adviceSpell, adviceRotation = spell, rotation
     adviceAt = spell and now or nil
+    epochForecast = nil
 
     if fight and spell and rotation then
         local rec = record(rotation)
@@ -252,6 +262,100 @@ function metrics:Cast(spell, now)
     end
 end
 
+-- Turns prediction tracking on or off.
+-- @param on boolean  True to track how accurate the forecast was.
+function metrics:SetPredicting(on)
+    predicting = on == true
+
+    if not predicting then
+        pending, epochForecast = {}, nil
+    end
+end
+
+-- Records the forecast made for the advice now showing, to be compared with what is highlighted next. Only the first
+-- forecast of each advice counts: that is the one made ahead of time.
+-- @param first number  The spell being advised now.
+-- @param slots table  The predicted spells for the next highlights, in order.
+-- @param confidence table  The confidence shown for each of them, 0 to 1.
+function metrics:Predicted(first, slots, confidence)
+    if not predicting or not fight or epochForecast or first ~= adviceSpell or #slots == 0 or not adviceRotation then
+        return
+    end
+
+    local entry = { rotation = adviceRotation, seen = 0, slots = {}, confidence = {} }
+
+    for index = 1, math.min(#slots, MAX_SLOT - 1) do
+        entry.slots[index], entry.confidence[index] = slots[index], confidence[index] or 0
+    end
+
+    epochForecast = entry
+    pending[#pending + 1] = entry
+
+    if #pending > MAX_PENDING then
+        table.remove(pending, 1)
+    end
+end
+
+-- Compares each waiting forecast with the spell that has just become the advice: the first next highlight against the
+-- forecast's first prediction, the second against its second, and so on.
+-- @param rotation string|nil  The rotation advising now.
+-- @param spell number  The spell that became the advice.
+function metrics:ResolvePredictions(rotation, spell)
+    local kept = {}
+
+    for _, entry in ipairs(pending) do
+        entry.seen = entry.seen + 1
+        local expected = entry.slots[entry.seen]
+
+        if expected ~= nil and entry.rotation == rotation then
+            local rec = record(entry.rotation)
+
+            if rec then
+                local slot = entry.seen + 1
+                local row = rec.predict[slot]
+
+                if not row then
+                    row = { 0, 0, 0 }
+                    rec.predict[slot] = row
+                end
+
+                row[1] = row[1] + 1
+                row[2] = row[2] + (expected == spell and 1 or 0)
+                row[3] = row[3] + entry.confidence[entry.seen]
+            end
+        end
+
+        if entry.seen < #entry.slots and entry.rotation == rotation then
+            kept[#kept + 1] = entry
+        end
+    end
+
+    pending = kept
+end
+
+-- How often the forecast's prediction for a slot turned out right, over everything recorded.
+-- @param slot number  2 to 5 (the first recommendation is not predicted).
+-- @return number|nil  The hit rate from 0 to 1; nil until 20 predictions have been checked.
+function metrics:PredictionRate(slot)
+    local saved = store()
+
+    if not saved then
+        return nil
+    end
+
+    local total, hits = 0, 0
+
+    for _, rec in pairs(saved.rotations) do
+        local row = rec.predict and rec.predict[slot]
+
+        if row then
+            total, hits = total + row[1], hits + row[2]
+        end
+    end
+
+    return total >= 20 and hits / total or nil
+end
+
 -- Records damage or healing done by the player during the fight.
 -- @param damage number  Damage done.
 -- @param healing number  Healing done (effective).
@@ -282,6 +386,7 @@ end
 function metrics:FightEnd(now)
     local done = fight
     fight = nil
+    pending, epochForecast = {}, nil
 
     if not done or not done.rotation then
         return false
@@ -319,6 +424,7 @@ end
 -- Forgets the volatile advice and fight, without filing anything (used when collection stops).
 function metrics:Reset()
     fight, adviceSpell, adviceAt, adviceRotation = nil, nil, nil, nil
+    pending, epochForecast = {}, nil
 end
 
 -- Deletes every saved number.
@@ -374,7 +480,21 @@ local function summarize(id, rec, name, spellName)
         spells = {},
         outsideSpells = {},
         fightList = {},
+        predictionAccuracy = {},
     }
+
+    for slot = 2, MAX_SLOT do
+        local row = rec.predict and rec.predict[slot]
+
+        if row and row[1] > 0 then
+            out.predictionAccuracy[#out.predictionAccuracy + 1] = {
+                slot = slot,
+                checked = row[1],
+                hitPercent = round(row[2] * 100 / row[1]),
+                meanConfidencePercent = round(row[3] * 100 / row[1]),
+            }
+        end
+    end
 
     local outsideTotals = {}
 
@@ -592,7 +712,7 @@ Below is data collected by the World of Warcraft addon Rotation Master about how
 how many seconds after a recommendation appeared I acted on it (the global cooldown is part of that); "outOfOrder" are
 casts of a spell the rotation does recommend, just not at that moment; "outside" are casts of spells the rotation never
 recommends; "replacedBy" lists, for each recommended spell, what I cast instead; "byAdherence" compares damage or
-healing per second in fights where I followed the advice closely and loosely. Spell numbers are WoW spell IDs.
+healing per second in fights where I followed the advice closely and loosely. "predictionAccuracy" says how often the addon's forecast of the 2nd, 3rd... next recommendation matched what was then recommended ("meanConfidencePercent" is how sure it said it was). Spell numbers are WoW spell IDs.
 
 Please tell me: where I deviate most and whether those deviations look deliberate (cooldowns, defensives, movement) or
 like mistakes; where the rotation itself seems to be wrong for how I actually play, with the change you would make to

@@ -1435,6 +1435,25 @@ function addon:evaluateConditionResult(value, context)
     return result
 end
 
+-- Evaluates a condition tree against a caller's cache at a caller's time.
+-- @param value table|nil  The condition tree.
+-- @param cache table  The memo table every condition's reads go through; a fresh one sees the game as it is now.
+-- @param now number  The evaluation time, a GetTime value.
+-- @param context table|nil  Optional; carries stepId for diagnostics.
+-- @return table  An outcome { status = "match" }, "no-match", or an unavailable outcome, as evaluateConditionResult
+--   returns it.
+--
+-- The forecast (Core/forecast.lua) uses it with a cache of its own so a projected pass never reads or fills the poll's.
+function addon:evaluateConditionWithCache(value, cache, now, context)
+    local result = evaluate(value, cache, now, { active = {}, count = 0, context = context }, 0, "condition")
+
+    if result == matchedOutcome or result == unmatchedOutcome then
+        return { status = result.status }
+    end
+
+    return result
+end
+
 -- Returns a copy of an announcement condition tree with the 'announcementtarget' placeholder replaced by a unit.
 -- @param value table  The announcement condition tree.
 -- @param unit string  The unit token to put in place of the placeholder.

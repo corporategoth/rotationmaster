@@ -222,4 +222,70 @@ test('the JSON export is stable, escaped and carries the client facts', function
     )
 end)
 
+test(
+    'a forecast is checked against the highlights that follow: the third prediction against the highlight after next',
+    function()
+        local m = fresh()
+        m:SetPredicting(true)
+        m:FightStart(100)
+        m:Advice('rot', FIREBALL, 101)
+        m:Predicted(FIREBALL, { FROSTBOLT, ARCANE, BLINK }, { 0.8, 0.6, 0.5 })
+        m:Predicted(FIREBALL, { POLY, POLY, POLY }, { 1, 1, 1 })
+        m:Advice('rot', FROSTBOLT, 102)
+        m:Advice('rot', nil, 103)
+        m:Advice('rot', POLY, 104)
+        m:Advice('rot', BLINK, 105)
+        m:Cast(BLINK, 105.5)
+        m:FightEnd(130)
+        local rows = m:Report().rotations[1].predictionAccuracy
+        assert(#rows == 3, #rows)
+
+        assert(
+            rows[1].slot == 2
+                and rows[1].checked == 1
+                and rows[1].hitPercent == 100
+                and rows[1].meanConfidencePercent == 80
+        )
+
+        assert(rows[2].slot == 3 and rows[2].hitPercent == 0, 'Arcane Blast was predicted, Polymorph came')
+        assert(rows[3].slot == 4 and rows[3].hitPercent == 100 and rows[3].meanConfidencePercent == 50)
+        assert(m:PredictionRate(2) == nil, 'too few checked for a rate')
+    end
+)
+
+test('prediction tracking records nothing while it is off, outside a fight, or for a forecast of old advice', function()
+    local m = fresh()
+    m:FightStart(100)
+    m:Advice('rot', FIREBALL, 101)
+    m:Predicted(FIREBALL, { FROSTBOLT }, { 1 })
+    m:Advice('rot', FROSTBOLT, 102)
+    m:Cast(FROSTBOLT, 103)
+    m:FightEnd(130)
+    assert(#m:Report().rotations[1].predictionAccuracy == 0)
+    m:SetPredicting(true)
+    m:FightStart(200)
+    m:Advice('rot', FIREBALL, 201)
+    m:Predicted(FROSTBOLT, { ARCANE }, { 1 })
+    m:Advice('rot', ARCANE, 202)
+    m:Cast(ARCANE, 203)
+    m:FightEnd(230)
+    assert(#m:Report().rotations[1].predictionAccuracy == 0, 'a forecast for a spell that is not advised is ignored')
+end)
+
+test('the hit rate over twenty checked predictions feeds the forecast', function()
+    local m = fresh()
+    m:SetPredicting(true)
+
+    for n = 1, 25 do
+        m:FightStart(0)
+        m:Advice('rot', FIREBALL, 0)
+        m:Predicted(FIREBALL, { FROSTBOLT }, { 0.5 })
+        m:Advice('rot', n % 5 == 0 and ARCANE or FROSTBOLT, 1)
+        m:Cast(FROSTBOLT, 2)
+        m:FightEnd(20)
+    end
+
+    assert(math.abs(m:PredictionRate(2) - 20 / 25) < 1e-9)
+end)
+
 finish()

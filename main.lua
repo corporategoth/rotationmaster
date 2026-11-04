@@ -476,6 +476,9 @@ local defaults = {
         disable_autoswitch = false,
         metrics_adherence = false,
         metrics_effectiveness = false,
+        metrics_prediction = false,
+        forecast = false,
+        forecast_confidence = true,
         live_config_update = 2,
         spell_history = 60,
         combat_history = 10,
@@ -1907,6 +1910,9 @@ function addon:enable()
         if self.ApplyMetricsSettings then
             self:ApplyMetricsSettings()
         end
+        if self.ApplyForecastSettings then
+            self:ApplyForecastSettings()
+        end
     end
 end
 
@@ -1923,6 +1929,9 @@ function addon:disable()
 
     if self.ApplyMetricsSettings then
         self:ApplyMetricsSettings(true)
+    end
+    if self.ApplyForecastSettings then
+        self:ApplyForecastSettings(true)
     end
 
     local change = beginActive(self)
@@ -3262,6 +3271,7 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
         recCond = {},
         recIndex = {},
         recItem = {},
+        recConf = {},
         obsSpell = {},
         obsEnabled = {},
         obsItem = {},
@@ -3402,6 +3412,7 @@ local function leanRecommend(plan, spellid, cond, index, itemId)
     local n = plan.recommended + 1
     plan.recommended = n
     plan.recSpell[n], plan.recCond[n], plan.recIndex[n], plan.recItem[n] = spellid, cond, index, itemId
+    plan.recConf[n] = nil
 end
 
 -- Walks a compiled step list with the same control flow as Core/rotation_sequence.lua execute().
@@ -3446,7 +3457,9 @@ local function leanWalk(plan, list)
                 if enabled then
                     leanRecommend(plan, spellid, step, entry.ordinal, itemId)
 
-                    if not plan.nativePreview or plan.recommended >= plan.profile.preview_spells then
+                    if
+                        not plan.nativePreview or plan.forecastAhead or plan.recommended >= plan.profile.preview_spells
+                    then
                         return "selected"
                     end
                 end
@@ -3534,7 +3547,7 @@ local function leanPublish(self, plan)
         end
 
         if nativePreview then
-            previewWindow:AddRecommendation(spellid, itemId)
+            previewWindow:AddRecommendation(spellid, itemId, plan.recConf[n])
         end
 
         if not current() then
@@ -3812,8 +3825,21 @@ local function evaluateLean(self)
     plan.nativePreview = previewWindow and type(previewWindow.AddRecommendation) == "function"
     plan.recommended, plan.suppressAttack = 0, false
 
+    plan.forecastAhead = plan.nativePreview
+        and (plan.profile.preview_spells or 0) > 1
+        and self.Forecast ~= nil
+        and self.IsForecastOn ~= nil
+        and self:IsForecastOn()
+
     self.evaluationProfile:child("rotation"):start()
     local ended = leanWalk(plan, plan.steps)
+
+    if plan.forecastAhead and plan.recommended == 1 then
+        for _, slot in ipairs(self.Forecast:Run(plan.rot, plan.recSpell[1], plan.profile.preview_spells - 1)) do
+            leanRecommend(plan, slot.spell, slot.cond, slot.index, slot.item)
+            plan.recConf[plan.recommended] = slot.confidence
+        end
+    end
 
     if ended == "unavailable" then
         plan.suppressAttack = true
@@ -4155,10 +4181,11 @@ function addon:EvaluateNextActionInternal()
         -- @param cond table  The step.
         -- @param index number  The step's ordinal.
         -- @param itemId number|nil  The item id.
+        -- @param confidence number|nil  How sure a predicted recommendation is (the forecast); nil when read now.
         --
         -- The first one becomes the current spell (glow, WeakAuras and ROTATIONMASTER_SPELL_UPDATE); every one goes to
         -- the preview window, if any.
-        local function recommend(spellid, cond, index, itemId)
+        local function recommend(spellid, cond, index, itemId, confidence)
             preview = preview + 1
             local ordinal = preview
 
@@ -4214,10 +4241,19 @@ function addon:EvaluateNextActionInternal()
                 end
 
                 if nativePreview then
-                    previewWindow:AddRecommendation(spellid, itemId)
+                    previewWindow:AddRecommendation(spellid, itemId, confidence)
                 end
             end)
         end
+
+        -- With the forecast on, the walk stops at the first recommendation and the rest are predicted from the state after it.
+        local ahead = nativePreview
+            and (self.db.profile.preview_spells or 0) > 1
+            and self.Forecast ~= nil
+            and self.IsForecastOn ~= nil
+            and self:IsForecastOn()
+
+        local forecastFirst
 
         local sequence = evaluateSequence(
             self,
@@ -4243,7 +4279,11 @@ function addon:EvaluateNextActionInternal()
                 if enabled then
                     recommend(spellid, cond, index, itemId)
 
-                    if not nativePreview or preview >= self.db.profile.preview_spells then
+                    if ahead and forecastFirst == nil then
+                        forecastFirst = spellid
+                    end
+
+                    if not nativePreview or ahead or preview >= self.db.profile.preview_spells then
                         return false
                     end
                 end
@@ -4256,6 +4296,12 @@ function addon:EvaluateNextActionInternal()
         if executionFailed then
             self.evaluationProfile:stop()
             return
+        end
+
+        if ahead and forecastFirst ~= nil then
+            for _, slot in ipairs(self.Forecast:Run(rot, forecastFirst, self.db.profile.preview_spells - 1)) do
+                recommend(slot.spell, slot.cond, slot.index, slot.item, slot.confidence)
+            end
         end
 
         suppressAttack = sequence.suppressAttack

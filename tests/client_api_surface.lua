@@ -151,7 +151,7 @@ local GUARDED = {
     },
     ['C_CombatLog.GetCurrentEventInfo'] = {
         'Retail/Forever never dispatch the combat-log handler (restricted policy); Classic has it.',
-        { 'main.lua', 'Platform/metrics_events.lua' },
+        { 'main.lua', 'Platform/metrics_events.lua', 'Platform/forecast_events.lua' },
     },
     UnitAura = { 'Era registers LibClassicDurations only while the UnitAura global it wraps exists.', { 'main.lua' } },
     NUM_TOTAL_EQUIPPED_BAG_SLOTS = {
@@ -198,7 +198,7 @@ local GUARDED = {
     ['C_Traits.GetGroupDisplayInfoByTreeID'] = { 'Forever talent trees; type-checked.', { 'Platform/talents.lua' } },
     CombatLogGetCurrentEventInfo = {
         'Retail/Forever only: combat-log payloads are read under the probe policy (Classic); restricted clients never dispatch the handler.',
-        { 'main.lua', 'Platform/metrics_events.lua' },
+        { 'main.lua', 'Platform/metrics_events.lua', 'Platform/forecast_events.lua' },
         clients = { retail = true, forever = true },
     },
 }

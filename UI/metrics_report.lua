@@ -89,6 +89,16 @@ local function readable(report)
             )
         end
 
+        for _, row in ipairs(rotation.predictionAccuracy) do
+            lines[#lines + 1] = string.format(
+                L['Prediction %d recommendations ahead: right %s%% of %d, said it was %s%% sure'],
+                row.slot - 1,
+                tostring(row.hitPercent),
+                row.checked,
+                tostring(row.meanConfidencePercent)
+            )
+        end
+
         for _, tier in ipairs(rotation.byAdherence) do
             lines[#lines + 1] = string.format(
                 L['%s: %d fights, %d damage per second, %d healing per second'],
@@ -161,4 +171,13 @@ function addon:ClearMetrics()
     end
 
     self:print(L['Metrics cleared.'])
+end
+
+-- Deletes what the forecast has learned about the player's spells.
+function addon:ClearForecast()
+    if addon.Forecast then
+        addon.Forecast:Clear()
+    end
+
+    self:print(L['Forecast learning cleared.'])
 end

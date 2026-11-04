@@ -11839,4 +11839,35 @@ addon.translation = {
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
 --     clients.
 [3493] = "전투마다 입힌 피해량과 치유량을 기록하여, 권장 사항을 가깝게 따른 전투와 그렇지 않은 전투를 지표에서 비교할 수 있게 합니다. 이 기능은 전투 기록을 읽는데, 리테일과 포에버는 애드온에 전투 기록을 숨기므로 해당 클라이언트에서는 아무것도 기록되지 않습니다.",
+-- 75205de8 English: Forecast
+[3494] = "예측",
+-- 3358a032 English: Predict upcoming recommendations from the expected state
+[3495] = "예상 상태를 바탕으로 다음 권장 사항 예측",
+-- 999811c8 English: Fade predictions that are less certain
+[3496] = "확실하지 않은 예측을 흐리게 표시",
+-- 94270307 English: Forget what the forecast has learned
+[3497] = "예측이 학습한 내용 삭제",
+-- 2dd9064e English: Track how accurate the predictions were
+[3498] = "예측이 얼마나 정확했는지 측정",
+-- 4e461a5e English: Forecast learning cleared.
+[3499] = "예측 학습 내용을 삭제했습니다.",
+-- 6941525e English: Prediction %d recommendations ahead: right %s%% of %d, said it was %s%% sure
+[3500] = "%d단계 앞 예측: 적중률 %s%%, 확인 %d회, 예측이 밝힌 확신도 %s%%",
+-- d3939aef English: Predict the next few recommendations by walking the rotation again as if each
+--     earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast
+--     time passed, and, for spells the addon has watched leave an aura or do damage or healing,
+--     that effect applied. It needs Preview Spells above one and learns from your casts while this
+--     is on. Retail and Forever hide most of the numbers it needs, so there it predicts less.
+[3501] = "앞선 권장 사항이 각각 시전된 것처럼 로테이션을 다시 진행하여 다음 권장 사항 몇 개를 예측합니다. 재사용 대기시간이 시작되고, 비용이 소모되고, 전역 재사용 대기시간이나 시전 시간이 지나며, 애드온이 오라를 남기거나 피해 또는 치유를 주는 것을 관찰한 주문은 그 효과가 적용된 것으로 봅니다. 주문 미리보기가 1보다 커야 하며, 켜져 있는 동안 시전 내용에서 학습합니다. 리테일과 포에버는 필요한 수치 대부분을 숨기므로 그곳에서는 예측이 덜 정확합니다.",
+-- 0cf3ef81 English: Fade the icons of predicted recommendations that the addon is less sure of. The
+--     first recommendation is read from the game as it is now and never fades.
+[3502] = "애드온이 덜 확신하는 예측된 권장 사항의 아이콘을 흐리게 표시합니다. 첫 번째 권장 사항은 현재 게임 상태에서 읽으므로 흐려지지 않습니다.",
+-- 3ad1d37e English: Compare each forecast with what was highlighted when the time came: the second
+--     recommendation against the next highlight, the third against the one after, and so on. The
+--     totals appear in Metrics report and the exports, and the forecast's confidence is adjusted by
+--     how often it was right.
+[3503] = "각 예측을 실제 시점에 강조된 내용과 비교합니다. 두 번째 권장 사항은 다음 강조와, 세 번째는 그다음 강조와 비교하는 식입니다. 합계는 지표 보고서와 내보내기에 표시되며, 예측이 얼마나 자주 맞았는지에 따라 예측의 확신도가 조정됩니다.",
+-- 689efd69 English: Delete what the forecast has learned about your spells (the auras they leave,
+--     the damage and healing they do). It starts learning again if the forecast is on.
+[3504] = "예측이 주문에 대해 학습한 내용(남기는 오라, 주는 피해와 치유)을 삭제합니다. 예측이 켜져 있으면 다시 학습을 시작합니다.",
 }

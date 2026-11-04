@@ -17,7 +17,7 @@ local metrics = addon.Metrics
 local frame, playerGUID
 local listener = {}
 AceEvent:Embed(listener)
-local running = { adherence = false, effectiveness = false }
+local running = { adherence = false, effectiveness = false, prediction = false }
 
 -- Handles the recommendation changing.
 -- @param _ string  The message name.
@@ -113,19 +113,24 @@ end
 function addon:ApplyMetricsSettings(off)
     local adherence = off ~= true and wanted('metrics_adherence')
     local effectiveness = off ~= true and wanted('metrics_effectiveness') and canReadCombatLog()
+    local prediction = off ~= true and wanted('metrics_prediction')
 
-    if adherence == running.adherence and effectiveness == running.effectiveness then
+    if
+        adherence == running.adherence and effectiveness == running.effectiveness and prediction == running.prediction
+    then
         return
     end
 
-    if not adherence and not effectiveness then
+    metrics:SetPredicting(prediction)
+
+    if not adherence and not effectiveness and not prediction then
         if frame then
             frame:UnregisterAllEvents()
         end
 
         listener:UnregisterAllMessages()
         metrics:Reset()
-        running.adherence, running.effectiveness = false, false
+        running.adherence, running.effectiveness, running.prediction = false, false, false
         playerGUID = nil
         return
     end
@@ -139,6 +144,10 @@ function addon:ApplyMetricsSettings(off)
 
     if adherence then
         f:RegisterUnitEvent('UNIT_SPELLCAST_SENT', 'player')
+    end
+
+    -- The advice message drives both: adherence matches casts with it, prediction checks forecasts against it.
+    if adherence or prediction then
         listener:RegisterMessage('ROTATIONMASTER_SPELL_UPDATE', onAdvice)
     else
         listener:UnregisterAllMessages()
@@ -148,7 +157,7 @@ function addon:ApplyMetricsSettings(off)
         f:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
     end
 
-    running.adherence, running.effectiveness = adherence, effectiveness
+    running.adherence, running.effectiveness, running.prediction = adherence, effectiveness, prediction
 
     if InCombatLockdown() then
         metrics:FightStart(GetTime())
@@ -159,6 +168,7 @@ end
 -- @return boolean  Adherence collection is running.
 -- @return boolean  Effectiveness collection is running.
 -- @return boolean  The combat log can be read on this client.
+-- @return boolean  Prediction tracking is running.
 function addon:GetMetricsState()
-    return running.adherence, running.effectiveness, canReadCombatLog()
+    return running.adherence, running.effectiveness, canReadCombatLog(), running.prediction
 end

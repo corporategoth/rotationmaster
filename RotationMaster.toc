@@ -122,6 +122,7 @@ Core/build_context.lua
 Core/presentation.lua
 Core/custom_condition_owner.lua
 Core/action_policy.lua
+Core/forecast.lua
 Core/spell_catalog.lua
 Core/spell_search.lua
 Core/reference_catalog.lua
@@ -134,6 +135,7 @@ Analytics/capture.lua
 Analytics/metrics.lua
 Platform/analytics_casts.lua
 Platform/metrics_events.lua
+Platform/forecast_events.lua
 Core/profile_data.lua
 Core/collection_data.lua
 Core/custom_condition_data.lua

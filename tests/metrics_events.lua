@@ -201,4 +201,26 @@ test('Retail and Forever register no combat log whatever the switch says', funct
     end
 end)
 
+test(
+    'prediction tracking listens for the advice and the combat, not for casts, and checks forecasts against the highlights',
+    function()
+        local f = client()
+        f.addon.db.profile.metrics_prediction = true
+        f.addon:ApplyMetricsSettings()
+        local frame = f.made[1]
+        assert(frame.events.PLAYER_REGEN_DISABLED and not frame.unitEvents.UNIT_SPELLCAST_SENT)
+        local adherence, effectiveness, _, prediction = f.addon:GetMetricsState()
+        assert(not adherence and not effectiveness and prediction)
+        fire(f, 'PLAYER_REGEN_DISABLED')
+        f.clock.now = 101
+        f.send('ROTATIONMASTER_SPELL_UPDATE', 'rot', 1, 'c1', 'spell', 133)
+        f.addon.Metrics:Predicted(133, { 116 }, { 0.7 })
+        f.send('ROTATIONMASTER_SPELL_UPDATE', 'rot', 1, 'c1', 'spell', 116)
+        f.clock.now = 120
+        fire(f, 'PLAYER_REGEN_ENABLED')
+        f.addon:ApplyMetricsSettings(true)
+        assert(not select(4, f.addon:GetMetricsState()))
+    end
+)
+
 finish()

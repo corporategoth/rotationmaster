@@ -11839,4 +11839,35 @@ addon.translation = {
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
 --     clients.
 [3493] = "Записывает урон и исцеление за каждый бой, чтобы метрики могли сравнивать бои, в которых Вы точно следовали рекомендациям, с боями, в которых это было не так. Для этого читается журнал боя, который Retail и Forever скрывают от аддонов, поэтому на этих клиентах ничего не записывается.",
+-- 75205de8 English: Forecast
+[3494] = "Прогноз",
+-- 3358a032 English: Predict upcoming recommendations from the expected state
+[3495] = "Предсказывать следующие рекомендации по ожидаемому состоянию",
+-- 999811c8 English: Fade predictions that are less certain
+[3496] = "Приглушать менее уверенные предсказания",
+-- 94270307 English: Forget what the forecast has learned
+[3497] = "Забыть то, чему научился прогноз",
+-- 2dd9064e English: Track how accurate the predictions were
+[3498] = "Измерять точность предсказаний",
+-- 4e461a5e English: Forecast learning cleared.
+[3499] = "Обучение прогноза удалено.",
+-- 6941525e English: Prediction %d recommendations ahead: right %s%% of %d, said it was %s%% sure
+[3500] = "Предсказание на %d рекомендаций вперёд: верно в %s%% из %d случаев, заявленная уверенность %s%%",
+-- d3939aef English: Predict the next few recommendations by walking the rotation again as if each
+--     earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast
+--     time passed, and, for spells the addon has watched leave an aura or do damage or healing,
+--     that effect applied. It needs Preview Spells above one and learns from your casts while this
+--     is on. Retail and Forever hide most of the numbers it needs, so there it predicts less.
+[3501] = "Предсказывает несколько следующих рекомендаций, повторно проходя ротацию так, будто каждая предыдущая уже применена: её перезарядка запущена, цена потрачена, общее время восстановления или время применения прошло, а для заклинаний, о которых аддон видел, что они накладывают эффект или наносят урон либо исцеляют, этот эффект учтён. Требуется, чтобы число заклинаний в предпросмотре было больше одного; пока функция включена, она учится на Ваших применениях. Retail и Forever скрывают большинство нужных ей чисел, поэтому там предсказания менее полны.",
+-- 0cf3ef81 English: Fade the icons of predicted recommendations that the addon is less sure of. The
+--     first recommendation is read from the game as it is now and never fades.
+[3502] = "Приглушает значки предсказанных рекомендаций, в которых аддон менее уверен. Первая рекомендация считывается из игры в её текущем состоянии и никогда не приглушается.",
+-- 3ad1d37e English: Compare each forecast with what was highlighted when the time came: the second
+--     recommendation against the next highlight, the third against the one after, and so on. The
+--     totals appear in Metrics report and the exports, and the forecast's confidence is adjusted by
+--     how often it was right.
+[3503] = "Сравнивает каждый прогноз с тем, что было подсвечено в нужный момент: вторую рекомендацию со следующей подсветкой, третью — с той, что после неё, и так далее. Итоги отображаются в отчёте по метрикам и в экспорте, а уверенность прогноза корректируется в зависимости от того, как часто он оказывался верным.",
+-- 689efd69 English: Delete what the forecast has learned about your spells (the auras they leave,
+--     the damage and healing they do). It starts learning again if the forecast is on.
+[3504] = "Удаляет то, чему прогноз научился о Ваших заклинаниях (накладываемые эффекты, наносимый урон и исцеление). Если прогноз включён, обучение начнётся заново.",
 }

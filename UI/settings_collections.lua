@@ -214,12 +214,12 @@ function addon:OpenNativeSettings(parent, key, cached)
             profile = {
                 'enable', 'poll', 'idle_poll', 'autoswitch_poll', 'ignore_mana', 'ignore_range', 'effect', 'color',
                 'magnification', 'setpoint', 'xoffs', 'yoffs', 'loglevel', 'detailed_profiling', 'disable_autoswitch',
-                'metrics_adherence', 'metrics_effectiveness', 'live_config_update', 'spell_history', 'combat_history',
-                'damage_history', 'disable_buttons', 'assisted_highlight', 'tooltips', 'tooltip_itemsets',
-                'tooltip_rotations', 'tooltip_conditions', 'tooltip_disabled_rotations',
-                'tooltip_exclude_disabled_conditions', 'tooltip_limit', 'rotation_view', 'preview_spells',
-                'preview_vertical', 'preview_locked', 'preview_opacity', 'preview_icon_size', 'preview_window',
-                'minimap'
+                'metrics_adherence', 'metrics_effectiveness', 'metrics_prediction', 'forecast', 'forecast_confidence',
+                'live_config_update', 'spell_history', 'combat_history', 'damage_history', 'disable_buttons',
+                'assisted_highlight', 'tooltips', 'tooltip_itemsets', 'tooltip_rotations', 'tooltip_conditions',
+                'tooltip_disabled_rotations', 'tooltip_exclude_disabled_conditions', 'tooltip_limit', 'rotation_view',
+                'preview_spells', 'preview_vertical', 'preview_locked', 'preview_opacity', 'preview_icon_size',
+                'preview_window', 'minimap'
             },
             char = { 'specs' },
         },

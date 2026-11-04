@@ -91,6 +91,26 @@ function addon:GetGeneralOptionHelp()
             text = L["Choose how many seconds of observed damage and healing to retain for burn-rate and time-to-die estimates. Recent observations receive more weight. A longer window uses more records and smooths short changes; it cannot supply events the client does not expose."],
         },
         {
+            id = "forecast",
+            title = L["Predict upcoming recommendations from the expected state"],
+            text = L["Predict the next few recommendations by walking the rotation again as if each earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast time passed, and, for spells the addon has watched leave an aura or do damage or healing, that effect applied. It needs Preview Spells above one and learns from your casts while this is on. Retail and Forever hide most of the numbers it needs, so there it predicts less."],
+        },
+        {
+            id = "forecast_confidence",
+            title = L["Fade predictions that are less certain"],
+            text = L["Fade the icons of predicted recommendations that the addon is less sure of. The first recommendation is read from the game as it is now and never fades."],
+        },
+        {
+            id = "forecast_clear",
+            title = L["Forget what the forecast has learned"],
+            text = L["Delete what the forecast has learned about your spells (the auras they leave, the damage and healing they do). It starts learning again if the forecast is on."],
+        },
+        {
+            id = "metrics_prediction",
+            title = L["Track how accurate the predictions were"],
+            text = L["Compare each forecast with what was highlighted when the time came: the second recommendation against the next highlight, the third against the one after, and so on. The totals appear in Metrics report and the exports, and the forecast's confidence is adjusted by how often it was right."],
+        },
+        {
             id = "metrics_adherence",
             title = L["Track how closely I follow the advice"],
             text = L["While the rotation is on and you are in combat, record which spell was recommended when you pressed a spell, how long after the recommendation appeared you pressed it, and what you cast instead when you did not follow it. Only totals are kept, per rotation, in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or export them for the website or a language model."],

@@ -11839,4 +11839,35 @@ addon.translation = {
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
 --     clients.
 [3493] = "記錄你每場戰鬥造成的傷害與治療，讓指標能比較你嚴格遵循建議的戰鬥與沒有遵循的戰鬥。這需要讀取戰鬥記錄，而正式服與 Forever 對插件隱藏了戰鬥記錄，因此在這些用戶端上不會記錄任何內容。",
+-- 75205de8 English: Forecast
+[3494] = "預測",
+-- 3358a032 English: Predict upcoming recommendations from the expected state
+[3495] = "根據預期狀態預測接下來的建議",
+-- 999811c8 English: Fade predictions that are less certain
+[3496] = "淡化把握較小的預測",
+-- 94270307 English: Forget what the forecast has learned
+[3497] = "清除預測已學到的內容",
+-- 2dd9064e English: Track how accurate the predictions were
+[3498] = "統計預測的準確程度",
+-- 4e461a5e English: Forecast learning cleared.
+[3499] = "已清除預測學到的內容。",
+-- 6941525e English: Prediction %d recommendations ahead: right %s%% of %d, said it was %s%% sure
+[3500] = "提前 %d 個建議的預測：正確率 %s%%，共檢查 %d 次，預測聲稱的把握為 %s%%",
+-- d3939aef English: Predict the next few recommendations by walking the rotation again as if each
+--     earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast
+--     time passed, and, for spells the addon has watched leave an aura or do damage or healing,
+--     that effect applied. It needs Preview Spells above one and learns from your casts while this
+--     is on. Retail and Forever hide most of the numbers it needs, so there it predicts less.
+[3501] = "假設之前的每個建議都已施放，重新走一遍循環，以預測接下來的幾個建議：其冷卻已開始、消耗已扣除、共用冷卻或施法時間已過，而對於插件觀察到會留下光環或造成傷害、治療的法術，則計入該效果。需要法術預覽數大於一；開啟期間會從你的施法中學習。正式服與 Forever 隱藏了它所需的大部分數值，因此在那裡預測較少。",
+-- 0cf3ef81 English: Fade the icons of predicted recommendations that the addon is less sure of. The
+--     first recommendation is read from the game as it is now and never fades.
+[3502] = "淡化插件把握較小的預測建議的圖示。第一個建議讀取的是遊戲目前的狀態，永遠不會淡化。",
+-- 3ad1d37e English: Compare each forecast with what was highlighted when the time came: the second
+--     recommendation against the next highlight, the third against the one after, and so on. The
+--     totals appear in Metrics report and the exports, and the forecast's confidence is adjusted by
+--     how often it was right.
+[3503] = "把每次預測與到時實際醒目標示的內容比較：第二個建議對比下一次標示，第三個對比再下一次，依此類推。總數顯示在指標報告與匯出中，預測的把握也會根據其命中的頻率調整。",
+-- 689efd69 English: Delete what the forecast has learned about your spells (the auras they leave,
+--     the damage and healing they do). It starts learning again if the forecast is on.
+[3504] = "清除預測對你的法術已學到的內容（它們留下的光環、造成的傷害與治療）。若預測處於開啟狀態，會重新開始學習。",
 }

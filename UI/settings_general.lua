@@ -700,6 +700,34 @@ function addon:BuildGeneralSettings(p)
         tooltipsChanged()
     end)
 
+    p:Heading(L['Forecast'])
+
+    p:Check(
+        'forecast',
+        L['Predict upcoming recommendations from the expected state'],
+        profile.forecast == true,
+        function(v)
+            profile.forecast = v
+
+            p:RunSettingsEffect('forecast', function()
+                self:ApplyForecastSettings()
+            end)
+        end
+    )
+
+    p:Check(
+        'forecast_confidence',
+        L['Fade predictions that are less certain'],
+        profile.forecast_confidence ~= false,
+        function(v)
+            profile.forecast_confidence = v
+        end
+    )
+
+    p:Button('forecast_clear', L['Forget what the forecast has learned'], function()
+        self:ClearForecast()
+    end)
+
     p:Heading(L['Metrics'])
 
     p:Check(
@@ -723,6 +751,19 @@ function addon:BuildGeneralSettings(p)
             profile.metrics_effectiveness = v
 
             p:RunSettingsEffect('metrics_effectiveness', function()
+                self:ApplyMetricsSettings()
+            end)
+        end
+    )
+
+    p:Check(
+        'metrics_prediction',
+        L['Track how accurate the predictions were'],
+        profile.metrics_prediction == true,
+        function(v)
+            profile.metrics_prediction = v
+
+            p:RunSettingsEffect('metrics_prediction', function()
                 self:ApplyMetricsSettings()
             end)
         end

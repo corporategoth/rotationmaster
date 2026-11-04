@@ -11839,4 +11839,35 @@ addon.translation = {
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
 --     clients.
 [3493] = "Registra o dano e a cura que você causa em cada combate para que as métricas possam comparar combates em que você seguiu de perto as recomendações com combates em que não seguiu. Isso lê o registro de combate, que Retail e Forever escondem dos addons, então nada é registrado nesses clientes.",
+-- 75205de8 English: Forecast
+[3494] = "Previsão",
+-- 3358a032 English: Predict upcoming recommendations from the expected state
+[3495] = "Prever as próximas recomendações a partir do estado esperado",
+-- 999811c8 English: Fade predictions that are less certain
+[3496] = "Esmaecer previsões menos certas",
+-- 94270307 English: Forget what the forecast has learned
+[3497] = "Esquecer o que a previsão aprendeu",
+-- 2dd9064e English: Track how accurate the predictions were
+[3498] = "Medir a precisão das previsões",
+-- 4e461a5e English: Forecast learning cleared.
+[3499] = "Aprendizado da previsão apagado.",
+-- 6941525e English: Prediction %d recommendations ahead: right %s%% of %d, said it was %s%% sure
+[3500] = "Previsão a %d recomendações: acertou %s%% de %d, com certeza declarada de %s%%",
+-- d3939aef English: Predict the next few recommendations by walking the rotation again as if each
+--     earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast
+--     time passed, and, for spells the addon has watched leave an aura or do damage or healing,
+--     that effect applied. It needs Preview Spells above one and learns from your casts while this
+--     is on. Retail and Forever hide most of the numbers it needs, so there it predicts less.
+[3501] = "Prevê as próximas recomendações percorrendo a rotação de novo como se cada anterior tivesse sido lançada: sua recarga iniciada, seu custo gasto, a recarga global ou o tempo de lançamento decorrido e, para feitiços que o addon viu deixarem uma aura ou causarem dano ou cura, esse efeito aplicado. Precisa de Feitiços na prévia acima de um e aprende com seus lançamentos enquanto estiver ativa. Retail e Forever escondem a maior parte dos números de que ela precisa, então lá ela prevê menos.",
+-- 0cf3ef81 English: Fade the icons of predicted recommendations that the addon is less sure of. The
+--     first recommendation is read from the game as it is now and never fades.
+[3502] = "Esmaece os ícones das recomendações previstas das quais o addon tem menos certeza. A primeira recomendação é lida do jogo como ele está agora e nunca esmaece.",
+-- 3ad1d37e English: Compare each forecast with what was highlighted when the time came: the second
+--     recommendation against the next highlight, the third against the one after, and so on. The
+--     totals appear in Metrics report and the exports, and the forecast's confidence is adjusted by
+--     how often it was right.
+[3503] = "Compara cada previsão com o que foi destacado quando chegou a hora: a segunda recomendação com o próximo destaque, a terceira com o seguinte, e assim por diante. Os totais aparecem no relatório de métricas e nas exportações, e a certeza da previsão é ajustada conforme a frequência com que acertou.",
+-- 689efd69 English: Delete what the forecast has learned about your spells (the auras they leave,
+--     the damage and healing they do). It starts learning again if the forecast is on.
+[3504] = "Apaga o que a previsão aprendeu sobre seus feitiços (as auras que deixam, o dano e a cura que causam). Ela volta a aprender se a previsão estiver ativa.",
 }
