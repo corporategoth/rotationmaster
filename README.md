@@ -19,8 +19,8 @@ for you.
   <img src="Assets/Branding/rotation-master.png" alt="Rotation Master logo" width="240">
 </p>
 
-Version 2.0 is a rewrite of the 1.x addon and is being prepared as a beta. See the [beta guide](docs/release/BETA.md) for
-installation, testing and known issues.
+Version 2.0 is a rewrite of the 1.x addon. See the [release notes](docs/release/notes/2.0.0.md) for what changed and the
+[upgrade guide](docs/release/BETA.md) for backups, supported clients and going back to 1.x.
 
 ## What it does
 
