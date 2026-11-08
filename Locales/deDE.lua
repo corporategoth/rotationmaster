@@ -11855,8 +11855,6 @@ addon.translation = {
 [3524] = "Letzter Kampf",
 -- d354f304 English: This instance
 [3525] = "Diese Instanz",
--- f39529f9 English: Last %d minutes
-[3527] = "Letzte %d Minuten",
 -- 9755c8d7 English: All time
 [3528] = "Gesamte Zeit",
 -- ce06bb9e English: Nothing was recorded for this period.
@@ -12031,4 +12029,50 @@ addon.translation = {
 --     last readable moving speed when moving. Missing, failed or malformed observations, and a
 --     hidden speed before any movement event or readable speed, return nil with a reason.
 [3591] = "Beobachtet die aktuelle Bewegungsgeschwindigkeit des Spielers auf unterstützten, lesbaren Clients. Fragt GetUnitSpeed nur für player ab, ohne eine andere Einheit zu prüfen oder den Fahrzeugbesitz umzuleiten. Null bedeutet Stillstand; positive, endliche Bruchwerte bleiben gültig. Wo der Client die Geschwindigkeit verbirgt (Retail und Forever im Kampf), stammt der Datensatz aus PLAYER_STARTED_MOVING und PLAYER_STOPPED_MOVING mit estimated = true: 0 im Stillstand, in Bewegung die zuletzt lesbare Bewegungsgeschwindigkeit. Fehlende, fehlgeschlagene oder fehlerhafte Beobachtungen sowie eine verborgene Geschwindigkeit vor dem ersten Bewegungsereignis oder einer lesbaren Geschwindigkeit geben nil mit einem Grund zurück.",
+-- 7dd2745b English: The period before
+[3592] = "Der Zeitraum davor",
+-- 6543ac36 English: The previous fight
+[3593] = "Der vorherige Kampf",
+-- 6da6530a English: This session
+[3594] = "Diese Sitzung",
+-- 67e1bca0 English: Nothing
+[3595] = "Nichts",
+-- bcf12e37 English: Another instance
+[3596] = "Andere Instanz",
+-- d9e626c6 English: Another rotation
+[3597] = "Andere Rotation",
+-- bd384050 English: Compare with: %s
+[3598] = "Vergleichen mit: %s",
+-- fdb6c20a English: Time to act (seconds)
+[3599] = "Reaktionszeit (Sekunden)",
+-- a0f5e662 English: Damage per second
+[3600] = "Schaden pro Sekunde",
+-- 67a48694 English: Healing per second
+[3601] = "Heilung pro Sekunde",
+-- d9319db3 English: %s: nothing was recorded.
+[3602] = "%s: nichts aufgezeichnet.",
+-- a2a90f9b English: %s (%d fights, %d casts)
+[3603] = "%s (%d Kämpfe, %d Zauber)",
+-- 6ba2a0e0 English: Shown
+[3604] = "Angezeigt",
+-- 17c858fc English: Compared
+[3605] = "Verglichen",
+-- c0bf75bd English: Change
+[3606] = "Änderung",
+-- 7efd4d5d English: Green is better, red is worse.
+[3607] = "Grün ist besser, Rot ist schlechter.",
+-- 21e84929 English: Hours
+[3608] = "Stunden",
+-- 404314b1 English: hours
+[3609] = "Stunden",
+-- e08c0aa8 English: Days
+[3610] = "Tage",
+-- ab51004e English: days
+[3611] = "Tage",
+-- 4f846a84 English: Minutes
+[3612] = "Minuten",
+-- 90e63d85 English: minutes
+[3613] = "Minuten",
+-- 3eeb06f4 English: Last %d %s
+[3614] = "Letzte %d %s",
 }

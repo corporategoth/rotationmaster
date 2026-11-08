@@ -210,4 +210,89 @@ test('the recording switches are on this page, and drawing the page again create
     assert(#c.canvas.ctx.textures == textures and #c.canvas.ctx.texts == labels, 'a second draw reuses the pools')
 end)
 
+test('this session is the fights since the session began, and a timed period has a unit', function()
+    local _, a, parent = page()
+    local clock = 5000
+
+    a.Metrics.clock = function()
+        return clock
+    end
+
+    local steps = { { advice = FIREBALL, at = 101 }, { cast = FIREBALL, at = 102 } }
+    fight(a.Metrics, 'one', steps)
+    clock = clock + 7200
+    a.Metrics.session = clock - 60
+    fight(a.Metrics, 'two', steps)
+    local _, c = open(a, parent)
+    click(c.scope.session)
+    assert(#c.report.rotations == 1 and c.report.rotations[1].id == 'two', 'only the fight since the session began')
+    assert(c.scope.session.text == 'This session' and c.scope.session.selected)
+    click(c.scope.minutes)
+    click(c.units[2])
+    assert(c.scope.minutes.text == 'Last 30 hours' and #c.report.rotations == 2, c.scope.minutes.text)
+    click(c.units[3])
+    assert(c.scope.minutes.text == 'Last 30 days')
+    c.minutes:SetValue(3)
+    c.minutes.scripts.OnValueChanged(c.minutes, 3)
+    assert(c.scope.minutes.text == 'Last 3 days')
+end)
+
+test('a period can be compared with another period, an instance or another rotation, and says what changed', function()
+    local _, a, parent = page()
+    local clock = 5000
+
+    a.Metrics.clock = function()
+        return clock
+    end
+
+    fight(a.Metrics, 'rot', { { advice = FIREBALL, at = 101 }, { cast = FIREBALL, at = 102 } })
+    clock = clock + 3600
+    fight(a.Metrics, 'rot', { { advice = FIREBALL, at = 101 }, { cast = BLINK, at = 102 } })
+    local _, c = open(a, parent)
+    assert(not texts(c):find('Comparison', 1, true), 'nothing is compared at first')
+    click(c.compare)
+    assert(c.compare.text == 'Compare with: The previous fight', c.compare.text)
+    local shown = texts(c)
+    assert(shown:find('Comparison', 1, true) and shown:find('The previous fight (1 fights, 1 casts)', 1, true), shown)
+    assert(shown:find('-100.0', 1, true) and shown:find('Green is better, red is worse.', 1, true), shown)
+    click(c.scope.all)
+    assert(not c.compare.text:find('previous', 1, true), 'a comparison that makes no sense for the period is dropped')
+
+    fight(a.Metrics, 'other', { { advice = FIREBALL, at = 101 }, { cast = FIREBALL, at = 102 } })
+    click(c.scope.all)
+    local seen = {}
+
+    for _ = 1, 8 do
+        click(c.compare)
+        seen[#seen + 1] = c.compare.text
+
+        if c.compare.text == 'Compare with: Another rotation' then
+            break
+        end
+    end
+
+    assert(c.compare.text == 'Compare with: Another rotation', table.concat(seen, ' | '))
+    assert(c.compareDetail:IsShown() and c.compareDetail.text ~= '', 'the other rotation is named')
+    assert(texts(c):find('Comparison', 1, true))
+end)
+
+test('the page spreads over the width of the pane, the choices share one row, and it follows a resize', function()
+    local _, a, parent = page()
+    fight(a.Metrics, 'rot', { { advice = FIREBALL, at = 101 }, { cast = FIREBALL, at = 102 } })
+    local p, c = open(a, parent)
+    assert(c.canvas:GetWidth() == p.width and p.width > 900, 'the whole width, not a part: ' .. tostring(p.width))
+    local row = c.scope.last.point[3]
+    assert(c.scope.session.point[3] == row and c.scope.all.point[3] == row and c.reset.point[3] == row, 'one row')
+    local wide = c.scope.last:GetWidth()
+    p.frame:SetWidth(500)
+    p:Draw()
+    c = p.metricsControls
+    assert(c.canvas:GetWidth() == p.width and p.width < 500, 'it follows the pane')
+    assert(c.scope.last:GetWidth() < wide or c.scope.all.point[3] ~= c.scope.last.point[3], 'narrower, or wrapped')
+    p.frame:SetWidth(340)
+    p:Draw()
+    c = p.metricsControls
+    assert(c.scope.all.point[3] ~= c.scope.last.point[3], 'too narrow for one row: it wraps')
+end)
+
 finish()

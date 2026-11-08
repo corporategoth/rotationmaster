@@ -262,6 +262,13 @@ test('a report can be limited to the last fight, this instance or a number of mi
     assert(casts({ kind = 'minutes', minutes = 15 }) == 9, 'the last two fights')
     assert(casts({ kind = 'minutes', minutes = 30 }) == 12)
     assert(casts({ kind = 'minutes', minutes = 180 }) == 14)
+    assert(casts({ kind = 'previous' }) == 4, 'the fight before the newest')
+    assert(casts({ kind = 'before', minutes = 15 }) == 3, 'the fifteen minutes before the last fifteen')
+    m.session = 1000000 - 1000
+    assert(casts({ kind = 'session' }) == 9, 'the fights since this session began')
+    assert(casts({ kind = 'instance', instance = 'zone:Barrens' }, { instance = 'instance:409' }) == 2, 'a named one')
+    local places = m:Instances()
+    assert(#places == 2 and places[1].key == 'instance:409' and places[1].fights == 3 and places[2].name == 'Barrens')
     m:Clear()
     assert(casts({ kind = 'all' }) == 0 and casts({ kind = 'last' }) == 0, 'clearing deletes the periods too')
 end)
@@ -300,7 +307,16 @@ test('only the last fights are kept in full, each stamped with where and what it
         m:FightEnd(20)
     end
 
-    assert(#saved.recent == 80, 'the oldest are dropped past eighty')
+    assert(#saved.recent == 104, 'a hundred and four fights are all kept')
+
+    for n = 1, 250 do
+        m:FightStart(0, nil)
+        m:Advice('rot', FIREBALL, 0)
+        m:Cast(FIREBALL, 1)
+        m:FightEnd(20)
+    end
+
+    assert(#saved.recent == 300, 'the oldest are dropped past three hundred')
 end)
 
 test('the JSON export is stable, escaped and carries the client facts', function()

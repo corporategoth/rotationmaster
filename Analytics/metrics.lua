@@ -19,8 +19,11 @@ metrics.clock = rawget(_G, 'time') or function()
     return 0
 end
 
+-- When this session began (the addon loading: logging in or reloading the interface), the start of the "this session" period.
+metrics.session = metrics.clock()
+
 local MAX_ROTATIONS, MAX_SPELLS, MAX_DEVIATIONS, RING = 24, 64, 8, 40
-local RECENT, FIGHT_SPELLS, FIGHT_DEVIATIONS = 80, 24, 4
+local RECENT, FIGHT_SPELLS, FIGHT_DEVIATIONS = 300, 24, 4
 local MIN_FIGHT, MAX_DELAY = 8, 30
 local FORMAT, VERSION = 'rm-metrics', 1
 
@@ -559,17 +562,29 @@ end
 
 -- Tells whether a stored fight is inside a scope.
 -- @param entry table  A stored fight.
--- @param scope table  { kind = "last" | "instance" | "minutes", minutes = number }.
--- @param context table  What is true now: { instance = the current instance's key, now = the wall clock }.
--- @param newest number  The wall clock of the newest stored fight.
+-- @param scope table  { kind = "last" | "previous" | "session" | "instance" | "minutes" | "before", minutes = number,
+--   instance = a key }: the newest fight, the one before it, since this session began, an instance (the key given, else
+--   the current one), the last `minutes`, or the `minutes` before those.
+-- @param context table  What is true now: { instance = the current instance's key, now = the wall clock, newest, previous,
+--   session = when the session began }.
 -- @return boolean  True when the fight belongs to the scope.
-local function inScope(entry, scope, context, newest)
-    if scope.kind == 'last' then
-        return entry.t == newest
-    elseif scope.kind == 'instance' then
-        return entry.instance ~= nil and entry.instance == context.instance
-    elseif scope.kind == 'minutes' then
+local function inScope(entry, scope, context)
+    local kind = scope.kind
+
+    if kind == 'last' then
+        return entry.t == context.newest
+    elseif kind == 'previous' then
+        return context.previous ~= nil and entry.t == context.previous
+    elseif kind == 'session' then
+        return entry.t >= context.session
+    elseif kind == 'instance' then
+        local key = scope.instance or context.instance
+        return entry.instance ~= nil and entry.instance == key
+    elseif kind == 'minutes' then
         return entry.t >= context.now - (scope.minutes or 30) * 60
+    elseif kind == 'before' then
+        local span = (scope.minutes or 30) * 60
+        return entry.t < context.now - span and entry.t >= context.now - 2 * span
     end
 
     return true
@@ -590,14 +605,23 @@ local function scoped(scope, context)
 
     context = context or {}
     context.now = context.now or epoch()
-    local newest = 0
+    context.session = context.session or metrics.session
+    local newest, previous = 0, nil
 
     for _, entry in ipairs(saved.recent) do
         newest = math.max(newest, entry.t or 0)
     end
 
     for _, entry in ipairs(saved.recent) do
-        if entry.id and inScope(entry, scope, context, newest) then
+        if (entry.t or 0) < newest and (previous == nil or entry.t > previous) then
+            previous = entry.t
+        end
+    end
+
+    context.newest, context.previous = newest, previous
+
+    for _, entry in ipairs(saved.recent) do
+        if entry.id and inScope(entry, scope, context) then
             local sum = sums[entry.id]
 
             if not sum then
@@ -623,6 +647,35 @@ local function scoped(scope, context)
     end
 
     return sums, order
+end
+
+-- Lists the instances fights were recorded in, newest first, for choosing one to compare with.
+-- @return table[]  { { key, name, fights, t } } where t is when the newest fight there ended.
+function metrics:Instances()
+    local saved = store()
+    local found, out = {}, {}
+
+    for _, entry in ipairs(saved and saved.recent or {}) do
+        if entry.instance then
+            local item = found[entry.instance]
+
+            if not item then
+                item = { key = entry.instance, name = entry.instanceName, fights = 0, t = 0 }
+                found[entry.instance] = item
+                out[#out + 1] = item
+            end
+
+            item.fights = item.fights + 1
+            item.t = math.max(item.t, entry.t or 0)
+            item.name = entry.instanceName or item.name
+        end
+    end
+
+    table.sort(out, function(a, b)
+        return a.t > b.t or a.t == b.t and tostring(a.key) < tostring(b.key)
+    end)
+
+    return out
 end
 
 -- Forgets the volatile advice and fight, without filing anything (used when collection stops).
@@ -797,9 +850,10 @@ end
 -- Builds the report: one summary per rotation, most fought first.
 -- @param names function|nil  Called with a rotation id and returning its display name.
 -- @param spellName function|nil  Called with a spell id and returning its name.
--- @param scope table|nil  Which fights to count: { kind = "last" } (the newest fight), { kind = "instance" } (those in the
---   instance or zone named by context.instance), { kind = "minutes", minutes = n } (the last n minutes) or
---   nil or { kind = "all" } is everything ever recorded.
+-- @param scope table|nil  Which fights to count: { kind = "last" } (the newest fight), "previous" (the one before it),
+--   "session" (since this session began), { kind = "instance" } (those in the instance or zone named by scope.instance,
+--   else context.instance), { kind = "minutes", minutes = n } (the last n minutes), "before" (the n minutes before those)
+--   or nil or { kind = "all" } is everything ever recorded.
 -- @param context table|nil  What is true now for a scope: { instance = the key of where the player is, now = wall clock }.
 -- @return table  { format, version, scope, rotations = { summary, ... } }.
 function metrics:Report(names, spellName, scope, context)
