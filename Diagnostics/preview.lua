@@ -153,9 +153,20 @@ function addon:PreviewTrace(info)
 
     local forecast = addon.Forecast
     local gcd = read('GetGlobalCooldown')
+    local beyond, beyondWhy, beyondHow = read('IsBeyondMeleeRange', 'target')
+    local movement, movementWhy = read('GetPlayerMovementObservation')
+
+    local reads = string.format(
+        'beyond melee %s%s; speed %s',
+        show(beyond),
+        beyond == nil and beyondWhy and (' (' .. tostring(beyondWhy) .. ')')
+            or beyondHow and (' via ' .. tostring(beyondHow))
+            or '',
+        type(movement) == 'table' and show(movement.speed) or ('unreadable (' .. tostring(movementWhy) .. ')')
+    )
 
     local text = string.format(
-        '%s: walk %s; advised %d; casting %s; forecast %s -> %d (%s); pass %s%s; gcd %s; %s',
+        '%s: walk %s; advised %d; casting %s; forecast %s -> %d (%s); pass %s%s; gcd %s; %s; %s',
         tostring(info.engine),
         tostring(info.ended),
         info.real or 0,
@@ -166,6 +177,7 @@ function addon:PreviewTrace(info)
         tostring(forecast and forecast.passEnded),
         forecast and forecast.lastError and ('; ERROR ' .. forecast.lastError) or '',
         type(gcd) == 'table' and 'readable' or 'unreadable',
+        reads,
         table.concat(states, '; ')
     )
 
