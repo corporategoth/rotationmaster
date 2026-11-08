@@ -177,15 +177,15 @@ local function getWindow()
     end
 
     d.summary = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    d.summary:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 12, 44)
+    d.summary:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 12, 23)
     d.summary:SetJustifyH('LEFT')
     d.summary:SetWordWrap(false)
     d.notice = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
-    d.notice:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 12, 30)
-    d.notice:SetJustifyH('LEFT')
+    d.notice:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -12, 23)
+    d.notice:SetJustifyH('RIGHT')
     d.notice:SetWordWrap(false)
     d.cancel = addon:CreateWorkbenchButton(frame, L['Cancel'], 90)
-    d.cancel:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -8, 30)
+    d.cancel:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -8, 38)
 
     addon:SetUIScript(d.cancel, 'OnClick', function()
         frame:Hide()
@@ -262,9 +262,11 @@ local function layout(d)
         width = math.max(790, handle.canvasSize.width + 40)
     end
 
-    local columns = width >= 5 * (BUTTON_WIDTH + 4) + 16 and 5 or 3
+    -- Accept and Cancel sit at the right of the bottom row of comparisons, which needs a window wide enough for all five
+    -- comparisons and both of them in one row.
+    local columns = width >= 5 * (BUTTON_WIDTH + 4) + 16 + 190 and 5 or 3
     local rows = math.ceil(#OPERATORS / columns)
-    local barHeight = 58 + 26 * rows
+    local barHeight = 40 + 22 * rows
 
     for index, operator in ipairs(OPERATORS) do
         local button = d.operatorButtons[operator]
@@ -275,13 +277,17 @@ local function layout(d)
             frame,
             'BOTTOMLEFT',
             8 + ((index - 1) % columns) * (BUTTON_WIDTH + 4),
-            58 + (rows - math.ceil(index / columns)) * 26
+            38 + (rows - math.ceil(index / columns)) * 22
         )
     end
 
-    d.summary:SetWidth(math.max(100, width - 230))
-    d.notice:SetWidth(math.max(100, width - 230))
-    local y = -36
+    d.cancel:ClearAllPoints()
+    d.cancel:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -8, 38)
+    d.summary:SetWidth(math.max(100, width / 2 - 20))
+    d.notice:SetWidth(math.max(100, width / 2 - 20))
+    local barWanted = d.mode ~= nil and (d.mode == 'drawn' or handle ~= nil and handle.canvasSize ~= nil)
+    local statusShown = d.failure ~= nil or handle ~= nil and not barWanted
+    local y = -26
     local specs = d.request and d.request.specs
     local showSpecs = specs and #specs > 1
     d.specLabel:ClearAllPoints()
@@ -344,14 +350,18 @@ local function layout(d)
     end
 
     d.status:ClearAllPoints()
-    d.status:SetPoint('TOPLEFT', 12, y)
+    d.status:SetPoint('TOPLEFT', 12, y - 2)
     d.status:SetWidth(width - 24)
     d.status:SetHeight(30)
-    y = y - 34
+    visible(d.status, statusShown)
+
+    if statusShown then
+        y = y - 34
+    end
 
     if d.mode == 'drawn' then
         local height = math.max(420, math.min(820, ((UIParent:GetHeight() or 800) - 80) / scale))
-        d.canvasWidth, d.canvasHeight = width - 16, height + y - 26 - barHeight
+        d.canvasWidth, d.canvasHeight = width - 16, height + y - barHeight - 2
         d.canvas:ClearAllPoints()
         d.canvas:SetPoint('TOPLEFT', frame, 'TOPLEFT', 8, y)
         d.canvas:SetSize(d.canvasWidth, d.canvasHeight)
@@ -367,13 +377,13 @@ local function layout(d)
         d.content:SetScale(1)
         d.content:SetAllPoints(d.canvas)
         d.canvas:Show()
-        frame:SetSize(width, -y + d.canvasHeight + 12 + barHeight)
+        frame:SetSize(width, -y + d.canvasHeight + barHeight + 2)
     else
         d.canvas:Hide()
         frame:SetSize(width, -y + 26)
     end
 
-    d.barShown = d.mode ~= nil and (d.mode == 'drawn' or handle ~= nil and handle.canvasSize ~= nil)
+    d.barShown = barWanted
     refreshBar(d)
 end
 
@@ -384,7 +394,7 @@ local function showStatus(d)
 
     if d.failure then
         text = reasonText(d.failure)
-    elseif d.handle then
+    elseif d.handle and not d.barShown then
         text = d.request
             and d.request.ranked == false
             and L['Left-click a talent to choose it, right-click to clear it.']
@@ -428,7 +438,12 @@ function refreshBar(d)
     end
 
     d.summary:SetText(text)
-    d.notice:SetText(d.noticeText or '')
+
+    d.notice:SetText(
+        d.noticeText
+            or (ranked and L['Left-click a talent to add a rank, right-click to remove one.']
+                or L['Left-click a talent to choose it, right-click to clear it.'])
+    )
 
     if pick and pick.selection then
         d.accept:Enable()
@@ -1354,7 +1369,7 @@ local function newSlot(d, index)
     slot.icon:SetPoint('CENTER')
     slot.art = slot:CreateTexture(nil, 'ARTWORK', nil, 3)
     slot.art:SetPoint('CENTER')
-    slot.hover = slot:CreateTexture(nil, 'OVERLAY')
+    slot.hover = slot:CreateTexture(nil, 'BACKGROUND')
     slot.hover:SetPoint('CENTER')
     slot.hover:Hide()
 
@@ -1595,11 +1610,11 @@ end
 -- Names Forever's classic trees: one pane for each node group of the class tree, centered on its nodes.
 -- @param nodes table[]  The shown nodes (each lists its groups).
 -- @param groups table[]  The trees { groupID, name } in display order.
--- @return table[]  The panes, each { name, x } with the horizontal center of the pane for its title.
+-- @return table[]  The panes, each { name, x, index } with the horizontal center of the pane for its title and its place.
 local function groupPanes(nodes, groups)
     local result = {}
 
-    for _, group in ipairs(groups) do
+    for index, group in ipairs(groups) do
         local low, high
 
         for _, node in ipairs(nodes) do
@@ -1612,7 +1627,7 @@ local function groupPanes(nodes, groups)
         end
 
         if low then
-            result[#result + 1] = { name = group.name, x = (low + high) / 2 }
+            result[#result + 1] = { name = group.name, x = (low + high) / 2, index = index }
         end
     end
 
@@ -1700,7 +1715,83 @@ local function draw(d, ctx)
 
     local margin, top = NODE + 8, NODE + 30
     local width, height = (maxX - minX) / 10 + margin * 2, (maxY - minY) / 10 + margin + top
-    local scale = math.max(.35, math.min(1.25, (d.canvasWidth or width) / width, (d.canvasHeight or height) / height))
+
+    -- Forever's trees each take an equal pane of the canvas, as the backdrop's three panels do, with the tree centered in
+    -- its own pane: every node is placed by its offset from the center of its tree.
+    local paneCount, paneCenters, widest = 0, nil, 0
+
+    if view.groups and #view.groups > 0 then
+        local place, low, high = {}, {}, {}
+
+        for index, group in ipairs(view.groups) do
+            place[group.groupID] = index
+        end
+
+        for _, node in ipairs(shownNodes) do
+            node.pane = nil
+
+            for _, id in ipairs(node.groups or {}) do
+                local index = place[id]
+
+                if index then
+                    node.pane = index
+
+                    low[index], high[index] = math.min(low[index] or node.x, node.x), math.max(
+                        high[index] or node.x,
+                        node.x
+                    )
+
+                    break
+                end
+            end
+        end
+
+        paneCenters = {}
+
+        for index in pairs(low) do
+            paneCenters[index] = (low[index] + high[index]) / 2
+            widest = math.max(widest, (high[index] - low[index]) / 10)
+        end
+
+        if next(paneCenters) then
+            paneCount = #view.groups
+
+            -- A talent that names no tree goes with the nearest one.
+            for _, node in ipairs(shownNodes) do
+                if not node.pane then
+                    local nearest
+
+                    for index, center in pairs(paneCenters) do
+                        if not nearest or math.abs(node.x - center) < math.abs(node.x - paneCenters[nearest]) then
+                            nearest = index
+                        end
+                    end
+
+                    node.pane = nearest
+                end
+            end
+        else
+            paneCenters = nil
+        end
+    end
+
+    local scale
+
+    if paneCenters then
+        local canvasWidth = d.canvasWidth or width
+
+        scale = math.max(.35, math.min(
+            1.25,
+            (d.canvasHeight or height) / height,
+            canvasWidth / paneCount / (widest + margin * 2)
+        ))
+
+        width = canvasWidth / scale
+    else
+        scale = math.max(.35, math.min(1.25, (d.canvasWidth or width) / width, (d.canvasHeight or height) / height))
+    end
+
+    local paneWidth = paneCenters and width / paneCount or 0
     d.content:SetScale(scale)
     d.content:SetSize(width, height)
     d.content:ClearAllPoints()
@@ -1709,7 +1800,7 @@ local function draw(d, ctx)
         'TOPLEFT',
         d.canvas,
         'TOPLEFT',
-        math.max(0, ((d.canvasWidth or width) - width * scale) / 2) / scale,
+        paneCenters and 0 or math.max(0, ((d.canvasWidth or width) - width * scale) / 2) / scale,
         -math.max(0, ((d.canvasHeight or height) - height * scale) / 2) / scale
     )
 
@@ -1735,6 +1826,11 @@ local function draw(d, ctx)
 
     for _, node in ipairs(shownNodes) do
         local cx, cy = (node.x - minX) / 10 + margin, (node.y - minY) / 10 + top
+
+        if paneCenters then
+            cx = paneWidth * (node.pane - .5) + (node.x - paneCenters[node.pane]) / 10
+        end
+
         drawnAt[node.id] = { cx, cy }
         local choice = node.kind == SELECTION and #node.entries > 1
 
@@ -1813,7 +1909,15 @@ local function draw(d, ctx)
             or nil
 
         text:ClearAllPoints()
-        text:SetPoint('TOP', d.content, 'TOPLEFT', (pane.x - minX) / 10 + margin, -8)
+
+        text:SetPoint(
+            'TOP',
+            d.content,
+            'TOPLEFT',
+            paneCenters and paneWidth * (pane.index - .5) or (pane.x - minX) / 10 + margin,
+            -8
+        )
+
         text:SetText(name or '')
         text:Show()
     end
