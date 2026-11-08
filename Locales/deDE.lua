@@ -11013,9 +11013,6 @@ addon.translation = {
 [3227] = "Leuchtdiagnose gespeichert. Beobachtung für %d Sekunden.",
 -- 820421f2 English: Glow watch finished. Run /rm debug glow show to view it.
 [3228] = "Leuchtbeobachtung beendet. Mit /rm debug glow show zeigen Sie das Ergebnis an.",
--- 6eb70331 English: Glow stops at: %s
--- %s #1: %s #1: where the glow stops, a developer sentence that stays in English, e.g. "the glow was never requested for Fireball"
-[3229] = "Leuchten endet bei: %s",
 -- d918e458 English: No glow diagnostic is saved yet. Run /rm debug glow.
 [3230] = "Noch keine Leuchtdiagnose gespeichert. Führen Sie /rm debug glow aus.",
 -- 5e41a846 English: Talent diagnostic

@@ -58,12 +58,12 @@ function addon:BuildPremadeSpellDiagnostic()
     local info = platform and platform.GetClientInfo and platform:GetClientInfo() or {}
     lines[#lines + 1] = string.format('== Premade spell IDs on %s', tostring(info.family))
 
-    if type(self.ListDefaultRotations) ~= 'function' or not platform or type(platform.GetSpellInfo) ~= 'function' then
+    if type(self.GetBuiltinStates) ~= 'function' or not platform or type(platform.GetSpellInfo) ~= 'function' then
         lines[#lines + 1] = 'The premade list or the spell reader is not available in this build.'
         return lines, 0
     end
 
-    local rows = self:ListDefaultRotations(self.currentSpec or 0) or {}
+    local rows = self:GetBuiltinStates(self.currentSpec or 0) or {}
 
     for _, row in ipairs(rows) do
         if row.fits and type(row.body) == 'table' then

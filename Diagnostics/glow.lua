@@ -1302,8 +1302,8 @@ local function watchLine(self)
     return table.concat(parts, ' ')
 end
 
--- Handler of /rm debug glow [seconds]: builds and saves the report, prints where it stops, and opens it in the copyable
--- window.
+-- Handler of /rm debug glow [seconds]: builds and saves the report and opens it in the copyable window; nothing but a short
+-- note goes to chat. With seconds the window opens when the watch ends.
 -- @param seconds number|string|nil  With a value of 1 to MAX_WATCH it instead keeps appending a line per second to the
 --   saved report and leaves the window to "/rm debug glow show".
 -- @return string[]  The report lines.
@@ -1337,6 +1337,10 @@ function addon:RunGlowDiagnostic(seconds)
                 self:CancelTimer(watcher.timer)
                 watcher = nil
                 self:print(L['Glow watch finished. Run /rm debug glow show to view it.'])
+
+                if self.ShowConditionText then
+                    self:ShowConditionText(table.concat(lines, '\n'), L['Glow diagnostic'])
+                end
             end
         end, 1)
 
@@ -1345,9 +1349,6 @@ function addon:RunGlowDiagnostic(seconds)
         self:print(L['Glow diagnostic saved.'])
     end
 
-    if stop then
-        self:print(L['Glow stops at: %s'], stop)
-    end
     if self.ShowConditionText and not (seconds and seconds >= 1) then
         self:ShowConditionText(table.concat(lines, '\n'), L['Glow diagnostic'])
     end

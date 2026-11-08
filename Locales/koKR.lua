@@ -11013,9 +11013,6 @@ addon.translation = {
 [3227] = "반짝임 진단을 저장했습니다. %d초 동안 관찰합니다.",
 -- 820421f2 English: Glow watch finished. Run /rm debug glow show to view it.
 [3228] = "반짝임 관찰이 끝났습니다. /rm debug glow show를 실행해 확인하세요.",
--- 6eb70331 English: Glow stops at: %s
--- %s #1: %s #1: where the glow stops, a developer sentence that stays in English, e.g. "the glow was never requested for Fireball"
-[3229] = "반짝임이 멈추는 곳: %s",
 -- d918e458 English: No glow diagnostic is saved yet. Run /rm debug glow.
 [3230] = "저장된 반짝임 진단이 아직 없습니다. /rm debug glow를 실행하세요.",
 -- 5e41a846 English: Talent diagnostic

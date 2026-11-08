@@ -11,7 +11,7 @@ local function client(rows, known)
     local a = f.addon
     a.db = { global = {}, profile = {} }
     a.currentSpec = 0
-    a.ListDefaultRotations = function() return rows end
+    a.GetBuiltinStates = function() return rows end
     a.Platform.GetSpellInfo = function(_, id) return known[id] and { name = 'Spell ' .. id } or nil end
     local printed, shown = {}, {}
 

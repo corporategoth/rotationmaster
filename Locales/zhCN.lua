@@ -11013,9 +11013,6 @@ addon.translation = {
 [3227] = "发光诊断已保存。正在观察 %d 秒。",
 -- 820421f2 English: Glow watch finished. Run /rm debug glow show to view it.
 [3228] = "发光观察已结束。运行 /rm debug glow show 查看。",
--- 6eb70331 English: Glow stops at: %s
--- %s #1: %s #1: where the glow stops, a developer sentence that stays in English, e.g. "the glow was never requested for Fireball"
-[3229] = "发光停止于：%s",
 -- d918e458 English: No glow diagnostic is saved yet. Run /rm debug glow.
 [3230] = "尚未保存任何发光诊断。请运行 /rm debug glow。",
 -- 5e41a846 English: Talent diagnostic

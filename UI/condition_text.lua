@@ -40,6 +40,15 @@ function addon:ShowConditionText(value, heading)
         local edit = CreateFrame('EditBox', nil, scroll)
         dialog.edit = edit
         edit:SetMultiLine(true)
+
+        -- A report is long: the box's default limit would cut it at a few hundred characters.
+        if edit.SetMaxLetters then
+            edit:SetMaxLetters(0)
+        end
+        if edit.SetMaxBytes then
+            edit:SetMaxBytes(0)
+        end
+
         edit:SetAutoFocus(false)
         edit:SetFontObject('GameFontHighlightSmall')
         edit:SetPoint('TOPLEFT')

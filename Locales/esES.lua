@@ -11013,9 +11013,6 @@ addon.translation = {
 [3227] = "Diagnóstico de resplandor guardado. Observando durante %d segundos.",
 -- 820421f2 English: Glow watch finished. Run /rm debug glow show to view it.
 [3228] = "La observación del resplandor ha terminado. Ejecuta /rm debug glow show para verla.",
--- 6eb70331 English: Glow stops at: %s
--- %s #1: %s #1: where the glow stops, a developer sentence that stays in English, e.g. "the glow was never requested for Fireball"
-[3229] = "El resplandor se detiene en: %s",
 -- d918e458 English: No glow diagnostic is saved yet. Run /rm debug glow.
 [3230] = "Aún no hay ningún diagnóstico de resplandor guardado. Ejecuta /rm debug glow.",
 -- 5e41a846 English: Talent diagnostic

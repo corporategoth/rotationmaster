@@ -9369,9 +9369,6 @@ T["Glow diagnostic saved."] = 3226
 T["Glow diagnostic saved. Watching for %d seconds."] = 3227
 -- 820421f2
 T["Glow watch finished. Run /rm debug glow show to view it."] = 3228
--- 6eb70331
--- %s #1: %s #1: where the glow stops, a developer sentence that stays in English, e.g. "the glow was never requested for Fireball"
-T["Glow stops at: %s"] = 3229
 -- d918e458
 T["No glow diagnostic is saved yet. Run /rm debug glow."] = 3230
 -- 5e41a846

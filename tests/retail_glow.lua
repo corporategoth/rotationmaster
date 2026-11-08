@@ -85,6 +85,8 @@ test('diagnostic sends the saved report to the real copy window', function()
     assert(dialog.edit:GetText() == table.concat(lines, '\n'))
     f.addon:ShowGlowDiagnostic()
     assert(dialog.edit:GetText() == table.concat(lines, '\n'))
+    -- A real EditBox cuts its text at a few hundred characters unless the limit is lifted, which left long reports empty.
+    assert(dialog.edit.maxLetters == 0 and dialog.edit.maxBytes == 0, 'the report box must have no length limit')
 end)
 
 -- Diagnostic ------------------------------------------------------------------
