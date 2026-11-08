@@ -3160,7 +3160,7 @@ end
 -- Seconds a recorded plan is reused before the standard path must prove the body again.
 local LEAN_MAX_AGE = 60
 -- Plans built, polls served and why plans were dropped, for runtime reports.
-local leanStats = { built = 0, polls = 0, key = 0, generation = 0, context = 0, age = 0 }
+local leanStats = { built = 0, polls = 0, key = 0, generation = 0, context = 0, age = 0, folded = 0 }
 addon.leanStats = leanStats
 -- Captured at load (Core/action_policy.lua loads first): an overridden
 -- NewActionReadiness keeps being used as is.
@@ -3205,6 +3205,29 @@ function addon:GetEvaluationEngine()
     return leanPlan and 'lean' or 'lean (building)'
 end
 
+-- Constant condition trees with the evaluator's own semantics: an empty AND matches, an empty OR does not.
+local ALWAYS, NEVER = { type = 'AND', value = {} }, { type = 'OR', value = {} }
+
+-- Compiles a step's conditions after folding the leaves that cannot change while the plan lives
+-- (Core/condition_folding.lua); a step that can never match under this plan compiles to a constant.
+-- @param conditions table|nil  The step's condition tree.
+-- @return table  The compiled condition plan.
+local function compileFolded(conditions)
+    if not addon.FoldInvariantConditions then
+        return compileConditionPlan(conditions)
+    end
+
+    local folded = addon:FoldInvariantConditions(conditions, leanStats)
+
+    if folded == true then
+        folded = ALWAYS
+    elseif folded == false then
+        folded = NEVER
+    end
+
+    return compileConditionPlan(folded)
+end
+
 -- Compiles a step list into entries holding prepared condition plans, recursing into Branch arms.
 -- @param list table  The step list.
 -- @param ordinals table  Maps a rotation step to its position among rotation steps, which reports and the
@@ -3220,13 +3243,13 @@ local function compileSteps(list, ordinals)
             entry.mode = step.mode or "evaluate"
 
             if entry.mode == "evaluate" then
-                entry.conditions = compileConditionPlan(step.conditions)
+                entry.conditions = compileFolded(step.conditions)
             end
 
             entry.onTrue = compileSteps(step.onTrue, ordinals)
             entry.onFalse = compileSteps(step.onFalse, ordinals)
         else
-            entry.conditions = compileConditionPlan(step.conditions)
+            entry.conditions = compileFolded(step.conditions)
         end
 
         compiled[index] = entry
@@ -3303,7 +3326,7 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
             plan.cooldowns[#plan.cooldowns + 1] = {
                 id = id,
                 step = cond,
-                conditions = compileConditionPlan(cond.conditions),
+                conditions = compileFolded(cond.conditions),
             }
         end
     end
