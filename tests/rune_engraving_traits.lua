@@ -789,16 +789,7 @@ test(
             'a later pick reset the chosen rank'
         )
 
-        local nodeBox = assert(child(parent, 'Talent Node ID'))
-        nodeBox:Fire('OnEnterPressed', '4242')
-        assert(value.node == 4242 and a.definitions.TALENT.valid(0, value))
-        nodeBox:Fire('OnEnterPressed', 'abc')
-        assert(value.node == 4242)
-        local entryBox = assert(child(parent, 'Choice Entry ID'))
-        entryBox:Fire('OnEnterPressed', '77')
-        assert(value.entry == 77)
-        entryBox:Fire('OnEnterPressed', '')
-        assert(value.entry == nil)
+        assert(child(parent, 'Talent Node ID') == nil and child(parent, 'Choice Entry ID') == nil, 'no ID boxes')
         -- Reopening selects the saved talent; hero talents group by subtree on Retail.
         parent = editor(f, 'TALENT', { layout = 'traits', node = 101, operator = 'EQUALS', value = 1 })
         trees = child(parent, 'Talent Tree')

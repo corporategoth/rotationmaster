@@ -6336,10 +6336,6 @@ addon.translation = {
 -- ea43639d English: ranks in %s
 -- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [1893] = "%s의 등급",
--- 1dd73b64 English: Show talent tree
--- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
---     from.
-[1894] = "특성 트리 표시",
 -- 3e590ed8 English: Hero Talents
 -- Context: Heading label in the talent window and a source name in the talent condition editor for
 --     the hero talent trees.
@@ -6350,20 +6346,11 @@ addon.translation = {
 [1897] = "먼저 직접 사용하는 특성 창의 변경 사항을 완료하거나 취소하세요.",
 -- da703663 English: The talent tree cannot be shown right now. Use the Talent list instead.
 [1898] = "지금은 특성 트리를 표시할 수 없습니다. 대신 특성 목록을 사용하세요.",
--- 80ea0eae English: Click a talent to choose it for this condition.
-[1899] = "이 조건에 사용할 특성을 클릭하세요.",
--- 6f1df5fc English: Selected: %s
--- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
-[1900] = "선택됨: %s",
 -- 7a5e089f English: Ranks: %d
 -- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
 [1901] = "등급: %d",
 -- 26722619 English: Choose one of the talents on this node.
 [1902] = "이 노드의 특성 중 하나를 선택하세요.",
--- d9f6a964 English: Click to choose this talent.
-[1903] = "클릭하여 이 특성을 선택합니다.",
--- ccb6e92e English: Click to clear this talent.
-[1904] = "클릭하여 이 특성을 해제합니다.",
 -- 8a667e66 English: Close the build shown in your own talent window first.
 [1905] = "먼저 직접 사용하는 특성 창에 표시된 빌드를 닫으세요.",
 -- 1f397413 English: Initial
@@ -10452,13 +10439,11 @@ addon.translation = {
 --     including under NOT. The Phase 7 shoulder runes are not engravings and are not seen. This is
 --     not the Death Knight Rune condition.
 [3044] = "각인은 발견의 시즌 서버에만 있습니다. 그 밖의 곳과 로그인 후 룬을 불러오기 전까지 이 조건은 거짓이 아니라 사용할 수 없음이며, NOT 아래에서도 마찬가지입니다. 7단계 어깨 룬은 각인이 아니므로 인식되지 않습니다. 이것은 죽음의 기사 룬 조건이 아닙니다.",
--- 2cfaca8e English: Your talents cannot be listed right now (%s). A node ID entered below is kept
---     and evaluated.
+-- 95d95ff8 English: Your talents cannot be listed right now (%s).
 -- %s #1: %s #1: why the talents cannot be listed, a short code (shown as-is), e.g. "not-ready"
-[3045] = "지금은 특성을 나열할 수 없습니다 (%s). 아래에 입력한 노드 ID는 유지되고 평가됩니다.",
--- 0d2b4c68 English: Talents can be listed only for your own class. A node ID entered below is kept
---     and evaluated.
-[3046] = "특성은 자신의 직업에 대해서만 나열할 수 있습니다. 아래에 입력한 노드 ID는 유지되고 평가됩니다.",
+[3045] = "지금은 특성을 나열할 수 없습니다 (%s).",
+-- 520dc742 English: Talents can be listed only for your own class.
+[3046] = "특성은 자신의 직업에 대해서만 나열할 수 있습니다.",
 -- 7417e36a English: Class talents
 -- Context: Group heading in the talent dropdown: talents shared by all specializations of the
 --     class.
@@ -10488,13 +10473,6 @@ addon.translation = {
 -- e8871b70 English: Talents
 -- Context: Fallback group heading in the talent dropdown when a talent group has no name.
 [3054] = "특성",
--- d6f5d4a1 English: Talent Node ID
--- Context: Label of the edit box in the talent condition: the numeric ID of the talent node.
-[3055] = "특성 노드 ID",
--- 3e359295 English: Choice Entry ID
--- Context: Label of the edit box in the talent condition: the numeric ID of the entry chosen at a
---     choice node.
-[3056] = "선택 항목 ID",
 -- 986b4c09 English: talent node %s
 -- Context: Fallback name for a talent whose name is not known; %s is the node ID, e.g. 'talent node
 --     12345'.
@@ -10503,25 +10481,22 @@ addon.translation = {
 -- 905d8751 English: the number of ranks in %s
 -- %s #1: %s #1: the name of the talent, e.g. "Arcane Power", or "talent node 82000"
 [3058] = "%s 단계 수",
--- ddb10d64 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
+-- 19823fd4 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
 --     from the talents of the rotation's specialization (the Specialization list shows another
---     specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID
---     of the choice) to share a rotation. A choice node's entry has rank zero unless it is the
---     chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent
---     of a specialization you are not playing. A talent picked from the list also remembers its
---     spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again
---     after any talent change; an unreadable node is unavailable, including under NOT.
-[3059] = "리테일과 포에버는 활성화된 구성에 있는 특성의 등급을 비교합니다. 규칙 순서의 전문화에 속한 특성에서 고르거나(‘전문화’ 목록은 전투 중이 아닐 때 다른 전문화의 특성을 보여 줍니다), 노드 ID(선택 노드라면 선택한 항목의 항목 ID도)를 입력해 규칙 순서를 공유하세요. 선택 노드의 항목은 선택된 항목이 아니면 등급이 0이고, 선택한 영웅 특성 트리 밖의 영웅 특성과 플레이하지 않는 전문화의 특성도 등급이 0입니다. 목록에서 고른 특성은 해당 주문도 함께 기억하며, Blizzard가 특성 트리의 번호를 바꾸면 그 주문으로 다시 찾습니다. 등급은 특성이 바뀔 때마다 다시 읽으며, 읽을 수 없는 노드는 NOT 아래에서도 사용할 수 없음으로 처리됩니다.",
--- dc69c172 English: Talents of another specialization cannot be loaded during combat. A node ID
---     entered below is kept and evaluated.
-[3060] = "다른 전문화의 특성은 전투 중에 불러올 수 없습니다. 아래에 입력한 노드 ID는 그대로 유지되고 평가됩니다.",
--- 19d60de6 English: Opens the talent tree of the rotation's specialization. Click a talent to
---     choose it for this condition.
-[3061] = "로테이션 전문화의 특성 트리를 엽니다. 이 조건에 사용할 특성을 클릭하세요.",
--- f14a6d20 English: Show talent tree draws the talent tree of the specialization shown, with every
---     talent open to choose. Click a talent to choose it, or click the chosen one again to clear
---     it; the Talent list follows. It cannot open during combat.
-[3062] = "특성 트리 표시는 표시된 전문화의 특성 트리를 그려 모든 특성을 선택할 수 있게 합니다. 특성을 클릭해 선택하거나, 선택된 특성을 다시 클릭해 해제하세요. 특성 목록이 따라갑니다. 전투 중에는 열 수 없습니다.",
+--     specialization's, outside combat), or click the talent's icon to choose it from the talent
+--     tree. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside
+--     your chosen hero tree has rank zero, and so does a talent of a specialization you are not
+--     playing. A talent picked this way also remembers its spell, and is found again by it if
+--     Blizzard renumbers the talent tree. Ranks are read again after any talent change; an
+--     unreadable node is unavailable, including under NOT.
+[3059] = "리테일과 포에버는 활성화된 구성에 있는 특성의 등급을 비교합니다. 규칙 순서의 전문화에 속한 특성에서 고르거나(‘전문화’ 목록은 전투 중이 아닐 때 다른 전문화의 특성을 보여 줍니다), 특성 아이콘을 클릭해 특성 트리에서 고르세요. 선택 노드의 항목은 선택된 항목이 아니면 등급이 0이고, 선택한 영웅 특성 트리 밖의 영웅 특성과 플레이하지 않는 전문화의 특성도 등급이 0입니다. 이렇게 고른 특성은 해당 주문도 함께 기억하며, Blizzard가 특성 트리의 번호를 바꾸면 그 주문으로 다시 찾습니다. 등급은 특성이 바뀔 때마다 다시 읽으며, 읽을 수 없는 노드는 NOT 아래에서도 사용할 수 없음으로 처리됩니다.",
+-- c714c222 English: Talents of another specialization cannot be loaded during combat.
+[3060] = "다른 전문화의 특성은 전투 중에 불러올 수 없습니다.",
+-- 5ad8690c English: Click the talent's icon to open the talent tree, with every talent open to
+--     choose. Left-click a talent to add a rank and right-click to remove one, choose how the rank
+--     is compared, and press Accept; the lists follow. Choosing a different talent sets the
+--     previous one back to nothing. It cannot open during combat.
+[3062] = "특성 아이콘을 클릭하면 모든 특성을 선택할 수 있는 특성 트리가 열립니다. 특성을 왼쪽 클릭하면 등급이 오르고 오른쪽 클릭하면 내려갑니다. 등급을 비교하는 방식을 고른 뒤 수락을 누르세요. 목록이 따라갑니다. 다른 특성을 고르면 이전 특성은 선택 없음으로 돌아갑니다. 전투 중에는 열 수 없습니다.",
 -- 252b33d6 English: Forever is the exception: Talent tree is one of the three talent trees of your
 --     active loadout (in the order the talent window shows them); their points are read again after
 --     any talent change. Retail has no such trees.
@@ -11782,9 +11757,6 @@ addon.translation = {
 [3468] = "이 가져오기를 전체 표시할 수 없습니다 (%s).",
 -- e981ddae English: Warning
 [3469] = "경고",
--- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
---     condition.
-[3470] = "당신 직업의 특성 트리를 엽니다. 특성을 클릭하면 이 조건에 사용할 특성으로 선택됩니다.",
 -- a58da793 English: Metrics
 [3471] = "지표",
 -- 7d510fae English: Track how closely I follow the advice
@@ -11870,4 +11842,14 @@ addon.translation = {
 -- 689efd69 English: Delete what the forecast has learned about your spells (the auras they leave,
 --     the damage and healing they do). It starts learning again if the forecast is on.
 [3504] = "예측이 주문에 대해 학습한 내용(남기는 오라, 주는 피해와 치유)을 삭제합니다. 예측이 켜져 있으면 다시 학습을 시작합니다.",
+-- 89713b9c English: Accept
+[3505] = "수락",
+-- 4a39e2b0 English: Selected talent changed from %s to %s.
+[3506] = "선택한 특성이 %s에서 %s(으)로 바뀌었습니다.",
+-- f7a2f54e English: Left-click a talent to choose it, right-click to clear it.
+[3507] = "특성을 왼쪽 클릭하면 선택하고, 오른쪽 클릭하면 해제합니다.",
+-- b7df392f English: Left-click a talent to add a rank, right-click to remove one.
+[3508] = "특성을 왼쪽 클릭하면 등급이 1 오르고, 오른쪽 클릭하면 1 내려갑니다.",
+-- 16d3cbc4 English: Click to choose the talent from the talent tree.
+[3509] = "클릭하여 특성 트리에서 특성을 고릅니다.",
 }

@@ -336,8 +336,14 @@ test(
 )
 
 local function open(a, request)
-    request.onSelect = request.onSelect or function(selection)
-        request.picked = selection
+    request.onAccept = request.onAccept or function(result)
+        request.picked = {
+            node = result.selection.node,
+            entry = result.selection.entry,
+            spell = result.selection.spell,
+            name = result.name,
+            icon = result.icon,
+        }
     end
 
     local d = a:OpenTalentTree(request)
@@ -397,10 +403,7 @@ test(
 
         assert(d.handle.spec == FROST and d.handle.hero == 42 and #d.handle.heroes == 2)
 
-        assert(
-            d.status.text:find('Click a talent', 1, true) and d.status.text:find('Frozen Orb', 1, true),
-            d.status.text
-        )
+        assert(d.status.text:find('Left-click a talent', 1, true), d.status.text)
 
         assert(w.registry:Count() == 3, 'click, button and close callbacks registered')
         -- Closing puts Blizzard's window back.
@@ -693,7 +696,9 @@ test(
             end
         end
 
-        slot.scripts.OnClick(slot)
+        slot.scripts.OnClick(slot, 'LeftButton')
+        assert(d.pick.selection.node == 2203 and d.pick.rank == 1 and d.frame:IsShown(), 'a click only chooses')
+        d.OnAccept()
         assert(request.picked.node == 2203 and request.picked.spell == 257541 and not d.frame:IsShown())
 
         -- Closed: nothing is shown or registered.
@@ -780,32 +785,27 @@ local function editor(f, value, spec)
     return parent, top
 end
 
+-- The talent icon, which opens the tree when the client can show one.
 local function treeButton(parent)
     for _, w in ipairs(parent.children) do
         if w.layout == 'RM-IconRows' then
-            local last = w.children[#w.children]
+            local icon = w.children[1]
 
-            if last and last.text == 'Show talent tree' then
-                return last, w
+            if icon and icon.events and icon.events.OnClick then
+                return icon, w
             end
         end
     end
 end
 
 test(
-    'the button sits beside the Talent list on Retail and Forever and is absent where no provider can show a tree',
+    'the talent icon opens the tree on Retail and Forever and is a plain picture where no provider can show a tree',
     function()
         local f = client({ spec = FIRE })
         local parent = editor(f, {}, FIRE)
-        local button, box = treeButton(parent)
-        assert(button and box.children[#box.children - 1] == child(parent, 'Talent'), 'beside the list')
-
-        assert(
-            button.frame.tooltip:find('talent tree', 1, true)
-                and button:GetUserData('side') == true
-                and button.disabled == false
-        )
-
+        local icon, box = treeButton(parent)
+        assert(icon and box.children[1] == icon and icon.disabled ~= true, 'the icon is the first child of the block')
+        assert(child(parent, 'Talent Node ID') == nil and child(parent, 'Choice Entry ID') == nil, 'no ID boxes')
         f = client({ spec = FIRE }, { product = 18 })
         parent = editor(f, {}, FIRE)
         assert(treeButton(parent))
@@ -868,12 +868,6 @@ test(
         assert(value.operator == 'EQUALS' and value.value == 2, 'an existing comparison is kept')
         assert(top.statusText == 'Updated condition')
 
-        assert(
-            child(parent, 'Talent Node ID').text == '2204' and child(parent, 'Choice Entry ID').text == tostring(
-                Tree.entryID({ id = 2204 }, 2)
-            )
-        )
-
         talents.configure()
         assert(talents.list[talents.value].text:find('Kindling', 1, true), 'the list shows the picked talent')
         -- A first pick adopts the default comparison, like the list does.
@@ -893,7 +887,7 @@ test(
 )
 
 test(
-    'changing the talent in the list or the node box while the tree is open moves the tree\'s highlight; another editor\'s tree is not touched',
+    'changing the talent in the list while the tree is open moves the tree\'s highlight; another editor\'s tree is not touched',
     function()
         local state = { spec = FIRE, scale = 600 }
         local f, a = client(state, { window = { shown = false }, blizzard = false })
@@ -923,12 +917,11 @@ test(
 
         talents:Fire('OnValueChanged', combustion)
         assert(value.node == 2202 and selected() == 2202, 'the list moved the highlight')
-        child(parent, 'Talent Node ID'):Fire('OnEnterPressed', '2201')
-        assert(selected() == 2201, 'a typed node moved it too')
+        talents:Fire('OnValueChanged', combustion)
         -- Another editor's refresh does not reach this tree.
         local other = {}
         a:RefreshTalentTree(other, { node = 2203, spell = 257541 }, 'Phoenix Flames')
-        assert(selected() == 2201)
+        assert(selected() == 2202)
         a:CloseTalentTree(other)
         assert(d.frame:IsShown())
         -- Releasing the button (the editor closing) closes the tree.
@@ -982,7 +975,7 @@ test('the default is the drawn tree: Blizzard\'s window is an opt-in setting and
 end)
 
 test(
-    'the drawn tree is Blizzard\'s look with every talent choosable: green frames, the chosen one gold, no locked greying, pane titles',
+    'the drawn tree is Blizzard\'s look with every talent choosable: plain frames, the chosen one gold, no locked greying, pane titles',
     function()
         local state = { spec = FIRE, scale = 600 }
         local f, a, e = client(state, { blizzard = false, atlases = true, provider = false })
@@ -1023,11 +1016,11 @@ test(
                     others = others + 1
 
                     assert(
-                        slot.art.atlas:find('%-green$'),
-                        'the others read as choosable, never grey or locked: ' .. slot.art.atlas
+                        slot.art.atlas:find('%-gray$') and slot.rank.text == '0',
+                        'the others wear the plain frame, never green or locked, at rank zero: ' .. slot.art.atlas
                     )
 
-                    assert(not slot.art.atlas:find('gray') and not slot.art.atlas:find('locked'))
+                    assert(not slot.art.atlas:find('green') and not slot.art.atlas:find('locked'))
                 end
             end
         end
@@ -1098,38 +1091,126 @@ test(
     end
 )
 
-test('clicking the chosen talent again clears the condition\'s talent; clicking another replaces it', function()
-    local state = { spec = FIRE, scale = 600 }
-    local f, a = client(state, { blizzard = false, provider = false })
-    local value = { layout = 'traits', node = 2203, spell = 257541, operator = 'EQUALS', value = 2 }
-    local parent = editor(f, value, FIRE)
-    treeButton(parent):Fire('OnClick')
-    local d = a.talentTreeWindow
-    local chosen, other
+test(
+    'clicks add and remove ranks, another talent replaces the chosen one with a notice, and Accept writes the comparison',
+    function()
+        local state = { spec = FIRE, scale = 600 }
+        local f, a = client(state, { blizzard = false, provider = false })
+        local value = { layout = 'traits', node = 2203, spell = 257541, operator = 'GREATERTHAN', value = 1 }
+        local parent = editor(f, value, FIRE)
+        treeButton(parent):Fire('OnClick')
+        local d = a.talentTreeWindow
+        assert(d.pick.rank == 1 and d.pick.operator == 'GREATERTHAN', 'the saved comparison is shown')
+        assert(d.operatorButtons.GREATERTHAN.selected and not d.operatorButtons.EQUALS.selected)
 
-    for _, slot in ipairs(d.slots) do
-        if slot:IsShown() then
-            if slot.selected then
-                chosen = slot
-            elseif slot.data.node == 2202 then
-                other = slot
+        local function slotFor(node)
+            for _, slot in ipairs(d.slots) do
+                if slot:IsShown() and slot.data.node == node then
+                    return slot
+                end
             end
         end
+
+        local function click(slot, mouse)
+            slot.scripts.OnClick(slot, mouse or 'LeftButton')
+        end
+
+        click(slotFor(2203))
+        assert(d.pick.rank == 2 and slotFor(2203).rank.text == '2', 'a left click on the chosen talent adds a rank')
+        click(slotFor(2203))
+        assert(d.pick.rank == 2, 'up to its maximum')
+        click(slotFor(2203), 'RightButton')
+        click(slotFor(2203), 'RightButton')
+        click(slotFor(2203), 'RightButton')
+        assert(d.pick.rank == 0 and slotFor(2203).selected, 'rank zero keeps it chosen')
+        click(slotFor(2202), 'RightButton')
+        assert(d.pick.selection.node == 2203, 'a right click elsewhere does nothing')
+        click(slotFor(2202))
+
+        assert(
+            d.pick.selection.node == 2202 and d.pick.rank == 1 and slotFor(2202).selected and not slotFor(2203).selected
+        )
+
+        assert(slotFor(2203).rank.text == '0' and slotFor(2202).rank.text == '1')
+        assert(d.notice:GetText() == 'Selected talent changed from Phoenix Flames to Combustion.', d.notice:GetText())
+        assert(value.node == 2203, 'nothing is written before Accept')
+
+        d.operatorButtons.EQUALS.scripts.OnClick(d.operatorButtons.EQUALS)
+        assert(d.pick.operator == 'EQUALS' and d.operatorButtons.EQUALS.selected)
+        assert(d.summary:GetText() == 'Combustion is equal to 1', d.summary:GetText())
+        d.accept.scripts.OnClick(d.accept)
+        assert(not d.frame:IsShown() and value.node == 2202 and value.spell == 190319)
+        assert(value.operator == 'EQUALS' and value.value == 1 and a.definitions.TALENT.valid(0, value))
+
+        -- Closing without Accept writes nothing.
+        treeButton(parent):Fire('OnClick')
+        click(slotFor(2203))
+        d.frame:Hide()
+        assert(value.node == 2202 and value.value == 1)
+    end
+)
+
+test('the backdrop art is loaded the first time it is missing, once', function()
+    local state = { spec = FIRE, scale = 600 }
+    local f, a, e = client(state, { blizzard = false, provider = false, atlases = true })
+    local tries = {}
+
+    e.C_AddOns = {
+        LoadAddOn = function(name)
+            tries[#tries + 1] = name
+        end,
+    }
+
+    e.ClassTalentUtil = nil
+    local d = open(a, { spec = FIRE })
+    assert(d.mode == 'drawn' and tries[1] == 'Blizzard_PlayerSpells', 'loaded for its art: ' .. tostring(tries[1]))
+    d.frame:Hide()
+    d = open(a, { spec = FIRE })
+    assert(#tries == 2, 'tried once, not on every opening')
+    d.frame:Hide()
+end)
+
+test('on Forever each of the three trees is titled with the name of its node group', function()
+    local state = { spec = FIRE, scale = 600 }
+    local f, a, e = client(state, { product = 18, blizzard = false, provider = false })
+    e.PlayerUtil = { GetCurrentSpecID = function() return FIRE end }
+
+    e.C_Traits.GetGroupDisplayInfoByTreeID = function()
+        return {
+            { groupID = 11, orderIndex = 1, displayName = 'Elemental Combat', icon = 1 },
+            { groupID = 12, orderIndex = 2, displayName = 'Enhancement', icon = 2 },
+        }
     end
 
-    chosen.scripts.OnClick(chosen)
-    assert(not d.frame:IsShown() and value.node == nil and value.entry == nil and value.spell == nil)
-    assert(child(parent, 'Talent Node ID').text == '' and value.operator == 'EQUALS')
-    treeButton(parent):Fire('OnClick')
+    e.C_Traits.GetGroupCurrencyInfo = function()
+        return {}
+    end
 
-    for _, slot in ipairs(d.slots) do
-        if slot:IsShown() and slot.data.node == 2202 then
-            other = slot
+    local read = e.C_Traits.GetNodeInfo
+
+    e.C_Traits.GetNodeInfo = function(config, node)
+        local info = read(config, node)
+
+        if type(info) == 'table' and info.posX then
+            info.groupIDs = { info.posX < 1500 and 11 or 12 }
+        end
+
+        return info
+    end
+
+    local d = open(a, { spec = FIRE })
+    assert(d.mode == 'drawn', tostring(d.failure))
+    local titles = {}
+
+    for _, text in ipairs(d.paneLabels) do
+        if text:IsShown() then
+            titles[#titles + 1] = text.text
         end
     end
 
-    other.scripts.OnClick(other)
-    assert(value.node == 2202 and value.spell == 190319 and a.definitions.TALENT.valid(0, value))
+    table.sort(titles)
+    assert(table.concat(titles, ',') == 'Elemental Combat,Enhancement', table.concat(titles, ','))
+    d.frame:Hide()
 end)
 
 test(

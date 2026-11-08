@@ -6029,10 +6029,6 @@ T["Engraved Rune"] = 1892
 -- ea43639d
 -- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 T["ranks in %s"] = 1893
--- 1dd73b64
--- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
---     from.
-T["Show talent tree"] = 1894
 -- 3e590ed8
 -- Context: Heading label in the talent window and a source name in the talent condition editor for
 --     the hero talent trees.
@@ -6043,20 +6039,11 @@ T["The talent tree cannot be shown during combat."] = 1896
 T["Finish or discard the changes in your own talent window first."] = 1897
 -- da703663
 T["The talent tree cannot be shown right now. Use the Talent list instead."] = 1898
--- 80ea0eae
-T["Click a talent to choose it for this condition."] = 1899
--- 6f1df5fc
--- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
-T["Selected: %s"] = 1900
 -- 7a5e089f
 -- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
 T["Ranks: %d"] = 1901
 -- 26722619
 T["Choose one of the talents on this node."] = 1902
--- d9f6a964
-T["Click to choose this talent."] = 1903
--- ccb6e92e
-T["Click to clear this talent."] = 1904
 -- 8a667e66
 T["Close the build shown in your own talent window first."] = 1905
 -- 1f397413
@@ -8858,11 +8845,11 @@ T["Pick one of your known runes by equipment slot. The rune is saved by the firs
 T["Enter a spell the rune teaches, or the rune's own ID (its skill line ability ID) for a rune that teaches no spell. Entering one clears the other."] = 3043
 -- 868afb4d
 T["Engraving exists only on Season of Discovery realms. Elsewhere, and until your runes have loaded after logging in, this condition is unavailable rather than false, including under NOT. The Phase 7 shoulder runes are not engravings and are not seen. This is not the Death Knight Rune condition."] = 3044
--- 2cfaca8e
+-- 95d95ff8
 -- %s #1: %s #1: why the talents cannot be listed, a short code (shown as-is), e.g. "not-ready"
-T["Your talents cannot be listed right now (%s). A node ID entered below is kept and evaluated."] = 3045
--- 0d2b4c68
-T["Talents can be listed only for your own class. A node ID entered below is kept and evaluated."] = 3046
+T["Your talents cannot be listed right now (%s)."] = 3045
+-- 520dc742
+T["Talents can be listed only for your own class."] = 3046
 -- 7417e36a
 -- Context: Group heading in the talent dropdown: talents shared by all specializations of the
 --     class.
@@ -8892,13 +8879,6 @@ T["%s (choice)"] = 3053
 -- e8871b70
 -- Context: Fallback group heading in the talent dropdown when a talent group has no name.
 T["Talents"] = 3054
--- d6f5d4a1
--- Context: Label of the edit box in the talent condition: the numeric ID of the talent node.
-T["Talent Node ID"] = 3055
--- 3e359295
--- Context: Label of the edit box in the talent condition: the numeric ID of the entry chosen at a
---     choice node.
-T["Choice Entry ID"] = 3056
 -- 986b4c09
 -- Context: Fallback name for a talent whose name is not known; %s is the node ID, e.g. 'talent node
 --     12345'.
@@ -8907,14 +8887,12 @@ T["talent node %s"] = 3057
 -- 905d8751
 -- %s #1: %s #1: the name of the talent, e.g. "Arcane Power", or "talent node 82000"
 T["the number of ranks in %s"] = 3058
--- ddb10d64
-T["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked from the list also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."] = 3059
--- dc69c172
-T["Talents of another specialization cannot be loaded during combat. A node ID entered below is kept and evaluated."] = 3060
--- 19d60de6
-T["Opens the talent tree of the rotation's specialization. Click a talent to choose it for this condition."] = 3061
--- f14a6d20
-T["Show talent tree draws the talent tree of the specialization shown, with every talent open to choose. Click a talent to choose it, or click the chosen one again to clear it; the Talent list follows. It cannot open during combat."] = 3062
+-- 19823fd4
+T["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or click the talent's icon to choose it from the talent tree. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked this way also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."] = 3059
+-- c714c222
+T["Talents of another specialization cannot be loaded during combat."] = 3060
+-- 5ad8690c
+T["Click the talent's icon to open the talent tree, with every talent open to choose. Left-click a talent to add a rank and right-click to remove one, choose how the rank is compared, and press Accept; the lists follow. Choosing a different talent sets the previous one back to nothing. It cannot open during combat."] = 3062
 -- 252b33d6
 T["Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees."] = 3063
 -- bd69e217
@@ -10045,8 +10023,6 @@ T["These conditions cannot work on this client. They are kept as imported and th
 T["This import cannot be shown in full (%s)."] = 3468
 -- e981ddae
 T["Warning"] = 3469
--- a0d00587
-T["Opens the talent tree of your class. Click a talent to choose it for this condition."] = 3470
 -- a58da793
 T["Metrics"] = 3471
 -- 7d510fae
@@ -10115,6 +10091,16 @@ T["Fade the icons of predicted recommendations that the addon is less sure of. T
 T["Compare each forecast with what was highlighted when the time came: the second recommendation against the next highlight, the third against the one after, and so on. The totals appear in Metrics report and the exports, and the forecast's confidence is adjusted by how often it was right."] = 3503
 -- 689efd69
 T["Delete what the forecast has learned about your spells (the auras they leave, the damage and healing they do). It starts learning again if the forecast is on."] = 3504
+-- 89713b9c
+T["Accept"] = 3505
+-- 4a39e2b0
+T["Selected talent changed from %s to %s."] = 3506
+-- f7a2f54e
+T["Left-click a talent to choose it, right-click to clear it."] = 3507
+-- b7df392f
+T["Left-click a talent to add a rank, right-click to remove one."] = 3508
+-- 16d3cbc4
+T["Click to choose the talent from the talent tree."] = 3509
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

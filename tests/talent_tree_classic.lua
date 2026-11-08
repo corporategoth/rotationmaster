@@ -383,7 +383,11 @@ local function open(f, request)
         specs = { { id = 1, name = 'Elemental' }, { id = 2, name = 'Enhancement' }, { id = 3, name = 'Restoration' } },
         specLabel = 'Talent Tree',
         selection = request.selection,
-        onSelect = function(pick)
+        selectionName = request.selectionName,
+        rank = request.rank,
+        operator = request.operator,
+        ranked = true,
+        onAccept = function(pick)
             picks[#picks + 1] = pick
         end,
     })
@@ -393,8 +397,9 @@ end
 
 -- Clicks a button the way the game does.
 -- @param button table  The button.
-local function click(button)
-    button.scripts.OnClick(button)
+-- @param mouse string|nil  The mouse button; left by default.
+local function click(button, mouse)
+    button.scripts.OnClick(button, mouse or 'LeftButton')
 end
 
 local function shown(f, tab)
@@ -443,8 +448,8 @@ test(
 
         local gold = f.env[buttons[4]:GetName() .. 'Slot'].color
         assert(gold[1] == 1 and gold[2] > 0.8 and gold[3] == 0)
-        local green = f.env[buttons[1]:GetName() .. 'Slot'].color
-        assert(green[2] == 1 and green[1] < 0.2)
+        local plain = f.env[buttons[1]:GetName() .. 'Slot'].color
+        assert(plain[1] == plain[2] and plain[2] == plain[3] and plain[1] < 1, 'unchosen talents have a plain frame')
         local _, _, _, left, top = buttons[3]:GetPoint()
         assert(left == 2 * 63 + 35 and top == -20)
         -- Blizzard grayed the line (the lower half of its sheet); the first half is used.
@@ -456,18 +461,59 @@ test(
     end
 )
 
-test('a click chooses the talent and closes the window; clicking the saved talent again clears it', function()
+test('left-click adds a rank, choosing the talent first; right-click removes one; Accept reports the choice', function()
     local f = client(5, 1)
-    local window, picks = open(f, { selection = { tree = 1, talent = 4 } })
+
+    local window, picks = open(f, {
+        selection = { tree = 1, talent = 4 },
+        selectionName = 'Elemental Focus',
+        rank = 1,
+        operator = 'GREATERTHAN',
+    })
+
+    assert(window.pick.rank == 1 and window.pick.operator == 'GREATERTHAN', 'the saved comparison is shown')
     local buttons = shown(f)
+
+    click(buttons[4])
+    assert(window.pick.rank == 1, 'a one rank talent stops at its maximum')
+
     click(buttons[2])
-    assert(#picks == 1 and picks[1].tree == 1 and picks[1].talent == 2 and picks[1].name == 'Concussion')
-    assert(picks[1].icon == 136202)
-    assert(not window.frame:IsShown(), 'choosing closes the window')
+    assert(window.pick.selection.talent == 2 and window.pick.rank == 1 and window.pick.name == 'Concussion')
+    assert(window.noticeText == 'Selected talent changed from Elemental Focus to Concussion.')
+    assert(buttons[2].chosen:IsShown() and not buttons[4].chosen:IsShown(), 'the earlier talent is cleared')
+
+    click(buttons[2])
+    click(buttons[2])
+    assert(window.pick.rank == 3 and window.noticeText == nil)
+    click(buttons[2], 'RightButton')
+    assert(window.pick.rank == 2)
+
+    for _ = 1, 9 do
+        click(buttons[2], 'RightButton')
+    end
+
+    assert(window.pick.rank == 0 and window.pick.selection.talent == 2, 'rank zero keeps the talent chosen')
+
+    for _ = 1, 9 do
+        click(buttons[2])
+    end
+
+    assert(window.pick.rank == 5, 'a talent stops at its maximum rank')
+    click(buttons[1], 'RightButton')
+    assert(window.pick.selection.talent == 2, 'a right click on another talent does nothing')
+
+    window.pick.operator = 'EQUALS'
+    assert(#picks == 0, 'nothing is written until Accept')
+    window.OnAccept()
+    local pick = picks[1]
+    assert(pick and pick.selection.tree == 1 and pick.selection.talent == 2 and pick.rank == 5)
+    assert(pick.operator == 'EQUALS' and pick.name == 'Concussion' and pick.icon == 136202)
+    assert(not window.frame:IsShown(), 'accepting closes the window')
 
     window, picks = open(f, { selection = { tree = 1, talent = 4 } })
-    click(shown(f)[4])
-    assert(#picks == 1 and picks[1] == false)
+    assert(window.pick.operator == 'EQUALS', 'the comparison starts at equals')
+    window.frame:Hide()
+    assert(#picks == 0, 'closing without Accept writes nothing')
 end)
 
 test('another tab loads that tree and a pick on it names the tab', function()
@@ -478,7 +524,8 @@ test('another tab loads that tree and a pick on it names the tab', function()
     assert(#buttons == 1 and window.handle.spec == 2)
     assert(not buttons[1].chosen:IsShown(), 'the saved talent belongs to tree 1')
     click(buttons[1])
-    assert(picks[1].tree == 2 and picks[1].talent == 1)
+    window.OnAccept()
+    assert(picks[1].selection.tree == 2 and picks[1].selection.talent == 1)
 end)
 
 test('the tooltip is the game\'s own talent tooltip, and closing hides the tree and drops the handlers', function()
@@ -512,7 +559,9 @@ test('on Mists, Blizzard\'s rows are laid out, every talent is selectable and a 
     local window = a:OpenTalentTree({
         owner = {},
         selection = { slot = 4 },
-        onSelect = function(pick)
+        selectionName = 'Talent 4',
+        ranked = false,
+        onAccept = function(pick)
             picks[#picks + 1] = pick
         end,
     })
@@ -527,14 +576,22 @@ test('on Mists, Blizzard\'s rows are laid out, every talent is selectable and a 
         assert(button.knownSelection:IsShown() == (index == 4), 'only the saved slot is marked')
     end
 
-    buttons[5].scripts.OnClick(buttons[5])
-    assert(#picks == 1 and picks[1].slot == 5 and picks[1].name == 'Talent 5' and picks[1].icon == 5005)
+    buttons[5].scripts.OnClick(buttons[5], 'LeftButton')
+
+    assert(
+        window.pick.selection.slot == 5 and window.noticeText == 'Selected talent changed from Talent 4 to Talent 5.'
+    )
+
+    window.OnAccept()
+    assert(#picks == 1 and picks[1].selection.slot == 5 and picks[1].name == 'Talent 5' and picks[1].icon == 5005)
     assert(not window.frame:IsShown())
 
     window = a:OpenTalentTree({
         owner = {},
         selection = { slot = 4 },
-        onSelect = function(pick)
+        selectionName = 'Talent 4',
+        ranked = false,
+        onAccept = function(pick)
             picks[#picks + 1] = pick
         end,
     })
@@ -542,8 +599,8 @@ test('on Mists, Blizzard\'s rows are laid out, every talent is selectable and a 
     assert(buttons[4].scripts.OnEvent == nil and buttons[4].scripts.OnDragStart == nil)
     buttons[4].scripts.OnEnter(buttons[4])
     assert(f.tip.talent[1] == 1004 and f.tip.talent[2] == false)
-    buttons[4].scripts.OnClick(buttons[4])
-    assert(picks[2] == false)
+    buttons[4].scripts.OnClick(buttons[4], 'RightButton')
+    assert(window.pick.selection == nil, 'a right click clears the choice')
 end)
 
 finish()

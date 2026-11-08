@@ -13,7 +13,7 @@ local platform = addon.Platform
 local NAME = 'RotationMasterClassicTalentTree'
 local WIDTH, TOP, BUTTON_SIZE = 320, 20, 32
 local BRANCH_TEXTURES, ARROW_TEXTURES = 30, 30
-local GREEN, GOLD = { 0.1, 1.0, 0.1 }, { 1.0, 0.82, 0.0 }
+local PLAIN, GOLD = { 0.75, 0.75, 0.75 }, { 1.0, 0.82, 0.0 }
 
 local classic = { families = { era = true, tbc = true, progression = true }, priority = 50 }
 local grid = { families = { progression = true }, priority = 50 }
@@ -128,7 +128,8 @@ local function build(parent)
 
         button:SetID(index)
         button:Hide()
-        button:RegisterForClicks('LeftButtonUp')
+        button:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
+        button.rmOwnsRightClick = true
         button.chosen = button:CreateTexture(nil, 'OVERLAY')
         button.chosen:SetTexture('Interface\\Buttons\\UI-ActionButton-Border')
         button.chosen:SetBlendMode('ADD')
@@ -176,16 +177,18 @@ local function lighten(texture)
     end
 end
 
--- Shows one talent button as selectable: not grayed, its rank visible, gold when it is the saved talent, green otherwise.
+-- Shows one talent button as open to choose: not grayed, its rank visible (the rank being chosen for the chosen talent,
+-- zero for the rest), gold when it is the chosen talent, plain otherwise.
 -- @param button table  The talent button.
--- @param chosen boolean  Whether it is the saved talent.
-local function paint(button, chosen)
+-- @param chosen boolean  Whether it is the chosen talent.
+-- @param rank number|nil  The rank shown on the chosen talent; nil shows no rank on any button.
+local function paint(button, chosen, rank)
     if type(SetItemButtonDesaturated) == 'function' then
         SetItemButtonDesaturated(button, nil)
     end
 
-    local color = chosen and GOLD or GREEN
-    local slot, rank = _G[button:GetName() .. 'Slot'], _G[button:GetName() .. 'Rank']
+    local color = chosen and GOLD or PLAIN
+    local slot, rankText = _G[button:GetName() .. 'Slot'], _G[button:GetName() .. 'Rank']
     local border = _G[button:GetName() .. 'RankBorder']
 
     if slot then
@@ -197,9 +200,14 @@ local function paint(button, chosen)
         border:Show()
     end
 
-    if rank then
-        rank:SetTextColor(color[1], color[2], color[3])
-        rank:Show()
+    if rankText then
+        if rank then
+            rankText:SetText(tostring(chosen and rank or 0))
+            rankText:SetTextColor(chosen and GOLD[1] or 1, chosen and GOLD[2] or 1, chosen and GOLD[3] or 1)
+            rankText:Show()
+        else
+            rankText:Hide()
+        end
     end
 
     visible(button.chosen, chosen)
@@ -209,9 +217,10 @@ end
 -- @param frame table  The frame.
 -- @param tree number  The tree (tab) index.
 -- @param group number|nil  The talent group.
--- @param selection table|nil  The saved { tree, talent }.
+-- @param selection table|nil  The chosen { tree, talent }.
+-- @param rank number|nil  The rank chosen for it; nil when the condition has no rank.
 -- @return number|nil  The height the frame needs; nil when Blizzard's code failed.
-local function show(frame, tree, group, selection)
+local function show(frame, tree, group, selection, rank)
     frame.selectedTab = tree
     frame.talentTree = tree
     frame.talentGroup = group or C_SpecializationInfo.GetActiveSpecGroup(false, false)
@@ -234,7 +243,7 @@ local function show(frame, tree, group, selection)
         if button:IsShown() then
             local _, _, _, _, y = button:GetPoint()
             lowest = math.min(lowest, y or 0)
-            paint(button, selection and selection.tree == tree and selection.talent == index)
+            paint(button, selection and selection.tree == tree and selection.talent == index, rank)
         end
     end
 
@@ -277,7 +286,13 @@ function classic.open(ctx)
             tree = 1
         end
 
-        local height = show(frame, tree, context.group, context.selection)
+        local height = show(
+            frame,
+            tree,
+            context.group,
+            context.selection,
+            context.ranked ~= false and context.rank or nil
+        )
 
         if not height then
             return nil, 'talent-window-unavailable'
@@ -289,17 +304,19 @@ function classic.open(ctx)
         frame:Show()
 
         for _, button in ipairs(frame.buttons) do
-            -- Chooses this talent, or clears the choice when it is the saved one.
+            -- Adds a rank to this talent with a left click, removes one with a right click.
             -- @param self table  The button.
-            addon:SetUIScript(button, 'OnClick', function(self)
+            -- @param mouse string  The mouse button.
+            addon:SetUIScript(button, 'OnClick', function(self, mouse)
                 local info = platform:GetTreeTalentInfo(tree, self:GetID(), context.group)
 
-                if
-                    context.selection and context.selection.tree == tree and context.selection.talent == self:GetID()
-                then
-                    context.onSelect(false)
-                elseif info then
-                    context.onSelect({ tree = tree, talent = self:GetID(), name = info.name, icon = info.icon })
+                if info then
+                    context.onClick({
+                        key = { tree = tree, talent = self:GetID() },
+                        name = info.name,
+                        icon = info.icon,
+                        maxRanks = info.maxRank,
+                    }, mouse == 'RightButton' and -1 or 1, context.selection ~= nil and context.selection.tree == tree and context.selection.talent == self:GetID())
                 end
             end)
 
@@ -394,7 +411,8 @@ local function buildGrid(parent)
         frame.rows[tier] = row
 
         for column = 1, 3 do
-            row['talent' .. column]:RegisterForClicks('LeftButtonUp')
+            row['talent' .. column]:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
+            row['talent' .. column].rmOwnsRightClick = true
         end
     end
 
@@ -474,15 +492,20 @@ function grid.open(ctx)
             for column = 1, 3 do
                 local button = row['talent' .. column]
 
-                -- Chooses this talent, or clears the choice when it is the saved one.
-                addon:SetUIScript(button, 'OnClick', function()
+                -- Chooses this talent with a left click, clears the choice with a right click.
+                -- @param _ table  The button.
+                -- @param mouse string  The mouse button.
+                addon:SetUIScript(button, 'OnClick', function(_, mouse)
                     local slot = (row:GetID() - 1) * 3 + column
                     local info = platform:GetGridTalentInfo(slot, context.group)
 
-                    if context.selection and context.selection.slot == slot then
-                        context.onSelect(false)
-                    elseif info then
-                        context.onSelect({ slot = slot, name = info.name, icon = info.icon })
+                    if info then
+                        context.onClick({
+                            key = { slot = slot },
+                            name = info.name,
+                            icon = info.icon,
+                            maxRanks = 1,
+                        }, mouse == 'RightButton' and -1 or 1, context.selection ~= nil and context.selection.slot == slot)
                     end
                 end)
 

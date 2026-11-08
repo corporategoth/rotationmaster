@@ -110,7 +110,7 @@ function platform:GetTalentTreeProviders()
     return list
 end
 
--- Whether the editors should offer the "Show talent tree" button.
+-- Whether the editors should open a talent tree from the talent icon.
 -- @return boolean  True when at least one registered provider is available on this client right now.
 function platform:HasTalentTreeProvider()
     return #self:GetTalentTreeProviders() > 0
@@ -259,7 +259,9 @@ end
 --   inspected build.
 -- @return table|nil  The view, or nil when it cannot be read:
 --   { spec, config, tree, source, order = {nodeID...}, index = {[nodeID]=position},
---     nodes = {[nodeID]={id, x, y, kind, maxRanks, entries={entryID...}, hero, edges={nodeID...}, visible}},
+--     nodes = {[nodeID]={id, x, y, kind, maxRanks, entries={entryID...}, hero, edges={nodeID...}, groups={groupID...},
+--       visible}},
+--     groups = {{groupID, name, icon, order}...} on Forever (its classic trees), else nil,
 --     heroes = {{id, name, node, position, entry}...} }
 -- @return string|nil  The reason code when the first return is nil; nil otherwise.
 --
@@ -354,7 +356,16 @@ function platform:GetTraitView(specID, options)
                 y = readable(info.posY) and type(info.posY) == 'number' and info.posY or 0,
                 hero = readable(info.subTreeID) and traitID(info.subTreeID) and info.subTreeID or nil,
                 edges = {},
+                groups = {},
             }
+
+            if readable(info.groupIDs) and type(info.groupIDs) == 'table' then
+                for _, group in ipairs(info.groupIDs) do
+                    if traitID(group) then
+                        record.groups[#record.groups + 1] = group
+                    end
+                end
+            end
 
             if readable(info.visibleEdges) and type(info.visibleEdges) == 'table' then
                 for _, edge in ipairs(info.visibleEdges) do
@@ -444,6 +455,12 @@ function platform:GetTraitView(specID, options)
 
     if count == 0 then
         return nil, failure or 'talent-tree-unavailable'
+    end
+
+    -- Forever's classic trees are node groups of this one tree: each has a name and an icon, and its nodes list its id.
+    -- Retail has none (its panes are the class, hero and specialization trees).
+    if source == 'active' then
+        view.groups = self:GetTraitTreeGroups(config, tree)
     end
 
     return view

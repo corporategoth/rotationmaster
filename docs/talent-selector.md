@@ -1,7 +1,7 @@
 # Talent selector
 
-How the TALENT condition picks a talent on each client, what the "Show talent tree" window is, and what is deliberately not
-there. Written from the pinned Blizzard UI source (`docs/quality/client-api-sources.json`: live 12.1.5.70575, forever
+How the TALENT condition picks a talent on each client, what the talent tree window is (opened by clicking the talent's
+icon), and what is deliberately not there. Written from the pinned Blizzard UI source (`docs/quality/client-api-sources.json`: live 12.1.5.70575, forever
 1.60.1.70532, classic 5.5.4.70579, classic_era 1.15.9.70003, classic_anniversary 2.5.6.70006) and the committed client API
 manifests. Only the Retail window has been seen in a real client (section 5); everything else is verified against models of the
 documented API, and the claims below say which.
@@ -23,8 +23,8 @@ longer holds it (Blizzard renumbered the tree). A reference without `spell` eval
 
 The lists are the picker on every client (`Conditions/talent.lua` `block`, laid out by `UI/condition_layout.lua`
 `layoutIconRows`, tested by `tests/talent_picker_layout.lua`): the talent's icon is the left column and spans two rows (a question
-mark until a talent is chosen), the upper list and the talent list sit to its right, and the "Show talent tree" button sits beside
-the talent list when the pane has room, else under the rows.
+mark until a talent is chosen), the upper list and the talent list sit to its right. Where a provider can show a tree, a click on the
+icon opens it (section 3); there is no separate button and there are no boxes for a node or entry ID.
 
 | Client | Upper list | Talent list |
 | --- | --- | --- |
@@ -52,8 +52,7 @@ What is read, and what is not (`Platform/talents.lua`):
 * Class and specialization talents are split by the talent window's own columns (class tree left, specialization tree right, a gap
   between); with no clean gap they stay one group, "Class and specialization talents", rather than guess.
 * No Retail return in the talent APIs is documented secret; every value is still read through `CanReadValue`.
-* When nothing can be listed the editor says why, with the reason code, and the tree button is disabled; the node and entry IDs
-  stay editable.
+* When nothing can be listed the editor says why, with the reason code, and the icon does not open the tree.
 
 `/rm debug talents [views]` writes a report of each call and what it answered (raw error text included) into a copyable window and
 `RotationMasterDB.diagnostics.talents`; `views` also reads every other specialization of the class (`Diagnostics/talents.lua`). It is
@@ -93,11 +92,33 @@ tree is on the left, the chosen hero tree in the middle and the specialization t
 already put them there), with a title over each pane, a choice node as its two entries at half size, the rank count on a multi-rank
 talent, faint lines between linked talents, all scaled to fit.
 
-Every talent shows in the green "selectable" frame: the tree is read as it stands and never shows the player's own purchased
-talents, and the saved talent is the one gold frame with a glow. Hover gives `GameTooltip:SetSpellByID` plus the ranks, a note on a
-choice node and what a click does; a click chooses the talent and closes the window; clicking the chosen one clears it (the node,
-entry and spell are emptied). Escape and right click close it; the window takes the global UI scale. It is built lazily on first open,
-reuses its frames and has no `OnUpdate`. Nothing is read in combat.
+Every talent wears the plain (`-gray`) frame, its icon in full color: the tree is read as it stands and never shows the player's own
+purchased talents, and the chosen talent is the one gold frame with a glow. Each shows its rank, zero for every talent but the chosen
+one. Lines between linked talents are Blizzard's `talents-arrow-line-gray` with a `talents-arrow-head-gray` at the talent they lead to
+(plain lines where the client lacks the art). On Forever the three classic trees are the node groups of the class tree
+(`C_Traits.GetGroupDisplayInfoByTreeID`, each node's `groupIDs`), and each is titled with its group's name; on Retail the panes are
+the class, hero and specialization trees. The backdrop comes from `ClassTalentUtil`, which lives in Blizzard's load-on-demand talent
+UI, so the first time it is missing RM loads `Blizzard_PlayerSpells` (and `Blizzard_ClassTalentUI`), once per session, outside combat.
+
+Hover gives `GameTooltip:SetSpellByID` plus the ranks, a note on a choice node and what a click does. The window takes the global UI
+scale, is built lazily on first open, reuses its frames and has no `OnUpdate`. Nothing is read in combat.
+
+### Choosing a talent, a rank and a comparison (every provider except Blizzard's window)
+
+The tree edits a working copy, and the condition changes only when the player presses Accept (Cancel, the close button, Escape and a
+right click outside a talent leave it as it was):
+
+* A left click on the chosen talent adds a rank, up to its maximum; a right click removes one, down to zero (the talent stays chosen
+  at rank zero, which is a real comparison). A left click on another talent chooses it at rank one and sets the previous one back to
+  nothing, with a notice under the tree ("Selected talent changed from X to Y."); a right click on a talent that is not chosen does
+  nothing. Talents are marked `rmOwnsRightClick`, so the window's right-click-to-close leaves them alone.
+* Under the tree the five comparisons are spelled out (is less than, is less than or equal to, is equal to, is greater than or equal
+  to, is greater than), defaulting to is equal to, or to the comparison already saved; a line states the whole condition ("Combustion
+  is equal to 1"). Accept is off until a talent is chosen. The strip is one row of five buttons, or two rows in a narrow window.
+* Accept writes the talent exactly as the dropdowns do plus the operator and the number. Mists has no rank or comparison: a left click
+  chooses the slot and a right click clears it, and nothing but the slot is written.
+* Blizzard's own window (the opt-in provider) has no room for the strip: a click there reports the talent and closes the window, and
+  the saved comparison is left as it was.
 
 ### Blizzard's talent window (opt-in)
 
@@ -151,14 +172,15 @@ scripts call (`Classic/Blizzard_TalentUITemplates.xml`), so a click reports the 
 What Blizzard's update does that the picker undoes afterwards (the point of using the layout and not the graying):
 
 * A talent with no points, a locked tier or an unmet prerequisite is desaturated, its slot gray and its rank hidden. RM clears the
-  desaturation, paints every slot green (gold for the saved talent, with a glow ring) and shows the rank border and rank.
+  desaturation, paints every slot plain (gold for the chosen talent, with a glow ring) and shows the rank border and the rank being chosen
+  (zero on the others).
 * Lines and arrows for an unreachable talent use the lower half of the branch sheet. RM moves their texture coordinates back to the
   upper half (`lighten`), so no line looks locked.
 * The tree needs no scrolling: the frame is as tall as the lowest button, the four background pieces are anchored to its corners.
 
 The tab buttons are the window's specialization row (labeled "Talent Tree"), one per tree. Choosing a talent writes `tree`,
-`talent` and `layout="tree"` as the dropdowns do, and the lists follow; clicking the saved talent clears the talent and keeps the
-tree. The button is offered only for the player's own class (the game answers for no other).
+`talent`, the comparison and the number, with `layout="tree"` as the dropdowns do, and the lists follow. The tree opens from the talent
+icon only for the player's own class (the game answers for no other).
 
 Cataclysm is the same provider: `Cata/TalentFrameBase.lua` is parameterized (button size, offsets and spacing come from the frame,
 the buttons find `Slot`, `Rank` and `RankBorder` by parent key and name) and needs no points text or scroll button. It has 28 buttons

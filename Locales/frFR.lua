@@ -6336,10 +6336,6 @@ addon.translation = {
 -- ea43639d English: ranks in %s
 -- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [1893] = "rangs dans %s",
--- 1dd73b64 English: Show talent tree
--- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
---     from.
-[1894] = "Afficher l'arbre de talents",
 -- 3e590ed8 English: Hero Talents
 -- Context: Heading label in the talent window and a source name in the talent condition editor for
 --     the hero talent trees.
@@ -6350,20 +6346,11 @@ addon.translation = {
 [1897] = "Terminez ou annulez d'abord les modifications de votre propre fenêtre de talents.",
 -- da703663 English: The talent tree cannot be shown right now. Use the Talent list instead.
 [1898] = "L'arbre de talents ne peut pas être affiché pour le moment. Utilisez plutôt la liste des talents.",
--- 80ea0eae English: Click a talent to choose it for this condition.
-[1899] = "Cliquez sur un talent pour le choisir pour cette condition.",
--- 6f1df5fc English: Selected: %s
--- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
-[1900] = "Sélectionné : %s",
 -- 7a5e089f English: Ranks: %d
 -- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
 [1901] = "Rangs : %d",
 -- 26722619 English: Choose one of the talents on this node.
 [1902] = "Choisissez l'un des talents de ce nœud.",
--- d9f6a964 English: Click to choose this talent.
-[1903] = "Cliquez pour choisir ce talent.",
--- ccb6e92e English: Click to clear this talent.
-[1904] = "Cliquez pour effacer ce talent.",
 -- 8a667e66 English: Close the build shown in your own talent window first.
 [1905] = "Fermez d'abord la configuration affichée dans votre propre fenêtre de talents.",
 -- 1f397413 English: Initial
@@ -10452,13 +10439,11 @@ addon.translation = {
 --     including under NOT. The Phase 7 shoulder runes are not engravings and are not seen. This is
 --     not the Death Knight Rune condition.
 [3044] = "La gravure n'existe que sur les royaumes de Saison de la découverte. Ailleurs, et tant que vos runes ne sont pas chargées après la connexion, cette condition est indisponible plutôt que fausse, y compris sous NOT. Les runes d'épaulières de la phase 7 ne sont pas des gravures et ne sont pas détectées. Ce n'est pas la condition Rune du chevalier de la mort.",
--- 2cfaca8e English: Your talents cannot be listed right now (%s). A node ID entered below is kept
---     and evaluated.
+-- 95d95ff8 English: Your talents cannot be listed right now (%s).
 -- %s #1: %s #1: why the talents cannot be listed, a short code (shown as-is), e.g. "not-ready"
-[3045] = "Vos talents ne peuvent pas être listés pour le moment (%s). Un ID de nœud saisi ci-dessous est conservé et évalué.",
--- 0d2b4c68 English: Talents can be listed only for your own class. A node ID entered below is kept
---     and evaluated.
-[3046] = "Les talents ne peuvent être listés que pour votre propre classe. Un ID de nœud saisi ci-dessous est conservé et évalué.",
+[3045] = "Vos talents ne peuvent pas être listés pour le moment (%s).",
+-- 520dc742 English: Talents can be listed only for your own class.
+[3046] = "Les talents ne peuvent être listés que pour votre propre classe.",
 -- 7417e36a English: Class talents
 -- Context: Group heading in the talent dropdown: talents shared by all specializations of the
 --     class.
@@ -10488,13 +10473,6 @@ addon.translation = {
 -- e8871b70 English: Talents
 -- Context: Fallback group heading in the talent dropdown when a talent group has no name.
 [3054] = "Talents",
--- d6f5d4a1 English: Talent Node ID
--- Context: Label of the edit box in the talent condition: the numeric ID of the talent node.
-[3055] = "ID du nœud de talent",
--- 3e359295 English: Choice Entry ID
--- Context: Label of the edit box in the talent condition: the numeric ID of the entry chosen at a
---     choice node.
-[3056] = "ID de l'entrée de choix",
 -- 986b4c09 English: talent node %s
 -- Context: Fallback name for a talent whose name is not known; %s is the node ID, e.g. 'talent node
 --     12345'.
@@ -10503,25 +10481,22 @@ addon.translation = {
 -- 905d8751 English: the number of ranks in %s
 -- %s #1: %s #1: the name of the talent, e.g. "Arcane Power", or "talent node 82000"
 [3058] = "le nombre de rangs dans %s",
--- ddb10d64 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
+-- 19823fd4 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
 --     from the talents of the rotation's specialization (the Specialization list shows another
---     specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID
---     of the choice) to share a rotation. A choice node's entry has rank zero unless it is the
---     chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent
---     of a specialization you are not playing. A talent picked from the list also remembers its
---     spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again
---     after any talent change; an unreadable node is unavailable, including under NOT.
-[3059] = "Retail et Forever comparent le rang d'un talent de votre configuration active. Choisissez-le parmi les talents de la spécialisation de la rotation (la liste « Spécialisation » affiche celle d'une autre spécialisation, hors combat), ou saisissez l'ID du nœud (et, pour un nœud à choix, l'ID de l'entrée choisie) pour partager une rotation. L'entrée d'un nœud à choix a le rang zéro si ce n'est pas celle qui est choisie, un talent de héros hors de votre arbre de héros choisi a le rang zéro, tout comme un talent d'une spécialisation que vous ne jouez pas. Un talent choisi dans la liste mémorise aussi son sort et est retrouvé grâce à lui si Blizzard renumérote l'arbre de talents. Les rangs sont relus après chaque changement de talents ; un nœud illisible est indisponible, y compris sous NOT.",
--- dc69c172 English: Talents of another specialization cannot be loaded during combat. A node ID
---     entered below is kept and evaluated.
-[3060] = "Les talents d'une autre spécialisation ne peuvent pas être chargés en combat. L'ID de nœud saisi ci-dessous est conservé et évalué.",
--- 19d60de6 English: Opens the talent tree of the rotation's specialization. Click a talent to
---     choose it for this condition.
-[3061] = "Ouvre l'arbre de talents de la spécialisation de la rotation. Cliquez sur un talent pour le choisir pour cette condition.",
--- f14a6d20 English: Show talent tree draws the talent tree of the specialization shown, with every
---     talent open to choose. Click a talent to choose it, or click the chosen one again to clear
---     it; the Talent list follows. It cannot open during combat.
-[3062] = "Afficher l'arbre de talents dessine l'arbre de talents de la spécialisation affichée, tous les talents pouvant être choisis. Cliquez sur un talent pour le choisir, ou sur le talent choisi pour l'effacer ; la liste des talents suit. Impossible de l'ouvrir en combat.",
+--     specialization's, outside combat), or click the talent's icon to choose it from the talent
+--     tree. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside
+--     your chosen hero tree has rank zero, and so does a talent of a specialization you are not
+--     playing. A talent picked this way also remembers its spell, and is found again by it if
+--     Blizzard renumbers the talent tree. Ranks are read again after any talent change; an
+--     unreadable node is unavailable, including under NOT.
+[3059] = "Retail et Forever comparent le rang d'un talent de votre configuration active. Choisissez-le parmi les talents de la spécialisation de la rotation (la liste « Spécialisation » affiche celle d'une autre spécialisation, hors combat), ou cliquez sur l'icône du talent pour le choisir dans l'arbre de talents. L'entrée d'un nœud à choix a le rang zéro si ce n'est pas celle qui est choisie, un talent de héros hors de votre arbre de héros choisi a le rang zéro, tout comme un talent d'une spécialisation que vous ne jouez pas. Un talent choisi ainsi mémorise aussi son sort et est retrouvé grâce à lui si Blizzard renumérote l'arbre de talents. Les rangs sont relus après chaque changement de talents ; un nœud illisible est indisponible, y compris sous NOT.",
+-- c714c222 English: Talents of another specialization cannot be loaded during combat.
+[3060] = "Les talents d'une autre spécialisation ne peuvent pas être chargés en combat.",
+-- 5ad8690c English: Click the talent's icon to open the talent tree, with every talent open to
+--     choose. Left-click a talent to add a rank and right-click to remove one, choose how the rank
+--     is compared, and press Accept; the lists follow. Choosing a different talent sets the
+--     previous one back to nothing. It cannot open during combat.
+[3062] = "Cliquez sur l'icône du talent pour ouvrir l'arbre de talents, tous les talents pouvant être choisis. Clic gauche sur un talent pour ajouter un rang, clic droit pour en retirer un ; choisissez comment le rang est comparé, puis appuyez sur Accepter ; les listes suivent. Choisir un autre talent remet le précédent à rien. Impossible de l'ouvrir en combat.",
 -- 252b33d6 English: Forever is the exception: Talent tree is one of the three talent trees of your
 --     active loadout (in the order the talent window shows them); their points are read again after
 --     any talent change. Retail has no such trees.
@@ -11782,9 +11757,6 @@ addon.translation = {
 [3468] = "Cet import ne peut pas être affiché en entier (%s).",
 -- e981ddae English: Warning
 [3469] = "Avertissement",
--- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
---     condition.
-[3470] = "Ouvre l'arbre de talents de votre classe. Cliquez sur un talent pour le choisir pour cette condition.",
 -- a58da793 English: Metrics
 [3471] = "Métriques",
 -- 7d510fae English: Track how closely I follow the advice
@@ -11870,4 +11842,14 @@ addon.translation = {
 -- 689efd69 English: Delete what the forecast has learned about your spells (the auras they leave,
 --     the damage and healing they do). It starts learning again if the forecast is on.
 [3504] = "Supprime ce que la prévision a appris sur vos sorts (les auras qu'ils laissent, les dégâts et les soins qu'ils produisent). Elle recommence à apprendre si la prévision est activée.",
+-- 89713b9c English: Accept
+[3505] = "Accepter",
+-- 4a39e2b0 English: Selected talent changed from %s to %s.
+[3506] = "Le talent choisi est passé de %s à %s.",
+-- f7a2f54e English: Left-click a talent to choose it, right-click to clear it.
+[3507] = "Clic gauche sur un talent pour le choisir, clic droit pour l'effacer.",
+-- b7df392f English: Left-click a talent to add a rank, right-click to remove one.
+[3508] = "Clic gauche sur un talent pour ajouter un rang, clic droit pour en retirer un.",
+-- 16d3cbc4 English: Click to choose the talent from the talent tree.
+[3509] = "Cliquez pour choisir le talent dans l'arbre de talents.",
 }

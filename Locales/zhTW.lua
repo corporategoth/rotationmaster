@@ -6336,10 +6336,6 @@ addon.translation = {
 -- ea43639d English: ranks in %s
 -- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [1893] = "%s 的天賦等級",
--- 1dd73b64 English: Show talent tree
--- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
---     from.
-[1894] = "顯示天賦樹",
 -- 3e590ed8 English: Hero Talents
 -- Context: Heading label in the talent window and a source name in the talent condition editor for
 --     the hero talent trees.
@@ -6350,20 +6346,11 @@ addon.translation = {
 [1897] = "請先完成或放棄你自己天賦視窗中的變更。",
 -- da703663 English: The talent tree cannot be shown right now. Use the Talent list instead.
 [1898] = "目前無法顯示天賦樹。請改用天賦清單。",
--- 80ea0eae English: Click a talent to choose it for this condition.
-[1899] = "點擊一個天賦，即可為此條件選擇它。",
--- 6f1df5fc English: Selected: %s
--- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
-[1900] = "已選擇：%s",
 -- 7a5e089f English: Ranks: %d
 -- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
 [1901] = "等級：%d",
 -- 26722619 English: Choose one of the talents on this node.
 [1902] = "請選擇此節點上的其中一個天賦。",
--- d9f6a964 English: Click to choose this talent.
-[1903] = "點擊以選擇此天賦。",
--- ccb6e92e English: Click to clear this talent.
-[1904] = "點擊以清除此天賦。",
 -- 8a667e66 English: Close the build shown in your own talent window first.
 [1905] = "請先關閉你自己天賦視窗中顯示的配置。",
 -- 1f397413 English: Initial
@@ -10452,13 +10439,11 @@ addon.translation = {
 --     including under NOT. The Phase 7 shoulder runes are not engravings and are not seen. This is
 --     not the Death Knight Rune condition.
 [3044] = "銘刻只存在於探索賽季伺服器。在其他情況下，以及登入後你的符文載入完成之前，此條件無法使用而不是為假，在 NOT 下同樣如此。第七階段的肩部符文不是銘刻，不會被辨識。這不是死亡騎士的符文條件。",
--- 2cfaca8e English: Your talents cannot be listed right now (%s). A node ID entered below is kept
---     and evaluated.
+-- 95d95ff8 English: Your talents cannot be listed right now (%s).
 -- %s #1: %s #1: why the talents cannot be listed, a short code (shown as-is), e.g. "not-ready"
-[3045] = "目前無法列出你的天賦（%s）。下方輸入的節點 ID 會被保留並參與判定。",
--- 0d2b4c68 English: Talents can be listed only for your own class. A node ID entered below is kept
---     and evaluated.
-[3046] = "只能列出你自己職業的天賦。下方輸入的節點 ID 會被保留並參與判定。",
+[3045] = "目前無法列出你的天賦（%s）。",
+-- 520dc742 English: Talents can be listed only for your own class.
+[3046] = "只能列出你自己職業的天賦。",
 -- 7417e36a English: Class talents
 -- Context: Group heading in the talent dropdown: talents shared by all specializations of the
 --     class.
@@ -10488,13 +10473,6 @@ addon.translation = {
 -- e8871b70 English: Talents
 -- Context: Fallback group heading in the talent dropdown when a talent group has no name.
 [3054] = "天賦",
--- d6f5d4a1 English: Talent Node ID
--- Context: Label of the edit box in the talent condition: the numeric ID of the talent node.
-[3055] = "天賦節點 ID",
--- 3e359295 English: Choice Entry ID
--- Context: Label of the edit box in the talent condition: the numeric ID of the entry chosen at a
---     choice node.
-[3056] = "選擇項 ID",
 -- 986b4c09 English: talent node %s
 -- Context: Fallback name for a talent whose name is not known; %s is the node ID, e.g. 'talent node
 --     12345'.
@@ -10503,25 +10481,22 @@ addon.translation = {
 -- 905d8751 English: the number of ranks in %s
 -- %s #1: %s #1: the name of the talent, e.g. "Arcane Power", or "talent node 82000"
 [3058] = "%s的等級數",
--- ddb10d64 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
+-- 19823fd4 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
 --     from the talents of the rotation's specialization (the Specialization list shows another
---     specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID
---     of the choice) to share a rotation. A choice node's entry has rank zero unless it is the
---     chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent
---     of a specialization you are not playing. A talent picked from the list also remembers its
---     spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again
---     after any talent change; an unreadable node is unavailable, including under NOT.
-[3059] = "正式服與 Forever 會比較你目前配置中某個天賦的等級。請從該循環所屬專精的天賦中選擇（「專精」清單可在戰鬥之外顯示其他專精的天賦），或輸入節點 ID（選擇節點還需輸入所選項目的項目 ID）以分享循環。選擇節點中未被選中的項目等級為零；你所選英雄天賦樹之外的英雄天賦等級為零，你目前未使用的專精的天賦也是如此。從清單中選取的天賦還會記住其法術，當暴雪重新編號天賦樹時可憑法術重新找到它。每次天賦變動後都會重新讀取等級；無法讀取的節點視為不可用，在 NOT 下同樣如此。",
--- dc69c172 English: Talents of another specialization cannot be loaded during combat. A node ID
---     entered below is kept and evaluated.
-[3060] = "無法在戰鬥中載入其他專精的天賦。下方輸入的節點 ID 會被保留並參與判斷。",
--- 19d60de6 English: Opens the talent tree of the rotation's specialization. Click a talent to
---     choose it for this condition.
-[3061] = "開啟此輪替專精的天賦樹。點擊一個天賦，即可為此條件選擇它。",
--- f14a6d20 English: Show talent tree draws the talent tree of the specialization shown, with every
---     talent open to choose. Click a talent to choose it, or click the chosen one again to clear
---     it; the Talent list follows. It cannot open during combat.
-[3062] = "「顯示天賦樹」會繪製所示專精的天賦樹，所有天賦皆可選擇。點擊一個天賦即可選擇，再次點擊已選天賦即可清除；天賦清單會隨之更新。戰鬥中無法開啟。",
+--     specialization's, outside combat), or click the talent's icon to choose it from the talent
+--     tree. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside
+--     your chosen hero tree has rank zero, and so does a talent of a specialization you are not
+--     playing. A talent picked this way also remembers its spell, and is found again by it if
+--     Blizzard renumbers the talent tree. Ranks are read again after any talent change; an
+--     unreadable node is unavailable, including under NOT.
+[3059] = "正式服與 Forever 會比較你目前配置中某個天賦的等級。請從該循環所屬專精的天賦中選擇（「專精」清單可在戰鬥之外顯示其他專精的天賦），或點擊天賦圖示，在天賦樹中選擇。選擇節點中未被選中的項目等級為零；你所選英雄天賦樹之外的英雄天賦等級為零，你目前未使用的專精的天賦也是如此。這樣選取的天賦還會記住其法術，當暴雪重新編號天賦樹時可憑法術重新找到它。每次天賦變動後都會重新讀取等級；無法讀取的節點視為不可用，在 NOT 下同樣如此。",
+-- c714c222 English: Talents of another specialization cannot be loaded during combat.
+[3060] = "戰鬥中無法載入其他專精的天賦。",
+-- 5ad8690c English: Click the talent's icon to open the talent tree, with every talent open to
+--     choose. Left-click a talent to add a rank and right-click to remove one, choose how the rank
+--     is compared, and press Accept; the lists follow. Choosing a different talent sets the
+--     previous one back to nothing. It cannot open during combat.
+[3062] = "點擊天賦圖示即可開啟天賦樹，所有天賦皆可選擇。左鍵點擊天賦增加一級，右鍵點擊減少一級；選擇等級的比較方式後按「接受」，天賦清單會隨之更新。選擇另一個天賦會使之前的天賦歸零。戰鬥中無法開啟。",
 -- 252b33d6 English: Forever is the exception: Talent tree is one of the three talent trees of your
 --     active loadout (in the order the talent window shows them); their points are read again after
 --     any talent change. Retail has no such trees.
@@ -11782,9 +11757,6 @@ addon.translation = {
 [3468] = "無法完整顯示此匯入內容（%s）。",
 -- e981ddae English: Warning
 [3469] = "警告",
--- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
---     condition.
-[3470] = "開啟你職業的天賦樹。點擊一個天賦，即可為此條件選擇它。",
 -- a58da793 English: Metrics
 [3471] = "指標",
 -- 7d510fae English: Track how closely I follow the advice
@@ -11870,4 +11842,14 @@ addon.translation = {
 -- 689efd69 English: Delete what the forecast has learned about your spells (the auras they leave,
 --     the damage and healing they do). It starts learning again if the forecast is on.
 [3504] = "清除預測對你的法術已學到的內容（它們留下的光環、造成的傷害與治療）。若預測處於開啟狀態，會重新開始學習。",
+-- 89713b9c English: Accept
+[3505] = "接受",
+-- 4a39e2b0 English: Selected talent changed from %s to %s.
+[3506] = "所選天賦已從 %s 更改為 %s。",
+-- f7a2f54e English: Left-click a talent to choose it, right-click to clear it.
+[3507] = "左鍵點擊天賦即可選擇，右鍵點擊即可清除。",
+-- b7df392f English: Left-click a talent to add a rank, right-click to remove one.
+[3508] = "左鍵點擊天賦增加一級，右鍵點擊減少一級。",
+-- 16d3cbc4 English: Click to choose the talent from the talent tree.
+[3509] = "點擊以在天賦樹中選擇天賦。",
 }

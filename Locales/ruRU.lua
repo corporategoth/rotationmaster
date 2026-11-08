@@ -6336,10 +6336,6 @@ addon.translation = {
 -- ea43639d English: ranks in %s
 -- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [1893] = "ранги в %s",
--- 1dd73b64 English: Show talent tree
--- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
---     from.
-[1894] = "Показать дерево талантов",
 -- 3e590ed8 English: Hero Talents
 -- Context: Heading label in the talent window and a source name in the talent condition editor for
 --     the hero talent trees.
@@ -6350,20 +6346,11 @@ addon.translation = {
 [1897] = "Сначала завершите или отмените изменения в собственном окне талантов.",
 -- da703663 English: The talent tree cannot be shown right now. Use the Talent list instead.
 [1898] = "Сейчас дерево талантов показать нельзя. Используйте список талантов.",
--- 80ea0eae English: Click a talent to choose it for this condition.
-[1899] = "Нажмите на талант, чтобы выбрать его для этого условия.",
--- 6f1df5fc English: Selected: %s
--- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
-[1900] = "Выбрано: %s",
 -- 7a5e089f English: Ranks: %d
 -- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
 [1901] = "Ранги: %d",
 -- 26722619 English: Choose one of the talents on this node.
 [1902] = "Выберите один из талантов этого узла.",
--- d9f6a964 English: Click to choose this talent.
-[1903] = "Нажмите, чтобы выбрать этот талант.",
--- ccb6e92e English: Click to clear this talent.
-[1904] = "Нажмите, чтобы снять выбор с этого таланта.",
 -- 8a667e66 English: Close the build shown in your own talent window first.
 [1905] = "Сначала закройте сборку, показанную в вашем собственном окне талантов.",
 -- 1f397413 English: Initial
@@ -10452,13 +10439,11 @@ addon.translation = {
 --     including under NOT. The Phase 7 shoulder runes are not engravings and are not seen. This is
 --     not the Death Knight Rune condition.
 [3044] = "Гравировка существует только на мирах «Сезона исследований». В остальных случаях и пока ваши руны не загружены после входа в игру, это условие недоступно, а не ложно, в том числе под НЕ. Руны для наплечников Фазы 7 не являются гравировками и не определяются. Это не условие «Руна» рыцаря смерти.",
--- 2cfaca8e English: Your talents cannot be listed right now (%s). A node ID entered below is kept
---     and evaluated.
+-- 95d95ff8 English: Your talents cannot be listed right now (%s).
 -- %s #1: %s #1: why the talents cannot be listed, a short code (shown as-is), e.g. "not-ready"
-[3045] = "Сейчас список ваших талантов получить нельзя (%s). Введённый ниже ID узла сохраняется и проверяется.",
--- 0d2b4c68 English: Talents can be listed only for your own class. A node ID entered below is kept
---     and evaluated.
-[3046] = "Список талантов доступен только для вашего собственного класса. Введённый ниже ID узла сохраняется и проверяется.",
+[3045] = "Сейчас нельзя показать список ваших талантов (%s).",
+-- 520dc742 English: Talents can be listed only for your own class.
+[3046] = "Список талантов доступен только для вашего собственного класса.",
 -- 7417e36a English: Class talents
 -- Context: Group heading in the talent dropdown: talents shared by all specializations of the
 --     class.
@@ -10488,13 +10473,6 @@ addon.translation = {
 -- e8871b70 English: Talents
 -- Context: Fallback group heading in the talent dropdown when a talent group has no name.
 [3054] = "Таланты",
--- d6f5d4a1 English: Talent Node ID
--- Context: Label of the edit box in the talent condition: the numeric ID of the talent node.
-[3055] = "ID узла таланта",
--- 3e359295 English: Choice Entry ID
--- Context: Label of the edit box in the talent condition: the numeric ID of the entry chosen at a
---     choice node.
-[3056] = "ID варианта выбора",
 -- 986b4c09 English: talent node %s
 -- Context: Fallback name for a talent whose name is not known; %s is the node ID, e.g. 'talent node
 --     12345'.
@@ -10503,25 +10481,22 @@ addon.translation = {
 -- 905d8751 English: the number of ranks in %s
 -- %s #1: %s #1: the name of the talent, e.g. "Arcane Power", or "talent node 82000"
 [3058] = "число рангов в %s",
--- ddb10d64 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
+-- 19823fd4 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
 --     from the talents of the rotation's specialization (the Specialization list shows another
---     specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID
---     of the choice) to share a rotation. A choice node's entry has rank zero unless it is the
---     chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent
---     of a specialization you are not playing. A talent picked from the list also remembers its
---     spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again
---     after any talent change; an unreadable node is unavailable, including under NOT.
-[3059] = "Retail и Forever сравнивают ранг таланта в вашем активном наборе талантов. Выберите его среди талантов специализации ротации (список «Специализация» показывает таланты другой специализации вне боя) или введите ID узла (а для узла с выбором — ещё и ID выбранного варианта), чтобы поделиться ротацией. У варианта узла с выбором ранг равен нулю, если он не выбран; у героического таланта вне выбранной вами ветки героя ранг равен нулю, как и у таланта специализации, за которую вы не играете. Выбранный из списка талант запоминает и свое заклинание и находится по нему снова, если Blizzard перенумерует дерево талантов. Ранги перечитываются после любого изменения талантов; нечитаемый узел недоступен, в том числе под NOT.",
--- dc69c172 English: Talents of another specialization cannot be loaded during combat. A node ID
---     entered below is kept and evaluated.
-[3060] = "Таланты другой специализации нельзя загрузить во время боя. Введённый ниже ID узла сохраняется и проверяется.",
--- 19d60de6 English: Opens the talent tree of the rotation's specialization. Click a talent to
---     choose it for this condition.
-[3061] = "Открывает дерево талантов специализации ротации. Нажмите на талант, чтобы выбрать его для этого условия.",
--- f14a6d20 English: Show talent tree draws the talent tree of the specialization shown, with every
---     talent open to choose. Click a talent to choose it, or click the chosen one again to clear
---     it; the Talent list follows. It cannot open during combat.
-[3062] = "«Показать дерево талантов» рисует дерево талантов показанной специализации, все таланты доступны для выбора. Нажмите на талант, чтобы выбрать его, или на выбранный, чтобы очистить выбор; список талантов последует за ним. Во время боя открыть нельзя.",
+--     specialization's, outside combat), or click the talent's icon to choose it from the talent
+--     tree. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside
+--     your chosen hero tree has rank zero, and so does a talent of a specialization you are not
+--     playing. A talent picked this way also remembers its spell, and is found again by it if
+--     Blizzard renumbers the talent tree. Ranks are read again after any talent change; an
+--     unreadable node is unavailable, including under NOT.
+[3059] = "Retail и Forever сравнивают ранг таланта в вашем активном наборе талантов. Выберите его среди талантов специализации ротации (список «Специализация» показывает таланты другой специализации вне боя) или нажмите на значок таланта, чтобы выбрать его в дереве талантов. У варианта узла с выбором ранг равен нулю, если он не выбран; у героического таланта вне выбранной вами ветки героя ранг равен нулю, как и у таланта специализации, за которую вы не играете. Выбранный так талант запоминает и свое заклинание и находится по нему снова, если Blizzard перенумерует дерево талантов. Ранги перечитываются после любого изменения талантов; нечитаемый узел недоступен, в том числе под NOT.",
+-- c714c222 English: Talents of another specialization cannot be loaded during combat.
+[3060] = "Таланты другой специализации нельзя загрузить во время боя.",
+-- 5ad8690c English: Click the talent's icon to open the talent tree, with every talent open to
+--     choose. Left-click a talent to add a rank and right-click to remove one, choose how the rank
+--     is compared, and press Accept; the lists follow. Choosing a different talent sets the
+--     previous one back to nothing. It cannot open during combat.
+[3062] = "Нажмите на значок таланта, чтобы открыть дерево талантов, где можно выбрать любой талант. Левая кнопка мыши на таланте добавляет ранг, правая — убирает один; выберите, как сравнивается ранг, и нажмите «Принять»; списки последуют за выбором. Выбор другого таланта обнуляет предыдущий. Во время боя открыть нельзя.",
 -- 252b33d6 English: Forever is the exception: Talent tree is one of the three talent trees of your
 --     active loadout (in the order the talent window shows them); their points are read again after
 --     any talent change. Retail has no such trees.
@@ -11782,9 +11757,6 @@ addon.translation = {
 [3468] = "Этот импорт нельзя показать полностью (%s).",
 -- e981ddae English: Warning
 [3469] = "Предупреждение",
--- a0d00587 English: Opens the talent tree of your class. Click a talent to choose it for this
---     condition.
-[3470] = "Открывает дерево талантов Вашего класса. Нажмите на талант, чтобы выбрать его для этого условия.",
 -- a58da793 English: Metrics
 [3471] = "Метрики",
 -- 7d510fae English: Track how closely I follow the advice
@@ -11870,4 +11842,14 @@ addon.translation = {
 -- 689efd69 English: Delete what the forecast has learned about your spells (the auras they leave,
 --     the damage and healing they do). It starts learning again if the forecast is on.
 [3504] = "Удаляет то, чему прогноз научился о Ваших заклинаниях (накладываемые эффекты, наносимый урон и исцеление). Если прогноз включён, обучение начнётся заново.",
+-- 89713b9c English: Accept
+[3505] = "Принять",
+-- 4a39e2b0 English: Selected talent changed from %s to %s.
+[3506] = "Выбранный талант изменён с %s на %s.",
+-- f7a2f54e English: Left-click a talent to choose it, right-click to clear it.
+[3507] = "Левая кнопка мыши на таланте выбирает его, правая — снимает выбор.",
+-- b7df392f English: Left-click a talent to add a rank, right-click to remove one.
+[3508] = "Левая кнопка мыши на таланте добавляет ранг, правая — убирает один.",
+-- 16d3cbc4 English: Click to choose the talent from the talent tree.
+[3509] = "Нажмите, чтобы выбрать талант в дереве талантов.",
 }
