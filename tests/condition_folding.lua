@@ -167,6 +167,57 @@ test('folding counts the leaves it replaced', function()
     assert(stats.folded == 2, stats.folded)
 end)
 
+test('a lone health or power threshold, or NOT of one, is a display gate; anything else is not', function()
+    local gate = addon:GetConditionDisplayGate({
+        type = 'HEALTHPCT',
+        unit = 'target',
+        operator = 'LESSTHAN',
+        value = .2,
+    })
+
+    assert(gate.unit == 'target' and gate.kind == 'health' and gate.operator == 'LESSTHAN' and gate.value == 20)
+
+    gate = addon:GetConditionDisplayGate(NOT({
+        type = 'POWERPCT',
+        unit = 'player',
+        operator = 'LESSTHANOREQUALS',
+        value = .5,
+    }))
+
+    assert(gate.kind == 'power' and gate.operator == 'GREATERTHAN' and gate.value == 50)
+    assert(not addon:GetConditionDisplayGate({ type = 'HEALTHPCT', unit = 'target', operator = 'EQUALS', value = .2 }))
+
+    gate = addon:GetConditionDisplayGate(AND(NOT(NOT({
+        type = 'HEALTHPCT',
+        unit = 'target',
+        operator = 'LESSTHAN',
+        value = .2,
+    }))))
+
+    assert(gate.operator == 'LESSTHAN', 'a one-child group and a double NOT')
+
+    assert(
+        not addon:GetConditionDisplayGate(AND(buff('match'), {
+            type = 'HEALTHPCT',
+            unit = 'target',
+            operator = 'LESSTHAN',
+            value = .2,
+        }))
+    )
+
+    assert(not addon:GetConditionDisplayGate(buff('match')))
+
+    assert(
+        not addon:GetConditionDisplayGate({
+            type = 'HEALTHPCT',
+            unit = 'target',
+            operator = 'LESSTHAN',
+            value = .2,
+            disabled = true,
+        })
+    )
+end)
+
 print(('%d passed, %d failed'):format(pass, fail))
 
 if fail > 0 then

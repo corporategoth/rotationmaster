@@ -121,3 +121,56 @@ function addon:FoldInvariantConditions(conditions, stats)
 
     return fold(conditions, stats or { folded = 0 })
 end
+
+-- Threshold conditions the game can evaluate at draw time (Platform/gates.lua), with the gate kind each becomes.
+local GATE_KINDS = { HEALTHPCT = 'health', POWERPCT = 'power' }
+
+-- The gate operator for each comparison; equality has no step curve.
+local GATE_OPERATORS = {
+    LESSTHAN = 'LESSTHAN',
+    LESSTHANOREQUALS = 'LESSTHAN',
+    GREATERTHAN = 'GREATERTHAN',
+    GREATERTHANOREQUALS = 'GREATERTHAN',
+}
+
+-- The opposite gate operator, for a NOT.
+local INVERSE = { LESSTHAN = 'GREATERTHAN', GREATERTHAN = 'LESSTHAN' }
+
+-- Returns the display gate a condition tree amounts to, when the whole tree is one health or power percent threshold
+-- (or NOT of one) that the game can evaluate for us: "target health below 20%" becomes the gate the step option
+-- "Shown by the game when" stores.
+-- @param tree any  A (folded) condition tree.
+-- @return table|nil  { unit, kind, operator, value = percent }; nil when the tree is anything else.
+function addon:GetConditionDisplayGate(tree)
+    local negate = false
+
+    -- An AND or OR of one child (the editor's root group) means that child; NOT flips the comparison.
+    while type(tree) == 'table' and not tree.disabled do
+        if (tree.type == 'AND' or tree.type == 'OR') and type(tree.value) == 'table' and #tree.value == 1 then
+            tree = tree.value[1]
+        elseif tree.type == 'NOT' then
+            negate, tree = not negate, tree.value
+        else
+            break
+        end
+    end
+
+    if type(tree) ~= 'table' or tree.disabled or not GATE_KINDS[tree.type] then
+        return nil
+    end
+
+    local operator = GATE_OPERATORS[tree.operator]
+
+    if
+        not operator or type(tree.unit) ~= 'string' or type(tree.value) ~= 'number' or tree.value < 0 or tree.value > 1
+    then
+        return nil
+    end
+
+    return {
+        unit = tree.unit,
+        kind = GATE_KINDS[tree.type],
+        operator = negate and INVERSE[operator] or operator,
+        value = tree.value * 100,
+    }
+end

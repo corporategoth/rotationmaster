@@ -3160,7 +3160,7 @@ end
 -- Seconds a recorded plan is reused before the standard path must prove the body again.
 local LEAN_MAX_AGE = 60
 -- Plans built, polls served and why plans were dropped, for runtime reports.
-local leanStats = { built = 0, polls = 0, key = 0, generation = 0, context = 0, age = 0, folded = 0 }
+local leanStats = { built = 0, polls = 0, key = 0, generation = 0, context = 0, age = 0, folded = 0, handedOff = 0 }
 addon.leanStats = leanStats
 -- Captured at load (Core/action_policy.lua loads first): an overridden
 -- NewActionReadiness keeps being used as is.
@@ -3232,6 +3232,31 @@ local function compileFolded(conditions)
     end
 
     return compileConditionPlan(folded)
+end
+
+-- Compiles a cooldown's conditions; on Retail and Forever, a cooldown whose folded conditions are only a health or
+-- power threshold the client hides right now is handed to the game (Core/condition_folding.lua): it compiles to
+-- ALWAYS and carries the gate, and the poll lights it as a gated glow whose visibility the game sets.
+-- @param conditions table|nil  The cooldown's condition tree.
+-- @return table  The compiled condition plan.
+-- @return table|nil  The gate when the cooldown is handed to the game.
+local function compileCooldown(conditions)
+    if
+        addon.GetConditionDisplayGate
+        and addon.FoldInvariantConditions
+        and addon.SetGatedGlows
+        and addon.Platform:GetCombatDataPolicy() == 'restricted'
+    then
+        local folded = addon:FoldInvariantConditions(conditions)
+        local gate = type(folded) == 'table' and addon:GetConditionDisplayGate(folded)
+
+        if gate and addon:evaluateConditionResult(folded).status == 'unavailable' then
+            leanStats.handedOff = leanStats.handedOff + 1
+            return compileConditionPlan(ALWAYS), gate
+        end
+    end
+
+    return compileFolded(conditions)
 end
 
 -- Compiles a step list into entries holding prepared condition plans, recursing into Branch arms.
@@ -3317,6 +3342,11 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
         gatedGate = {},
         gatedAfter = {},
         gatedEntries = {},
+        cooldownGatedSpell = {},
+        cooldownGatedItem = {},
+        cooldownGatedGate = {},
+        cooldownGatedStyle = {},
+        cooldownGatedCount = 0,
         recConf = {},
         recDelay = {},
         obsSpell = {},
@@ -3329,11 +3359,8 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
 
     if rot.cooldowns ~= nil then
         for id, cond in pairs(rot.cooldowns) do
-            plan.cooldowns[#plan.cooldowns + 1] = {
-                id = id,
-                step = cond,
-                conditions = compileFolded(cond.conditions),
-            }
+            local conditions, gate = compileCooldown(cond.conditions)
+            plan.cooldowns[#plan.cooldowns + 1] = { id = id, step = cond, conditions = conditions, gate = gate }
         end
     end
 
@@ -3767,15 +3794,28 @@ local function leanPublish(self, plan)
         end
     end
 
-    if not profile.disable_buttons and addon.SetGatedGlows and (plan.gatedCount > 0 or addon:HasGatedGlows()) then
+    local gatedTotal = plan.gatedCount + plan.cooldownGatedCount
+
+    if not profile.disable_buttons and addon.SetGatedGlows and (gatedTotal > 0 or addon:HasGatedGlows()) then
         local entries = plan.gatedEntries
 
-        for index = 1, math.max(#entries, plan.gatedCount) do
-            if index <= plan.gatedCount then
+        -- Rotation steps first, then cooldowns handed to the game.
+        for index = 1, math.max(#entries, gatedTotal) do
+            if index <= gatedTotal then
                 local entry = entries[index] or {}
 
-                entry.spellId, entry.itemId, entry.gate =
-                    plan.gatedSpell[index], plan.gatedItem[index], plan.gatedGate[index]
+                if index <= plan.gatedCount then
+                    entry.spellId, entry.itemId, entry.gate, entry.style =
+                        plan.gatedSpell[index], plan.gatedItem[index], plan.gatedGate[index], nil
+                else
+                    local at = index - plan.gatedCount
+
+                    entry.spellId, entry.itemId, entry.gate, entry.style =
+                        plan.cooldownGatedSpell[at],
+                        plan.cooldownGatedItem[at],
+                        plan.cooldownGatedGate[at],
+                        plan.cooldownGatedStyle[at]
+                end
 
                 entries[index] = entry
             else
@@ -4133,8 +4173,27 @@ local function evaluateLean(self)
     self.evaluationProfile:child("cooldowns"):start()
     local cooldowns = plan.cooldowns
 
+    plan.cooldownGatedCount = 0
+
     for i = 1, #cooldowns do
-        plan.obsSpell[i], plan.obsEnabled[i], plan.obsItem[i] = leanAction(plan, cooldowns[i], 'cooldowns')
+        local entry = cooldowns[i]
+        plan.obsSpell[i], plan.obsEnabled[i], plan.obsItem[i] = leanAction(plan, entry, 'cooldowns')
+
+        -- A cooldown handed to the game: when ready it becomes a gated glow, never an ordinary one or an announcement,
+        -- since RM never learns whether its threshold holds.
+        if entry.gate then
+            if plan.obsEnabled[i] then
+                local count = plan.cooldownGatedCount + 1
+                plan.cooldownGatedCount = count
+
+                plan.cooldownGatedSpell[count], plan.cooldownGatedItem[count], plan.cooldownGatedGate[count] =
+                    plan.obsSpell[i], plan.obsItem[i], entry.gate
+
+                plan.cooldownGatedStyle[count] = plan.views and plan.views[entry.step] or entry.step
+            end
+
+            plan.obsSpell[i], plan.obsEnabled[i], plan.obsItem[i] = nil, false, nil
+        end
     end
 
     self.evaluationProfile:child("cooldowns"):stop()

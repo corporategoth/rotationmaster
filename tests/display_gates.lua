@@ -135,6 +135,62 @@ for _, engine in ipairs({ 'standard', 'lean' }) do
         end
     )
 
+    test(engine .. ': a cooldown whose only condition is a hidden threshold is handed to the game', function()
+        local c = make(engine, { open = true })
+        c.a.Platform.GetCombatDataPolicy = function() return 'restricted' end
+        c.a.Platform.GetUnitHealthObservation = function() return nil, 'restricted-value' end
+        local record, token = c.a:GetRotationRecordSnapshot(0, c.a.currentRotation)
+
+        record.body.cooldowns = {
+            {
+                id = 'execute-window',
+                type = 'spell',
+                action = 324,
+                magnification = 2.5,
+                conditions = {
+                    type = 'AND',
+                    value = { { type = 'HEALTHPCT', unit = 'target', operator = 'LESSTHAN', value = .2 } },
+                },
+            },
+        }
+
+        local ref = assert(c.a:GetScopedRotationCoordinator():Resolve(0, c.a.currentRotation))
+        assert(c.a:CommitRotationDraft(ref, token, record, 'class'))
+        local last
+        local glow = c.a.SetGatedGlows
+
+        c.a.SetGatedGlows = function(self, entries)
+            last = {}
+
+            for i, entry in ipairs(entries) do
+                last[i] = entry
+            end
+
+            return glow(self, entries)
+        end
+
+        poll(c)
+
+        if engine == 'lean' then
+            local handed
+
+            for _, entry in ipairs(last or {}) do
+                if entry.spellId == 324 then
+                    handed = entry
+                end
+            end
+
+            assert(handed, 'the cooldown is not a gated glow')
+            assert(handed.gate.kind == 'health' and handed.gate.operator == 'LESSTHAN' and handed.gate.value == 20)
+            assert(handed.style and handed.style.magnification == 2.5, 'the cooldown keeps its glow style')
+            assert(not c.a.avail_announced['execute-window'], 'never announced: RM does not know the answer')
+        else
+            for _, entry in ipairs(last or {}) do
+                assert(entry.spellId ~= 324, 'the standard engine evaluates the cooldown itself')
+            end
+        end
+    end)
+
     test(engine .. ': a gate with a missing unit skips the step', function()
         local c = make(engine, { open = nil, why = 'unit-data-unavailable' })
         poll(c)

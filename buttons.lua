@@ -3423,7 +3423,8 @@ end
 -- Lights a glow (key 'gated') on the buttons of each gated step and lets the game set its visibility: the overlay's
 -- alpha is the gate's secret 0 or 1 (Platform:GetGateAlphas). Gated steps no longer listed lose their glow. Called
 -- by both engines on a poll that has a gated step or still shows one; an overlay is re-lit only when it is missing or hidden, so its animation keeps running.
--- @param entries table  Array of { spellId, itemId, gate }; empty to clear them all.
+-- @param entries table  Array of { spellId, itemId, gate, style }; style is a cooldown's glow settings (a cooldown handed
+--   to the game, main.lua), nil for a rotation step; empty to clear them all.
 function addon:SetGatedGlows(entries)
     local seen, profile = {}, self.db.profile
 
@@ -3442,16 +3443,19 @@ function addon:SetGatedGlows(entries)
         end
 
         if not lit then
+            -- A cooldown handed to the game keeps its own glow style; a rotation step uses the recommendation glow.
+            local style = entry.style or {}
+
             GlowIndependent(
                 spellId,
                 'gated',
-                profile.effect,
-                profile.color,
-                profile.magnification,
-                profile.setpoint,
-                profile.xoffs,
-                profile.yoffs,
-                profile.angle,
+                style.effect or profile.effect,
+                style.effect and style.color or profile.color,
+                style.magnification or profile.magnification,
+                style.setpoint or profile.setpoint,
+                style.xoffs or profile.xoffs,
+                style.yoffs or profile.yoffs,
+                style.angle or profile.angle,
                 entry.itemId
             )
         end
