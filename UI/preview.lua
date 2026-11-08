@@ -27,6 +27,9 @@ end
 -- The profile the sample-icons mode is on for (nil when off). Per session and per profile; never saved.
 local sampleProfile
 
+-- Most gated steps stacked in one preview slot; the game shows the first whose gate is open.
+local MAX_GATE_STACK = 4
+
 -- Fixed placeholder icons painted in sample mode, so a player can size and place the window without a rotation.
 local sampleTextures = {
     'Interface\\Icons\\Spell_Fire_FlameBolt',
@@ -183,7 +186,7 @@ function addon:CreateNativePreviewWindow()
         function window:ReleaseChildren()
             self.count = 0
             self.sampleCount = 0
-            self.pendingGate = nil
+            self.pendingGates = nil
 
             for _, icon in ipairs(self.icons) do
                 if GameTooltip and GameTooltip:IsOwned(icon) then
@@ -441,9 +444,9 @@ function addon:CreateNativePreviewWindow()
                 icon.masqueSurface.texture:SetTexture(info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark')
             end
 
-            if self.pendingGate then
-                addon:ShowPreviewGate(icon, self.pendingGate)
-                self.pendingGate = nil
+            if self.pendingGates then
+                addon:ShowPreviewGates(icon, self.pendingGates, true)
+                self.pendingGates = nil
             end
 
             local generation = self.generation
@@ -576,8 +579,10 @@ function addon:CreateNativePreviewWindow()
         nativeAddRecommendation = window.AddRecommendation
 
         -- Holds a step with a display gate the client hides (main.lua, Platform/gates.lua): it is drawn over the next
-        -- recommendation's icon, and the game's curve output decides which of the two shows. One with nothing after it
-        -- shows on its own at ResumeLayout. Never the bar glow: such a step can only be shown here.
+        -- recommendation's icon, and the game's curve output decides which shows. Consecutive gated steps stack in that
+        -- slot (up to MAX_GATE_STACK) in priority order, and the game shows the first whose gate is open, else the icon
+        -- under them. Gated steps with nothing after them share a slot of their own at ResumeLayout. Never the bar glow:
+        -- such a step can only be shown here.
         -- @param spellId number  The gated step's spell.
         -- @param itemId number|nil  Its item, when the step is an item.
         -- @param gate table  The step's gate.
@@ -586,14 +591,22 @@ function addon:CreateNativePreviewWindow()
                 return
             end
 
-            self:FlushGate()
-            self.pendingGate = { spellId = spellId, itemId = itemId, gate = gate }
+            local pending = self.pendingGates
+
+            if not pending then
+                pending = {}
+                self.pendingGates = pending
+            end
+
+            if #pending < MAX_GATE_STACK then
+                pending[#pending + 1] = { spellId = spellId, itemId = itemId, gate = gate }
+            end
         end
 
-        -- Shows a held gated step in a slot of its own (nothing followed it), when there is room.
+        -- Shows held gated steps in a slot of their own (nothing followed them), when there is room.
         function window:FlushGate()
-            local pending = self.pendingGate
-            self.pendingGate = nil
+            local pending = self.pendingGates
+            self.pendingGates = nil
 
             if not pending or not self:Valid() or self.count >= self.slots then
                 return
@@ -609,7 +622,7 @@ function addon:CreateNativePreviewWindow()
                 icon.masqueSurface.texture:SetTexture(nil)
             end
 
-            addon:ShowPreviewGate(icon, pending)
+            addon:ShowPreviewGates(icon, pending, false)
             icon:Show()
             self:DoLayout()
         end
@@ -913,44 +926,143 @@ function addon:CreateNativePreviewWindow()
     return window
 end
 
--- Draws a gated step over a preview icon. The gate's alpha pair comes from the game (Platform:GetGateAlphas, secret 0
--- or 1 values RM never reads): the gated icon takes one, the icon under it the other. Where the client cannot do this,
--- the gated icon is left hidden, so the next recommendation shows as it would without the gated step.
--- @param icon table  The preview icon.
+-- Returns the texture a gated step is drawn with.
 -- @param pending table  { spellId, itemId, gate }.
-function addon:ShowPreviewGate(icon, pending)
-    local frame, texture = icon.gateFrame, icon.gateTexture
-
-    if not frame then
-        return
-    end
-
+-- @return any  The icon file ID or path.
+local function gateIcon(pending)
     local info
 
     if pending.itemId then
-        info = self.Platform:GetItemDisplayInfo(pending.itemId)
+        info = addon.Platform:GetItemDisplayInfo(pending.itemId)
     else
-        info = self.Platform:GetSpellInfo(pending.spellId)
+        info = addon.Platform:GetSpellInfo(pending.spellId)
     end
 
-    local alpha, inverse = self.Platform:GetGateAlphas(pending.gate)
+    return info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark'
+end
 
-    if alpha == nil then
-        frame:Hide()
+-- Returns (creating it once) layer `depth` of an icon's gate stack: a frame holding the gated texture and a `rest`
+-- frame for everything below it in priority. Layer 1 is the icon's gateFrame. Frames multiply their alpha into their
+-- children, so a layer under rests whose alphas are the inverses of the gates above it shows only when they are closed.
+-- @param icon table  The preview icon.
+-- @param depth number  The layer, from 1.
+-- @return table  { frame, texture, rest }.
+local function gateLayer(icon, depth)
+    icon.gateLayers = icon.gateLayers or { { frame = icon.gateFrame, texture = icon.gateTexture } }
+    local layer = icon.gateLayers[depth]
+
+    if not layer then
+        local parent = gateLayer(icon, depth - 1)
+        local frame = parent.rest
+        layer = { frame = frame, texture = frame:CreateTexture(nil, 'ARTWORK') }
+        layer.texture:SetAllPoints(frame)
+        icon.gateLayers[depth] = layer
+    end
+
+    if not layer.rest then
+        layer.rest = CreateFrame('Frame', nil, layer.frame)
+        layer.rest:SetAllPoints(layer.frame)
+    end
+
+    return layer
+end
+
+-- Draws gated steps over a preview icon. Each gate's alpha pair comes from the game (Platform:GetGateAlphas, secret 0
+-- or 1 values RM never reads). One step: the gated icon takes one alpha, the icon under it the other. Several: they nest
+-- (gateLayer), the first open gate shows, and a copy of the icon under them sits at the bottom of the stack while the
+-- icon itself is hidden. A gate the client cannot evaluate is left out, so the rest show as they would without it.
+-- @param icon table  The preview icon.
+-- @param pending table  The held steps, in priority order: { spellId, itemId, gate }.
+-- @param under boolean  True when the icon shows a recommendation of its own beneath the gated steps.
+function addon:ShowPreviewGates(icon, pending, under)
+    if not icon.gateFrame then
         return
     end
 
-    texture:SetTexture(info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark')
-    local shown = pcall(texture.SetAlpha, texture, alpha)
-    local under = icon.masqueOwner and icon.masqueSurface and icon.masqueSurface.texture or icon.texture
+    local steps = {}
 
-    if shown and pcall(under.SetAlpha, under, inverse) then
-        icon.gated = true
-        frame:Show()
-    else
-        pcall(under.SetAlpha, under, 1)
-        frame:Hide()
+    for _, step in ipairs(pending) do
+        local alpha, inverse = self.Platform:GetGateAlphas(step.gate)
+
+        if alpha ~= nil then
+            steps[#steps + 1] = { icon = gateIcon(step), alpha = alpha, inverse = inverse }
+        end
     end
+
+    if not steps[1] then
+        icon.gateFrame:Hide()
+        return
+    end
+
+    local base = icon.masqueOwner and icon.masqueSurface and icon.masqueSurface.texture or icon.texture
+
+    if #steps == 1 and under then
+        local step = steps[1]
+        icon.gateTexture:SetTexture(step.icon)
+
+        if pcall(icon.gateTexture.SetAlpha, icon.gateTexture, step.alpha) and pcall(
+            base.SetAlpha,
+            base,
+            step.inverse
+        ) then
+            icon.gated = true
+            icon.gateFrame:Show()
+        else
+            pcall(base.SetAlpha, base, 1)
+            icon.gateFrame:Hide()
+        end
+
+        return
+    end
+
+    local depth = 0
+
+    for index, step in ipairs(steps) do
+        local layer = gateLayer(icon, index)
+        layer.texture:SetTexture(step.icon)
+        layer.texture:SetAlpha(1)
+        layer.texture:Show()
+
+        if
+            not pcall(layer.texture.SetAlpha, layer.texture, step.alpha)
+            or not pcall(layer.rest.SetAlpha, layer.rest, step.inverse)
+        then
+            layer.texture:Hide()
+            break
+        end
+
+        layer.rest:Show()
+        depth = index
+    end
+
+    if depth == 0 then
+        icon.gateFrame:Hide()
+        return
+    end
+
+    -- Below the last gate: a copy of the icon's own recommendation, or nothing.
+    local bottom = icon.gateLayers[depth].rest
+    icon.gateFallback = icon.gateFallback or bottom:CreateTexture(nil, 'ARTWORK')
+    local fallback = icon.gateFallback
+    fallback:SetParent(bottom)
+    fallback:ClearAllPoints()
+    fallback:SetAllPoints(bottom)
+
+    if under then
+        fallback:SetTexture(base:GetTexture())
+        fallback:Show()
+    else
+        fallback:Hide()
+    end
+
+    for index = depth + 1, #icon.gateLayers do
+        icon.gateLayers[index].texture:Hide()
+    end
+
+    icon.gateDepth = depth
+    icon.gated = true
+    base:SetAlpha(0)
+    icon.gateFrame:Show()
 end
 
 -- Shows your target's health as a thin bar under the preview window when profile.preview_target_health is on. The
@@ -1006,6 +1118,20 @@ function addon:ClearPreviewGate(icon)
     if icon.gateFrame then
         icon.gateFrame:Hide()
     end
+
+    for _, layer in ipairs(icon.gateLayers or {}) do
+        layer.texture:SetAlpha(1)
+
+        if layer.rest then
+            layer.rest:SetAlpha(1)
+        end
+    end
+
+    if icon.gateFallback then
+        icon.gateFallback:Hide()
+    end
+
+    icon.gateDepth = nil
 
     if not icon.gated then
         return

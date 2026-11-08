@@ -93,6 +93,48 @@ for _, engine in ipairs({ 'standard', 'lean' }) do
         assert(last and #last == 0, 'gated glow kept after the gate became readable')
     end)
 
+    test(
+        engine .. ': consecutive hidden gates stack in one slot, first open gate on top, the next step at the bottom',
+        function()
+            local c = make(engine, { open = nil, why = 'restricted-value' })
+            local record, token = c.a:GetRotationRecordSnapshot(0, c.a.currentRotation)
+
+            table.insert(record.body.rotation, 2, {
+                id = 'gated2',
+                type = 'spell',
+                action = 324,
+                gate = GATE,
+                conditions = {},
+            })
+
+            local ref = assert(c.a:GetScopedRotationCoordinator():Resolve(0, c.a.currentRotation))
+            assert(c.a:CommitRotationDraft(ref, token, record, 'class'))
+            local calls = 0
+
+            c.a.Platform.GetGateAlphas = function()
+                calls = calls + 1
+                return 'open' .. calls, 'closed' .. calls
+            end
+
+            poll(c)
+            local icon = c.a.nextWindow.icons[1]
+            assert(c.a.currentSpell == 403, 'the bar glow keeps the next step: ' .. tostring(c.a.currentSpell))
+            assert(icon.spellId == 403 and icon.gateFrame:IsShown() and icon.gateDepth == 2, 'two gates not stacked')
+            local first, second = icon.gateLayers[1], icon.gateLayers[2]
+            assert(first.texture.alpha:match('^open') and first.rest.alpha:match('^closed'), 'first layer alphas')
+            assert(second.frame == first.rest, 'the second gate is nested under the first gate\'s inverse')
+            assert(second.texture.alpha:match('^open') and second.rest.alpha:match('^closed'), 'second layer alphas')
+
+            assert(
+                icon.gateFallback:IsShown() and icon.texture.alpha == 0,
+                'the next step moves to the bottom of the stack'
+            )
+
+            local next = c.a.nextWindow.icons[2]
+            assert(not next or not next:IsShown() or next.spellId ~= 324, 'a stacked gate takes no slot of its own')
+        end
+    )
+
     test(engine .. ': a gate with a missing unit skips the step', function()
         local c = make(engine, { open = nil, why = 'unit-data-unavailable' })
         poll(c)
