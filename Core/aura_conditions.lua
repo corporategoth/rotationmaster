@@ -245,6 +245,58 @@ local function lookupByName(value, filter, mode)
     return "found", aura
 end
 
+-- Answers a condition on the player's own buff by spell ID, for a restricted client where the walk of the player's auras
+-- is refused in combat.
+-- @param value table  The condition value (unit, spell, anyrank, ownbuff).
+-- @param filter string  The aura filter; only "HELPFUL" is answered here.
+-- @param mode string  The evaluation mode; 'present', 'remaining' and 'stacks'.
+-- @return string|nil  "none" (the player has none of the spell's ranks) or "found"; nil when the walk must decide.
+-- @return table|nil  The aura when the first return is "found"; nil otherwise.
+--
+-- Every known rank is asked for when any rank matches. A refusal, or an aura whose fields cannot be read, leaves the
+-- walk to say so.
+local function lookupPlayerBySpell(value, filter, mode)
+    if platform.secretsUnrestricted or type(platform.GetPlayerAuraBySpellID) ~= "function" then
+        return
+    end
+    if value.unit ~= "player" or filter ~= "HELPFUL" or type(value.spell) ~= "number" then
+        return
+    end
+    if not (C_UnitAuras and type(C_UnitAuras.GetPlayerAuraBySpellID) == "function") then
+        return
+    end
+    if mode ~= "present" and mode ~= "remaining" and mode ~= "stacks" then
+        return
+    end
+
+    local ids = { value.spell }
+
+    if anyRank(value) and addon.SpellCatalog and type(addon.SpellCatalog.GetAllSpellIds) == "function" then
+        ids = addon.SpellCatalog:GetAllSpellIds(value.spell) or ids
+    end
+
+    for _, id in ipairs(ids) do
+        local aura, reason = platform:GetPlayerAuraBySpellID(id)
+
+        if reason then
+            return
+        end
+
+        if aura then
+            if aura.unavailable and (mode ~= "present" or value.ownbuff) then
+                return
+            end
+            if value.ownbuff and aura.sourceUnit ~= "player" then
+                return
+            end
+
+            return "found", aura
+        end
+    end
+
+    return "none"
+end
+
 -- ============================================================================
 -- Evaluation
 -- ============================================================================
@@ -321,6 +373,10 @@ function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
     end
 
     local direct, found = lookupByName(value, filter, mode)
+
+    if direct == nil then
+        direct, found = lookupPlayerBySpell(value, filter, mode)
+    end
 
     if direct == "none" then
         return false

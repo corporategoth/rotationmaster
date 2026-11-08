@@ -63,10 +63,31 @@ function addon:BuildPremadeSpellDiagnostic()
         return lines, 0
     end
 
-    local rows = self:GetBuiltinStates(self.currentSpec or 0) or {}
+    local rows, why = self:GetBuiltinStates(self.currentSpec or 0)
+    rows = rows or {}
+
+    lines[#lines + 1] = string.format(
+        '%d Built In(s) for this class%s',
+        #rows,
+        why and (' (list reason: ' .. tostring(why) .. ')') or ''
+    )
+
+    local fitting = 0
 
     for _, row in ipairs(rows) do
-        if row.fits and type(row.body) == 'table' then
+        local body = type(row.body) == 'table' and row.body or nil
+
+        if not body and row.fits and type(self.GetDefaultRotation) == 'function' then
+            local view = self:GetDefaultRotation(row.id)
+            body = view and type(view.envelope) == 'table' and view.envelope.body or nil
+        end
+
+        if row.fits then
+            fitting = fitting + 1
+        end
+
+        if row.fits and body then
+            row = { id = row.id, body = body }
             local found, ids, missing = {}, {}, {}
             collect(row.body, found)
             checked = checked + 1
@@ -98,6 +119,8 @@ function addon:BuildPremadeSpellDiagnostic()
             end
         end
     end
+
+    lines[#lines + 1] = string.format('%d of them fit this client', fitting)
 
     lines[#lines + 1] = string.format(
         '%d premade(s) checked, %d unknown spell ID(s). An ID the client knows may still not be learnable by this class.',

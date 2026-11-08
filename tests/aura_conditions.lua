@@ -305,6 +305,37 @@ test('the final allowed aura can provide a readable presence match', function()
     assert(f.addon:evaluateCondition(value('BUFF')) and calls == 256)
 end)
 
+test('on a restricted client the player\'s own buff is read by spell ID when the walk of auras is refused', function()
+    local f = fixture(true)
+    f.load('Platform/spells.lua')
+    f.env.C_Spell = { GetSpellInfo = function(id) return { name = 'Ghost Wolf', spellID = id } end }
+    f.addon.Platform.secretsUnrestricted = false
+    local answer
+
+    f.env.C_UnitAuras = {
+        GetAuraDataByIndex = function()
+            error("GetAuraDataByIndex(): Auras cannot be accessed when secret while tainted by 'RotationMaster'")
+        end,
+        GetPlayerAuraBySpellID = function(id)
+            if answer == 'refused' then
+                error('refused')
+            end
+
+            return answer and id == 2645 and { name = 'Ghost Wolf', spellId = 2645, sourceUnit = 'player' } or nil
+        end,
+    }
+
+    local ghost = { type = 'BUFF', unit = 'player', spell = 2645 }
+    answer = true
+    assert(f.addon:evaluateCondition(ghost) == true, 'a refused walk does not make the buff unreadable')
+    answer = false
+    assert(f.addon:evaluateCondition(ghost) == false, 'no such aura: the answer is no')
+    answer = 'refused'
+    local ok, result, why = pcall(f.addon.evaluateConditionResult, f.addon, ghost, {})
+    assert(ok and result.status ~= 'match' and result.status ~= 'no-match', 'a refused lookup is unavailable')
+    assert(f.addon.Platform.lastAuraError, 'the refusal is kept for the glow report')
+end)
+
 test('numeric aura families opt into readable localized names while exact IDs stay exact', function()
     local f = fixture(true)
     f.load('Platform/spells.lua')

@@ -1337,10 +1337,6 @@ function addon:RunGlowDiagnostic(seconds)
                 self:CancelTimer(watcher.timer)
                 watcher = nil
                 self:print(L['Glow watch finished. Run /rm debug glow show to view it.'])
-
-                if self.ShowConditionText then
-                    self:ShowConditionText(table.concat(lines, '\n'), L['Glow diagnostic'])
-                end
             end
         end, 1)
 

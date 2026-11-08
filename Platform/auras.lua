@@ -203,6 +203,34 @@ function platform:GetAuraBySpellName(unit, name, filter)
     return normalize(raw, true)
 end
 
+-- Reads one of the player's own buffs by spell ID.
+-- @param spellID number  The spell ID of the aura to find.
+-- @return table|nil  The validated aura; nil when the player has no such aura or it cannot be read.
+-- @return string|nil  The reason code when the first return is nil because of a failure; nil otherwise.
+--
+-- On a restricted client the game refuses to walk the player's auras in combat to addon code (it raises "Auras cannot
+-- be accessed when secret while tainted"), so a lookup by spell ID is tried first: it names the one aura wanted and may
+-- be answered where the walk is not. The error text of a refusal is kept in platform.lastAuraError for the glow report.
+function platform:GetPlayerAuraBySpellID(spellID)
+    local lookup = C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID
+
+    if type(lookup) ~= "function" then
+        return nil, "missing-api"
+    end
+    if not self:CanReadValue(spellID) or type(spellID) ~= "number" or spellID <= 0 or spellID % 1 ~= 0 then
+        return nil, "invalid-aura-query"
+    end
+
+    local ok, raw = pcall(lookup, spellID)
+
+    if not ok then
+        self.lastAuraError = tostring(raw)
+        return nil, "api-error"
+    end
+
+    return normalize(raw, true)
+end
+
 -- Reads one field of a validated aura.
 -- @param aura table  An aura record from GetAuraByIndex or GetAuraBySpellName.
 -- @param field string  The field name, one of those RM reads (name, spellID, applications, dispelName, duration,
