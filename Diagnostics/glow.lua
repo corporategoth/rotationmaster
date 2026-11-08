@@ -457,6 +457,50 @@ local function conditionStatus(self, step)
     return show(result.status) .. (result.reason and (' (' .. show(result.reason) .. ')') or '')
 end
 
+-- Lists how each part of a step's conditions reads now, so a Stop that matched or paused says which part did.
+-- @param self table  The addon.
+-- @param step table  The step.
+-- @return string|nil  "TYPE unit spell: status (reason)" for each leaf condition, joined by "; "; nil when none can be read.
+local function leafDetail(self, step)
+    if type(self.evaluateConditionResult) ~= 'function' then
+        return nil
+    end
+
+    local out = {}
+
+    -- Walks a condition tree and reads each leaf on its own (the engine reads them the same way).
+    -- @param cond any  A condition, a list of conditions, or an AND, OR or NOT group.
+    local function walk(cond)
+        if type(cond) ~= 'table' or #out >= 10 then
+            return
+        end
+
+        if cond.type == 'AND' or cond.type == 'OR' then
+            for _, child in ipairs(cond.value or {}) do
+                walk(child)
+            end
+        elseif cond.type == 'NOT' then
+            walk(cond.value)
+        elseif cond.type then
+            local ok, result = pcall(self.evaluateConditionResult, self, cond, { stepId = step.id })
+
+            local text = ok
+                and type(result) == 'table'
+                and (show(result.status) .. (result.reason and (' (' .. show(result.reason) .. ')') or ''))
+                or ('error: ' .. show(result))
+
+            out[#out + 1] = string.format('%s %s %s: %s', show(cond.type), show(cond.unit), show(cond.spell), text)
+        else
+            for _, child in ipairs(cond) do
+                walk(child)
+            end
+        end
+    end
+
+    walk(step.conditions)
+    return #out > 0 and table.concat(out, '; ') or nil
+end
+
 -- Works out one step's outcome as the engine would see it now.
 -- @param self table  The addon.
 -- @param report table  The report object; lines are added to it when verbose.
@@ -503,7 +547,17 @@ local function walkStep(self, report, row, now, verbose)
         end
 
         if status:match('^match') or status:match('^unavailable') then
-            return 'stop', nil, 'a stop step matched'
+            local detail = leafDetail(self, step)
+
+            if verbose and detail then
+                report.add('    parts: %s', detail)
+            end
+
+            return 'stop',
+                nil,
+                (status:match('^match') and 'a stop step matched'
+                    or 'a stop step could not be read, which pauses the rotation')
+                    .. (detail and (': ' .. detail) or '')
         end
 
         return 'notmatched'
@@ -1218,7 +1272,7 @@ local function watchLine(self)
     local sink = newReport()
 
     for n, row in ipairs(rows or {}) do
-        if n > 4 then
+        if n > 14 then
             break
         end
 
@@ -1230,6 +1284,10 @@ local function watchLine(self)
             verdict,
             verdict == 'selected' and ('=' .. show(spell)) or (reason and ('(' .. reason .. ')') or '')
         )
+
+        if verdict == 'selected' or verdict == 'stop' then
+            break
+        end
     end
 
     return table.concat(parts, ' ')
