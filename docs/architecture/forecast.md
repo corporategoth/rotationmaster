@@ -58,7 +58,10 @@ less certain" is off; the first icon never fades. Each predicted icon also says,
 first spell it would be cast ("+3.5s"), and, at its foot, the confidence as a percentage (the percentage follows the same setting).
 When nothing is ready after a cast the projection moves forward a second at a time, up to ten seconds, to the next step that is,
 so the queue is filled even while everything cools down; each second waited costs 3% of the confidence. The preview icons draw no
-cooldown dial.
+cooldown dial. A later slot is never shown surer than the one before it, since it only comes true if that one did. The pass judges
+readiness by the preview's own options (`NewActionReadiness(now, 'preview')`), so a preview that ignores range or mana projects the same
+way it advises. While a cast is under way the first slot's time counts from the cast's remaining seconds when the game lets them be read, so the
+"+Ns" figures count down as the cast goes on; the times of a wait (nothing ready) are aged by the poll in between.
 
 ## Measuring it (`Analytics/metrics.lua`)
 

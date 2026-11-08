@@ -136,7 +136,8 @@ function addon:PreviewTrace(info)
         shown[#shown + 1] = string.format(
             '%s%s',
             type(infoSpell) == 'table' and infoSpell.name or tostring(slot.spell),
-            slot.at and string.format(' @%.1fs', slot.at) or ''
+            (slot.delay and string.format(' +%.1fs', slot.delay) or '')
+                .. (slot.confidence and string.format(' %d%%', math.floor(slot.confidence * 100 + 0.5)) or '')
         )
     end
 
@@ -167,7 +168,7 @@ function addon:PreviewTrace(info)
     )
 
     local text = string.format(
-        '%s: walk %s; advised %d; casting %s; forecast %s -> %d (%s); pass %s%s; gcd %s; %s; %s',
+        '%s: walk %s; advised %d; casting %s; forecast %s -> %d (%s); pass %s%s; waited %.0fs; %s readiness; gcd %s; %s; %s',
         tostring(info.engine),
         tostring(info.ended),
         info.real or 0,
@@ -177,6 +178,8 @@ function addon:PreviewTrace(info)
         table.concat(shown, ', '),
         tostring(forecast and forecast.passEnded),
         forecast and forecast.lastError and ('; ERROR ' .. forecast.lastError) or '',
+        forecast and forecast.lastWaited or 0,
+        info.separate and 'separate preview' or 'shared',
         type(gcd) == 'table' and 'readable' or 'unreadable',
         reads,
         table.concat(states, '; ')
