@@ -341,103 +341,6 @@ function addon:BuildGeneralSettings(p)
     locked:GetFontString():SetWidth(third - 30)
     p.y = previewY + 30
 
-    -- The title and the target health bar share a row; the preview's own readiness options have a row of their own, with
-    -- the three they hold under it. The preview can judge readiness by its own three options (Core/action_policy.lua, both
-    -- engines in main.lua); off, it follows the ones above. The three are disabled while it is off.
-    local pairY = p.y
-
-    local title = p:Check(
-        'preview_title',
-        L['Show a title above the preview'],
-        profile.preview_title ~= false,
-        function(v)
-            profile.preview_title = v
-            previewChanged()
-        end
-    )
-
-    p.y = pairY
-
-    local health = p:Check(
-        'preview_target_health',
-        L['Show target health under the preview'],
-        profile.preview_target_health == true,
-        function(v)
-            profile.preview_target_health = v
-            previewChanged()
-        end
-    )
-
-    local half = p.width / 2
-
-    for i, control in ipairs({ title, health }) do
-        control:ClearAllPoints()
-        control:SetPoint('TOPLEFT', (i - 1) * half, -pairY)
-        control:SetWidth(half - 8)
-        control:GetFontString():SetWidth(half - 30)
-    end
-
-    p.y = pairY + 30
-
-    p:Check(
-        'preview_readiness',
-        L['Preview uses its own readiness options'],
-        profile.preview_readiness == true,
-        function(v)
-            profile.preview_readiness = v
-            p:Draw()
-        end
-    )
-
-    local previewReadinessY = p.y
-
-    for _, entry in ipairs({
-        { 'preview_ignore_mana', 'Ignore Mana' },
-        { 'preview_ignore_range', 'Ignore Range' },
-        { 'preview_ignore_moving', 'Ignore Moving' },
-    }) do
-        local key = entry[1]
-
-        local box = p:Check(key, L[entry[2]], profile[key] == true, function(v)
-            profile[key] = v
-
-            if key == 'preview_ignore_mana' then
-                p:Draw()
-            end
-        end)
-
-        if profile.preview_readiness ~= true then
-            box:Disable()
-        end
-    end
-
-    self:LayoutWorkbenchRow(
-        { p.fields.preview_ignore_mana, p.fields.preview_ignore_range, p.fields.preview_ignore_moving },
-        0,
-        previewReadinessY,
-        p.width,
-        { text = 22 }
-    )
-
-    p.y = previewReadinessY + 30
-
-    -- A spell the player cannot afford is only shown while Ignore Mana is on (the preview's own when it has them), so the
-    -- gray only has something to act on then.
-    local gray = p:Check(
-        'preview_gray_unaffordable',
-        L['Gray out preview spells you cannot afford yet'],
-        profile.preview_gray_unaffordable ~= false,
-        function(v)
-            profile.preview_gray_unaffordable = v
-            previewChanged()
-        end
-    )
-
-    if not (profile.preview_readiness == true and profile.preview_ignore_mana == true
-        or profile.preview_readiness ~= true and profile.ignore_mana == true) then
-        gray:Disable()
-    end
-
     -- Masque owns this immediate appearance preference. Keep it outside the
     -- General draft so Discard never rewinds another addon's skin settings.
     local skinY = p:Row(L['Skin'], 28)
@@ -564,6 +467,103 @@ function addon:BuildGeneralSettings(p)
         sample:Disable()
     end
 
+    -- The title and the target health bar share a row; the preview's own readiness options have a row of their own, with
+    -- the three they hold under it. The preview can judge readiness by its own three options (Core/action_policy.lua, both
+    -- engines in main.lua); off, it follows the ones above. The three are disabled while it is off.
+    local pairY = p.y
+
+    local title = p:Check(
+        'preview_title',
+        L['Show a title above the preview'],
+        profile.preview_title ~= false,
+        function(v)
+            profile.preview_title = v
+            previewChanged()
+        end
+    )
+
+    p.y = pairY
+
+    local health = p:Check(
+        'preview_target_health',
+        L['Show target health under the preview'],
+        profile.preview_target_health == true,
+        function(v)
+            profile.preview_target_health = v
+            previewChanged()
+        end
+    )
+
+    local half = p.width / 2
+
+    for i, control in ipairs({ title, health }) do
+        control:ClearAllPoints()
+        control:SetPoint('TOPLEFT', (i - 1) * half, -pairY)
+        control:SetWidth(half - 8)
+        control:GetFontString():SetWidth(half - 30)
+    end
+
+    p.y = pairY + 30
+
+    p:Check(
+        'preview_readiness',
+        L['Preview uses its own readiness options'],
+        profile.preview_readiness == true,
+        function(v)
+            profile.preview_readiness = v
+            p:Draw()
+        end
+    )
+
+    local previewReadinessY = p.y
+
+    for _, entry in ipairs({
+        { 'preview_ignore_mana', 'Ignore Mana' },
+        { 'preview_ignore_range', 'Ignore Range' },
+        { 'preview_ignore_moving', 'Ignore Moving' },
+    }) do
+        local key = entry[1]
+
+        local box = p:Check(key, L[entry[2]], profile[key] == true, function(v)
+            profile[key] = v
+
+            if key == 'preview_ignore_mana' then
+                p:Draw()
+            end
+        end)
+
+        if profile.preview_readiness ~= true then
+            box:Disable()
+        end
+    end
+
+    self:LayoutWorkbenchRow(
+        { p.fields.preview_ignore_mana, p.fields.preview_ignore_range, p.fields.preview_ignore_moving },
+        0,
+        previewReadinessY,
+        p.width,
+        { text = 22 }
+    )
+
+    p.y = previewReadinessY + 30
+
+    -- A spell the player cannot afford is only shown while Ignore Mana is on (the preview's own when it has them), so the
+    -- gray only has something to act on then.
+    local gray = p:Check(
+        'preview_gray_unaffordable',
+        L['Gray out preview spells you cannot afford yet'],
+        profile.preview_gray_unaffordable ~= false,
+        function(v)
+            profile.preview_gray_unaffordable = v
+            previewChanged()
+        end
+    )
+
+    if not (profile.preview_readiness == true and profile.preview_ignore_mana == true
+        or profile.preview_readiness ~= true and profile.ignore_mana == true) then
+        gray:Disable()
+    end
+
     -- The forecast fills the preview with predictions, so its switches are part of the preview.
     p:Check(
         'forecast',
@@ -587,11 +587,21 @@ function addon:BuildGeneralSettings(p)
         end
     )
 
-    p:Check('forecast_percent', L['Show how sure each prediction is'], profile.forecast_percent ~= false, function(v)
-        profile.forecast_percent = v
-    end)
+    -- How sure and how soon share a row.
+    local rowY = p.y
 
-    p:Check(
+    local percent = p:Check(
+        'forecast_percent',
+        L['Show how sure each prediction is'],
+        profile.forecast_percent ~= false,
+        function(v)
+            profile.forecast_percent = v
+        end
+    )
+
+    p.y = rowY
+
+    local seconds = p:Check(
         'forecast_delay',
         L['Show the seconds until each prediction is cast'],
         profile.forecast_delay ~= false,
@@ -599,6 +609,15 @@ function addon:BuildGeneralSettings(p)
             profile.forecast_delay = v
         end
     )
+
+    for i, control in ipairs({ percent, seconds }) do
+        control:ClearAllPoints()
+        control:SetPoint('TOPLEFT', (i - 1) * (p.width / 2), -rowY)
+        control:SetWidth(p.width / 2 - 8)
+        control:GetFontString():SetWidth(p.width / 2 - 30)
+    end
+
+    p.y = rowY + 30
 
     p:Button('forecast_clear', L['Forget what the forecast has learned'], function()
         self:ClearForecast()
