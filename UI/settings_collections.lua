@@ -219,11 +219,12 @@ function addon:OpenNativeSettings(parent, key, cached)
                 'preview_ignore_moving', 'preview_target_health', 'preview_player_power', 'preview_target_cast',
                 'preview_gray_unaffordable', 'effect', 'color', 'magnification', 'setpoint', 'xoffs', 'yoffs',
                 'loglevel', 'detailed_profiling', 'disable_autoswitch', 'forecast', 'forecast_confidence',
-                'live_config_update', 'spell_history', 'combat_history', 'damage_history', 'disable_buttons',
-                'assisted_highlight', 'tooltips', 'tooltip_itemsets', 'tooltip_rotations', 'tooltip_conditions',
-                'tooltip_disabled_rotations', 'tooltip_exclude_disabled_conditions', 'tooltip_limit', 'rotation_view',
-                'preview_spells', 'preview_vertical', 'preview_locked', 'preview_opacity', 'preview_title',
-                'preview_icon_size', 'preview_window', 'minimap'
+                'forecast_percent', 'forecast_delay', 'live_config_update', 'spell_history', 'combat_history',
+                'damage_history', 'disable_buttons', 'assisted_highlight', 'tooltips', 'tooltip_itemsets',
+                'tooltip_rotations', 'tooltip_conditions', 'tooltip_disabled_rotations',
+                'tooltip_exclude_disabled_conditions', 'tooltip_limit', 'rotation_view', 'preview_spells',
+                'preview_vertical', 'preview_locked', 'preview_opacity', 'preview_title', 'preview_icon_size',
+                'preview_window', 'minimap'
             },
             char = { 'specs' },
         },

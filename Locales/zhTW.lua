@@ -12135,4 +12135,14 @@ addon.translation = {
 --     groups match when any of them does. The game evaluates them itself, so this works in combat
 --     on every client. Only the bracketed conditions are accepted, never a command.
 [3637] = "當巨集條件成立時符合，與巨集中完全相同：例如 [combat,harm]、[stance:2]、[mod:shift] 或 [@focus,exists,nodead]。多個方括號群組中任一個成立即符合。由遊戲自己判斷，因此在任何用戶端的戰鬥中都有效。只接受方括號中的條件，從不接受指令。",
+-- da7a4b58 English: Show how sure each prediction is
+[3638] = "顯示每個預測的把握程度",
+-- e26e4f27 English: Show, at the foot of each predicted icon, how sure the addon is of that
+--     prediction, as a percentage.
+[3639] = "在每個預測圖示的下方，以百分比顯示插件對該預測的把握程度。",
+-- 3ac35345 English: Show the seconds until each prediction is cast
+[3640] = "顯示每個預測還需多少秒施放",
+-- 155a0c53 English: Show, over each predicted icon, how many seconds it would be cast after the
+--     first recommendation, or from now when nothing is ready yet.
+[3641] = "在每個預測圖示上方顯示它將在第一個建議之後多少秒施放；若尚無可用技能，則從現在起計算。",
 }

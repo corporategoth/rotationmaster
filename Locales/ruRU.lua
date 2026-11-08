@@ -12135,4 +12135,14 @@ addon.translation = {
 --     groups match when any of them does. The game evaluates them itself, so this works in combat
 --     on every client. Only the bracketed conditions are accepted, never a command.
 [3637] = "Выполняется, если выполняются условия макроса, точно как в макросе: например [combat,harm], [stance:2], [mod:shift] или [@focus,exists,nodead]. Несколько групп в квадратных скобках выполняются, если выполняется любая из них. Игра проверяет их сама, поэтому это работает в бою в любом клиенте. Принимаются только условия в квадратных скобках, никогда не команда.",
+-- da7a4b58 English: Show how sure each prediction is
+[3638] = "Показывать уверенность в каждом прогнозе",
+-- e26e4f27 English: Show, at the foot of each predicted icon, how sure the addon is of that
+--     prediction, as a percentage.
+[3639] = "Показывает внизу каждого прогнозируемого значка, насколько аддон уверен в этом прогнозе, в процентах.",
+-- 3ac35345 English: Show the seconds until each prediction is cast
+[3640] = "Показывать секунды до применения каждого прогноза",
+-- 155a0c53 English: Show, over each predicted icon, how many seconds it would be cast after the
+--     first recommendation, or from now when nothing is ready yet.
+[3641] = "Показывает над каждым прогнозируемым значком, через сколько секунд после первой рекомендации он будет применён, или от текущего момента, если пока ничего не готово.",
 }

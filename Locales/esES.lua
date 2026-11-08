@@ -12135,4 +12135,14 @@ addon.translation = {
 --     groups match when any of them does. The game evaluates them itself, so this works in combat
 --     on every client. Only the bracketed conditions are accepted, never a command.
 [3637] = "Se cumple cuando se cumplen las condiciones de macro, igual que en una macro: por ejemplo [combat,harm], [stance:2], [mod:shift] o [@focus,exists,nodead]. Varios grupos entre corchetes se cumplen si se cumple cualquiera de ellos. El propio juego las evalúa, así que funciona en combate en cualquier cliente. Solo se aceptan las condiciones entre corchetes, nunca un comando.",
+-- da7a4b58 English: Show how sure each prediction is
+[3638] = "Mostrar la seguridad de cada predicción",
+-- e26e4f27 English: Show, at the foot of each predicted icon, how sure the addon is of that
+--     prediction, as a percentage.
+[3639] = "Muestra, en la parte inferior de cada icono previsto, el porcentaje de seguridad del addon en esa predicción.",
+-- 3ac35345 English: Show the seconds until each prediction is cast
+[3640] = "Mostrar los segundos hasta lanzar cada predicción",
+-- 155a0c53 English: Show, over each predicted icon, how many seconds it would be cast after the
+--     first recommendation, or from now when nothing is ready yet.
+[3641] = "Muestra, sobre cada icono previsto, cuántos segundos después de la primera recomendación se lanzaría, o desde ahora si aún no hay nada listo.",
 }

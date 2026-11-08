@@ -55,7 +55,8 @@ for a spell with a cast time (it can be interrupted or moved away from), and by 
 project. With prediction tracking on, the measured hit rate of that slot (over all rotations, once 20 predictions have been
 checked) is averaged with it. The preview icon fades with it (opacity 0.4 to 1) unless General > Forecast > "Fade predictions that are
 less certain" is off; the first icon never fades. Each predicted icon also says, over its middle, how many seconds after the
-first spell it would be cast ("+3.5s"), and, at its foot, the confidence as a percentage (the percentage follows the same setting).
+first spell it would be cast ("+3.5s"), and, at its foot, the confidence as a percentage. The fade, the percentage and the seconds are three options (General > Forecast: "Fade
+predictions that are less certain", "Show how sure each prediction is", "Show the seconds until each prediction is cast"), each on by default.
 When nothing is ready after a cast the projection moves forward a second at a time, up to ten seconds, to the next step that is,
 so the queue is filled even while everything cools down; each second waited costs 3% of the confidence. The preview icons draw no
 cooldown dial. A later slot is never shown surer than the one before it, since it only comes true if that one did. The pass judges

@@ -303,6 +303,24 @@ test('a projection of standing still reads no movement, and the real reader is b
     assert(a.Forecast:PlayerMoving() == false)
 end)
 
+test('a hidden cooldown counts from the last cast, and the pass jumps to when it ends', function()
+    local f, a, platform = client()
+    f.world.base[B] = { 6000, 1500 }
+    platform.GetSpellCooldown = function() return nil, 'restricted-value' end
+    platform.IsSpellReady = function() return false end
+    a.Forecast:NoteCast(B, NOW - 4)
+    local slots = a.Forecast:Run({ { spell = B, action = true } }, A, 1)
+    assert(#slots == 1, 'the spell comes back once its cooldown is over')
+    assert(math.abs(slots[1].delay - 2) < 0.1, 'cast four seconds ago of six: ' .. tostring(slots[1].delay))
+end)
+
+test('a readable cooldown is waited out exactly, not to the next whole second', function()
+    local f, a = client()
+    f.world.cooldown[B] = { startTime = NOW - 0.6, duration = 6, isEnabled = true, modRate = 1 }
+    local slots = a.Forecast:Wait({ { spell = B, action = true } }, 1)
+    assert(#slots == 1 and math.abs(slots[1].delay - 5.4) < 0.1, tostring(slots[1] and slots[1].delay))
+end)
+
 test('the pass is judged by the preview readiness options', function()
     local f, a = client()
     local outputs = {}
@@ -389,7 +407,7 @@ test(
 
         a.Forecast:Run({ {} }, A, 3)
 
-        assert(seen[1] == false and seen[2] == false and seen[3] == false, 'a six second cooldown has not run out yet')
+        assert(seen[1] == false, 'a six second cooldown has not run out yet')
         assert(seen[#seen] == true, 'and has once the projected time has gone past it')
     end
 )
