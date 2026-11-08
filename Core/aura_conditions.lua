@@ -252,6 +252,9 @@ local function playerKnows(spell)
     return type(platform.IsSpellKnown) == "function" and platform:IsSpellKnown(spell) == true
 end
 
+-- Whether each spell was last read on the player as present (true) or absent (false) while the game was showing auras.
+local lastRead = {}
+
 -- Answers a condition on the player's own buff by spell ID, for a restricted client where the walk of the player's auras
 -- is refused in combat.
 -- @param value table  The condition value (unit, spell, anyrank, ownbuff).
@@ -305,6 +308,7 @@ local function lookupPlayerBySpell(value, filter, mode)
             return
         end
 
+        lastRead[value.spell] = true
         return "found", aura
     end
 
@@ -335,13 +339,19 @@ local function lookupPlayerBySpell(value, filter, mode)
         end
     end
 
-    -- While the game hides auras, nothing found is not proof that the buff is gone (Forever hands back nothing for a buff
-    -- that is up as combat starts): the walk, the Cooldown Manager and the remembered read decide, and a step whose
-    -- condition stays unavailable is simply not offered.
+    -- While the game hides auras, nothing found is not proof that a buff that was up has gone (Forever hands back nothing
+    -- for a buff that is up as combat starts): for a spell last read as present, the walk, the Cooldown Manager and the
+    -- remembered read decide, and a step whose condition stays unavailable is simply not offered. A spell last read as
+    -- absent, or never read, stays absent, so a Stop or Branch on a buff the player does not have is not held up.
     if type(platform.AreAurasHidden) == "function" and platform:AreAurasHidden() then
-        return
+        if lastRead[value.spell] then
+            return
+        end
+
+        return "none"
     end
 
+    lastRead[value.spell] = false
     return "none"
 end
 
