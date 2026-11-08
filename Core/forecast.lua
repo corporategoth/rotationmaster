@@ -20,6 +20,7 @@ local MAX_SPELLS = 160
 local BASE_GCD, MIN_STEP = 1.5, 0.05
 -- Per-step confidence before anything specific is known, and its penalties.
 local STEP_CONFIDENCE, CAST_TIME_PENALTY, REPEAT_PENALTY, UNMODELED_PENALTY = 0.9, 0.95, 0.9, 0.88
+local WAIT_DECAY = 0.97
 
 -- The projection in force while a pass runs, and the originals it replaced.
 local state, originals = nil, {}
@@ -572,6 +573,18 @@ local function newState(now)
     return s
 end
 
+-- Rewrites what depends on the projected time after it moved: the aura cache and the expiry of the auras applied so far.
+local function retime()
+    state.auras = {}
+
+    for _, applied in ipairs(state.applied) do
+        -- An aura's expiry is written for the projected time the next pass reads it at.
+        if applied.record.duration > 0 then
+            applied.record.expirationTime = state.now + applied.at + applied.record.duration - state.t
+        end
+    end
+end
+
 -- Applies a spell cast at the projected time to the state: its cooldown, cost, charges, auras and health effects, and
 -- moves the projected time to when the player can act again.
 -- @param spell number  The spell id.
@@ -650,14 +663,7 @@ local function apply(spell)
     end
 
     state.t = state.t + length
-    state.auras = {}
-
-    for _, applied in ipairs(state.applied) do
-        -- An aura's expiry is written for the projected time the next pass reads it at.
-        if applied.record.duration > 0 then
-            applied.record.expirationTime = state.now + applied.at + applied.record.duration - state.t
-        end
-    end
+    retime()
 
     return factor
 end
@@ -728,6 +734,25 @@ end
 local WAIT_STEP, WAIT_MAX, WAIT_REUSE = 1, 10, 0.5
 local lastWait = { at = -1 }
 
+-- Finds the next step that can be cast in the projected state, moving the projected time forward a second at a time while
+-- nothing is ready (everything is cooling down), for at most WAIT_MAX seconds.
+-- @param rot table  The rotation body.
+-- @return table|nil  The step as pickStep returns it; nil when nothing becomes ready in time.
+-- @return number  How many seconds the projected time was moved.
+local function nextStep(rot)
+    local pick = pickStep(rot, {}, addon:NewActionReadiness(state.now))
+    local start = state.t
+
+    -- Only a pass that ran to its end found nothing ready; a Stop step, or a pass that could not read, is not waited out.
+    while not pick and forecast.passEnded == 'complete' and state.t - start < WAIT_MAX do
+        state.t = state.t + WAIT_STEP
+        retime()
+        pick = pickStep(rot, {}, addon:NewActionReadiness(state.now))
+    end
+
+    return pick, state.t - start
+end
+
 -- Predicts what will be recommended while nothing can be cast now (everything is on cooldown): time is moved forward until
 -- a step becomes ready, that is the first slot, and the later slots follow from the state after it. The answer is kept for
 -- half a second, since the rotation is asked many times a second and its answer changes slowly.
@@ -753,27 +778,18 @@ function forecast:Wait(rot, count)
         install()
         local confidence = state.confidence
 
+        local first
+
         for slot = 1, math.min(5, count) do
-            local pick
-
-            local limit = state.t + WAIT_MAX
-
-            while state.t <= limit do
-                local ready = addon:NewActionReadiness(state.now)
-                pick = pickStep(rot, {}, ready)
-
-                if pick then
-                    break
-                end
-
-                state.t = state.t + WAIT_STEP
-            end
+            local pick, waited = nextStep(rot)
 
             if not pick then
                 break
             end
 
-            confidence = confidence * STEP_CONFIDENCE * apply(pick.spell)
+            first = first or state.t
+            local cast = state.t
+            confidence = confidence * STEP_CONFIDENCE * apply(pick.spell) * WAIT_DECAY ^ waited
 
             out[#out + 1] = {
                 spell = pick.spell,
@@ -782,6 +798,7 @@ function forecast:Wait(rot, count)
                 item = pick.item,
                 confidence = math.max(0.05, math.min(1, confidence)),
                 at = state.t,
+                delay = slot > 1 and cast - first or nil,
             }
         end
     end)
@@ -819,20 +836,19 @@ function forecast:Run(rot, first, count)
         local previous = first
 
         for slot = 1, math.min(4, count) do
-            local cache = {}
-            local ready = addon:NewActionReadiness(state.now)
-            local pick = pickStep(rot, cache, ready)
+            local pick, waited = nextStep(rot)
 
             if not pick then
                 break
             end
 
-            confidence = confidence * STEP_CONFIDENCE
+            confidence = confidence * STEP_CONFIDENCE * WAIT_DECAY ^ waited
 
             if pick.spell == previous then
                 confidence = confidence * REPEAT_PENALTY
             end
 
+            local cast = state.t
             local factor = apply(pick.spell)
             confidence = confidence * factor
             local measured = addon.Metrics and addon.Metrics.PredictionRate and addon.Metrics:PredictionRate(slot + 1)
@@ -845,6 +861,7 @@ function forecast:Run(rot, first, count)
                 item = pick.item,
                 confidence = math.max(0.05, math.min(1, shown)),
                 at = state.t,
+                delay = cast,
             }
 
             previous = pick.spell

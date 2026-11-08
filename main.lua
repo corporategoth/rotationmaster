@@ -3286,6 +3286,7 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
         gatedAfter = {},
         gatedEntries = {},
         recConf = {},
+        recDelay = {},
         obsSpell = {},
         obsEnabled = {},
         obsItem = {},
@@ -3459,7 +3460,7 @@ local function leanRecommend(plan, spellid, cond, index, itemId, role)
     plan.recommended = n
     plan.recSpell[n], plan.recCond[n], plan.recIndex[n], plan.recItem[n] = spellid, cond, index, itemId
     plan.recRole[n] = role or false
-    plan.recConf[n] = nil
+    plan.recConf[n], plan.recDelay[n] = nil, nil
 
     if role ~= 'preview' and not plan.glowIndex then
         plan.glowIndex = n
@@ -3664,7 +3665,7 @@ local function leanPublish(self, plan)
                 gated = gated + 1
             end
 
-            previewWindow:AddRecommendation(spellid, itemId, plan.recConf[n])
+            previewWindow:AddRecommendation(spellid, itemId, plan.recConf[n], plan.recDelay[n])
             shown = shown + 1
         end
 
@@ -4005,7 +4006,7 @@ local function evaluateLean(self)
 
         for _, slot in ipairs(self.Forecast:Run(plan.rot, plan.forecastSeed, plan.profile.preview_spells - 1)) do
             leanRecommend(plan, slot.spell, slot.cond, slot.index, slot.item, 'preview')
-            plan.recConf[plan.recommended] = slot.confidence
+            plan.recConf[plan.recommended], plan.recDelay[plan.recommended] = slot.confidence, slot.delay
         end
     elseif plan.recommended == 0 and plan.nativePreview and self.Forecast ~= nil then
         -- Casting: the rotation stops advising during a cast, so the preview shows what follows the spell being cast.
@@ -4020,7 +4021,7 @@ local function evaluateLean(self)
                 plan.profile.preview_spells or 1
             ))) do
                 leanRecommend(plan, slot.spell, slot.cond, slot.index, slot.item)
-                plan.recConf[plan.recommended] = slot.confidence
+                plan.recConf[plan.recommended], plan.recDelay[plan.recommended] = slot.confidence, slot.delay
             end
         end
     end
@@ -4047,7 +4048,7 @@ local function evaluateLean(self)
 
         for _, slot in ipairs(self.Forecast:Wait(plan.rot, math.max(1, plan.profile.preview_spells or 1))) do
             leanRecommend(plan, slot.spell, slot.cond, slot.index, slot.item, 'preview')
-            plan.recConf[plan.recommended] = slot.confidence
+            plan.recConf[plan.recommended], plan.recDelay[plan.recommended] = slot.confidence, slot.delay
             plan.waiting = true
         end
     end
@@ -4446,10 +4447,11 @@ function addon:EvaluateNextActionInternal()
         --   readiness, and predicted slots); nil for both.
         -- @param confidence number|nil  How sure a predicted recommendation is (the forecast); nil when read now.
         -- @param upcoming boolean|nil  True for a slot that cannot be cast yet (nothing is ready): shown, never lit.
+        -- @param delay number|nil  Seconds after the first recommendation a predicted slot would be cast.
         --
         -- The first one for the glow becomes the current spell (glow, WeakAuras and ROTATIONMASTER_SPELL_UPDATE); every
         -- one for the preview goes to the preview window, if any.
-        local function recommend(spellid, cond, index, itemId, role, confidence, upcoming)
+        local function recommend(spellid, cond, index, itemId, role, confidence, upcoming, delay)
             local glows = role ~= 'preview' and not upcoming and not glowed
             local shows = role ~= 'glow'
             waiting = upcoming == true
@@ -4513,7 +4515,7 @@ function addon:EvaluateNextActionInternal()
                 end
 
                 if shows and nativePreview then
-                    previewWindow:AddRecommendation(spellid, itemId, confidence)
+                    previewWindow:AddRecommendation(spellid, itemId, confidence, delay)
                 end
             end)
         end
@@ -4641,7 +4643,7 @@ function addon:EvaluateNextActionInternal()
             traceKind = 'run'
 
             for _, slot in ipairs(self.Forecast:Run(rot, forecastFirst, self.db.profile.preview_spells - 1)) do
-                recommend(slot.spell, slot.cond, slot.index, slot.item, 'preview', slot.confidence)
+                recommend(slot.spell, slot.cond, slot.index, slot.item, 'preview', slot.confidence, nil, slot.delay)
                 traceSlots[#traceSlots + 1] = { spell = slot.spell, at = slot.at }
             end
         elseif nativePreview and preview == 0 and self.Forecast ~= nil then
@@ -4656,7 +4658,7 @@ function addon:EvaluateNextActionInternal()
                     1,
                     self.db.profile.preview_spells or 1
                 ))) do
-                    recommend(slot.spell, slot.cond, slot.index, slot.item, nil, slot.confidence)
+                    recommend(slot.spell, slot.cond, slot.index, slot.item, nil, slot.confidence, nil, slot.delay)
                     traceSlots[#traceSlots + 1] = { spell = slot.spell, at = slot.at }
                 end
             end
@@ -4676,7 +4678,7 @@ function addon:EvaluateNextActionInternal()
             traceKind = 'wait'
 
             for _, slot in ipairs(self.Forecast:Wait(rot, math.max(1, self.db.profile.preview_spells or 1))) do
-                recommend(slot.spell, slot.cond, slot.index, slot.item, 'preview', slot.confidence, true)
+                recommend(slot.spell, slot.cond, slot.index, slot.item, 'preview', slot.confidence, true, slot.delay)
                 traceSlots[#traceSlots + 1] = { spell = slot.spell, at = slot.at }
             end
         end

@@ -103,9 +103,11 @@ local function client()
 
         for index, step in ipairs(body) do
             if visit(step, index) == false then
-                break
+                return { status = 'selected' }
             end
         end
+
+        return { status = 'complete' }
     end
 
     function a:evaluateConditionWithCache(condition)
@@ -252,6 +254,19 @@ test('the pass picks the first ready step each time, and a spell on cooldown is 
     assert(slots[1].confidence <= 0.9 and slots[1].confidence > 0.05)
 end)
 
+test(
+    'with every spell cooling down the pass moves forward, and each slot says when it follows the first spell',
+    function()
+        local f, a = client()
+        f.world.base[A] = { 6000, 0 }
+        local slots = a.Forecast:Run({ { spell = A, action = true } }, A, 2)
+        assert(#slots >= 1, 'the first spell is cast again once its cooldown has run out')
+        assert(slots[1].delay >= 6 and slots[1].delay <= 8, slots[1].delay)
+        assert(slots[2] == nil or slots[2].delay > slots[1].delay)
+        assert(slots[1].confidence < 0.9, 'waiting costs confidence')
+    end
+)
+
 test('cast time longer than the global cooldown sets the step, and costs a little confidence', function()
     local f, a = client()
     f.world.cast[A] = 3
@@ -324,9 +339,8 @@ test(
 
         a.Forecast:Run({ {} }, A, 3)
 
-        for _, ready in ipairs(seen) do
-            assert(ready == false, 'within 4.5 seconds a six second cooldown has not run out')
-        end
+        assert(seen[1] == false and seen[2] == false and seen[3] == false, 'a six second cooldown has not run out yet')
+        assert(seen[#seen] == true, 'and has once the projected time has gone past it')
     end
 )
 

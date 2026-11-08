@@ -82,7 +82,7 @@ end
 ---@field PauseLayout fun(self: RMRecommendationPreview)
 ---@field ResumeLayout fun(self: RMRecommendationPreview)
 ---@field DoLayout fun(self: RMRecommendationPreview)
----@field AddRecommendation fun(self: RMRecommendationPreview, spellId: number, itemId?: number, confidence?: number)
+---@field AddRecommendation fun(self: RMRecommendationPreview, spellId: number, itemId?: number, confidence?: number, delay?: number)
 function addon:CreateNativePreviewWindow()
     local window = self.nativePreviewWindow
 
@@ -134,15 +134,17 @@ function addon:CreateNativePreviewWindow()
                 icon.texture = icon:CreateTexture(nil, 'ARTWORK')
                 icon.texture:SetAllPoints(icon)
 
-                -- The spell's cooldown swipe, global cooldown included, as on an action button.
-                local made, cooldown = pcall(CreateFrame, 'Cooldown', nil, icon, 'CooldownFrameTemplate')
-
-                if made and cooldown then
-                    cooldown:SetAllPoints(icon)
-                    cooldown:SetFrameLevel(icon:GetFrameLevel() + 3)
-                    cooldown:Hide()
-                    icon.cooldown = cooldown
-                end
+                -- A predicted slot's timing and certainty, drawn over the icon from a frame of its own so the icon's fade does
+                -- not dim them.
+                local overlay = CreateFrame('Frame', nil, self.frame)
+                overlay:SetAllPoints(icon)
+                overlay:SetFrameLevel(icon:GetFrameLevel() + 6)
+                overlay:Hide()
+                icon.overlay = overlay
+                icon.delayText = overlay:CreateFontString(nil, 'OVERLAY', 'NumberFontNormalLarge')
+                icon.delayText:SetPoint('CENTER', overlay, 'CENTER', 0, 0)
+                icon.chanceText = overlay:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
+                icon.chanceText:SetPoint('BOTTOM', overlay, 'BOTTOM', 0, 2)
 
                 -- A gated step drawn over this icon, its visibility decided by the game (AddGatedRecommendation).
                 icon.gateFrame = CreateFrame('Frame', nil, icon)
@@ -190,8 +192,8 @@ function addon:CreateNativePreviewWindow()
 
                 icon:Hide()
 
-                if icon.cooldown then
-                    icon.cooldown:Hide()
+                if icon.overlay then
+                    icon.overlay:Hide()
                 end
 
                 addon:ClearPreviewGate(icon)
@@ -402,8 +404,9 @@ function addon:CreateNativePreviewWindow()
         -- @param spellId number  The spell ID.
         -- @param itemId number|nil  The item ID, when the recommendation is an item.
         -- @param confidence number|nil  How sure a predicted recommendation is, 0 to 1; nil for one read from the game as
-        --   it is now. The icon fades with it unless profile.forecast_confidence is off.
-        function window:AddRecommendation(spellId, itemId, confidence)
+        --   it is now. The icon fades with it, and shows it as a percentage, unless profile.forecast_confidence is off.
+        -- @param delay number|nil  For a predicted slot after the first, the seconds after the first spell it would be cast.
+        function window:AddRecommendation(spellId, itemId, confidence, delay)
             if not self:Valid() or self.count >= self.slots then
                 return
             end
@@ -438,8 +441,6 @@ function addon:CreateNativePreviewWindow()
                 icon.masqueSurface.texture:SetTexture(info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark')
             end
 
-            addon:ShowPreviewCooldown(icon, spellId, itemId)
-
             if self.pendingGate then
                 addon:ShowPreviewGate(icon, self.pendingGate)
                 self.pendingGate = nil
@@ -470,6 +471,23 @@ function addon:CreateNativePreviewWindow()
 
             if icon:GetAlpha() ~= alpha then
                 icon:SetAlpha(alpha)
+            end
+
+            if icon.overlay then
+                local showConfidence = type(confidence) == 'number' and self.profile.forecast_confidence ~= false
+                local timed = type(delay) == 'number'
+
+                icon.delayText:SetText(timed and string.format('+%.1fs', delay) or '')
+
+                icon.chanceText:SetText(
+                    showConfidence and string.format('%d%%', math.floor(confidence * 100 + 0.5)) or ''
+                )
+
+                if timed or showConfidence then
+                    icon.overlay:Show()
+                else
+                    icon.overlay:Hide()
+                end
             end
 
             icon:Show()
@@ -893,39 +911,6 @@ function addon:CreateNativePreviewWindow()
 
     window.frame:Show()
     return window
-end
-
--- Draws (or hides) a preview icon's cooldown swipe from Platform:GetSpellCooldownDisplay. Items show none. The
--- Cooldown setters are documented as protected, so every call is guarded; a refused call just hides the swipe.
--- @param icon table  The preview icon.
--- @param spellId number  The recommended spell.
--- @param itemId number|nil  The item, when the recommendation is an item.
-function addon:ShowPreviewCooldown(icon, spellId, itemId)
-    local cooldown = icon.cooldown
-
-    if not cooldown then
-        return
-    end
-
-    local kind, value, duration, rate
-
-    if not itemId and self.Platform.GetSpellCooldownDisplay then
-        kind, value, duration, rate = self.Platform:GetSpellCooldownDisplay(spellId)
-    end
-
-    local shown = false
-
-    if kind == 'duration' and type(cooldown.SetCooldownFromDurationObject) == 'function' then
-        shown = pcall(cooldown.SetCooldownFromDurationObject, cooldown, value, true)
-    elseif kind == 'times' and type(cooldown.SetCooldown) == 'function' then
-        shown = pcall(cooldown.SetCooldown, cooldown, value, duration, rate)
-    end
-
-    if shown then
-        cooldown:Show()
-    else
-        cooldown:Hide()
-    end
 end
 
 -- Draws a gated step over a preview icon. The gate's alpha pair comes from the game (Platform:GetGateAlphas, secret 0
