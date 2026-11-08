@@ -4010,16 +4010,18 @@ local function evaluateLean(self)
         end
     elseif plan.recommended == 0 and plan.nativePreview and self.Forecast ~= nil then
         -- Casting: the rotation stops advising during a cast, so the preview shows what follows the spell being cast.
-        local casting = self.Forecast:CastingSpell()
+        local casting, remaining = self.Forecast:CastingSpell()
         traceCasting = casting
 
         if casting then
             traceKind = 'run (casting)'
 
-            for _, slot in ipairs(self.Forecast:Run(plan.rot, casting, math.max(
-                1,
-                plan.profile.preview_spells or 1
-            ))) do
+            for _, slot in ipairs(self.Forecast:Run(
+                plan.rot,
+                casting,
+                math.max(1, plan.profile.preview_spells or 1),
+                remaining
+            )) do
                 leanRecommend(plan, slot.spell, slot.cond, slot.index, slot.item)
                 plan.recConf[plan.recommended], plan.recDelay[plan.recommended] = slot.confidence, slot.delay
             end
@@ -4057,7 +4059,7 @@ local function evaluateLean(self)
         local slots = {}
 
         for n = traceReal + 1, plan.recommended do
-            slots[#slots + 1] = { spell = plan.recSpell[n] }
+            slots[#slots + 1] = { spell = plan.recSpell[n], delay = plan.recDelay[n], confidence = plan.recConf[n] }
         end
 
         self:PreviewTrace({
@@ -4068,6 +4070,7 @@ local function evaluateLean(self)
             casting = traceCasting,
             forecast = traceKind,
             slots = slots,
+            separate = plan.previewReady ~= nil,
         })
     end
 
@@ -4644,22 +4647,29 @@ function addon:EvaluateNextActionInternal()
 
             for _, slot in ipairs(self.Forecast:Run(rot, forecastFirst, self.db.profile.preview_spells - 1)) do
                 recommend(slot.spell, slot.cond, slot.index, slot.item, 'preview', slot.confidence, nil, slot.delay)
-                traceSlots[#traceSlots + 1] = { spell = slot.spell, at = slot.at }
+                traceSlots[#traceSlots + 1] = { spell = slot.spell, delay = slot.delay, confidence = slot.confidence }
             end
         elseif nativePreview and preview == 0 and self.Forecast ~= nil then
             -- Casting: the rotation stops advising during a cast, so the preview shows what follows the spell being cast.
-            local casting = self.Forecast:CastingSpell()
+            local casting, remaining = self.Forecast:CastingSpell()
             traceCasting = casting
 
             if casting then
                 traceKind = 'run (casting)'
 
-                for _, slot in ipairs(self.Forecast:Run(rot, casting, math.max(
-                    1,
-                    self.db.profile.preview_spells or 1
-                ))) do
+                for _, slot in ipairs(self.Forecast:Run(
+                    rot,
+                    casting,
+                    math.max(1, self.db.profile.preview_spells or 1),
+                    remaining
+                )) do
                     recommend(slot.spell, slot.cond, slot.index, slot.item, nil, slot.confidence, nil, slot.delay)
-                    traceSlots[#traceSlots + 1] = { spell = slot.spell, at = slot.at }
+
+                    traceSlots[#traceSlots + 1] = {
+                        spell = slot.spell,
+                        delay = slot.delay,
+                        confidence = slot.confidence,
+                    }
                 end
             end
         end
@@ -4679,13 +4689,14 @@ function addon:EvaluateNextActionInternal()
 
             for _, slot in ipairs(self.Forecast:Wait(rot, math.max(1, self.db.profile.preview_spells or 1))) do
                 recommend(slot.spell, slot.cond, slot.index, slot.item, 'preview', slot.confidence, true, slot.delay)
-                traceSlots[#traceSlots + 1] = { spell = slot.spell, at = slot.at }
+                traceSlots[#traceSlots + 1] = { spell = slot.spell, delay = slot.delay, confidence = slot.confidence }
             end
         end
 
         if self.PreviewTrace then
             self:PreviewTrace({
                 engine = 'standard',
+                separate = previewReady and true or false,
                 rot = rot,
                 ended = sequence.status,
                 real = traceReal,
