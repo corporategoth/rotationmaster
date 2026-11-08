@@ -161,6 +161,7 @@ function addon:BuildGeneralSettings(p)
 
     p:Check('ignore_mana', L['Ignore Mana'], profile.ignore_mana == true, function(v)
         profile.ignore_mana = v
+        p:Draw()
     end)
 
     p:Check('ignore_range', L['Ignore Range'], profile.ignore_range == true, function(v)
@@ -399,6 +400,10 @@ function addon:BuildGeneralSettings(p)
 
         local box = p:Check(key, L[entry[2]], profile[key] == true, function(v)
             profile[key] = v
+
+            if key == 'preview_ignore_mana' then
+                p:Draw()
+            end
         end)
 
         if profile.preview_readiness ~= true then
@@ -436,7 +441,9 @@ function addon:BuildGeneralSettings(p)
         end
     )
 
-    p:Check(
+    -- A spell the player cannot afford is only shown while Ignore Mana is on (the preview's own when it has them), so the
+    -- gray only has something to act on then.
+    local gray = p:Check(
         'preview_gray_unaffordable',
         L['Gray out preview spells you cannot afford yet'],
         profile.preview_gray_unaffordable ~= false,
@@ -445,6 +452,11 @@ function addon:BuildGeneralSettings(p)
             previewChanged()
         end
     )
+
+    if not (profile.preview_readiness == true and profile.preview_ignore_mana == true
+        or profile.preview_readiness ~= true and profile.ignore_mana == true) then
+        gray:Disable()
+    end
 
     -- Masque owns this immediate appearance preference. Keep it outside the
     -- General draft so Discard never rewinds another addon's skin settings.
