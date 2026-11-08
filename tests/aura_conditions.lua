@@ -336,6 +336,32 @@ test('on a restricted client the player\'s own buff is read by spell ID when the
     assert(f.addon.Platform.lastAuraError, 'the refusal is kept for the glow report')
 end)
 
+test('in combat a spell the player knows, found by ID with its owner hidden, counts as their own buff', function()
+    local f = fixture(true)
+    f.load('Platform/spells.lua')
+    f.env.C_Spell = { GetSpellInfo = function(id) return { name = 'Lightning Shield', spellID = id } end }
+    f.addon.Platform.secretsUnrestricted = false
+    local opaque = {}
+    local known = true
+    f.env.canaccessvalue = function(v) return not rawequal(v, opaque) end
+    f.env.IsSpellKnown = function() return known end
+
+    f.env.C_UnitAuras = {
+        GetAuraDataByIndex = function()
+            error('refused')
+        end,
+        GetPlayerAuraBySpellID = function(id)
+            return id == 324 and { name = 'Lightning Shield', spellId = 324, sourceUnit = opaque } or nil
+        end,
+    }
+
+    local shield = { type = 'BUFF', unit = 'player', spell = 324, ownbuff = true }
+    assert(f.addon:evaluateCondition(shield) == true, 'its presence is answered, so the glow can clear')
+    known = false
+    local result = f.addon:evaluateConditionResult(shield, {})
+    assert(result.status ~= 'match', 'a spell the player has not learned is not assumed to be theirs')
+end)
+
 test('numeric aura families opt into readable localized names while exact IDs stay exact', function()
     local f = fixture(true)
     f.load('Platform/spells.lua')

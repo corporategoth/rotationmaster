@@ -245,6 +245,13 @@ local function lookupByName(value, filter, mode)
     return "found", aura
 end
 
+-- Tells whether the player has learned a spell.
+-- @param spell number  The spell id.
+-- @return boolean  True when the spell is known to the player.
+local function playerKnows(spell)
+    return type(platform.IsSpellKnown) == "function" and platform:IsSpellKnown(spell) == true
+end
+
 -- Answers a condition on the player's own buff by spell ID, for a restricted client where the walk of the player's auras
 -- is refused in combat.
 -- @param value table  The condition value (unit, spell, anyrank, ownbuff).
@@ -283,10 +290,19 @@ local function lookupPlayerBySpell(value, filter, mode)
         end
 
         if aura then
-            if aura.unavailable and (mode ~= "present" or value.ownbuff) then
+            local hidden = aura.unavailable
+            local ownerOnly = hidden and hidden.sourceUnit and next(hidden, next(hidden)) == nil
+
+            -- A hidden owner is not a hidden aura: for presence, a spell the player knows and finds on themselves in combat is
+            -- taken as their own (only a second caster of the same spell could make it someone else's).
+            if
+                hidden
+                and not (mode == "present"
+                    and (not value.ownbuff or ownerOnly and (playerKnows(value.spell) or playerKnows(id))))
+            then
                 return
             end
-            if value.ownbuff and aura.sourceUnit ~= "player" then
+            if not hidden and value.ownbuff and aura.sourceUnit ~= "player" then
                 return
             end
 
