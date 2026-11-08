@@ -158,6 +158,21 @@ function addon:GetGeneralOptionHelp()
             text = L["Shows your target's health as a thin bar under the preview window. The game draws it from the real health even where it hides health from addons (Retail and Forever in combat), so it is shown but never used to choose a step."],
         },
         {
+            id = "preview_player_power",
+            title = L["Show your power under the preview"],
+            text = L["Shows your mana, rage, energy or other main power as a thin bar under the preview window, drawn by the game from the real value even where it hides it from addons. It is shown but never used to choose a step."],
+        },
+        {
+            id = "preview_target_cast",
+            title = L["Show your target's cast under the preview"],
+            text = L["Shows a cast bar under the preview window while your target casts or channels. Where the game hides cast times from addons, it animates the bar itself, so it still runs in combat. It is shown but never used to choose a step."],
+        },
+        {
+            id = "preview_gray_unaffordable",
+            title = L["Gray out preview spells you cannot afford yet"],
+            text = L["Shows a recommended spell in gray while you lack the mana, rage or other power to cast it. This only happens with Ignore Mana on, which lets the preview show a spell before you can afford it."],
+        },
+        {
             id = "preview_reset",
             title = L["Reset preview position"],
             text = L["Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."],

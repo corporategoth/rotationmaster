@@ -10237,6 +10237,18 @@ T["%d%%"] = 3589
 T["Percent"] = 3590
 -- e6e573dc
 T["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Where the client hides the speed (Retail and Forever in combat), the record comes from PLAYER_STARTED_MOVING and PLAYER_STOPPED_MOVING with estimated = true: 0 when stopped, the last readable moving speed when moving. Missing, failed or malformed observations, and a hidden speed before any movement event or readable speed, return nil with a reason."] = 3591
+-- 24a4d70c
+T["Show your power under the preview"] = 3592
+-- aa3d11d7
+T["Shows your mana, rage, energy or other main power as a thin bar under the preview window, drawn by the game from the real value even where it hides it from addons. It is shown but never used to choose a step."] = 3593
+-- 877db7e9
+T["Show your target's cast under the preview"] = 3594
+-- ded2b801
+T["Shows a cast bar under the preview window while your target casts or channels. Where the game hides cast times from addons, it animates the bar itself, so it still runs in combat. It is shown but never used to choose a step."] = 3595
+-- ddd48d90
+T["Gray out preview spells you cannot afford yet"] = 3596
+-- c6fa0cb3
+T["Shows a recommended spell in gray while you lack the mana, rage or other power to cast it. This only happens with Ignore Mana on, which lets the preview show a spell before you can afford it."] = 3597
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

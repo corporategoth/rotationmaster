@@ -200,6 +200,11 @@ function addon:CreateNativePreviewWindow()
                 end
 
                 addon:ClearPreviewGate(icon)
+
+                if addon.ShadePreviewIcon then
+                    addon:ShadePreviewIcon(icon, nil)
+                end
+
                 icon.sample, icon.spellId, icon.itemId = nil, nil, nil
                 addon:SetUIScript(icon, 'OnEnter', nil)
                 addon:SetUIScript(icon, 'OnLeave', nil)
@@ -443,6 +448,9 @@ function addon:CreateNativePreviewWindow()
             if icon.masqueOwner then
                 icon.masqueSurface.texture:SetTexture(info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark')
             end
+            if addon.ShadePreviewIcon then
+                addon:ShadePreviewIcon(icon, not itemId and spellId or nil, self.profile)
+            end
 
             if self.pendingGates then
                 addon:ShowPreviewGates(icon, self.pendingGates, true)
@@ -640,6 +648,11 @@ function addon:CreateNativePreviewWindow()
         function window:ResumeLayout()
             self:FlushGate()
             addon:UpdatePreviewHealthBar(self)
+
+            if addon.UpdatePreviewBars then
+                addon:UpdatePreviewBars(self)
+            end
+
             self.sampleBatch = false
 
             if sampleProfile == self.profile then

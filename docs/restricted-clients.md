@@ -141,6 +141,8 @@ These sources stay readable on Retail and Forever, so RM uses them where the dir
 | Usable answer | `C_Spell.IsSpellUsable` | SPELL_USABLE | none known |
 | Display gates | `UnitHealthPercent` / `UnitPowerPercent` through a step curve into `SetAlpha` (`Platform/gates.lua`) | a step's "Shown by the game when", in the preview window and as a gated glow | display only: the rotation cannot branch on it |
 | Health passthrough | `UnitHealth` / `UnitHealthMax` into a StatusBar | the preview's target health bar (`preview_target_health`) | display only |
+| Power passthrough | `UnitPower` / `UnitPowerMax` into a StatusBar (`Platform/gates.lua`) | the preview's power bar (`preview_player_power`) | display only |
+| Cast duration objects | `UnitCastingDuration` / `UnitChannelDuration` into `StatusBar:SetTimerDuration`, else readable `UnitCastingInfo` times | the preview's target cast bar (`preview_target_cast`) | display only |
 
 ## Per condition
 

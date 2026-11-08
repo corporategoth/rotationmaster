@@ -395,6 +395,36 @@ function addon:BuildGeneralSettings(p)
         end
     )
 
+    p:Check(
+        'preview_player_power',
+        L['Show your power under the preview'],
+        profile.preview_player_power == true,
+        function(v)
+            profile.preview_player_power = v
+            previewChanged()
+        end
+    )
+
+    p:Check(
+        'preview_target_cast',
+        L["Show your target's cast under the preview"],
+        profile.preview_target_cast == true,
+        function(v)
+            profile.preview_target_cast = v
+            previewChanged()
+        end
+    )
+
+    p:Check(
+        'preview_gray_unaffordable',
+        L['Gray out preview spells you cannot afford yet'],
+        profile.preview_gray_unaffordable ~= false,
+        function(v)
+            profile.preview_gray_unaffordable = v
+            previewChanged()
+        end
+    )
+
     -- Masque owns this immediate appearance preference. Keep it outside the
     -- General draft so Discard never rewinds another addon's skin settings.
     local skinY = p:Row(L['Skin'], 28)

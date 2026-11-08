@@ -276,6 +276,7 @@ UI/rotation_metadata.lua
 UI/rotation_view.lua
 UI/rotation_editor.lua
 UI/preview.lua
+UI/preview_bars.lua
 UI/rotation_reference.lua
 UI/defaults.lua
 UI/rotation_comparison.lua
