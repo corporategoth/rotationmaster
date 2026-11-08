@@ -205,7 +205,7 @@ function addon:CreateNativePreviewWindow()
                     addon:ShadePreviewIcon(icon, nil)
                 end
 
-                icon.sample, icon.spellId, icon.itemId = nil, nil, nil
+                icon.sample, icon.spellId, icon.itemId, icon.fade = nil, nil, nil, nil
                 addon:SetUIScript(icon, 'OnEnter', nil)
                 addon:SetUIScript(icon, 'OnLeave', nil)
             end
@@ -326,8 +326,12 @@ function addon:CreateNativePreviewWindow()
                 if not sameGeometry(icon:GetWidth(), size) or not sameGeometry(icon:GetHeight(), size) then
                     icon:SetSize(size, size)
                 end
-                if icon:GetAlpha() ~= 1 then
-                    icon:SetAlpha(1)
+
+                -- A predicted icon keeps the fade its confidence gave it.
+                local alpha = icon.fade or 1
+
+                if icon:GetAlpha() ~= alpha then
+                    icon:SetAlpha(alpha)
                 end
                 if icon.masqueOwner then
                     addon:ResizeMasquePreviewIcon(self, icon)
@@ -479,6 +483,8 @@ function addon:CreateNativePreviewWindow()
             if type(confidence) == 'number' and self.profile.forecast_confidence ~= false then
                 alpha = 0.4 + 0.6 * math.max(0, math.min(1, confidence))
             end
+
+            icon.fade = alpha ~= 1 and alpha or nil
 
             if icon:GetAlpha() ~= alpha then
                 icon:SetAlpha(alpha)
