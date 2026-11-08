@@ -1122,6 +1122,11 @@ function addon:BuildGlowDiagnostic()
         end
     end
 
+    if self.Platform and self.Platform.lastAuraError then
+        section(report, 'Aura reads')
+        report.add('The last aura read the game refused said: %s', show(self.Platform.lastAuraError))
+    end
+
     section(report, 'Verdict')
     local stop
 
@@ -1268,6 +1273,10 @@ local function watchLine(self)
         ),
     }
 
+    if self.Platform and self.Platform.lastAuraError then
+        parts[#parts + 1] = 'auraError=' .. show(self.Platform.lastAuraError)
+    end
+
     local rows = rotationRows(self)
     local sink = newReport()
 
@@ -1367,7 +1376,8 @@ end
 --
 -- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua); /rm debug talents reports the
 -- trait talent reads (Diagnostics/talents.lua); /rm debug timeline probes Blizzard's encounter timeline
--- (Diagnostics/timeline.lua); /rm debug marks reports the raid mark table (Diagnostics/raid_marks.lua).
+-- (Diagnostics/timeline.lua); /rm debug marks reports the raid mark table (Diagnostics/raid_marks.lua); /rm debug spells
+-- lists the spell IDs of the shipped premades this client does not know (Diagnostics/premade_spells.lua).
 function addon:HandleDebugCommand(args)
     local what, rest = (args or ''):match('^%s*(%S*)%s*(.-)%s*$')
 
@@ -1390,6 +1400,14 @@ function addon:HandleDebugCommand(args)
     end
     if what == 'marks' and self.RunRaidMarkDiagnostic then
         return self:RunRaidMarkDiagnostic()
+    end
+
+    if what == 'spells' and self.RunPremadeSpellDiagnostic then
+        if rest == 'show' then
+            return self:ShowPremadeSpellDiagnostic()
+        end
+
+        return self:RunPremadeSpellDiagnostic()
     end
 
     self:print(L["Usage: /rm debug glow [seconds||show], /rm debug talents [views] or /rm debug editor"])

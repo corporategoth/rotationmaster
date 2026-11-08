@@ -129,6 +129,7 @@ function platform:GetAuraByIndex(unit, index, filter)
         local ok, raw = pcall(C_UnitAuras.GetAuraDataByIndex, unit, index, filter)
 
         if not ok then
+            self.lastAuraError = tostring(raw)
             return nil, "api-error"
         end
 
@@ -149,8 +150,10 @@ function platform:GetAuraByIndex(unit, index, filter)
     )
 
     if not ok then
+        self.lastAuraError = tostring(name)
         return nil, "api-error"
     end
+
     if not self:CanReadValue(name) then
         return nil, "restricted-value"
     end
@@ -193,6 +196,7 @@ function platform:GetAuraBySpellName(unit, name, filter)
     local ok, raw = pcall(lookup, unit, name, filter)
 
     if not ok then
+        self.lastAuraError = tostring(raw)
         return nil, "api-error"
     end
 
