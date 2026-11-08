@@ -141,6 +141,7 @@ These sources stay readable on Retail and Forever, so RM uses them where the dir
 | Usable answer | `C_Spell.IsSpellUsable` | SPELL_USABLE | none known |
 | Display gates | `UnitHealthPercent` / `UnitPowerPercent` through a step curve into `SetAlpha` (`Platform/gates.lua`) | a step's "Shown by the game when", in the preview window and as a gated glow; a cooldown whose conditions, after known-spell, talent, specialization and level checks fold away (`Core/condition_folding.lua`), are only a hidden HEALTHPCT or POWERPCT threshold becomes a gated glow in its own style (lean engine) | display only: the rotation cannot branch on it, and such a cooldown is never announced |
 | Health passthrough | `UnitHealth` / `UnitHealthMax` into a StatusBar | the preview's target health bar (`preview_target_health`) | display only |
+| Aura sounds | `C_UnitAuras.AddAuraSound` (`Core/aura_sounds.lua`), registered out of combat | the announcement sound of a cooldown whose conditions, after folding, are only checks of your own buffs: played by the game when the buff is added or removed | sound only: the game tells addons nothing, so the glow cannot follow; RM's own availability sound is left out while registered |
 
 ## Per condition
 

@@ -138,6 +138,7 @@ Core/reference_catalog.lua
 Core/category_data.lua
 Core/announcement_data.lua
 Core/announcements.lua
+Core/aura_sounds.lua
 Core/macro_announcements.lua
 Analytics/replay.lua
 Analytics/capture.lua

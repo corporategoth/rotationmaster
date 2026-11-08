@@ -2555,6 +2555,10 @@ function addon:DisableRotation()
         return nil, nil, false
     end
 
+    if self.ClearAuraSounds then
+        self:ClearAuraSounds()
+    end
+
     -- BEGIN ANALYTICS DISABLE
     if adviceCapture then
         adviceCapture("retire")
@@ -3364,6 +3368,17 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
             local conditions, gate = compileCooldown(cond.conditions)
             plan.cooldowns[#plan.cooldowns + 1] = { id = id, step = cond, conditions = conditions, gate = gate }
         end
+    end
+
+    -- Cooldowns that wait on your own buffs get their announcement sound played by the game (Core/aura_sounds.lua).
+    if self.SyncAuraSounds then
+        local steps = {}
+
+        for _, entry in ipairs(plan.cooldowns) do
+            steps[#steps + 1] = entry.step
+        end
+
+        self:SyncAuraSounds(steps)
     end
 
     -- A plan that folded conditions (Core/condition_folding.lua) is dropped when the build context moves.

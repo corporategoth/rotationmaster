@@ -682,6 +682,17 @@ function addon:DispatchAnnouncement(config, text, castRecipient, current)
         return result
     end
 
+    -- An availability announcement (no cast recipient) whose sound the game already plays (Core/aura_sounds.lua).
+    if
+        castRecipient == nil
+        and type(config.id) == 'string'
+        and self.IsAuraSoundRegistered
+        and self:IsAuraSoundRegistered(config.id)
+    then
+        result.soundReason = 'game-played'
+        return result
+    end
+
     result.sound, result.soundReason = sound(config.announce_sound, current)
     return result
 end
