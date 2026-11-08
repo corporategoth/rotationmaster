@@ -191,6 +191,48 @@ for _, engine in ipairs({ 'standard', 'lean' }) do
         end
     end)
 
+    test(engine .. ': in combat, a cooldown the game cannot answer is left out; out of combat it glows', function()
+        local c = make(engine, { open = true })
+        c.a.Platform.GetCombatDataPolicy = function() return 'restricted' end
+        c.setAura(false)
+        local lit = {}
+        local glowCooldown = c.a.GlowCooldown
+
+        c.a.GlowCooldown = function(self, spellId, on, ...)
+            lit[spellId] = on and true or nil
+            return glowCooldown(self, spellId, on, ...)
+        end
+
+        -- Commits the rotation with the cooldown, which also makes both engines build their plan again.
+        local function commit()
+            local record, token = c.a:GetRotationRecordSnapshot(0, c.a.currentRotation)
+
+            record.body.cooldowns = {
+                {
+                    id = 'shield-missing',
+                    type = 'spell',
+                    action = 324,
+                    conditions = { type = 'NOT', value = { type = 'BUFF', unit = 'player', spell = 324 } },
+                },
+            }
+
+            local ref = assert(c.a:GetScopedRotationCoordinator():Resolve(0, c.a.currentRotation))
+            assert(c.a:CommitRotationDraft(ref, token, record, 'class'))
+        end
+
+        commit()
+        poll(c)
+        assert(lit[324], 'out of combat the cooldown is evaluated and glows')
+        c.setCombat(true)
+        commit()
+        poll(c)
+        assert(not lit[324], 'in combat it is left out, as if it were not defined')
+        c.setCombat(false)
+        commit()
+        poll(c)
+        assert(lit[324], 'it comes back when combat ends')
+    end)
+
     test(engine .. ': a gate with a missing unit skips the step', function()
         local c = make(engine, { open = nil, why = 'unit-data-unavailable' })
         poll(c)

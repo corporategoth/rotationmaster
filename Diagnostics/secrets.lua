@@ -157,6 +157,7 @@ function addon:BuildSecretsDiagnostic()
 
     add('lean plan folded leaves', show(self.leanStats and self.leanStats.folded))
     add('cooldowns handed to the game', show(self.leanStats and self.leanStats.handedOff))
+    add('cooldowns left out in combat', show(self.leanStats and self.leanStats.hiddenInCombat))
 
     for spell, node in pairs(seen) do
         local info = platform:GetSpellInfo(spell)

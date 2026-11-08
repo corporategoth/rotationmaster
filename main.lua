@@ -3163,8 +3163,20 @@ end
 
 -- Seconds a recorded plan is reused before the standard path must prove the body again.
 local LEAN_MAX_AGE = 60
+
 -- Plans built, polls served and why plans were dropped, for runtime reports.
-local leanStats = { built = 0, polls = 0, key = 0, generation = 0, context = 0, age = 0, folded = 0, handedOff = 0 }
+local leanStats = {
+    built = 0,
+    polls = 0,
+    key = 0,
+    generation = 0,
+    context = 0,
+    age = 0,
+    folded = 0,
+    handedOff = 0,
+    hiddenInCombat = 0,
+}
+
 addon.leanStats = leanStats
 -- Captured at load (Core/action_policy.lua loads first): an overridden
 -- NewActionReadiness keeps being used as is.
@@ -3258,6 +3270,12 @@ local function compileCooldown(conditions)
             leanStats.handedOff = leanStats.handedOff + 1
             return compileConditionPlan(ALWAYS), gate
         end
+    end
+
+    -- A cooldown the game cannot answer in combat is left out until combat ends (the plan is rebuilt then).
+    if addon.IsCooldownHiddenInCombat and addon:IsCooldownHiddenInCombat(conditions) then
+        leanStats.hiddenInCombat = leanStats.hiddenInCombat + 1
+        return compileConditionPlan(NEVER)
     end
 
     return compileFolded(conditions)
@@ -4926,7 +4944,12 @@ function addon:EvaluateNextActionInternal()
             end
 
             for id, cond in pairs(rot.cooldowns) do
-                local spellid, enabled, itemId = eval(cond, 'cooldowns')
+                local spellid, enabled, itemId
+
+                -- Left out in combat when the game hides what it reads (Core/condition_folding.lua), as on the lean path.
+                if not (addon.IsCooldownHiddenInCombat and addon:IsCooldownHiddenInCombat(cond.conditions)) then
+                    spellid, enabled, itemId = eval(cond, 'cooldowns')
+                end
 
                 if not dispatchCurrent('resume') then
                     self.evaluationProfile:stop()

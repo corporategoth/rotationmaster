@@ -69,7 +69,7 @@ persistent = once(
 persistent = once(
     persistent,
     "load('Core/conditions.lua');",
-    "load('Data/builtin_sources.lua');load('Diagnostics/errors.lua');load('Core/conditions.lua');load('Core/condition_folding.lua');if candidateEnabled then load('Core/condition_runtime.lua')end;load('Platform/unit_level.lua');load('Core/level_conditions.lua');"
+    "load('Data/builtin_sources.lua');load('Diagnostics/errors.lua');load('Core/conditions.lua');load('Core/condition_folding.lua');load('Core/condition_restrictions.lua');if candidateEnabled then load('Core/condition_runtime.lua')end;load('Platform/unit_level.lua');load('Core/level_conditions.lua');"
 )
 
 persistent = once(

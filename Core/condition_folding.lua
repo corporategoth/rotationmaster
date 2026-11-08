@@ -174,3 +174,85 @@ function addon:GetConditionDisplayGate(tree)
         value = tree.value * 100,
     }
 end
+
+-- Restriction notes (Core/condition_restrictions.lua) that mean the game hides a condition in combat.
+local HIDDEN_IN_COMBAT = { restricted = true, combat = true, always = true, identity = true, cast = true }
+
+-- Reports whether the player is in combat.
+-- @return boolean  True in combat lockdown or while the game says the player is in combat.
+local function inCombat()
+    if type(InCombatLockdown) == 'function' and InCombatLockdown() then
+        return true
+    end
+
+    if type(UnitAffectingCombat) == 'function' then
+        local ok, affecting = pcall(UnitAffectingCombat, 'player')
+        return ok and addon.Platform:CanReadValue(affecting) and affecting == true
+    end
+
+    return false
+end
+
+-- Reports whether the map restriction (dungeons and raids) is active.
+-- @return boolean  True while the game applies it.
+local function mapRestricted()
+    local actions, types = C_RestrictedActions, Enum and Enum.AddOnRestrictionType
+
+    if type(actions) ~= 'table' or type(actions.IsAddOnRestrictionActive) ~= 'function' or type(types) ~= 'table' then
+        return false
+    end
+
+    local ok, active = pcall(actions.IsAddOnRestrictionActive, types.Map)
+    return ok and addon.Platform:CanReadValue(active) and active == true
+end
+
+-- Reports whether any leaf of a tree reads data the game hides now.
+-- @param node any  A condition node.
+-- @param map boolean  Whether the map restriction is active.
+-- @return boolean  True when a leaf carries a hiding restriction.
+local function hides(node, map)
+    if type(node) ~= 'table' or node.disabled then
+        return false
+    end
+
+    if node.type == 'AND' or node.type == 'OR' then
+        for _, child in ipairs(type(node.value) == 'table' and node.value or {}) do
+            if hides(child, map) then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    if node.type == 'NOT' then
+        return hides(node.value, map)
+    end
+
+    for _, note in ipairs(addon:GetConditionRestrictions(node.type, node) or {}) do
+        if HIDDEN_IN_COMBAT[note] or note == 'map' and map then
+            return true
+        end
+    end
+
+    return false
+end
+
+-- Reports whether a cooldown should be left out while in combat: on Retail and Forever, in combat, its conditions
+-- (after folding) read something the game hides then. Such a cooldown is treated as if it were not defined, so no
+-- fallback or guess lights it; out of combat, and where everything reads, it is evaluated as usual.
+-- @param conditions table|nil  The cooldown's condition tree.
+-- @return boolean  True when the cooldown is left out now.
+function addon:IsCooldownHiddenInCombat(conditions)
+    if not self.GetConditionRestrictions or self.Platform:GetCombatDataPolicy() ~= 'restricted' or not inCombat() then
+        return false
+    end
+
+    local folded = self:FoldInvariantConditions(conditions)
+
+    if type(folded) ~= 'table' then
+        return false
+    end
+
+    return hides(folded, mapRestricted())
+end
