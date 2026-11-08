@@ -656,6 +656,8 @@ def main():
             ['luajit', 'tests/hostile_input.lua'],
             ['lua5.1', 'tests/unit_types.lua'],
             ['luajit', 'tests/unit_types.lua'],
+            ['lua5.1', 'tests/metrics_report_ui.lua'],
+            ['luajit', 'tests/metrics_report_ui.lua'],
             ['lua5.1', 'tests/premade_spell_debug.lua'],
             ['luajit', 'tests/premade_spell_debug.lua'],
             ['lua5.1', 'tests/raid_marks.lua'],

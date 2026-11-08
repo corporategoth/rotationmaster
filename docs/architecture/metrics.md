@@ -44,16 +44,18 @@ is dropped), 64 advised spells each, 40 fights each. Nothing identifies a charac
 
 ## Reading and exporting (`UI/metrics_report.lua`)
 
-General > Metrics has four buttons, each opening the selectable text window (Ctrl-A, Ctrl-C):
+General > Metrics has three buttons. **Metrics report** and **Clear metrics** share a row; **Export for the website** has its own.
 
-* **Metrics report**: a readable summary per rotation.
-* **Export for the website**: JSON with `format="rm-metrics"` and `version=1`: per rotation `id`, `name`, `fights`, `seconds`, `casts`,
+* **Metrics report**: a window of graphs with a tab for each rotation (up to five, most fights first): a gauge for how closely the
+  advice was followed (green from 85 percent, yellow from 60, red below), a bar of where the casts went (followed, out of order,
+  outside the rotation, no advice), a chart of how long it took to act on the advice, damage per second by how closely the advice
+  was followed, the most common deviations (what was cast instead, with spell icons) and, when tracked, how often each forecast was
+  right against how sure it said it was. Drawn from pooled textures, so reopening it allocates nothing new.
+* **Export for the website** (opens the selectable text window, Ctrl-A, Ctrl-C): JSON with `format="rm-metrics"` and `version=1`: per rotation `id`, `name`, `fights`, `seconds`, `casts`,
   `followed`, `followedPercent`, `meanDelay`, `delayHistogram`, `dps`, `hps`, `outOfOrder`, `outside`, `unadvised`, `superseded`,
   `spells[] { spell, name, followed, meanDelay, superseded, replacedBy[] { spell, name, count } }`, `outsideSpells[]`, `byAdherence[]`,
   `predictionAccuracy[] { slot, checked, hitPercent, meanConfidencePercent }` and `fightList[]`; plus `client { family, interface }`. Keys are sorted, so the same data encodes the same way. The website
   imports this to attach adherence and output to a rotation page; it never leaves the game by itself.
-* **Export for a language model**: the same JSON behind plain-English instructions that define each field and ask where the
-  player deviates, whether the deviations look deliberate, and where the rotation should change. Both exports are data and stay in English.
 * **Clear metrics**.
 
 ## Tests

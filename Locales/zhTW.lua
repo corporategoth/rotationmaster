@@ -11764,14 +11764,10 @@ addon.translation = {
 [3474] = "指標報告",
 -- 3b5e938d English: Export for the website
 [3475] = "匯出給網站",
--- 81d1f0a3 English: Export for a language model
-[3476] = "匯出給語言模型",
 -- 71116db8 English: Clear metrics
 [3477] = "清除指標",
 -- a42bb91e English: Metrics export
 [3478] = "指標匯出",
--- 9573bb88 English: Metrics for a language model
-[3479] = "給語言模型的指標",
 -- 03823b68 English: Rotation metrics
 [3480] = "循環指標",
 -- f0ad8ea7 English: No metrics have been recorded yet.
@@ -11780,29 +11776,22 @@ addon.translation = {
 [3482] = "指標已清除。",
 -- 62016fff English: %d fights, %d seconds, %d casts
 [3483] = "%d 場戰鬥，%d 秒，%d 次施法",
--- 22744626 English: Followed the advice for %s%% of casts; %d out of order, %d outside the
---     rotation, %d with no advice
-[3484] = "%s%% 的施法遵循了建議；%d 次順序不同，%d 次在循環之外，%d 次沒有建議",
 -- fc6ca8ad English: Average time to act on a recommendation: %s seconds
 [3485] = "執行建議的平均用時：%s 秒",
 -- 7a3edc19 English: Damage per second: %d, healing per second: %d
 [3486] = "每秒傷害：%d，每秒治療：%d",
--- 70c176f6 English: %s: %d fights, %d damage per second, %d healing per second
-[3487] = "%s：%d 場戰鬥，每秒傷害 %d，每秒治療 %d",
--- f0de80e3 English:   %s: followed %d, not acted on %d, instead: %s
-[3488] = "  %s：已遵循 %d，未執行 %d，改為：%s",
 -- a84f13b5 English: Low adherence
 [3489] = "遵循度低",
 -- 49e9ada4 English: Medium adherence
 [3490] = "遵循度中",
 -- 49239376 English: High adherence
 [3491] = "遵循度高",
--- 55452005 English: While the rotation is on and you are in combat, record which spell was
+-- b69e157b English: While the rotation is on and you are in combat, record which spell was
 --     recommended when you pressed a spell, how long after the recommendation appeared you pressed
 --     it, and what you cast instead when you did not follow it. Only totals are kept, per rotation,
---     in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or
---     export them for the website or a language model.
-[3492] = "循環開啟且你處於戰鬥中時，會記錄你使用法術時推薦的是哪個法術、推薦出現多久後你才使用，以及你沒有遵循時改用了什麼。只會在你的已儲存變數中依循環保存合計資料，不會向任何地方傳送。開啟指標報告即可查看，也可以匯出給網站或語言模型。",
+--     in your saved variables; nothing is sent anywhere. Open Metrics report to see them as graphs,
+--     or export them for the website.
+[3492] = "循環開啟且你處於戰鬥中時，會記錄你使用法術時推薦的是哪個法術、推薦出現多久後你才使用，以及你沒有遵循時改用了什麼。只會在你的已儲存變數中依循環保存合計資料，不會向任何地方傳送。開啟指標報告即可以圖表查看，也可以匯出給網站。",
 -- 7566cb83 English: Record the damage and healing you do in each fight so the metrics can compare
 --     fights where you followed the advice closely with fights where you did not. This reads the
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
@@ -11854,4 +11843,26 @@ addon.translation = {
 -- aab20fee English: Show "Rotation Preview" above the preview window so it is clear what it is.
 --     Turn it off to show only the icons.
 [3512] = "在預覽視窗上方顯示「循環預覽」，讓人一目了然。關閉後只顯示圖示。",
+-- 4dd4ee2d English: Followed the advice
+[3513] = "遵循建議",
+-- a87ae136 English: Where your casts went
+[3514] = "你的施法去向",
+-- a6afe29c English: Followed
+[3515] = "已遵循",
+-- 24d8f84a English: Out of order
+[3516] = "順序不同",
+-- b32205ae English: Outside the rotation
+[3517] = "循環之外",
+-- 4454602c English: No advice
+[3518] = "沒有建議",
+-- b4252965 English: Time to act on advice
+[3519] = "執行建議的用時",
+-- 50308d02 English: Damage and healing per second
+[3520] = "每秒傷害與治療",
+-- 7de48ac3 English: Most common deviations
+[3521] = "最常見的偏差",
+-- 8ae08371 English: Forecast accuracy
+[3522] = "預測準確度",
+-- 683943ea English: Prediction %d: right %d%% of the time, said %d%% sure
+[3523] = "第 %d 個預測：%d%% 的情況下正確，自稱把握 %d%%",
 }

@@ -774,20 +774,29 @@ function addon:BuildGeneralSettings(p)
         end
     )
 
-    p:Button('metrics_report', L['Metrics report'], function()
+    -- Report and Clear share a row, the export has its own: placed by hand like the preview row above.
+    local metricsY = p.y
+
+    local report = p:Button('metrics_report', L['Metrics report'], function()
         self:ShowMetricsExport('report')
     end)
 
+    local clear = p:Button('metrics_clear', L['Clear metrics'], function()
+        self:ClearMetrics()
+    end)
+
+    local half = p.width / 2
+
+    for index, control in ipairs({ report, clear }) do
+        control:ClearAllPoints()
+        control:SetPoint('TOPLEFT', (index - 1) * half, -metricsY)
+        control:SetWidth(half - 8)
+    end
+
+    p.y = metricsY + 30
+
     p:Button('metrics_json', L['Export for the website'], function()
         self:ShowMetricsExport('json')
-    end)
-
-    p:Button('metrics_prompt', L['Export for a language model'], function()
-        self:ShowMetricsExport('prompt')
-    end)
-
-    p:Button('metrics_clear', L['Clear metrics'], function()
-        self:ClearMetrics()
     end)
 
     p:Heading(L['Debugging Options'])

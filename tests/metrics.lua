@@ -211,15 +211,7 @@ test('the JSON export is stable, escaped and carries the client facts', function
     assert(json:find('"family":"tbc"', 1, true) and json:find('"interface":20506', 1, true))
     assert(json == m:ToJSON(report, { family = 'tbc', interface = 20506 }), 'the same report encodes the same way')
     assert(not json:find('[\n\t]'), 'no raw control characters')
-    local prompt = m:ToPrompt(report)
-
-    assert(
-        prompt:find('followedPercent', 1, true) and prompt:find(json:sub(1, 40), 1, true, true) or prompt:find(
-            'rm-metrics',
-            1,
-            true
-        )
-    )
+    assert(m.DELAY_EDGES[1] == 0.25 and #m.DELAY_EDGES == 5, 'the report draws the delay chart from these edges')
 end)
 
 test(

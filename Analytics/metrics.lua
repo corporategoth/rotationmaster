@@ -19,6 +19,7 @@ local FORMAT, VERSION = 'rm-metrics', 1
 
 -- Upper edges, in seconds, of the delay histogram's buckets; the last bucket is everything slower.
 local EDGES = { 0.25, 0.5, 1, 2, 4 }
+metrics.DELAY_EDGES = EDGES
 
 -- The volatile state of the running fight: nil outside combat.
 local fight
@@ -703,26 +704,4 @@ function metrics:ToJSON(report, client)
     local out = {}
     encode(copy, out)
     return table.concat(out)
-end
-
--- The instructions that go in front of the data when it is meant for a language model.
-local PROMPT = [[
-Below is data collected by the World of Warcraft addon Rotation Master about how I play a rotation. For each rotation:
-"followedPercent" is the share of my casts that were the spell the addon was recommending when I pressed; "meanDelay" is
-how many seconds after a recommendation appeared I acted on it (the global cooldown is part of that); "outOfOrder" are
-casts of a spell the rotation does recommend, just not at that moment; "outside" are casts of spells the rotation never
-recommends; "replacedBy" lists, for each recommended spell, what I cast instead; "byAdherence" compares damage or
-healing per second in fights where I followed the advice closely and loosely. "predictionAccuracy" says how often the addon's forecast of the 2nd, 3rd... next recommendation matched what was then recommended ("meanConfidencePercent" is how sure it said it was). Spell numbers are WoW spell IDs.
-
-Please tell me: where I deviate most and whether those deviations look deliberate (cooldowns, defensives, movement) or
-like mistakes; where the rotation itself seems to be wrong for how I actually play, with the change you would make to
-the priority order or conditions; and whether following the advice more closely correlates with better output.
-]]
-
--- Builds the text meant to be pasted to a language model: instructions, then the data.
--- @param report table  The result of Report.
--- @param client table|nil  Plain facts about the client.
--- @return string  The text.
-function metrics:ToPrompt(report, client)
-    return PROMPT .. '\n' .. self:ToJSON(report, client) .. '\n'
 end

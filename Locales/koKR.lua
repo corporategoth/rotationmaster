@@ -11764,14 +11764,10 @@ addon.translation = {
 [3474] = "지표 보고서",
 -- 3b5e938d English: Export for the website
 [3475] = "웹사이트용으로 내보내기",
--- 81d1f0a3 English: Export for a language model
-[3476] = "언어 모델용으로 내보내기",
 -- 71116db8 English: Clear metrics
 [3477] = "지표 삭제",
 -- a42bb91e English: Metrics export
 [3478] = "지표 내보내기",
--- 9573bb88 English: Metrics for a language model
-[3479] = "언어 모델용 지표",
 -- 03823b68 English: Rotation metrics
 [3480] = "로테이션 지표",
 -- f0ad8ea7 English: No metrics have been recorded yet.
@@ -11780,29 +11776,22 @@ addon.translation = {
 [3482] = "지표를 삭제했습니다.",
 -- 62016fff English: %d fights, %d seconds, %d casts
 [3483] = "전투 %d회, %d초, 시전 %d회",
--- 22744626 English: Followed the advice for %s%% of casts; %d out of order, %d outside the
---     rotation, %d with no advice
-[3484] = "시전의 %s%%에서 권장 사항을 따랐습니다. 순서가 다른 시전 %d회, 로테이션 밖의 시전 %d회, 권장 사항이 없었던 시전 %d회",
 -- fc6ca8ad English: Average time to act on a recommendation: %s seconds
 [3485] = "권장 사항에 따라 행동하기까지 평균 시간: %s초",
 -- 7a3edc19 English: Damage per second: %d, healing per second: %d
 [3486] = "초당 피해량: %d, 초당 치유량: %d",
--- 70c176f6 English: %s: %d fights, %d damage per second, %d healing per second
-[3487] = "%s: 전투 %d회, 초당 피해량 %d, 초당 치유량 %d",
--- f0de80e3 English:   %s: followed %d, not acted on %d, instead: %s
-[3488] = "  %s: 따름 %d회, 따르지 않음 %d회, 대신: %s",
 -- a84f13b5 English: Low adherence
 [3489] = "낮은 준수율",
 -- 49e9ada4 English: Medium adherence
 [3490] = "보통 준수율",
 -- 49239376 English: High adherence
 [3491] = "높은 준수율",
--- 55452005 English: While the rotation is on and you are in combat, record which spell was
+-- b69e157b English: While the rotation is on and you are in combat, record which spell was
 --     recommended when you pressed a spell, how long after the recommendation appeared you pressed
 --     it, and what you cast instead when you did not follow it. Only totals are kept, per rotation,
---     in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or
---     export them for the website or a language model.
-[3492] = "로테이션이 켜져 있고 전투 중일 때, 주문을 사용한 순간 어떤 주문이 권장되었는지, 권장 사항이 나타난 뒤 얼마 만에 사용했는지, 권장 사항을 따르지 않았을 때 대신 무엇을 시전했는지 기록합니다. 로테이션별 합계만 저장된 변수에 보관되며, 어디로도 전송되지 않습니다. 지표 보고서를 열어 확인하거나 웹사이트 또는 언어 모델용으로 내보내세요.",
+--     in your saved variables; nothing is sent anywhere. Open Metrics report to see them as graphs,
+--     or export them for the website.
+[3492] = "로테이션이 켜져 있고 전투 중일 때, 주문을 사용한 순간 어떤 주문이 권장되었는지, 권장 사항이 나타난 뒤 얼마 만에 사용했는지, 권장 사항을 따르지 않았을 때 대신 무엇을 시전했는지 기록합니다. 로테이션별 합계만 저장된 변수에 보관되며, 어디로도 전송되지 않습니다. 지표 보고서를 열어 그래프로 확인하거나 웹사이트용으로 내보내세요.",
 -- 7566cb83 English: Record the damage and healing you do in each fight so the metrics can compare
 --     fights where you followed the advice closely with fights where you did not. This reads the
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
@@ -11854,4 +11843,26 @@ addon.translation = {
 -- aab20fee English: Show "Rotation Preview" above the preview window so it is clear what it is.
 --     Turn it off to show only the icons.
 [3512] = "미리보기 창 위에 \"로테이션 미리보기\"를 표시해 무엇인지 알 수 있게 합니다. 끄면 아이콘만 표시됩니다.",
+-- 4dd4ee2d English: Followed the advice
+[3513] = "권장 사항 준수",
+-- a87ae136 English: Where your casts went
+[3514] = "시전이 향한 곳",
+-- a6afe29c English: Followed
+[3515] = "따름",
+-- 24d8f84a English: Out of order
+[3516] = "순서 다름",
+-- b32205ae English: Outside the rotation
+[3517] = "로테이션 밖",
+-- 4454602c English: No advice
+[3518] = "권장 사항 없음",
+-- b4252965 English: Time to act on advice
+[3519] = "권장 사항에 따라 행동하기까지 시간",
+-- 50308d02 English: Damage and healing per second
+[3520] = "초당 피해량과 치유량",
+-- 7de48ac3 English: Most common deviations
+[3521] = "가장 흔한 이탈",
+-- 8ae08371 English: Forecast accuracy
+[3522] = "예측 정확도",
+-- 683943ea English: Prediction %d: right %d%% of the time, said %d%% sure
+[3523] = "예측 %d: %d%% 적중, 확신도 %d%%",
 }

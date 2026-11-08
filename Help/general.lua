@@ -113,7 +113,7 @@ function addon:GetGeneralOptionHelp()
         {
             id = "metrics_adherence",
             title = L["Track how closely I follow the advice"],
-            text = L["While the rotation is on and you are in combat, record which spell was recommended when you pressed a spell, how long after the recommendation appeared you pressed it, and what you cast instead when you did not follow it. Only totals are kept, per rotation, in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or export them for the website or a language model."],
+            text = L["While the rotation is on and you are in combat, record which spell was recommended when you pressed a spell, how long after the recommendation appeared you pressed it, and what you cast instead when you did not follow it. Only totals are kept, per rotation, in your saved variables; nothing is sent anywhere. Open Metrics report to see them as graphs, or export them for the website."],
         },
         {
             id = "metrics_effectiveness",

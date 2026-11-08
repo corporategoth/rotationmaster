@@ -11764,14 +11764,10 @@ addon.translation = {
 [3474] = "Metrikbericht",
 -- 3b5e938d English: Export for the website
 [3475] = "Für die Website exportieren",
--- 81d1f0a3 English: Export for a language model
-[3476] = "Für ein Sprachmodell exportieren",
 -- 71116db8 English: Clear metrics
 [3477] = "Metriken löschen",
 -- a42bb91e English: Metrics export
 [3478] = "Metrik-Export",
--- 9573bb88 English: Metrics for a language model
-[3479] = "Metriken für ein Sprachmodell",
 -- 03823b68 English: Rotation metrics
 [3480] = "Rotationsmetriken",
 -- f0ad8ea7 English: No metrics have been recorded yet.
@@ -11780,29 +11776,22 @@ addon.translation = {
 [3482] = "Metriken gelöscht.",
 -- 62016fff English: %d fights, %d seconds, %d casts
 [3483] = "%d Kämpfe, %d Sekunden, %d Zauber",
--- 22744626 English: Followed the advice for %s%% of casts; %d out of order, %d outside the
---     rotation, %d with no advice
-[3484] = "Empfehlung bei %s%% der Zauber befolgt; %d in anderer Reihenfolge, %d außerhalb der Rotation, %d ohne Empfehlung",
 -- fc6ca8ad English: Average time to act on a recommendation: %s seconds
 [3485] = "Durchschnittliche Zeit bis zur Umsetzung einer Empfehlung: %s Sekunden",
 -- 7a3edc19 English: Damage per second: %d, healing per second: %d
 [3486] = "Schaden pro Sekunde: %d, Heilung pro Sekunde: %d",
--- 70c176f6 English: %s: %d fights, %d damage per second, %d healing per second
-[3487] = "%s: %d Kämpfe, %d Schaden pro Sekunde, %d Heilung pro Sekunde",
--- f0de80e3 English:   %s: followed %d, not acted on %d, instead: %s
-[3488] = "  %s: befolgt %d, nicht umgesetzt %d, stattdessen: %s",
 -- a84f13b5 English: Low adherence
 [3489] = "Geringe Befolgung",
 -- 49e9ada4 English: Medium adherence
 [3490] = "Mittlere Befolgung",
 -- 49239376 English: High adherence
 [3491] = "Hohe Befolgung",
--- 55452005 English: While the rotation is on and you are in combat, record which spell was
+-- b69e157b English: While the rotation is on and you are in combat, record which spell was
 --     recommended when you pressed a spell, how long after the recommendation appeared you pressed
 --     it, and what you cast instead when you did not follow it. Only totals are kept, per rotation,
---     in your saved variables; nothing is sent anywhere. Open Metrics report to read them, or
---     export them for the website or a language model.
-[3492] = "Solange die Rotation aktiv ist und Sie sich im Kampf befinden, wird aufgezeichnet, welcher Zauber empfohlen wurde, als Sie einen Zauber gewirkt haben, wie lange nach dem Erscheinen der Empfehlung Sie ihn gewirkt haben und was Sie stattdessen gewirkt haben, wenn Sie ihr nicht gefolgt sind. Gespeichert werden nur Summen pro Rotation in Ihren gespeicherten Variablen; nichts wird irgendwohin gesendet. Öffnen Sie den Metrikbericht, um sie zu lesen, oder exportieren Sie sie für die Website oder ein Sprachmodell.",
+--     in your saved variables; nothing is sent anywhere. Open Metrics report to see them as graphs,
+--     or export them for the website.
+[3492] = "Solange die Rotation aktiv ist und Sie sich im Kampf befinden, wird aufgezeichnet, welcher Zauber empfohlen wurde, als Sie einen Zauber gewirkt haben, wie lange nach dem Erscheinen der Empfehlung Sie ihn gewirkt haben und was Sie stattdessen gewirkt haben, wenn Sie ihr nicht gefolgt sind. Gespeichert werden nur Summen pro Rotation in Ihren gespeicherten Variablen; nichts wird irgendwohin gesendet. Öffnen Sie den Metrikbericht, um sie als Diagramme zu sehen, oder exportieren Sie sie für die Website.",
 -- 7566cb83 English: Record the damage and healing you do in each fight so the metrics can compare
 --     fights where you followed the advice closely with fights where you did not. This reads the
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
@@ -11854,4 +11843,26 @@ addon.translation = {
 -- aab20fee English: Show "Rotation Preview" above the preview window so it is clear what it is.
 --     Turn it off to show only the icons.
 [3512] = "Zeigt „Rotationsvorschau“ über dem Vorschaufenster an, damit klar ist, was es ist. Ausschalten, um nur die Symbole zu zeigen.",
+-- 4dd4ee2d English: Followed the advice
+[3513] = "Empfehlung befolgt",
+-- a87ae136 English: Where your casts went
+[3514] = "Wohin Ihre Zauber gingen",
+-- a6afe29c English: Followed
+[3515] = "Befolgt",
+-- 24d8f84a English: Out of order
+[3516] = "Andere Reihenfolge",
+-- b32205ae English: Outside the rotation
+[3517] = "Außerhalb der Rotation",
+-- 4454602c English: No advice
+[3518] = "Keine Empfehlung",
+-- b4252965 English: Time to act on advice
+[3519] = "Zeit bis zur Umsetzung",
+-- 50308d02 English: Damage and healing per second
+[3520] = "Schaden und Heilung pro Sekunde",
+-- 7de48ac3 English: Most common deviations
+[3521] = "Häufigste Abweichungen",
+-- 8ae08371 English: Forecast accuracy
+[3522] = "Prognosegenauigkeit",
+-- 683943ea English: Prediction %d: right %d%% of the time, said %d%% sure
+[3523] = "Vorhersage %d: in %d %% der Fälle richtig, Sicherheit %d %%",
 }
