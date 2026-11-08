@@ -10281,14 +10281,6 @@ T["Minutes"] = 3612
 T["minutes"] = 3613
 -- 3eeb06f4
 T["Last %d %s"] = 3614
--- 24a4d70c
-T["Show your power under the preview"] = 3615
--- aa3d11d7
-T["Shows your mana, rage, energy or other main power as a thin bar under the preview window, drawn by the game from the real value even where it hides it from addons. It is shown but never used to choose a step."] = 3616
--- 877db7e9
-T["Show your target's cast under the preview"] = 3617
--- ded2b801
-T["Shows a cast bar under the preview window while your target casts or channels. Where the game hides cast times from addons, it animates the bar itself, so it still runs in combat. It is shown but never used to choose a step."] = 3618
 -- ddd48d90
 T["Gray out preview spells you cannot afford yet"] = 3619
 -- c6fa0cb3
