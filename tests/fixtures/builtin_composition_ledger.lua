@@ -2076,6 +2076,12 @@ return {
                 ['forever.shaman.manual-target'] = 2,
                 ['forever.shaman.upkeep'] = 2,
             },
+            [7] = {
+                ['forever.shaman.group-totems'] = 1,
+                ['forever.shaman.imbue'] = 1,
+                ['forever.shaman.manual-target'] = 2,
+                ['forever.shaman.upkeep'] = 2,
+            },
         },
         ['rm.forever.shaman.enhancement.wowhead'] = {
             [1] = { ['forever.shaman.imbue'] = 1, ['forever.shaman.manual'] = 1, ['forever.shaman.upkeep'] = 1 },

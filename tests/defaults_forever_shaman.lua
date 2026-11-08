@@ -164,14 +164,12 @@ test('Enhancement while leveling: Earth Shock on cooldown, melee, Lightning Bolt
     assert(first(f, s, ENH) == nil)
 end)
 
-test('Enhancement with the full kit: Stormstrike, Maelstrom Bolt, Stormstrike Earth Shock', function()
+test('Enhancement with the full kit: Stormstrike, then Earth Shock; Forever has no Maelstrom Weapon', function()
     local f, s = shaman(40, leveling, deep)
     assert(first(f, s, ENH) == 17364)
     cd(s, 17364)
-    s.buffs = { { id = 408505, stacks = 4 } }
-    assert(first(f, s, ENH) == 8042)
-    s.buffs[1].stacks = 5
-    assert(first(f, s, ENH) == 403, 'five Maelstrom stacks')
+    s.buffs = { { id = 408505, stacks = 5 } }
+    assert(first(f, s, ENH) == 8042, 'a Maelstrom Weapon aura, were there one, changes nothing')
     s.buffs = {}
     s.debuffs = { { id = 17364 } }
     assert(first(f, s, ENH) == 8042)
