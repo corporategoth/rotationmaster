@@ -1,7 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- Shows and exports the numbers addon.Metrics (Analytics/metrics.lua) collected. The report is a window of graphs, not
--- text: a gauge for how closely the advice was followed, a bar of where the casts went, a chart of how long it took to
+-- Shows and exports the numbers addon.Metrics (Analytics/metrics.lua) collected, on the Metrics tab of the settings window.
+-- The page holds the three recording switches and the report, which is graphs, not text: a gauge for how closely the advice was followed, a bar of where the casts went, a chart of how long it took to
 -- act on the advice, output by how closely the advice was followed, the most common deviations and, when it was tracked,
 -- how often the forecast was right. The JSON the website reads opens in the selectable text window
 -- (addon:ShowConditionText) so Ctrl-A, Ctrl-C copies it; it is data, not interface text, and stays in English. Owns no
@@ -11,7 +11,7 @@ local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local platform = addon.Platform
 
-local WIDTH, HEIGHT, CONTENT = 660, 600, 600
+local CONTENT = 600
 
 local GREEN, YELLOW, RED, GRAY, BLUE = { .35, .8, .4 }, { .95, .75, .2 }, { .9, .35, .3 }, { .5, .52, .56 }, {
     .35,
@@ -21,6 +21,10 @@ local GREEN, YELLOW, RED, GRAY, BLUE = { .35, .8, .4 }, { .95, .75, .2 }, { .9, 
 
 local TRACK = { .14, .15, .17 }
 local MAX_TABS, MAX_DEVIATIONS = 5, 8
+local TIMED_MIN, TIMED_MAX, TIMED_DEFAULT = 1, 180, 30
+
+-- The periods a report can be limited to, in the order of their buttons.
+local SCOPES = { 'last', 'instance', 'minutes', 'all' }
 
 -- Names a spell and finds its icon.
 -- @param id number  The spell id.
@@ -467,6 +471,15 @@ local function forecastAccuracy(ctx, rotation, y)
     return y + 8
 end
 
+-- Draws the note shown when nothing was recorded for the chosen period.
+-- @param ctx table  The drawing context.
+-- @return number  The height used.
+local function drawEmpty(ctx)
+    reset(ctx)
+    text(ctx, 0, 20, L['Nothing was recorded for this period.'], 'GameFontNormal', CONTENT)
+    return 60
+end
+
 -- Draws one rotation's whole report.
 -- @param ctx table  The drawing context.
 -- @param rotation table  One rotation's summary.
@@ -492,144 +505,293 @@ local function draw(ctx, rotation)
 end
 
 -- ============================================================================
--- The window
+-- The Metrics page
 -- ============================================================================
 
--- Returns the one report window, creating it on first use.
--- @return table  The dialog { frame, scroll, content, tabs, ... }.
-local function getWindow()
-    local dialog = addon.metricsWindow
+-- The view the player chose, kept while the window is open: the period, the rotation tab and the export option.
+-- @return table  { scope = { kind, minutes }, tab, instructions }.
+local function viewState()
+    local state = addon.metricsView
 
-    if dialog then
-        return dialog
+    if not state then
+        state = { instructions = false, tab = 1 }
+        addon.metricsView = state
     end
 
-    dialog = { frame = CreateFrame('Frame', nil, UIParent), tabs = {} }
-    addon.metricsWindow = dialog
-    local frame = dialog.frame
-    frame:SetSize(WIDTH, HEIGHT)
-    frame:SetPoint('CENTER')
-    frame:EnableMouse(true)
-    local title = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-    title:SetPoint('TOPLEFT', 12, -8)
-    dialog.chrome = addon:CreateWorkbenchDialogChrome(frame, title)
-    dialog.close = addon:CreateWorkbenchIconButton(frame, 'close', L['Close'])
-    dialog.close:SetPoint('TOPRIGHT', -6, -6)
+    return state
+end
 
-    addon:SetUIScript(dialog.close, 'OnClick', function()
-        frame:Hide()
+-- Draws the Metrics page into the settings pane: the recording switches, then the period buttons, the rotation tabs, the
+-- graphs and the export. Runs on every redraw of the page; the controls come from the pane's pools.
+-- @param p table  The settings pane.
+function addon:BuildMetricsSettings(p)
+    local profile = p:SettingsData().profile
+    local metrics = addon.Metrics
+    local state = viewState()
+    CONTENT = math.max(420, math.min(760, p.width))
+    p:Heading(L['Metrics'])
+
+    p:Check(
+        'metrics_adherence',
+        L['Track how closely I follow the advice'],
+        profile.metrics_adherence == true,
+        function(v)
+            profile.metrics_adherence = v
+
+            p:RunSettingsEffect('metrics_adherence', function()
+                self:ApplyMetricsSettings()
+            end)
+        end
+    )
+
+    p:Check(
+        'metrics_effectiveness',
+        L['Track damage and healing per fight'],
+        profile.metrics_effectiveness == true,
+        function(v)
+            profile.metrics_effectiveness = v
+
+            p:RunSettingsEffect('metrics_effectiveness', function()
+                self:ApplyMetricsSettings()
+            end)
+        end
+    )
+
+    p:Check(
+        'metrics_prediction',
+        L['Track how accurate the predictions were'],
+        profile.metrics_prediction == true,
+        function(v)
+            profile.metrics_prediction = v
+
+            p:RunSettingsEffect('metrics_prediction', function()
+                self:ApplyMetricsSettings()
+            end)
+        end
+    )
+
+    local top = p.y + 6
+    local controls = { scope = {}, tabs = {}, generation = p.generation }
+    p.metricsControls = controls
+
+    -- The period: one button for each, and Reset beside them.
+    for index, kind in ipairs(SCOPES) do
+        local button = p:Acquire('metricsScope', function()
+            return addon:CreateWorkbenchButton(p.child, '', 110)
+        end)
+
+        button:ClearAllPoints()
+        button:SetPoint('TOPLEFT', (index - 1) * 114, -top)
+        button:SetWidth(110)
+        controls.scope[kind] = button
+
+        addon:SetUIScript(button, 'OnClick', p:Guard(function()
+            local minutes = state.scope and state.scope.minutes or TIMED_DEFAULT
+            state.scope, state.tab = { kind = kind, minutes = minutes }, 1
+            controls.render()
+        end))
+    end
+
+    -- Reset deletes everything recorded; it asks once more (the button reads Confirm for a few seconds) before it does.
+    local reset = p:Acquire('metricsReset', function()
+        return addon:CreateWorkbenchButton(p.child, L['Reset'], 80)
     end)
 
-    local scroll = addon:CreateWorkbenchScrollFrame(frame)
-    scroll:SetPoint('TOPLEFT', 16, -62)
-    scroll:SetSize(CONTENT, HEIGHT - 100)
-    dialog.scroll = scroll
-    dialog.content = CreateFrame('Frame', nil, scroll)
-    dialog.content:SetSize(CONTENT, 10)
-    scroll:SetScrollChild(dialog.content)
-    dialog.ctx = { content = dialog.content, textures = {}, texts = {}, usedTextures = 0, usedTexts = 0 }
+    reset:ClearAllPoints()
+    reset:SetPoint('TOPRIGHT', p.child, 'TOPLEFT', CONTENT, -top)
+    reset:SetText(L['Reset'])
+    controls.reset = reset
+    local armed
 
-    -- Window-registry interface: addon:OpenPopup and addon.HideOnEscape call Show and Hide on the dialog table.
-    function dialog:Show()
-        frame:Show()
-    end
+    addon:SetUIScript(reset, 'OnClick', p:Guard(function()
+        if not armed then
+            armed = true
+            reset:SetText(L['Confirm'])
 
-    -- Hides the dialog frame.
-    function dialog:Hide()
-        frame:Hide()
-    end
+            if C_Timer and type(C_Timer.After) == 'function' then
+                C_Timer.After(4, function()
+                    armed = nil
+                    reset:SetText(L['Reset'])
+                end)
+            end
 
-    -- Draws one rotation of the report and lights its tab.
-    -- @param index number  The rotation's place in the report.
-    function dialog:Select(index)
-        local rotation = self.report and self.report.rotations[index]
-
-        if not rotation then
             return
         end
 
-        self.selected = index
-        self.content:SetHeight(draw(self.ctx, rotation) + 10)
-        self.scroll:SetVerticalScroll(0)
-        self.scroll:UpdateScrollChildRect()
+        armed = nil
+        reset:SetText(L['Reset'])
+        addon:ClearMetrics()
+        controls.render()
+    end))
 
-        for position, tab in ipairs(self.tabs) do
-            tab:SetSelected(position == index)
+    -- The slider that sets the minutes of the timed period.
+    local slider = p:Acquire('metricsMinutes', function()
+        return addon:CreateWorkbenchSlider(p.child, TIMED_MIN, TIMED_MAX, 1, CONTENT - 20)
+    end)
+
+    slider:ClearAllPoints()
+    slider:SetPoint('TOPLEFT', 10, -(top + 36))
+    slider:SetWidth(CONTENT - 20)
+    controls.minutes = slider
+
+    addon:SetUIScript(slider, 'OnValueChanged', function(_, value)
+        value = math.floor((value or TIMED_DEFAULT) + .5)
+
+        if
+            p:Valid(controls.generation)
+            and state.scope
+            and state.scope.kind == 'minutes'
+            and state.scope.minutes ~= value
+        then
+            state.scope.minutes = value
+            controls.render()
         end
-    end
+    end)
 
-    addon.HideOnEscape(dialog)
-    return dialog
-end
+    -- A tab for each rotation, when there is more than one.
+    for index = 1, MAX_TABS do
+        local tab = p:Acquire('metricsTab', function()
+            return addon:CreateWorkbenchButton(p.child, '', 120)
+        end)
 
--- Shows the graphs of what was recorded, with a tab for each rotation.
--- @return table|nil  The window; nil when nothing is recorded.
-function addon:ShowMetricsGraphs()
-    local metrics = addon.Metrics
-
-    if not metrics or not metrics:HasData() then
-        self:print(L['No metrics have been recorded yet.'])
-        return nil
-    end
-
-    local dialog = getWindow()
-    dialog.report = metrics:Report(rotationName, spellName)
-    dialog.chrome:SetContext(L['Rotation metrics'], L['Report'], '')
-    local count = math.min(#dialog.report.rotations, MAX_TABS)
-    local width = math.floor((CONTENT - (count - 1) * 4) / math.max(1, count))
-
-    for index = 1, count do
-        local tab = dialog.tabs[index]
-
-        if not tab then
-            tab = addon:CreateWorkbenchButton(dialog.frame, '', width)
-            dialog.tabs[index] = tab
-
-            addon:SetUIScript(tab, 'OnClick', function()
-                dialog:Select(index)
-            end)
-        end
-
-        local rotation = dialog.report.rotations[index]
-        tab:SetText(rotation.name or rotation.id)
-        tab:SetWidth(width)
         tab:ClearAllPoints()
-        tab:SetPoint('TOPLEFT', dialog.frame, 'TOPLEFT', 16 + (index - 1) * (width + 4), -34)
+        tab:SetPoint('TOPLEFT', (index - 1) * 124, -(top + 58))
+        tab:Hide()
+        controls.tabs[index] = tab
 
-        if count > 1 then
-            tab:Show()
+        addon:SetUIScript(tab, 'OnClick', p:Guard(function()
+            state.tab = index
+            controls.render()
+        end))
+    end
+
+    local canvas = p:Acquire('metricsCanvas', function()
+        return CreateFrame('Frame', nil, p.child)
+    end)
+
+    canvas.ctx = canvas.ctx or { content = canvas, textures = {}, texts = {}, usedTextures = 0, usedTexts = 0 }
+    canvas:ClearAllPoints()
+    canvas:SetPoint('TOPLEFT', 0, -(top + 90))
+    canvas:SetWidth(CONTENT)
+    controls.canvas = canvas
+
+    -- The export, under the graphs: the website's JSON of the period shown, or that behind instructions for a language model.
+    local export = p:Acquire('metricsExport', function()
+        return addon:CreateWorkbenchButton(p.child, L['Export for the website'], 200)
+    end)
+
+    export:SetText(L['Export for the website'])
+    controls.export = export
+
+    local instructions = p:Acquire('metricsInstructions', function()
+        return addon:CreateWorkbenchCheckBox(p.child, L['Add instructions for a language model'], 320)
+    end)
+
+    instructions:SetChecked(state.instructions == true)
+    controls.instructions = instructions
+
+    addon:SetUIScript(instructions, 'OnClick', function()
+        state.instructions = instructions:GetChecked() == true
+    end)
+
+    -- Draws everything below the switches for the period chosen, and sets the page's height to fit.
+    function controls.render()
+        local where = addon.GetMetricsWhere and addon:GetMetricsWhere() or nil
+
+        if not state.scope then
+            local last = #metrics:Report(nil, nil, { kind = 'last' }).rotations > 0
+            state.scope = { kind = last and 'last' or 'all', minutes = TIMED_DEFAULT }
+        end
+
+        local scope = state.scope
+        controls.report = metrics:Report(rotationName, spellName, scope, { instance = where and where.instance })
+
+        for kind, button in pairs(controls.scope) do
+            local label = kind == 'last' and L['Last fight']
+                or kind == 'instance' and L['This instance']
+                or kind == 'minutes' and string.format(L['Last %d minutes'], scope.minutes or TIMED_DEFAULT)
+                or L['All time']
+
+            button:SetText(label)
+            button:SetSelected(scope.kind == kind)
+        end
+
+        if scope.kind == 'minutes' then
+            slider:SetValue(scope.minutes or TIMED_DEFAULT)
+            slider:Show()
         else
-            tab:Hide()
+            slider:Hide()
+        end
+
+        local rotations = controls.report.rotations
+        local count = math.min(#rotations, MAX_TABS)
+        state.tab = math.max(1, math.min(state.tab or 1, math.max(1, count)))
+
+        for index, tab in ipairs(controls.tabs) do
+            local rotation = rotations[index]
+
+            if index <= count and count > 1 then
+                tab:SetText(rotation.name or rotation.id)
+                tab:SetSelected(index == state.tab)
+                tab:Show()
+            else
+                tab:Hide()
+            end
+        end
+
+        local height
+
+        if count == 0 then
+            height = drawEmpty(canvas.ctx)
+        else
+            height = draw(canvas.ctx, rotations[state.tab])
+        end
+
+        canvas:SetHeight(height)
+        local below = top + 90 + height + 10
+        export:ClearAllPoints()
+        export:SetPoint('TOPLEFT', 0, -below)
+        instructions:ClearAllPoints()
+        instructions:SetPoint('LEFT', export, 'RIGHT', 12, 0)
+
+        if count == 0 then
+            export:Disable()
+        else
+            export:Enable()
+        end
+
+        p.y = below + 40
+        p.child:SetHeight(p.y + 12)
+
+        if p.scroll and p.scroll.UpdateWorkbenchScroll then
+            p.scroll:UpdateWorkbenchScroll()
         end
     end
 
-    for index = count + 1, #dialog.tabs do
-        dialog.tabs[index]:Hide()
-    end
+    addon:SetUIScript(export, 'OnClick', p:Guard(function()
+        local where = addon.GetMetricsWhere and addon:GetMetricsWhere() or nil
+        local report = metrics:Report(rotationName, spellName, state.scope, { instance = where and where.instance })
 
-    dialog:Show()
-    self:OpenPopup(dialog)
-    dialog:Select(1)
-    return dialog
-end
+        if #report.rotations == 0 then
+            return
+        end
 
--- Opens the website export of the metrics in the selectable window, or the graphs.
--- @param kind string  "report" for the graphs, "json" for the export.
--- @return boolean  True when a window was shown.
-function addon:ShowMetricsExport(kind)
-    local metrics = addon.Metrics
+        local withInstructions = state.instructions == true
 
-    if kind ~= 'json' then
-        return self:ShowMetricsGraphs() ~= nil
-    end
+        local data = withInstructions and metrics:ToPrompt(report, clientFacts()) or metrics:ToJSON(
+            report,
+            clientFacts()
+        )
 
-    if not metrics or not metrics:HasData() then
-        self:print(L['No metrics have been recorded yet.'])
-        return false
-    end
+        pcall(
+            addon.ShowConditionText,
+            addon,
+            data,
+            withInstructions and L['Metrics for a language model'] or L['Metrics export']
+        )
+    end))
 
-    local report = metrics:Report(rotationName, spellName)
-    return pcall(self.ShowConditionText, self, metrics:ToJSON(report, clientFacts()), L['Metrics export']) == true
+    controls.render()
 end
 
 -- Deletes every recorded number.

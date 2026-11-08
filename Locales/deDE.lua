@@ -11764,8 +11764,6 @@ addon.translation = {
 [3474] = "Metrikbericht",
 -- 3b5e938d English: Export for the website
 [3475] = "Für die Website exportieren",
--- 71116db8 English: Clear metrics
-[3477] = "Metriken löschen",
 -- a42bb91e English: Metrics export
 [3478] = "Metrik-Export",
 -- 03823b68 English: Rotation metrics
@@ -11797,8 +11795,6 @@ addon.translation = {
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
 --     clients.
 [3493] = "Zeichnet den Schaden und die Heilung jedes Kampfes auf, damit die Metriken Kämpfe, in denen Sie den Empfehlungen genau gefolgt sind, mit Kämpfen vergleichen können, in denen das nicht der Fall war. Dazu wird das Kampflog gelesen, das Retail und Forever vor Addons verbergen; auf diesen Clients wird daher nichts aufgezeichnet.",
--- 75205de8 English: Forecast
-[3494] = "Prognose",
 -- 3358a032 English: Predict upcoming recommendations from the expected state
 [3495] = "Kommende Empfehlungen aus dem erwarteten Zustand vorhersagen",
 -- 999811c8 English: Fade predictions that are less certain
@@ -11865,4 +11861,25 @@ addon.translation = {
 [3522] = "Prognosegenauigkeit",
 -- 683943ea English: Prediction %d: right %d%% of the time, said %d%% sure
 [3523] = "Vorhersage %d: in %d %% der Fälle richtig, Sicherheit %d %%",
+-- 214bf2db English: Last fight
+[3524] = "Letzter Kampf",
+-- d354f304 English: This instance
+[3525] = "Diese Instanz",
+-- f39529f9 English: Last %d minutes
+[3527] = "Letzte %d Minuten",
+-- 9755c8d7 English: All time
+[3528] = "Gesamte Zeit",
+-- ce06bb9e English: Nothing was recorded for this period.
+[3529] = "Für diesen Zeitraum wurde nichts aufgezeichnet.",
+-- cb34af04 English: Add instructions for a language model
+[3530] = "Anweisungen für ein Sprachmodell hinzufügen",
+-- 9573bb88 English: Metrics for a language model
+[3531] = "Metriken für ein Sprachmodell",
+-- fff6ef8a English: See how closely you follow the advice and how much it matters.
+[3532] = "Sieh, wie genau du den Empfehlungen folgst und wie viel das ausmacht.",
+-- 8ebc213e English: Choose what to record, then see how closely you followed the advice, how long
+--     you took to act on it and what you cast instead, for the last fight, this instance, a period
+--     you set, or everything. Export the numbers for the website, with or without instructions for
+--     a language model. Reset deletes everything recorded.
+[3533] = "Wähle, was aufgezeichnet wird, und sieh dann, wie genau du den Empfehlungen gefolgt bist, wie lange du bis zur Umsetzung gebraucht hast und was du stattdessen gewirkt hast – für den letzten Kampf, diese Instanz, einen selbst gewählten Zeitraum oder alles. Exportiere die Zahlen für die Website, mit oder ohne Anweisungen für ein Sprachmodell. „Zurücksetzen“ löscht alles Aufgezeichnete.",
 }

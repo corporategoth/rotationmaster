@@ -11764,8 +11764,6 @@ addon.translation = {
 [3474] = "Informe de métricas",
 -- 3b5e938d English: Export for the website
 [3475] = "Exportar para el sitio web",
--- 71116db8 English: Clear metrics
-[3477] = "Borrar métricas",
 -- a42bb91e English: Metrics export
 [3478] = "Exportación de métricas",
 -- 03823b68 English: Rotation metrics
@@ -11797,8 +11795,6 @@ addon.translation = {
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
 --     clients.
 [3493] = "Registra el daño y la sanación que haces en cada combate para que las métricas puedan comparar los combates en los que seguiste de cerca las recomendaciones con aquellos en los que no. Esto lee el registro de combate, que Retail y Forever ocultan a los addons, así que en esos clientes no se registra nada.",
--- 75205de8 English: Forecast
-[3494] = "Previsión",
 -- 3358a032 English: Predict upcoming recommendations from the expected state
 [3495] = "Predecir las próximas recomendaciones a partir del estado esperado",
 -- 999811c8 English: Fade predictions that are less certain
@@ -11865,4 +11861,25 @@ addon.translation = {
 [3522] = "Precisión de la previsión",
 -- 683943ea English: Prediction %d: right %d%% of the time, said %d%% sure
 [3523] = "Predicción %d: acertó el %d %% de las veces, con una seguridad del %d %%",
+-- 214bf2db English: Last fight
+[3524] = "Último combate",
+-- d354f304 English: This instance
+[3525] = "Esta instancia",
+-- f39529f9 English: Last %d minutes
+[3527] = "Últimos %d minutos",
+-- 9755c8d7 English: All time
+[3528] = "Todo el tiempo",
+-- ce06bb9e English: Nothing was recorded for this period.
+[3529] = "No se registró nada en este período.",
+-- cb34af04 English: Add instructions for a language model
+[3530] = "Añadir instrucciones para un modelo de lenguaje",
+-- 9573bb88 English: Metrics for a language model
+[3531] = "Métricas para un modelo de lenguaje",
+-- fff6ef8a English: See how closely you follow the advice and how much it matters.
+[3532] = "Mira cuánto sigues las recomendaciones y cuánto importa.",
+-- 8ebc213e English: Choose what to record, then see how closely you followed the advice, how long
+--     you took to act on it and what you cast instead, for the last fight, this instance, a period
+--     you set, or everything. Export the numbers for the website, with or without instructions for
+--     a language model. Reset deletes everything recorded.
+[3533] = "Elige qué registrar y mira después cuánto seguiste las recomendaciones, cuánto tardaste en actuar y qué lanzaste en su lugar, en el último combate, esta instancia, un período que fijes o todo. Exporta los números para el sitio web, con o sin instrucciones para un modelo de lenguaje. Restablecer borra todo lo registrado.",
 }

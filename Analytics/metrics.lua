@@ -5,7 +5,8 @@
 -- allocation per call after the first record of a spell (docs/architecture/metrics.md). Platform/metrics_events.lua feeds
 -- it; UI/metrics_report.lua shows and exports it. The numbers live in RotationMasterDB.global.metrics, bounded: at most
 -- MAX_ROTATIONS rotations, MAX_SPELLS advised spells each, MAX_DEVIATIONS replacements per spell, RING fights per
--- rotation. Nothing here identifies a character, a target or a realm.
+-- rotation, and the last RECENT fights each in full (what a report of the last fight, this instance or the last half
+-- hour is made of). Nothing here identifies a character, a target or a realm.
 -- Loaded from RotationMaster.toc after Analytics/capture.lua.
 
 local _, addon = ...
@@ -13,7 +14,13 @@ local _, addon = ...
 local metrics = {}
 addon.Metrics = metrics
 
+-- The wall clock in seconds (the game's time()); a test sets its own.
+metrics.clock = rawget(_G, 'time') or function()
+    return 0
+end
+
 local MAX_ROTATIONS, MAX_SPELLS, MAX_DEVIATIONS, RING = 24, 64, 8, 40
+local RECENT, FIGHT_SPELLS, FIGHT_DEVIATIONS = 80, 24, 4
 local MIN_FIGHT, MAX_DELAY = 8, 30
 local FORMAT, VERSION = 'rm-metrics', 1
 
@@ -47,6 +54,33 @@ local function store()
     end
 
     return saved
+end
+
+-- The wall clock in seconds, for stamping a fight so a report can be limited to a period.
+-- @return number  Seconds since 1970.
+local function epoch()
+    return metrics.clock()
+end
+
+-- A record with no fights, in the shape of a rotation's (without the ring and the prediction rows): the running fight is
+-- tallied into one, and a report of a period is the sum of the fights' records.
+-- @return table  The empty record.
+local function blank()
+    return {
+        fights = 0,
+        seconds = 0,
+        damage = 0,
+        healing = 0,
+        casts = 0,
+        followed = 0,
+        deviations = 0,
+        unadvised = 0,
+        superseded = 0,
+        delaySum = 0,
+        delayN = 0,
+        hist = { 0, 0, 0, 0, 0, 0 },
+        spells = {},
+    }
 end
 
 -- Returns a rotation's record, creating it (and dropping the least recently used rotation when full).
@@ -95,10 +129,11 @@ local function record(id)
 end
 
 -- Returns the per-spell record of an advised spell, creating it up to the cap.
--- @param rec table  The rotation record.
+-- @param rec table  The rotation record, or a fight's.
 -- @param spell number  The spell id.
+-- @param cap number|nil  The most spells the record may hold; MAX_SPELLS by default.
 -- @return table|nil  { followed, delaySum, superseded, replaced = { [spell] = count } }; nil when full.
-local function spellRecord(rec, spell)
+local function spellRecord(rec, spell, cap)
     local entry = rec.spells[spell]
 
     if entry then
@@ -111,7 +146,7 @@ local function spellRecord(rec, spell)
         count = count + 1
     end
 
-    if count >= MAX_SPELLS then
+    if count >= (cap or MAX_SPELLS) then
         return nil
     end
 
@@ -181,6 +216,13 @@ function metrics:Advice(rotation, spell, now)
             entry.superseded = entry.superseded + 1
             rec.superseded = rec.superseded + 1
         end
+
+        local inFight = spellRecord(fight.rec, adviceSpell, FIGHT_SPELLS)
+
+        if inFight then
+            inFight.superseded = inFight.superseded + 1
+            fight.rec.superseded = fight.rec.superseded + 1
+        end
     end
 
     if spell == adviceSpell and rotation == adviceRotation then
@@ -200,6 +242,7 @@ function metrics:Advice(rotation, spell, now)
 
         if rec then
             spellRecord(rec, spell)
+            spellRecord(fight.rec, spell, FIGHT_SPELLS)
         end
     end
 
@@ -227,8 +270,10 @@ function metrics:Cast(spell, now)
         return
     end
 
+    local inFight = fight.rec
     rec.casts = rec.casts + 1
     fight.casts = fight.casts + 1
+    inFight.casts = inFight.casts + 1
 
     if adviceSpell == spell then
         local delay = math.max(0, math.min(MAX_DELAY, now - (adviceAt or now)))
@@ -244,6 +289,17 @@ function metrics:Cast(spell, now)
             entry.delaySum = entry.delaySum + delay
         end
 
+        local fightEntry = spellRecord(inFight, spell, FIGHT_SPELLS)
+        inFight.followed = inFight.followed + 1
+        inFight.delaySum = inFight.delaySum + delay
+        inFight.delayN = inFight.delayN + 1
+        inFight.hist[slot] = inFight.hist[slot] + 1
+
+        if fightEntry then
+            fightEntry.followed = fightEntry.followed + 1
+            fightEntry.delaySum = fightEntry.delaySum + delay
+        end
+
         fight.followed = fight.followed + 1
         fight.delaySum = fight.delaySum + delay
         adviceAt = now
@@ -252,14 +308,22 @@ function metrics:Cast(spell, now)
 
     if not adviceSpell then
         rec.unadvised = rec.unadvised + 1
+        inFight.unadvised = inFight.unadvised + 1
         return
     end
 
     local entry = spellRecord(rec, adviceSpell)
     rec.deviations = rec.deviations + 1
+    inFight.deviations = inFight.deviations + 1
 
     if entry then
         bump(entry.replaced, spell, MAX_DEVIATIONS)
+    end
+
+    local fightEntry = spellRecord(inFight, adviceSpell, FIGHT_SPELLS)
+
+    if fightEntry then
+        bump(fightEntry.replaced, spell, FIGHT_DEVIATIONS)
     end
 end
 
@@ -369,7 +433,8 @@ end
 
 -- Starts a fight.
 -- @param now number  The time in seconds.
-function metrics:FightStart(now)
+-- @param where table|nil  Where it is: { instance = a key for the instance or zone, name = its name }.
+function metrics:FightStart(now, where)
     fight = {
         startedAt = now,
         rotation = adviceRotation,
@@ -378,7 +443,18 @@ function metrics:FightStart(now)
         delaySum = 0,
         damage = 0,
         healing = 0,
+        rec = blank(),
+        instance = where and where.instance or nil,
+        instanceName = where and where.name or nil,
     }
+end
+
+-- Names the encounter the running fight belongs to (a boss fight the game announced).
+-- @param name string|nil  The encounter's name.
+function metrics:Encounter(name)
+    if fight and type(name) == 'string' then
+        fight.encounter = name
+    end
 end
 
 -- Ends the fight and files it under the rotation that was active.
@@ -419,7 +495,134 @@ function metrics:FightEnd(now)
     }
 
     rec.ringNext = rec.ringNext % RING + 1
+
+    -- The fight in full, for reports of a period: the last RECENT of them are kept.
+    local saved = store()
+    local filed = done.rec
+    filed.fights, filed.seconds = 1, duration
+    filed.damage, filed.healing = done.damage, done.healing
+    filed.id, filed.t = done.rotation, epoch()
+    filed.instance, filed.instanceName, filed.encounter = done.instance, done.instanceName, done.encounter
+    saved.recent = saved.recent or {}
+    saved.recent[#saved.recent + 1] = filed
+
+    while #saved.recent > RECENT do
+        table.remove(saved.recent, 1)
+    end
+
     return true
+end
+
+-- Adds one fight's record to a sum of them.
+-- @param into table  The sum, made by blank().
+-- @param fightRec table  One fight's record.
+local function merge(into, fightRec)
+    for _, key in ipairs({
+        'fights', 'seconds', 'damage', 'healing', 'casts', 'followed', 'deviations', 'unadvised', 'superseded',
+        'delaySum', 'delayN'
+    }) do
+        into[key] = into[key] + (fightRec[key] or 0)
+    end
+
+    for index = 1, 6 do
+        into.hist[index] = into.hist[index] + (fightRec.hist[index] or 0)
+    end
+
+    for spell, entry in pairs(fightRec.spells) do
+        local sum = spellRecord(into, spell)
+
+        if sum then
+            sum.followed = sum.followed + entry.followed
+            sum.delaySum = sum.delaySum + entry.delaySum
+            sum.superseded = sum.superseded + entry.superseded
+
+            for cast, count in pairs(entry.replaced) do
+                local seen = sum.replaced[cast]
+
+                if seen then
+                    sum.replaced[cast] = seen + count
+                else
+                    local kept = 0
+
+                    for _ in pairs(sum.replaced) do
+                        kept = kept + 1
+                    end
+
+                    if kept < MAX_DEVIATIONS then
+                        sum.replaced[cast] = count
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Tells whether a stored fight is inside a scope.
+-- @param entry table  A stored fight.
+-- @param scope table  { kind = "last" | "instance" | "minutes", minutes = number }.
+-- @param context table  What is true now: { instance = the current instance's key, now = the wall clock }.
+-- @param newest number  The wall clock of the newest stored fight.
+-- @return boolean  True when the fight belongs to the scope.
+local function inScope(entry, scope, context, newest)
+    if scope.kind == 'last' then
+        return entry.t == newest
+    elseif scope.kind == 'instance' then
+        return entry.instance ~= nil and entry.instance == context.instance
+    elseif scope.kind == 'minutes' then
+        return entry.t >= context.now - (scope.minutes or 30) * 60
+    end
+
+    return true
+end
+
+-- Sums the stored fights of a scope, one record for each rotation.
+-- @param scope table  See inScope.
+-- @param context table|nil  What is true now; the clock is read when none is given.
+-- @return table  Rotation id -> summed record (with ring rows for the fight list), and the ids in order of first fight.
+-- @return string[]  The rotation ids.
+local function scoped(scope, context)
+    local saved = store()
+    local sums, order = {}, {}
+
+    if not saved or not saved.recent then
+        return sums, order
+    end
+
+    context = context or {}
+    context.now = context.now or epoch()
+    local newest = 0
+
+    for _, entry in ipairs(saved.recent) do
+        newest = math.max(newest, entry.t or 0)
+    end
+
+    for _, entry in ipairs(saved.recent) do
+        if entry.id and inScope(entry, scope, context, newest) then
+            local sum = sums[entry.id]
+
+            if not sum then
+                sum = blank()
+                sum.ring, sum.ringNext, sum.predict, sum.rows = {}, 1, {}, 0
+                sums[entry.id] = sum
+                order[#order + 1] = entry.id
+            end
+
+            merge(sum, entry)
+            sum.rows = sum.rows + 1
+
+            sum.ring[(sum.rows - 1) % RING + 1] = {
+                math.floor(entry.seconds + 0.5),
+                math.floor(entry.damage),
+                math.floor(entry.healing),
+                entry.casts,
+                entry.followed,
+            }
+
+            sum.ringNext = sum.rows % RING + 1
+        end
+    end
+
+    return sums, order
 end
 
 -- Forgets the volatile advice and fight, without filing anything (used when collection stops).
@@ -594,12 +797,30 @@ end
 -- Builds the report: one summary per rotation, most fought first.
 -- @param names function|nil  Called with a rotation id and returning its display name.
 -- @param spellName function|nil  Called with a spell id and returning its name.
--- @return table  { format, version, rotations = { summary, ... } }.
-function metrics:Report(names, spellName)
+-- @param scope table|nil  Which fights to count: { kind = "last" } (the newest fight), { kind = "instance" } (those in the
+--   instance or zone named by context.instance), { kind = "minutes", minutes = n } (the last n minutes) or
+--   nil or { kind = "all" } is everything ever recorded.
+-- @param context table|nil  What is true now for a scope: { instance = the key of where the player is, now = wall clock }.
+-- @return table  { format, version, scope, rotations = { summary, ... } }.
+function metrics:Report(names, spellName, scope, context)
     local saved = store()
-    local report = { format = FORMAT, version = VERSION, rotations = {} }
+    local report = { format = FORMAT, version = VERSION, rotations = {}, scope = scope and scope.kind or 'all' }
 
     if not saved then
+        return report
+    end
+
+    if scope and scope.kind ~= 'all' then
+        local sums, order = scoped(scope, context)
+
+        for _, id in ipairs(order) do
+            report.rotations[#report.rotations + 1] = summarize(id, sums[id], names and names(id) or nil, spellName)
+        end
+
+        table.sort(report.rotations, function(a, b)
+            return a.fights > b.fights or a.fights == b.fights and a.id < b.id
+        end)
+
         return report
     end
 
@@ -704,4 +925,26 @@ function metrics:ToJSON(report, client)
     local out = {}
     encode(copy, out)
     return table.concat(out)
+end
+
+-- The instructions that go in front of the data when it is meant for a language model.
+local PROMPT = [[
+Below is data collected by the World of Warcraft addon Rotation Master about how I play a rotation. For each rotation:
+"followedPercent" is the share of my casts that were the spell the addon was recommending when I pressed; "meanDelay" is
+how many seconds after a recommendation appeared I acted on it (the global cooldown is part of that); "outOfOrder" are
+casts of a spell the rotation does recommend, just not at that moment; "outside" are casts of spells the rotation never
+recommends; "replacedBy" lists, for each recommended spell, what I cast instead; "byAdherence" compares damage or
+healing per second in fights where I followed the advice closely and loosely. "predictionAccuracy" says how often the addon's forecast of the 2nd, 3rd... next recommendation matched what was then recommended ("meanConfidencePercent" is how sure it said it was). Spell numbers are WoW spell IDs.
+
+Please tell me: where I deviate most and whether those deviations look deliberate (cooldowns, defensives, movement) or
+like mistakes; where the rotation itself seems to be wrong for how I actually play, with the change you would make to
+the priority order or conditions; and whether following the advice more closely correlates with better output.
+]]
+
+-- Builds the text meant to be pasted to a language model: instructions, then the data.
+-- @param report table  The result of Report.
+-- @param client table|nil  Plain facts about the client.
+-- @return string  The text.
+function metrics:ToPrompt(report, client)
+    return PROMPT .. '\n' .. self:ToJSON(report, client) .. '\n'
 end

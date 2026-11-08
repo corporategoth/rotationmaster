@@ -11764,8 +11764,6 @@ addon.translation = {
 [3474] = "Отчёт по метрикам",
 -- 3b5e938d English: Export for the website
 [3475] = "Экспорт для сайта",
--- 71116db8 English: Clear metrics
-[3477] = "Очистить метрики",
 -- a42bb91e English: Metrics export
 [3478] = "Экспорт метрик",
 -- 03823b68 English: Rotation metrics
@@ -11797,8 +11795,6 @@ addon.translation = {
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
 --     clients.
 [3493] = "Записывает урон и исцеление за каждый бой, чтобы метрики могли сравнивать бои, в которых Вы точно следовали рекомендациям, с боями, в которых это было не так. Для этого читается журнал боя, который Retail и Forever скрывают от аддонов, поэтому на этих клиентах ничего не записывается.",
--- 75205de8 English: Forecast
-[3494] = "Прогноз",
 -- 3358a032 English: Predict upcoming recommendations from the expected state
 [3495] = "Предсказывать следующие рекомендации по ожидаемому состоянию",
 -- 999811c8 English: Fade predictions that are less certain
@@ -11865,4 +11861,25 @@ addon.translation = {
 [3522] = "Точность прогноза",
 -- 683943ea English: Prediction %d: right %d%% of the time, said %d%% sure
 [3523] = "Прогноз %d: верно в %d%% случаев, заявленная уверенность %d%%",
+-- 214bf2db English: Last fight
+[3524] = "Последний бой",
+-- d354f304 English: This instance
+[3525] = "Это подземелье",
+-- f39529f9 English: Last %d minutes
+[3527] = "Последние %d мин.",
+-- 9755c8d7 English: All time
+[3528] = "За всё время",
+-- ce06bb9e English: Nothing was recorded for this period.
+[3529] = "За этот период ничего не записано.",
+-- cb34af04 English: Add instructions for a language model
+[3530] = "Добавить инструкции для языковой модели",
+-- 9573bb88 English: Metrics for a language model
+[3531] = "Метрики для языковой модели",
+-- fff6ef8a English: See how closely you follow the advice and how much it matters.
+[3532] = "Посмотрите, насколько точно вы следуете рекомендациям и что это даёт.",
+-- 8ebc213e English: Choose what to record, then see how closely you followed the advice, how long
+--     you took to act on it and what you cast instead, for the last fight, this instance, a period
+--     you set, or everything. Export the numbers for the website, with or without instructions for
+--     a language model. Reset deletes everything recorded.
+[3533] = "Выберите, что записывать, а затем посмотрите, насколько вы следовали рекомендациям, как быстро действовали и что применяли вместо них, — за последний бой, это подземелье, заданный период или всё время. Экспортируйте цифры для сайта, с инструкциями для языковой модели или без них. «Сброс» удаляет всё записанное.",
 }

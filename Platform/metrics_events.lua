@@ -19,6 +19,35 @@ local listener = {}
 AceEvent:Embed(listener)
 local running = { adherence = false, effectiveness = false, prediction = false }
 
+-- Says where the player is, as a key that stays the same for one instance or one zone and the name to show for it.
+-- @return table|nil  { instance = key, name = text }; nil when the game does not say.
+--
+-- Used to stamp a fight so a report can be limited to "this instance"; the open world is told apart by its zone.
+function addon:GetMetricsWhere()
+    local info = rawget(_G, 'GetInstanceInfo')
+    local ok, name, kind, _, _, _, _, _, id = pcall(type(info) == 'function' and info or function() end)
+
+    if
+        not ok or not platform:CanReadValue(name) or not platform:CanReadValue(kind) or not platform:CanReadValue(id)
+    then
+        return nil
+    end
+
+    if kind ~= nil and kind ~= 'none' then
+        local label = type(name) == 'string' and name or nil
+        return { instance = 'instance:' .. tostring(id or label), name = label }
+    end
+
+    local zoneReader = rawget(_G, 'GetRealZoneText')
+    local zoneOk, zone = pcall(type(zoneReader) == 'function' and zoneReader or function() end)
+
+    if zoneOk and platform:CanReadValue(zone) and type(zone) == 'string' and zone ~= '' then
+        return { instance = 'zone:' .. zone, name = zone }
+    end
+
+    return nil
+end
+
 -- Handles the recommendation changing.
 -- @param _ string  The message name.
 -- @param rotation string|nil  The active rotation id.
@@ -81,7 +110,13 @@ local function onEvent(_, event, ...)
             metrics:Cast(spell, now)
         end
     elseif event == 'PLAYER_REGEN_DISABLED' then
-        metrics:FightStart(GetTime())
+        metrics:FightStart(GetTime(), addon:GetMetricsWhere())
+    elseif event == 'ENCOUNTER_START' then
+        local _, encounter = ...
+
+        if platform:CanReadValue(encounter) then
+            metrics:Encounter(encounter)
+        end
     elseif event == 'PLAYER_REGEN_ENABLED' then
         metrics:FightEnd(GetTime())
     elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
@@ -141,6 +176,8 @@ function addon:ApplyMetricsSettings(off)
     playerGUID = UnitGUID('player')
     f:RegisterEvent('PLAYER_REGEN_DISABLED')
     f:RegisterEvent('PLAYER_REGEN_ENABLED')
+    -- Boss fights are named where the client announces them (not every client does).
+    pcall(f.RegisterEvent, f, 'ENCOUNTER_START')
 
     if adherence then
         f:RegisterUnitEvent('UNIT_SPELLCAST_SENT', 'player')
@@ -160,7 +197,7 @@ function addon:ApplyMetricsSettings(off)
     running.adherence, running.effectiveness, running.prediction = adherence, effectiveness, prediction
 
     if InCombatLockdown() then
-        metrics:FightStart(GetTime())
+        metrics:FightStart(GetTime(), addon:GetMetricsWhere())
     end
 end
 

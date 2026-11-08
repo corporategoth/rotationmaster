@@ -39,7 +39,7 @@ assert(addon:RegisterDefaultRotation({
     format = 'RotationMaster',
     schemaVersion = 1,
     id = 'rm.forever.shaman.enhancement',
-    revision = 7,
+    revision = 8,
     blocks = {
         ['forever.shaman.manual-target'] = 2,
         ['forever.shaman.upkeep'] = 2,
@@ -133,8 +133,8 @@ assert(addon:RegisterDefaultRotation({
                 { type = 'GROUP' },
                 BuiltinConditions.negate(shocked())
             )),
-            BuiltinConditions.spell('shaman-enh-earth-shock', 8042),
             BuiltinConditions.spell('shaman-enh-bolt', 403, BuiltinConditions.all(ranged, stationary)),
+            BuiltinConditions.spell('shaman-enh-earth-shock', 8042),
         },
     },
 }))

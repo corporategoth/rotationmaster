@@ -11764,8 +11764,6 @@ addon.translation = {
 [3474] = "指标报告",
 -- 3b5e938d English: Export for the website
 [3475] = "导出给网站",
--- 71116db8 English: Clear metrics
-[3477] = "清除指标",
 -- a42bb91e English: Metrics export
 [3478] = "指标导出",
 -- 03823b68 English: Rotation metrics
@@ -11797,8 +11795,6 @@ addon.translation = {
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
 --     clients.
 [3493] = "记录你每场战斗造成的伤害和治疗，以便指标比较你严格遵循建议的战斗与没有遵循的战斗。这需要读取战斗记录，而正式服和 Forever 对插件隐藏了战斗记录，因此在这些客户端上不会记录任何内容。",
--- 75205de8 English: Forecast
-[3494] = "预测",
 -- 3358a032 English: Predict upcoming recommendations from the expected state
 [3495] = "根据预期状态预测接下来的建议",
 -- 999811c8 English: Fade predictions that are less certain
@@ -11865,4 +11861,25 @@ addon.translation = {
 [3522] = "预测准确度",
 -- 683943ea English: Prediction %d: right %d%% of the time, said %d%% sure
 [3523] = "第 %d 个预测：%d%% 的情况下正确，自称把握 %d%%",
+-- 214bf2db English: Last fight
+[3524] = "上一场战斗",
+-- d354f304 English: This instance
+[3525] = "本副本",
+-- f39529f9 English: Last %d minutes
+[3527] = "最近 %d 分钟",
+-- 9755c8d7 English: All time
+[3528] = "全部时间",
+-- ce06bb9e English: Nothing was recorded for this period.
+[3529] = "此时段内没有记录。",
+-- cb34af04 English: Add instructions for a language model
+[3530] = "添加给语言模型的说明",
+-- 9573bb88 English: Metrics for a language model
+[3531] = "给语言模型的指标",
+-- fff6ef8a English: See how closely you follow the advice and how much it matters.
+[3532] = "查看你遵循建议的程度及其影响。",
+-- 8ebc213e English: Choose what to record, then see how closely you followed the advice, how long
+--     you took to act on it and what you cast instead, for the last fight, this instance, a period
+--     you set, or everything. Export the numbers for the website, with or without instructions for
+--     a language model. Reset deletes everything recorded.
+[3533] = "选择要记录的内容，然后查看你在上一场战斗、本副本、自定时段或全部时间内遵循建议的程度、执行建议的用时以及改用了什么。可以导出给网站，可选择是否附带给语言模型的说明。“重置”会删除所有记录。",
 }

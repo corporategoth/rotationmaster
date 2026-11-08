@@ -187,6 +187,21 @@ test('Enhancement with the full kit: Stormstrike, then Earth Shock; Forever has 
     assert(first(f, s, ENH) == 8042)
 end)
 
+test(
+    'out of melee range and standing still, Lightning Bolt comes before Earth Shock; in melee or moving it is Earth Shock',
+    function()
+        local f, s = shaman(40, leveling, deep)
+        cd(s, 17364)
+        s.range[6603] = false
+        assert(first(f, s, ENH) == 403, 'at range, standing: Lightning Bolt')
+        s.moving = true
+        assert(first(f, s, ENH) == 8042, 'moving: the instant Earth Shock')
+        s.moving = false
+        s.range[6603] = true
+        assert(first(f, s, ENH) == 8042, 'in melee: Earth Shock')
+    end
+)
+
 test('single target vs packs: Fire Nova at a Fire totem and Flame Shock on three engaged enemies', function()
     local f, s = shaman(40, leveling, deep)
     cd(s, 17364)

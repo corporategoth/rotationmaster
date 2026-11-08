@@ -453,6 +453,33 @@ function addon:BuildGeneralSettings(p)
         sample:Disable()
     end
 
+    -- The forecast fills the preview with predictions, so its switches are part of the preview.
+    p:Check(
+        'forecast',
+        L['Predict upcoming recommendations from the expected state'],
+        profile.forecast == true,
+        function(v)
+            profile.forecast = v
+
+            p:RunSettingsEffect('forecast', function()
+                self:ApplyForecastSettings()
+            end)
+        end
+    )
+
+    p:Check(
+        'forecast_confidence',
+        L['Fade predictions that are less certain'],
+        profile.forecast_confidence ~= false,
+        function(v)
+            profile.forecast_confidence = v
+        end
+    )
+
+    p:Button('forecast_clear', L['Forget what the forecast has learned'], function()
+        self:ClearForecast()
+    end)
+
     -- Talent groups need your own names (Primary, Secondary, ...) on every client that keys rotations by talent group:
     -- Era, TBC, Wrath, Cataclysm and Forever. Retail and Mists name real specializations, so the option is gone.
     if self.Platform:GetRotationSpecKind() == 'slot' and store.char and store.char.specs then
@@ -703,100 +730,6 @@ function addon:BuildGeneralSettings(p)
     p:Slider('tooltip_limit', L['Names listed per tooltip line'], profile.tooltip_limit or 3, 1, 20, 1, function(v)
         profile.tooltip_limit = v
         tooltipsChanged()
-    end)
-
-    p:Heading(L['Forecast'])
-
-    p:Check(
-        'forecast',
-        L['Predict upcoming recommendations from the expected state'],
-        profile.forecast == true,
-        function(v)
-            profile.forecast = v
-
-            p:RunSettingsEffect('forecast', function()
-                self:ApplyForecastSettings()
-            end)
-        end
-    )
-
-    p:Check(
-        'forecast_confidence',
-        L['Fade predictions that are less certain'],
-        profile.forecast_confidence ~= false,
-        function(v)
-            profile.forecast_confidence = v
-        end
-    )
-
-    p:Button('forecast_clear', L['Forget what the forecast has learned'], function()
-        self:ClearForecast()
-    end)
-
-    p:Heading(L['Metrics'])
-
-    p:Check(
-        'metrics_adherence',
-        L['Track how closely I follow the advice'],
-        profile.metrics_adherence == true,
-        function(v)
-            profile.metrics_adherence = v
-
-            p:RunSettingsEffect('metrics_adherence', function()
-                self:ApplyMetricsSettings()
-            end)
-        end
-    )
-
-    p:Check(
-        'metrics_effectiveness',
-        L['Track damage and healing per fight'],
-        profile.metrics_effectiveness == true,
-        function(v)
-            profile.metrics_effectiveness = v
-
-            p:RunSettingsEffect('metrics_effectiveness', function()
-                self:ApplyMetricsSettings()
-            end)
-        end
-    )
-
-    p:Check(
-        'metrics_prediction',
-        L['Track how accurate the predictions were'],
-        profile.metrics_prediction == true,
-        function(v)
-            profile.metrics_prediction = v
-
-            p:RunSettingsEffect('metrics_prediction', function()
-                self:ApplyMetricsSettings()
-            end)
-        end
-    )
-
-    -- Report and Clear share a row, the export has its own: placed by hand like the preview row above.
-    local metricsY = p.y
-
-    local report = p:Button('metrics_report', L['Metrics report'], function()
-        self:ShowMetricsExport('report')
-    end)
-
-    local clear = p:Button('metrics_clear', L['Clear metrics'], function()
-        self:ClearMetrics()
-    end)
-
-    local half = p.width / 2
-
-    for index, control in ipairs({ report, clear }) do
-        control:ClearAllPoints()
-        control:SetPoint('TOPLEFT', (index - 1) * half, -metricsY)
-        control:SetWidth(half - 8)
-    end
-
-    p.y = metricsY + 30
-
-    p:Button('metrics_json', L['Export for the website'], function()
-        self:ShowMetricsExport('json')
     end)
 
     p:Heading(L['Debugging Options'])

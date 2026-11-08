@@ -10030,8 +10030,6 @@ T["Track damage and healing per fight"] = 3473
 T["Metrics report"] = 3474
 -- 3b5e938d
 T["Export for the website"] = 3475
--- 71116db8
-T["Clear metrics"] = 3477
 -- a42bb91e
 T["Metrics export"] = 3478
 -- 03823b68
@@ -10056,8 +10054,6 @@ T["High adherence"] = 3491
 T["While the rotation is on and you are in combat, record which spell was recommended when you pressed a spell, how long after the recommendation appeared you pressed it, and what you cast instead when you did not follow it. Only totals are kept, per rotation, in your saved variables; nothing is sent anywhere. Open Metrics report to see them as graphs, or export them for the website."] = 3492
 -- 7566cb83
 T["Record the damage and healing you do in each fight so the metrics can compare fights where you followed the advice closely with fights where you did not. This reads the combat log, which Retail and Forever hide from addons, so it records nothing on those clients."] = 3493
--- 75205de8
-T["Forecast"] = 3494
 -- 3358a032
 T["Predict upcoming recommendations from the expected state"] = 3495
 -- 999811c8
@@ -10114,6 +10110,24 @@ T["Most common deviations"] = 3521
 T["Forecast accuracy"] = 3522
 -- 683943ea
 T["Prediction %d: right %d%% of the time, said %d%% sure"] = 3523
+-- 214bf2db
+T["Last fight"] = 3524
+-- d354f304
+T["This instance"] = 3525
+-- f39529f9
+T["Last %d minutes"] = 3527
+-- 9755c8d7
+T["All time"] = 3528
+-- ce06bb9e
+T["Nothing was recorded for this period."] = 3529
+-- cb34af04
+T["Add instructions for a language model"] = 3530
+-- 9573bb88
+T["Metrics for a language model"] = 3531
+-- fff6ef8a
+T["See how closely you follow the advice and how much it matters."] = 3532
+-- 8ebc213e
+T["Choose what to record, then see how closely you followed the advice, how long you took to act on it and what you cast instead, for the last fight, this instance, a period you set, or everything. Export the numbers for the website, with or without instructions for a language model. Reset deletes everything recorded."] = 3533
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

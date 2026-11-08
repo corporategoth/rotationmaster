@@ -44,19 +44,26 @@ is dropped), 64 advised spells each, 40 fights each. Nothing identifies a charac
 
 ## Reading and exporting (`UI/metrics_report.lua`)
 
-General > Metrics has three buttons. **Metrics report** and **Clear metrics** share a row; **Export for the website** has its own.
+Metrics is a top-level tab, between General and Conditions. It holds the three recording switches (adherence, damage and healing, prediction accuracy) and the report, drawn in the pane with a scroll bar for the page; nothing opens a separate window except the export's text.
 
-* **Metrics report**: a window of graphs with a tab for each rotation (up to five, most fights first): a gauge for how closely the
+* **Metrics report** covers a period you choose with the buttons under the tabs: **Last fight**, **This instance** (the instance or,
+  in the open world, the zone you are in now), a **timed** period (its button reads "Last N minutes" and a slider
+  under the buttons sets N from 1 to 180) and **All time**. **Reset** deletes everything recorded (the button reads Confirm for four
+  seconds after the first press, and the second press does it). The periods are made of the last 80 fights, each kept in full with its time, its
+  place (the key of the instance or zone, from `GetInstanceInfo` or `GetRealZoneText`) and, where the client announces it, the
+  encounter (`ENCOUNTER_START`). Forecast accuracy is only kept for all time. It opens on the last fight.
+  A window of graphs with a tab for each rotation (up to five, most fights first): a gauge for how closely the
   advice was followed (green from 85 percent, yellow from 60, red below), a bar of where the casts went (followed, out of order,
   outside the rotation, no advice), a chart of how long it took to act on the advice, damage per second by how closely the advice
   was followed, the most common deviations (what was cast instead, with spell icons) and, when tracked, how often each forecast was
   right against how sure it said it was. Drawn from pooled textures, so reopening it allocates nothing new.
-* **Export for the website** (opens the selectable text window, Ctrl-A, Ctrl-C): JSON with `format="rm-metrics"` and `version=1`: per rotation `id`, `name`, `fights`, `seconds`, `casts`,
+* **Export for the website**, under the graphs, exports the period shown and opens the selectable text window (Ctrl-A, Ctrl-C). With
+  **Add instructions for a language model** ticked, plain-English instructions that define each field and ask where the player
+  deviates, whether the deviations look deliberate, and where the rotation should change come first, and the same JSON follows. The JSON with `format="rm-metrics"` and `version=1`: per rotation `id`, `name`, `fights`, `seconds`, `casts`,
   `followed`, `followedPercent`, `meanDelay`, `delayHistogram`, `dps`, `hps`, `outOfOrder`, `outside`, `unadvised`, `superseded`,
   `spells[] { spell, name, followed, meanDelay, superseded, replacedBy[] { spell, name, count } }`, `outsideSpells[]`, `byAdherence[]`,
   `predictionAccuracy[] { slot, checked, hitPercent, meanConfidencePercent }` and `fightList[]`; plus `client { family, interface }`. Keys are sorted, so the same data encodes the same way. The website
   imports this to attach adherence and output to a rotation page; it never leaves the game by itself.
-* **Clear metrics**.
 
 ## Tests
 

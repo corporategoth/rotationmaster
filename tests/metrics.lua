@@ -195,6 +195,114 @@ test('the saved table is bounded', function()
     assert(#m:Report().rotations[1].fightList <= 40)
 end)
 
+-- Fights at known wall clock times in known places, to report on a period.
+local function history()
+    local m, f = fresh()
+    local clock = 1000000
+
+    m.clock = function()
+        return clock
+    end
+
+    local function file(rotation, at, where, spell, casts, encounter)
+        clock = at
+        m:FightStart(100, where)
+
+        if encounter then
+            m:Encounter(encounter)
+        end
+
+        m:Advice(rotation, spell, 101)
+
+        for _ = 1, casts do
+            m:Cast(spell, 102)
+        end
+
+        m:Output(10000, 0)
+        return m:FightEnd(130)
+    end
+
+    local keep, raid = { instance = 'zone:Barrens', name = 'Barrens' }, {
+        instance = 'instance:409',
+        name = 'Molten Core',
+    }
+
+    assert(file('rot', 1000000 - 7200, keep, FIREBALL, 2))
+    assert(file('rot', 1000000 - 1500, raid, FIREBALL, 3, 'Lucifron'))
+    assert(file('rot', 1000000 - 600, raid, FROSTBOLT, 4))
+    assert(file('other', 1000000 - 60, raid, ARCANE, 5))
+    clock = 1000000
+
+    return m,
+        function(t)
+            clock = t
+        end,
+        f
+end
+
+test('a report can be limited to the last fight, this instance or a number of minutes', function()
+    local m = history()
+
+    local function casts(scope, context)
+        local total = 0
+
+        for _, r in ipairs(m:Report(nil, nil, scope, context).rotations) do
+            total = total + r.casts
+        end
+
+        return total
+    end
+
+    assert(casts() == 14 and casts({ kind = 'all' }) == 14, 'no scope is everything ever recorded')
+    assert(casts({ kind = 'last' }) == 5, 'the newest fight alone')
+    assert(casts({ kind = 'instance' }, { instance = 'instance:409' }) == 12, 'the three fights in the raid')
+    assert(casts({ kind = 'instance' }, { instance = 'zone:Barrens' }) == 2)
+    assert(casts({ kind = 'instance' }, { instance = nil }) == 0, 'unknown whereabouts match nothing')
+    assert(casts({ kind = 'minutes', minutes = 5 }) == 5)
+    assert(casts({ kind = 'minutes', minutes = 15 }) == 9, 'the last two fights')
+    assert(casts({ kind = 'minutes', minutes = 30 }) == 12)
+    assert(casts({ kind = 'minutes', minutes = 180 }) == 14)
+    m:Clear()
+    assert(casts({ kind = 'all' }) == 0 and casts({ kind = 'last' }) == 0, 'clearing deletes the periods too')
+end)
+
+test('a scoped report sums the fights of each rotation, with their spells, replacements and fight list', function()
+    local m = history()
+    local report = m:Report(nil, nil, { kind = 'instance' }, { instance = 'instance:409' })
+    assert(#report.rotations == 2 and report.scope == 'instance')
+    local rot, other = report.rotations[1], report.rotations[2]
+    assert(rot.id == 'rot' and rot.fights == 2 and rot.casts == 7 and rot.followed == 7, 'two fights of one rotation')
+    assert(other.id == 'other' and other.fights == 1 and other.casts == 5)
+
+    assert(
+        #rot.fightList == 2 and rot.dps == 333,
+        'the fight list and the output are of the scope: ' .. tostring(rot.dps)
+    )
+
+    assert(#rot.spells == 2 and rot.spells[1].followed + rot.spells[2].followed == 7)
+    assert(#m:Report(nil, nil, { kind = 'last' }).rotations == 1)
+end)
+
+test('only the last fights are kept in full, each stamped with where and what it was', function()
+    local m, _, f = history()
+    local saved = f.addon.db.global.metrics
+
+    assert(
+        #saved.recent == 4 and saved.recent[2].instanceName == 'Molten Core' and saved.recent[2].encounter == 'Lucifron'
+    )
+
+    assert(saved.recent[1].instance == 'zone:Barrens' and saved.recent[1].t == 1000000 - 7200)
+
+    for n = 1, 100 do
+        m:FightStart(0, nil)
+        m:Advice('rot', FIREBALL, 0)
+        m:Cast(FIREBALL, 1)
+        m:FightEnd(20)
+    end
+
+    assert(#saved.recent == 80, 'the oldest are dropped past eighty')
+end)
+
 test('the JSON export is stable, escaped and carries the client facts', function()
     local m = fresh()
     fight(m, 'rot "1"', { { advice = FIREBALL, at = 101 }, { cast = FIREBALL, at = 102 } })
@@ -212,6 +320,12 @@ test('the JSON export is stable, escaped and carries the client facts', function
     assert(json == m:ToJSON(report, { family = 'tbc', interface = 20506 }), 'the same report encodes the same way')
     assert(not json:find('[\n\t]'), 'no raw control characters')
     assert(m.DELAY_EDGES[1] == 0.25 and #m.DELAY_EDGES == 5, 'the report draws the delay chart from these edges')
+    local prompt = m:ToPrompt(report)
+
+    assert(
+        prompt:find('followedPercent', 1, true) and prompt:find(m:ToJSON(report), 1, true, true),
+        'instructions, then the data'
+    )
 end)
 
 test(

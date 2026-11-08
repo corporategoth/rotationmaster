@@ -11764,8 +11764,6 @@ addon.translation = {
 [3474] = "지표 보고서",
 -- 3b5e938d English: Export for the website
 [3475] = "웹사이트용으로 내보내기",
--- 71116db8 English: Clear metrics
-[3477] = "지표 삭제",
 -- a42bb91e English: Metrics export
 [3478] = "지표 내보내기",
 -- 03823b68 English: Rotation metrics
@@ -11797,8 +11795,6 @@ addon.translation = {
 --     combat log, which Retail and Forever hide from addons, so it records nothing on those
 --     clients.
 [3493] = "전투마다 입힌 피해량과 치유량을 기록하여, 권장 사항을 가깝게 따른 전투와 그렇지 않은 전투를 지표에서 비교할 수 있게 합니다. 이 기능은 전투 기록을 읽는데, 리테일과 포에버는 애드온에 전투 기록을 숨기므로 해당 클라이언트에서는 아무것도 기록되지 않습니다.",
--- 75205de8 English: Forecast
-[3494] = "예측",
 -- 3358a032 English: Predict upcoming recommendations from the expected state
 [3495] = "예상 상태를 바탕으로 다음 권장 사항 예측",
 -- 999811c8 English: Fade predictions that are less certain
@@ -11865,4 +11861,25 @@ addon.translation = {
 [3522] = "예측 정확도",
 -- 683943ea English: Prediction %d: right %d%% of the time, said %d%% sure
 [3523] = "예측 %d: %d%% 적중, 확신도 %d%%",
+-- 214bf2db English: Last fight
+[3524] = "마지막 전투",
+-- d354f304 English: This instance
+[3525] = "이 인스턴스",
+-- f39529f9 English: Last %d minutes
+[3527] = "최근 %d분",
+-- 9755c8d7 English: All time
+[3528] = "전체 기간",
+-- ce06bb9e English: Nothing was recorded for this period.
+[3529] = "이 기간에는 기록된 것이 없습니다.",
+-- cb34af04 English: Add instructions for a language model
+[3530] = "언어 모델용 지침 추가",
+-- 9573bb88 English: Metrics for a language model
+[3531] = "언어 모델용 지표",
+-- fff6ef8a English: See how closely you follow the advice and how much it matters.
+[3532] = "권장 사항을 얼마나 따르는지, 그리고 그것이 얼마나 중요한지 확인합니다.",
+-- 8ebc213e English: Choose what to record, then see how closely you followed the advice, how long
+--     you took to act on it and what you cast instead, for the last fight, this instance, a period
+--     you set, or everything. Export the numbers for the website, with or without instructions for
+--     a language model. Reset deletes everything recorded.
+[3533] = "기록할 항목을 고른 다음, 마지막 전투, 이 인스턴스, 직접 정한 기간 또는 전체에서 권장 사항을 얼마나 따랐는지, 따르기까지 얼마나 걸렸는지, 대신 무엇을 시전했는지 확인하세요. 웹사이트용으로 수치를 내보낼 수 있으며, 언어 모델용 지침을 함께 넣을 수도 있습니다. 초기화는 기록된 모든 것을 삭제합니다.",
 }
