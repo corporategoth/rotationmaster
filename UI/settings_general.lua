@@ -340,9 +340,9 @@ function addon:BuildGeneralSettings(p)
     locked:GetFontString():SetWidth(third - 30)
     p.y = previewY + 30
 
-    -- The title and the preview's own readiness options share a row. The preview can judge readiness by its own three
-    -- options (Core/action_policy.lua, both engines in main.lua); off, it follows the ones above. The three are disabled
-    -- while it is off.
+    -- The title and the target health bar share a row; the preview's own readiness options have a row of their own, with
+    -- the three they hold under it. The preview can judge readiness by its own three options (Core/action_policy.lua, both
+    -- engines in main.lua); off, it follows the ones above. The three are disabled while it is off.
     local pairY = p.y
 
     local title = p:Check(
@@ -357,7 +357,28 @@ function addon:BuildGeneralSettings(p)
 
     p.y = pairY
 
-    local readiness = p:Check(
+    local health = p:Check(
+        'preview_target_health',
+        L['Show target health under the preview'],
+        profile.preview_target_health == true,
+        function(v)
+            profile.preview_target_health = v
+            previewChanged()
+        end
+    )
+
+    local half = p.width / 2
+
+    for i, control in ipairs({ title, health }) do
+        control:ClearAllPoints()
+        control:SetPoint('TOPLEFT', (i - 1) * half, -pairY)
+        control:SetWidth(half - 8)
+        control:GetFontString():SetWidth(half - 30)
+    end
+
+    p.y = pairY + 30
+
+    p:Check(
         'preview_readiness',
         L['Preview uses its own readiness options'],
         profile.preview_readiness == true,
@@ -366,17 +387,6 @@ function addon:BuildGeneralSettings(p)
             p:Draw()
         end
     )
-
-    local half = p.width / 2
-
-    for i, control in ipairs({ title, readiness }) do
-        control:ClearAllPoints()
-        control:SetPoint('TOPLEFT', (i - 1) * half, -pairY)
-        control:SetWidth(half - 8)
-        control:GetFontString():SetWidth(half - 30)
-    end
-
-    p.y = pairY + 30
 
     local previewReadinessY = p.y
 
@@ -405,16 +415,6 @@ function addon:BuildGeneralSettings(p)
     )
 
     p.y = previewReadinessY + 30
-
-    p:Check(
-        'preview_target_health',
-        L['Show target health under the preview'],
-        profile.preview_target_health == true,
-        function(v)
-            profile.preview_target_health = v
-            previewChanged()
-        end
-    )
 
     p:Check(
         'preview_player_power',
