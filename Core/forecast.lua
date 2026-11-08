@@ -668,6 +668,25 @@ local function pickStep(rot, cache, ready)
     return found
 end
 
+-- Tells which spell the player is casting or channeling right now.
+-- @return number|nil  The spell id; nil when the player is not casting, or the id cannot be read.
+--
+-- While a spell is being cast the preview shows what follows it (Run with this spell as the first), so the bar is never
+-- empty during a cast.
+function forecast:CastingSpell()
+    if type(platform.GetUnitCastObservation) ~= 'function' then
+        return nil
+    end
+
+    for _, kind in ipairs({ 'cast', 'channel' }) do
+        local record = platform:GetUnitCastObservation('player', kind)
+
+        if record and record.active and type(record.spellID) == 'number' then
+            return record.spellID
+        end
+    end
+end
+
 -- Predicts the recommendations after the first.
 -- @param rot table  The rotation body being advised from.
 -- @param first number  The first recommendation's spell (the one about to be cast).

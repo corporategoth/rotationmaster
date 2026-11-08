@@ -47,6 +47,52 @@ local function engine(engine)
     return c
 end
 
+test('the spell being cast or channeled is read from the game, and nothing is read when the player is idle', function()
+    local c = engine('standard')
+    local e = c.e
+    c.load('Platform/casting.lua')
+    assert(c.a.Forecast:CastingSpell() == nil)
+
+    e.UnitCastingInfo = function(unit)
+        return unit == 'player' and 'Lightning Bolt' or nil, '', 1, 100000, 102000, false, 'castid', false, 403
+    end
+
+    assert(c.a.Forecast:CastingSpell() == 403, 'a cast')
+    e.UnitCastingInfo = function() end
+
+    e.UnitChannelInfo = function(unit)
+        return unit == 'player' and 'Drain Life' or nil, '', 1, 100000, 105000, false, false, 689
+    end
+
+    assert(c.a.Forecast:CastingSpell() == 689, 'a channel')
+end)
+
+-- While a spell is being cast the rotation has stopped advising; the preview then shows what follows the spell being cast.
+for _, kind in ipairs({ 'standard', 'lean' }) do
+    test(kind .. ' engine: while casting, the preview shows what follows the spell being cast', function()
+        local c = engine(kind)
+        c.on(false)
+        local a = c.a
+        local asked
+        local casting
+
+        a.Platform.IsSpellReady = function() return false end
+        a.Forecast.CastingSpell = function() return casting end
+
+        a.Forecast.Run = function(_, _, first, count)
+            asked = { first = first, count = count }
+            return { { spell = 403, cond = { id = 'next', type = 'spell' }, index = 1, confidence = .9 } }
+        end
+
+        local seen = c.poll()
+        assert(#seen == 0 and asked == nil, 'nothing is ready and nothing is being cast: the preview is empty')
+        casting = 8042
+        seen = c.poll()
+        assert(asked and asked.first == 8042 and asked.count == 3, 'the forecast starts from the spell being cast')
+        assert(#seen == 1 and seen[1].spell == 403, 'and its answer is what the preview shows')
+    end)
+end
+
 for _, kind in ipairs({ 'standard', 'lean' }) do
     test(kind .. ' engine: with the switch off the preview is what it always was', function()
         local c = engine(kind)
