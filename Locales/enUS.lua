@@ -10107,8 +10107,6 @@ T["Prediction %d: right %d%% of the time, said %d%% sure"] = 3523
 T["Last fight"] = 3524
 -- d354f304
 T["This instance"] = 3525
--- f39529f9
-T["Last %d minutes"] = 3527
 -- 9755c8d7
 T["All time"] = 3528
 -- ce06bb9e
@@ -10237,18 +10235,64 @@ T["%d%%"] = 3589
 T["Percent"] = 3590
 -- e6e573dc
 T["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Where the client hides the speed (Retail and Forever in combat), the record comes from PLAYER_STARTED_MOVING and PLAYER_STOPPED_MOVING with estimated = true: 0 when stopped, the last readable moving speed when moving. Missing, failed or malformed observations, and a hidden speed before any movement event or readable speed, return nil with a reason."] = 3591
+-- 7dd2745b
+T["The period before"] = 3592
+-- 6543ac36
+T["The previous fight"] = 3593
+-- 6da6530a
+T["This session"] = 3594
+-- 67e1bca0
+T["Nothing"] = 3595
+-- bcf12e37
+T["Another instance"] = 3596
+-- d9e626c6
+T["Another rotation"] = 3597
+-- bd384050
+T["Compare with: %s"] = 3598
+-- fdb6c20a
+T["Time to act (seconds)"] = 3599
+-- a0f5e662
+T["Damage per second"] = 3600
+-- 67a48694
+T["Healing per second"] = 3601
+-- d9319db3
+T["%s: nothing was recorded."] = 3602
+-- a2a90f9b
+T["%s (%d fights, %d casts)"] = 3603
+-- 6ba2a0e0
+T["Shown"] = 3604
+-- 17c858fc
+T["Compared"] = 3605
+-- c0bf75bd
+T["Change"] = 3606
+-- 7efd4d5d
+T["Green is better, red is worse."] = 3607
+-- 21e84929
+T["Hours"] = 3608
+-- 404314b1
+T["hours"] = 3609
+-- e08c0aa8
+T["Days"] = 3610
+-- ab51004e
+T["days"] = 3611
+-- 4f846a84
+T["Minutes"] = 3612
+-- 90e63d85
+T["minutes"] = 3613
+-- 3eeb06f4
+T["Last %d %s"] = 3614
 -- 24a4d70c
-T["Show your power under the preview"] = 3592
+T["Show your power under the preview"] = 3615
 -- aa3d11d7
-T["Shows your mana, rage, energy or other main power as a thin bar under the preview window, drawn by the game from the real value even where it hides it from addons. It is shown but never used to choose a step."] = 3593
+T["Shows your mana, rage, energy or other main power as a thin bar under the preview window, drawn by the game from the real value even where it hides it from addons. It is shown but never used to choose a step."] = 3616
 -- 877db7e9
-T["Show your target's cast under the preview"] = 3594
+T["Show your target's cast under the preview"] = 3617
 -- ded2b801
-T["Shows a cast bar under the preview window while your target casts or channels. Where the game hides cast times from addons, it animates the bar itself, so it still runs in combat. It is shown but never used to choose a step."] = 3595
+T["Shows a cast bar under the preview window while your target casts or channels. Where the game hides cast times from addons, it animates the bar itself, so it still runs in combat. It is shown but never used to choose a step."] = 3618
 -- ddd48d90
-T["Gray out preview spells you cannot afford yet"] = 3596
+T["Gray out preview spells you cannot afford yet"] = 3619
 -- c6fa0cb3
-T["Shows a recommended spell in gray while you lack the mana, rage or other power to cast it. This only happens with Ignore Mana on, which lets the preview show a spell before you can afford it."] = 3597
+T["Shows a recommended spell in gray while you lack the mana, rage or other power to cast it. This only happens with Ignore Mana on, which lets the preview show a spell before you can afford it."] = 3620
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text
