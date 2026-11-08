@@ -60,7 +60,9 @@ When nothing is ready after a cast the projection moves forward a second at a ti
 so the queue is filled even while everything cools down; each second waited costs 3% of the confidence. The preview icons draw no
 cooldown dial. A later slot is never shown surer than the one before it, since it only comes true if that one did. The pass judges
 readiness by the preview's own options (`NewActionReadiness(now, 'preview')`), so a preview that ignores range or mana projects the same
-way it advises. While a cast is under way the first slot's time counts from the cast's remaining seconds when the game lets them be read, so the
+way it advises. With the preview's Ignore Moving on, while the player moves and nothing can be advised (the rotation's own moving
+conditions stop it), the preview shows what would be advised standing still, as upcoming slots that light nothing: the projection reads
+no movement (`Wait(rot, count, true)`). While a cast is under way the first slot's time counts from the cast's remaining seconds when the game lets them be read, so the
 "+Ns" figures count down as the cast goes on; the times of a wait (nothing ready) are aged by the poll in between.
 
 ## Measuring it (`Analytics/metrics.lua`)

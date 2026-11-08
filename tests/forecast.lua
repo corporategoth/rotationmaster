@@ -282,6 +282,27 @@ test('a cast already under way counts from now, and a later slot is never surer 
     end
 end)
 
+test('a projection of standing still reads no movement, and the real reader is back after', function()
+    local f, a, platform = client()
+    platform.GetPlayerMovementObservation = function() return { speed = 7 } end
+    assert(a.Forecast:PlayerMoving() == true)
+    local seen = {}
+
+    function a:EvaluateRotationSequence()
+        seen[#seen + 1] = platform:GetPlayerMovementObservation().speed
+        return { status = 'complete' }
+    end
+
+    a.Forecast:Wait({ {} }, 1, true)
+    assert(seen[1] == 0, 'standing still')
+    seen = {}
+    a.Forecast:Wait({ {} }, 1, false)
+    assert(seen[1] == 7, 'as the player is')
+    assert(platform:GetPlayerMovementObservation().speed == 7 and a.Forecast:PlayerMoving())
+    platform.GetPlayerMovementObservation = function() return { speed = 0 } end
+    assert(a.Forecast:PlayerMoving() == false)
+end)
+
 test('the pass is judged by the preview readiness options', function()
     local f, a = client()
     local outputs = {}
