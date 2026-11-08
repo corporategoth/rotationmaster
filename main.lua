@@ -4068,9 +4068,19 @@ local function evaluateLean(self)
 
     plan.waiting = false
 
+    -- A preview that ignores moving shows, while the player moves and nothing can be advised, what would be advised
+    -- standing still.
+    local stationary = plan.previewCount == 0
+        and ended ~= 'unavailable'
+        and plan.nativePreview
+        and self.IsPreviewIgnoringMoving ~= nil
+        and self:IsPreviewIgnoringMoving()
+        and self.Forecast ~= nil
+        and self.Forecast:PlayerMoving()
+
     if
         plan.previewCount == 0
-        and ended == nil
+        and (ended == nil or stationary)
         and plan.nativePreview
         and self.Forecast ~= nil
         and self.IsForecastOn ~= nil
@@ -4078,9 +4088,13 @@ local function evaluateLean(self)
         and not self.Forecast:CastingSpell()
     then
         -- Nothing is ready (everything is on cooldown): the preview shows what comes up next, without lighting a button.
-        traceKind = 'wait'
+        traceKind = stationary and 'wait (standing still)' or 'wait'
 
-        for _, slot in ipairs(self.Forecast:Wait(plan.rot, math.max(1, plan.profile.preview_spells or 1))) do
+        for _, slot in ipairs(self.Forecast:Wait(
+            plan.rot,
+            math.max(1, plan.profile.preview_spells or 1),
+            stationary
+        )) do
             leanRecommend(plan, slot.spell, slot.cond, slot.index, slot.item, 'preview')
             plan.recConf[plan.recommended], plan.recDelay[plan.recommended] = slot.confidence, slot.delay
             plan.waiting = true
@@ -4708,18 +4722,32 @@ function addon:EvaluateNextActionInternal()
 
         suppressAttack = sequence.suppressAttack
 
+        -- A preview that ignores moving shows, while the player moves and nothing can be advised, what would be advised
+        -- standing still.
+        local stationary = preview == 0
+            and sequence.status ~= 'unavailable'
+            and nativePreview
+            and self.IsPreviewIgnoringMoving ~= nil
+            and self:IsPreviewIgnoringMoving()
+            and self.Forecast ~= nil
+            and self.Forecast:PlayerMoving()
+
         if
             preview == 0
-            and sequence.status == 'complete'
+            and (sequence.status == 'complete' or stationary)
             and nativePreview
             and self.Forecast ~= nil
             and self.IsForecastOn ~= nil
             and self:IsForecastOn()
             and not self.Forecast:CastingSpell()
         then
-            traceKind = 'wait'
+            traceKind = stationary and 'wait (standing still)' or 'wait'
 
-            for _, slot in ipairs(self.Forecast:Wait(rot, math.max(1, self.db.profile.preview_spells or 1))) do
+            for _, slot in ipairs(self.Forecast:Wait(
+                rot,
+                math.max(1, self.db.profile.preview_spells or 1),
+                stationary
+            )) do
                 recommend(slot.spell, slot.cond, slot.index, slot.item, 'preview', slot.confidence, true, slot.delay)
                 traceSlots[#traceSlots + 1] = { spell = slot.spell, delay = slot.delay, confidence = slot.confidence }
             end

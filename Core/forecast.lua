@@ -255,6 +255,18 @@ function wrappers.GetUnitCastObservation(self, unit, kind)
     return originals.GetUnitCastObservation(self, unit, kind)
 end
 
+-- Answers the player's movement as standing still while the projection is of what would be advised then.
+-- @param self table  The platform.
+-- @return table|nil  The record, as the real reader returns it.
+-- @return string|nil  The reason code when the first return is nil.
+function wrappers.GetPlayerMovementObservation(self)
+    if state and state.stationary then
+        return { speed = 0, known = true, moving = false }
+    end
+
+    return originals.GetPlayerMovementObservation(self)
+end
+
 -- Reads a spell's charges with the predicted uses taken off.
 -- @param self table  The platform.
 -- @param spell number|string  The spell.
@@ -732,6 +744,19 @@ function forecast:CastingSpell()
     end
 end
 
+-- Tells whether the player is moving now.
+-- @return boolean  True when the movement speed is readable and not zero.
+function forecast:PlayerMoving()
+    if type(platform.GetPlayerMovementObservation) ~= 'function' then
+        return false
+    end
+
+    local record = platform:GetPlayerMovementObservation()
+    local speed = type(record) == 'table' and record.speed or nil
+    speed = number(speed)
+    return speed ~= nil and speed ~= 0
+end
+
 local WAIT_STEP, WAIT_MAX, WAIT_REUSE = 1, 10, 0.5
 local lastWait = { at = -1 }
 
@@ -759,10 +784,11 @@ end
 -- half a second, since the rotation is asked many times a second and its answer changes slowly.
 -- @param rot table  The rotation body being advised from.
 -- @param count number  How many slots to predict, 1 to 5.
+-- @param stationary boolean|nil  True to predict as if the player stood still (a preview that ignores moving).
 -- @return table  A list of { spell, cond, index, item, confidence, at, delay } (at: seconds from now when the player can act
 --   again; delay: seconds from now it would be cast); empty when nothing becomes
 --   ready within WAIT_MAX seconds, or on failure.
-function forecast:Wait(rot, count)
+function forecast:Wait(rot, count, stationary)
     local out = {}
 
     if type(rot) ~= 'table' or type(count) ~= 'number' or count < 1 or state then
@@ -771,7 +797,12 @@ function forecast:Wait(rot, count)
 
     local clock = GetTime()
 
-    if lastWait.rot == rot and lastWait.count == count and clock - lastWait.at < WAIT_REUSE then
+    if
+        lastWait.rot == rot
+        and lastWait.count == count
+        and lastWait.stationary == (stationary == true)
+        and clock - lastWait.at < WAIT_REUSE
+    then
         -- The kept answer is aged: each slot is that much nearer.
         for _, slot in ipairs(lastWait.out) do
             slot.delay = math.max(0, slot.base - (clock - lastWait.at))
@@ -782,6 +813,7 @@ function forecast:Wait(rot, count)
 
     local ok, err = pcall(function()
         state = newState(clock)
+        state.stationary = stationary == true
         install()
         local confidence = state.confidence
 
@@ -818,6 +850,7 @@ function forecast:Wait(rot, count)
     end
 
     lastWait.rot, lastWait.count, lastWait.at, lastWait.out = rot, count, clock, out
+    lastWait.stationary = stationary == true
     return out
 end
 
