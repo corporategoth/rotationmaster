@@ -88,40 +88,32 @@ local function stepSpells(rot)
     return out
 end
 
--- Describes one spell's state as the game reports it now.
+-- Describes one spell's state as the game reports it now, in a few words.
 -- @param id number  The spell id.
--- @return string  A line.
-local function spellLine(id)
+-- @return string  The spell's name.
+-- @return string  "ready", "NOT ready" or "unknown", with a note when its cooldown cannot be read.
+local function spellState(id)
     local info = read('GetSpellInfo', id)
-    local name = type(info) == 'table' and info.name or '?'
-    local record, why = read('GetSpellCooldown', id)
-    local ready, readyWhy = read('IsSpellReady', id, GetTime())
-    local usable, lacks = read('IsSpellUsable', id)
-    local cooldown = 'none'
+    local name = type(info) == 'table' and info.name or tostring(id)
+    local record = read('GetSpellCooldown', id)
+    local ready, why = read('IsSpellReady', id, GetTime())
+    local state = ready == true and 'ready' or ready == false and 'NOT ready' or 'unknown (' .. tostring(why) .. ')'
 
     if type(record) == 'table' then
-        cooldown = string.format('start %s duration %s enabled %s', show(record.startTime), show(record.duration), show(
-            record.isEnabled
-        ))
-    elseif record ~= nil then
-        cooldown = show(record)
-    elseif why then
-        cooldown = 'unreadable (' .. tostring(why) .. ')'
+        if show(record.duration) == 'secret' then
+            state = state .. ', cooldown secret'
+        elseif type(record.duration) == 'number' and record.duration > 0 then
+            state = state .. string.format(', cooldown %.1fs', record.duration)
+        end
+    else
+        state = state .. ', cooldown secret'
     end
 
-    return string.format(
-        '    %s (%s): cooldown %s; ready %s%s; usable %s lacks %s',
-        name,
-        id,
-        cooldown,
-        show(ready),
-        readyWhy and ' (' .. tostring(readyWhy) .. ')' or '',
-        show(usable),
-        show(lacks)
-    )
+    return name, state
 end
 
--- Writes down one poll (called from the poll; cheap when nothing is recording).
+-- Writes down one poll (called from the poll; cheap when nothing is recording). A poll that reads like the one before it is
+-- counted on that line instead of written again.
 -- @param info table  { engine, rot, ended, real (the recommendations read now), casting, forecast ("run", "wait" or nil), slots }.
 function addon:PreviewTrace(info)
     if not recording or type(info) ~= 'table' then
@@ -136,7 +128,6 @@ function addon:PreviewTrace(info)
 
     recording.last = now
     local lines = recording.lines
-
     local shown = {}
 
     for _, slot in ipairs(info.slots or {}) do
@@ -149,24 +140,43 @@ function addon:PreviewTrace(info)
         )
     end
 
+    local states, done = {}, {}
+
+    for _, id in ipairs(stepSpells(info.rot)) do
+        local name, state = spellState(id)
+
+        if not done[name] then
+            done[name] = true
+            states[#states + 1] = name .. ' ' .. state
+        end
+    end
+
+    local forecast = addon.Forecast
     local gcd = read('GetGlobalCooldown')
 
-    lines[#lines + 1] = string.format(
-        '[%.1fs] %s: walk ended %s; rotation advised %d now; casting %s; forecast %s -> %d slot(s)%s; global cooldown %s',
-        now - recording.started,
+    local text = string.format(
+        '%s: walk %s; advised %d; casting %s; forecast %s -> %d (%s); pass %s%s; gcd %s; %s',
         tostring(info.engine),
         tostring(info.ended),
         info.real or 0,
         tostring(info.casting),
         tostring(info.forecast or 'not asked'),
         #(info.slots or {}),
-        #shown > 0 and ' (' .. table.concat(shown, ', ') .. ')' or '',
-        type(gcd) == 'table' and show(gcd.duration) or show(gcd)
+        table.concat(shown, ', '),
+        tostring(forecast and forecast.passEnded),
+        forecast and forecast.lastError and ('; ERROR ' .. forecast.lastError) or '',
+        type(gcd) == 'table' and 'readable' or 'unreadable',
+        table.concat(states, '; ')
     )
 
-    for _, id in ipairs(stepSpells(info.rot)) do
-        lines[#lines + 1] = spellLine(id)
+    if recording.previous == text then
+        recording.repeats = recording.repeats + 1
+        lines[#lines] = string.format('[%.1fs, x%d] %s', recording.since, recording.repeats, text)
+        return
     end
+
+    recording.previous, recording.repeats, recording.since = text, 1, now - recording.started
+    lines[#lines + 1] = string.format('[%.1fs] %s', recording.since, text)
 end
 
 -- Returns the saved diagnostics table, creating it.
@@ -227,7 +237,7 @@ function addon:RunPreviewDiagnostic(rest)
     end
 
     local seconds = math.max(3, math.min(120, tonumber(rest) or DEFAULT_SECONDS))
-    recording = { started = GetTime(), last = -1, lines = {} }
+    recording = { started = GetTime(), last = -1, lines = {}, repeats = 0, since = 0 }
     self:print('Recording the preview for %d seconds: cast a few spells. Then /rm debug preview show.', seconds)
 
     if C_Timer and C_Timer.After then

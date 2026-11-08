@@ -190,7 +190,7 @@ for _, kind in ipairs({ 'standard', 'lean' }) do
         timers[1]()
         local report = saved.diagnostics and saved.diagnostics.preview
         assert(report and #report.lines >= 1, 'a report is saved')
-        assert(report.lines[1]:find(kind, 1, true) and report.lines[1]:find('walk ended', 1, true), report.lines[1])
+        assert(report.lines[1]:find(kind, 1, true) and report.lines[1]:find('walk ', 1, true), report.lines[1])
         assert(#printed == 2 and printed[2]:find('saved', 1, true), 'chat gets only the saved note')
     end)
 end

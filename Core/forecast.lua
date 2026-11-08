@@ -214,20 +214,44 @@ end
 function wrappers.IsSpellReady(self, spell, now)
     local record, why = wrappers.GetSpellCooldown(self, spell)
 
-    if type(record) ~= 'table' then
-        return originals.IsSpellReady(self, spell, now)
-    end
+    local start, duration
 
-    local start, duration = number(record.startTime), number(record.duration)
+    if type(record) == 'table' then
+        start, duration = number(record.startTime), number(record.duration)
+    end
 
     if not start or not duration then
-        return originals.IsSpellReady(self, spell, now)
+        -- The times are hidden (restricted client in combat): what the game says now is all that is known, and time moving on
+        -- is estimated from the spell's own cooldown, or the global cooldown for a spell with none.
+        local ready, reason = originals.IsSpellReady(self, spell, now)
+
+        if ready == false and state.t > 0 and type(spell) == 'number' then
+            local base = baseCooldown(spell)
+            return state.t >= (base > 0 and base or state.gcd or BASE_GCD)
+        end
+
+        return ready, reason
     end
+
     if record.isEnabled == false then
         return false
     end
 
     return duration == 0 or start + duration <= now + MIN_STEP
+end
+
+-- Reads what a unit is casting: the player is no longer casting by the time the projected spells are cast.
+-- @param self table  The platform.
+-- @param unit string  The unit token.
+-- @param kind string  "cast" or "channel".
+-- @return table|nil  The record, as the real reader returns it.
+-- @return string|nil  The reason code when the first return is nil.
+function wrappers.GetUnitCastObservation(self, unit, kind)
+    if unit == 'player' then
+        return { active = false }
+    end
+
+    return originals.GetUnitCastObservation(self, unit, kind)
 end
 
 -- Reads a spell's charges with the predicted uses taken off.
@@ -646,7 +670,7 @@ end
 local function pickStep(rot, cache, ready)
     local found
 
-    addon:EvaluateRotationSequence(
+    local result = addon:EvaluateRotationSequence(
         rot,
         function(condition, context)
             return addon:evaluateConditionWithCache(condition, cache, state.now, context)
@@ -678,6 +702,7 @@ local function pickStep(rot, cache, ready)
         end
     )
 
+    forecast.passEnded = result and result.status or 'unknown'
     return found
 end
 
@@ -763,6 +788,8 @@ function forecast:Wait(rot, count)
 
     uninstall()
 
+    forecast.lastError = not ok and tostring(err) or nil
+
     if not ok then
         pcall(addon.verbose, addon, 'Forecast wait failed: ' .. tostring(err))
         out = {}
@@ -825,6 +852,8 @@ function forecast:Run(rot, first, count)
     end)
 
     uninstall()
+
+    forecast.lastError = not ok and tostring(err) or nil
 
     if not ok then
         pcall(addon.verbose, addon, 'Forecast failed: ' .. tostring(err))

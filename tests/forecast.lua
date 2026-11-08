@@ -291,6 +291,45 @@ test('nothing ready ends the forecast early and a failing pass leaves the real r
     assert(#a.Forecast:Run(steps, B, 3) == 0, 'and the next call works again')
 end)
 
+test('the player is not casting in the projected state, so a casting Stop does not end every pass', function()
+    local f, a, platform = client()
+    local seen
+
+    platform.GetUnitCastObservation = function() return { active = true, spellID = A } end
+
+    function a:EvaluateRotationSequence()
+        seen = platform:GetUnitCastObservation('player', 'cast')
+        return { status = 'complete' }
+    end
+
+    a.Forecast:Run({ {} }, A, 1)
+    assert(seen and seen.active == false, 'projected: the cast has finished')
+    assert(platform:GetUnitCastObservation('player', 'cast').active == true, 'and the real reader is back')
+end)
+
+test(
+    'with the cooldown times hidden, a spell not ready now is taken as ready once its own cooldown has gone by',
+    function()
+        local f, a, platform = client()
+        local seen = {}
+
+        f.world.base[B] = { 6000, 1500 }
+        platform.GetSpellCooldown = function() return nil, 'restricted-value' end
+        platform.IsSpellReady = function() return false end
+
+        function a:EvaluateRotationSequence()
+            seen[#seen + 1] = platform:IsSpellReady(B, 100)
+            return { status = 'complete' }
+        end
+
+        a.Forecast:Run({ {} }, A, 3)
+
+        for _, ready in ipairs(seen) do
+            assert(ready == false, 'within 4.5 seconds a six second cooldown has not run out')
+        end
+    end
+)
+
 test('hidden values stay hidden: a restricted cooldown is passed through, not shifted', function()
     local f, a, platform = client()
     f.world.cooldown[A] = { startTime = 'secret', duration = 'secret', isEnabled = true }

@@ -465,7 +465,9 @@ local gcdSpell
 -- Reads the global cooldown as a spell cooldown record.
 -- @return table|nil  The record, as GetSpellCooldown returns it; nil when it cannot be read.
 -- @return string|nil  The reason code when the first return is nil; nil otherwise.
--- @return boolean|nil  The never-secret flags after the reason, as GetSpellCooldown returns them.
+-- @return boolean|nil  The never-secret flags after the reason, as GetSpellCooldown returns them: isEnabled.
+-- @return boolean|nil  isActive.
+-- @return boolean|nil  isOnGCD.
 --
 -- Classic Era, TBC and expansion-2 progression clients probe spell 29515; later clients use the dedicated GCD spell
 -- 61304. The spell is chosen once and cached in gcdSpell.
@@ -481,7 +483,20 @@ function platform:GetGlobalCooldown()
             or 61304
     end
 
-    return self:GetSpellCooldown(gcdSpell)
+    local record, why, a, b, c = self:GetSpellCooldown(gcdSpell)
+
+    if record == nil and why == 'spell-data-unavailable' then
+        -- The probe spell is not this client's global cooldown: try the other one, and keep whichever answers.
+        local other = gcdSpell == 61304 and 29515 or 61304
+        local second = self:GetSpellCooldown(other)
+
+        if second ~= nil then
+            gcdSpell = other
+            return second
+        end
+    end
+
+    return record, why, a, b, c
 end
 
 -- Whether a value is a finite number that is zero or more.
@@ -563,6 +578,20 @@ local function flagReadiness(self, enabled, active, onGCD, now)
     return nil,why or "restricted-value"
 end
 
+-- Tells whether a running cooldown on a spell can only be the global cooldown: the spell has no cooldown of its own and the
+-- one running is short.
+-- @param spell number|string  The spell id or name.
+-- @param duration number  The running cooldown's duration in seconds.
+-- @return boolean  True when the spell's own cooldown is none and the running one is at most the longest global cooldown.
+local function ownCooldownIsGCD(spell, duration)
+    if type(GetSpellBaseCooldown) ~= "function" or type(spell) ~= "number" or duration > 2.6 then
+        return false
+    end
+
+    local ok, base = pcall(GetSpellBaseCooldown, spell)
+    return ok and type(base) == "number" and base == base and base == 0
+end
+
 -- Tells whether a spell can be used at a time.
 -- @param spell number|string  The spell id or name.
 -- @param now number  The time to test, in GetTime seconds.
@@ -573,32 +602,63 @@ end
 -- the next action. Runs for every reached action each poll, so keep it cheap; only the non-legacy path allocates
 -- (through GetSpellCooldown).
 function platform:IsSpellReady(spell, now)
-    if not self:CanReadValue(now) then return nil, "restricted-value" end
-    if type(now)~="number" or now~=now or now==math.huge or now==-math.huge then
+    if not self:CanReadValue(now) then
+        return nil, "restricted-value"
+    end
+    if type(now) ~= "number" or now ~= now or now == math.huge or now == -math.huge then
         return nil, "invalid-time"
     end
-    local start,duration,enabled,reason,active,onGCD=cooldownValues(self,spell)
-    if start==nil then
-        if active==nil then return nil,reason end
-        return flagReadiness(self,enabled,active,onGCD,now)
-    end
-    if not enabled then return false end
-    local expires=start+duration
-    if duration==0 or expires<=now then return true end
 
-    if not gcdSpell then self:GetGlobalCooldown() end
-    local gcdStart,gcdDuration,gcdEnabled,why,gcdActive=cooldownValues(self,gcdSpell)
-    if gcdStart==nil then
+    local start, duration, enabled, reason, active, onGCD = cooldownValues(self, spell)
+
+    if start == nil then
+        if active == nil then
+            return nil, reason
+        end
+
+        return flagReadiness(self, enabled, active, onGCD, now)
+    end
+
+    if not enabled then
+        return false
+    end
+
+    local expires = start + duration
+
+    if duration == 0 or expires <= now then
+        return true
+    end
+
+    if not gcdSpell then
+        self:GetGlobalCooldown()
+    end
+
+    local gcdStart, gcdDuration, gcdEnabled, why, gcdActive = cooldownValues(self, gcdSpell)
+
+    if gcdStart == nil then
         -- The GCD's times are hidden: one known not to be running cannot
         -- cover this spell's own, still running, cooldown.
-        if gcdActive~=nil and (not gcdEnabled or not gcdActive) then return false end
-        return nil,why
+        if gcdActive ~= nil and (not gcdEnabled or not gcdActive) then
+            return false
+        end
+
+        -- No global cooldown can be read at all: a spell with no cooldown of its own that shows a short one is on the
+        -- global cooldown, which the recommendation allows.
+        if why == "spell-data-unavailable" and ownCooldownIsGCD(spell, duration) then
+            return true
+        end
+
+        return nil, why
     end
-    if not gcdEnabled or gcdDuration==0 then return false end
+
+    if not gcdEnabled or gcdDuration == 0 then
+        return false
+    end
+
     -- modRate controls cooldown animation; API timestamps/duration already
     -- describe expiration in GetTime seconds, so do not divide them by it.
-    local gcdExpires=gcdStart+gcdDuration
-    return gcdExpires>now and expires<=gcdExpires+0.001
+    local gcdExpires = gcdStart + gcdDuration
+    return gcdExpires > now and expires <= gcdExpires + 0.001
 end
 
 -- ============================================================================
@@ -739,6 +799,7 @@ do
         if name=="gcdSpell" then return gcdSpell end
         if name=="identifier" then return identifier end
         if name=="own" then return own end
+        if name=="ownCooldownIsGCD" then return ownCooldownIsGCD end
         if name=="platform" then return platform end
     end
     if addon.RegisterBuiltinSourceModule then
