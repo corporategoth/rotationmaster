@@ -2128,7 +2128,12 @@ local function FetchSmartTotem()
 
     walk(_G.SmartTotemV2Bar, 2)
 
-    for _, name in ipairs({ 'SmartTotemV2ManaTideButton', 'SmartTotemV2TwistButton' }) do
+    for _, name in ipairs({
+        'SmartTotemV2ManaTideButton',
+        'SmartTotemV2TwistButton',
+        'SmartTotemSelfBuffLS',
+        'SmartTotemV2WaterShieldButton',
+    }) do
         index(_G[name])
     end
 end

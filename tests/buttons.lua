@@ -309,10 +309,13 @@ test('SmartTotem bar buttons and the flyout buttons under them are indexed by th
     local flyout = button(nil, nil, { button('spell', 8190) })
     env.SmartTotemV2Bar = button(nil, nil, { button('spell1', 2894, { flyout }), button('*spell1', 8227) })
     env.SmartTotemV2ManaTideButton = button('spell', 16190)
+    env.SmartTotemSelfBuffLS = button('spell', 324)
+    env.SmartTotemV2WaterShieldButton = button('spell1', 52127)
     addon:Fetch()
     assert(addon:FindSpell({ 2894 }) == 2894, 'the armed Main Bar totem')
     assert(addon:FindSpell({ 8190 }) == 8190, 'a flyout button, two frames down')
     assert(addon:FindSpell({ 8227 }) == 8227 and addon:FindSpell({ 16190 }) == 16190)
+    assert(addon:FindSpell({ 324 }) == 324 and addon:FindSpell({ 52127 }) == 52127, 'the shield watch buttons')
 end)
 
 test('modern-only item and macro-item buttons map the canonical use spell', function()
