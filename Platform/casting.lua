@@ -68,6 +68,54 @@ local function interruptibility(flag)
     return not flag
 end
 
+-- Interruptibility per unit token, from UNIT_SPELLCAST_INTERRUPTIBLE / NOT_INTERRUPTIBLE. Retail and Forever hide a
+-- cast's notInterruptible flag for any unit but you and your pet; these two events carry no secret annotation. They
+-- fire when a cast's interruptibility changes, so the state is reset whenever a cast starts or the unit changes, and is
+-- only known after such a change.
+local interruptStates = {}
+
+if type(CreateFrame) == 'function' then
+    local events = CreateFrame('Frame')
+
+    for _, event in ipairs({
+        'UNIT_SPELLCAST_INTERRUPTIBLE',
+        'UNIT_SPELLCAST_NOT_INTERRUPTIBLE',
+        'UNIT_SPELLCAST_START',
+        'UNIT_SPELLCAST_CHANNEL_START',
+        'UNIT_SPELLCAST_STOP',
+        'UNIT_SPELLCAST_CHANNEL_STOP',
+        'PLAYER_TARGET_CHANGED',
+        'PLAYER_FOCUS_CHANGED',
+    }) do
+        pcall(events.RegisterEvent, events, event)
+    end
+
+    events:SetScript('OnEvent', function(_, event, unit)
+        if event == 'PLAYER_TARGET_CHANGED' then
+            interruptStates.target = nil
+        elseif event == 'PLAYER_FOCUS_CHANGED' then
+            interruptStates.focus = nil
+        elseif platform:CanReadValue(unit) and type(unit) == 'string' then
+            if event == 'UNIT_SPELLCAST_INTERRUPTIBLE' then
+                interruptStates[unit] = true
+            elseif event == 'UNIT_SPELLCAST_NOT_INTERRUPTIBLE' then
+                interruptStates[unit] = false
+            else
+                interruptStates[unit] = nil
+            end
+        end
+    end)
+end
+
+-- Records a unit's interruptibility as the events report it (also used by tests).
+-- @param unit string  The unit token.
+-- @param interruptible boolean|nil  True or false after a change event; nil to forget (a new cast, a new unit).
+function platform:NoteCastInterruptible(unit, interruptible)
+    if type(unit) == 'string' then
+        interruptStates[unit] = interruptible
+    end
+end
+
 -- Reads what a unit is casting or channeling right now (UnitCastingInfo or UnitChannelInfo).
 -- @param unit string  The unit token to read; must be a non-empty string.
 -- @param kind string  "cast" (UnitCastingInfo) or "channel" (UnitChannelInfo).
@@ -116,6 +164,7 @@ function platform:GetUnitCastObservation(unit, kind)
     record.remainingSeconds,record.remainingReason=remainingSeconds(tuple[5])
     record.durationSeconds,record.durationReason=durationSeconds(tuple[4],tuple[5])
     record.interruptible,record.interruptibleReason=interruptibility(tuple[kind=='cast' and 8 or 7])
+    if record.interruptible==nil and interruptStates[unit]~=nil then record.interruptible,record.interruptibleReason=interruptStates[unit],nil end
     record.spellID,record.spellReason=spellIdentity(tuple[kind=='cast' and 9 or 8])
     return record
 end
@@ -126,6 +175,7 @@ do
         if name=="Platform_GetUnitCastObservation" then return addon.Platform.GetUnitCastObservation end
         if name=="durationSeconds" then return durationSeconds end
         if name=="finite" then return finite end
+        if name=="interruptStates" then return interruptStates end
         if name=="interruptibility" then return interruptibility end
         if name=="platform" then return platform end
         if name=="remainingSeconds" then return remainingSeconds end

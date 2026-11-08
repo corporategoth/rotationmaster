@@ -81,6 +81,26 @@ special["NOT"] = { desc = L["NOT"], icon = addon.Artwork.logic["NOT"], fields = 
 -- Inputs here are normalized, readable data. Client adapters own secret-value access.
 local matchedOutcome, unmatchedOutcome = { status = "match" }, { status = "no-match" }
 
+-- Unavailable answers counted by condition type and reason, for /rm debug secrets (Diagnostics/secrets.lua): which
+-- conditions the game hides how often. One table lookup per unavailable answer; nothing for a decided one.
+local unavailableCounts = {}
+addon.unavailableConditionCounts = unavailableCounts
+
+-- Counts one unavailable answer of a condition.
+-- @param value table|nil  The condition; its type is the key.
+-- @param reason string  The reason code.
+local function noteUnavailable(value, reason)
+    local tag = type(value) == "table" and value.type or "?"
+    local byTag = unavailableCounts[tag]
+
+    if not byTag then
+        byTag = {}
+        unavailableCounts[tag] = byTag
+    end
+
+    byTag[reason] = (byTag[reason] or 0) + 1
+end
+
 -- Builds an evaluation outcome.
 -- @param status string  "match", "no-match" or "unavailable".
 -- @param reason string|nil  The reason code for an unavailable outcome.
@@ -365,6 +385,7 @@ local function evaluateOrdinaryLeaf(
 
     -- Legacy nil without a reason is false, never unavailable.
     if matched == nil and reason ~= nil then
+        noteUnavailable(value, reason)
         return outcome("unavailable", reason, path)
     end
 
@@ -751,6 +772,7 @@ local function evaluate(value, cache, start, state, depth, path)
                     elseif not evalOk then
                         result = outcome('unavailable', 'condition-callback-error', path)
                     elseif matched == nil and reason ~= nil then
+                        noteUnavailable(input, reason)
                         result = outcome('unavailable', reason, path)
                     else
                         result = outcome(matched and 'match' or 'no-match')
@@ -1796,7 +1818,9 @@ local function evaluatePlan(node, cache, start, stepId)
         if not ok then
             return "unavailable"
         end
+
         if matched == nil and reason ~= nil then
+            noteUnavailable(value, reason)
             return "unavailable"
         end
 

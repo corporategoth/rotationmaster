@@ -12,22 +12,60 @@ local _, addon = ...
 -- Readiness memo
 -- ============================================================================
 
+-- Reads the readiness options one output uses. The bar glow (and conditions, cooldown glows, diagnostics) uses
+-- Ignore Mana, Ignore Range and Ignore Moving; the preview uses its own three when "Preview uses its own readiness
+-- options" (preview_readiness) is on, and the same ones otherwise.
+-- @param profile table|nil  The active profile.
+-- @param output string|nil  'preview' for the preview window; anything else is the bar glow.
+-- @return boolean  Ignore Mana.
+-- @return boolean  Ignore Range.
+-- @return boolean  Ignore Moving.
+local function readinessOptions(profile, output)
+    if profile == nil then
+        return false, false, false
+    end
+    if output == 'preview' and profile.preview_readiness == true then
+        return profile.preview_ignore_mana == true,
+            profile.preview_ignore_range == true,
+            profile.preview_ignore_moving == true
+    end
+
+    return profile.ignore_mana == true, profile.ignore_range == true, profile.ignore_moving == true
+end
+
+-- Tells whether the preview's readiness options differ from the bar glow's, so the engines must judge each step for
+-- both outputs.
+-- @return boolean  True when preview_readiness is on and at least one option differs.
+function addon:IsPreviewReadinessSeparate()
+    local profile = self.db and self.db.profile
+
+    if not profile or profile.preview_readiness ~= true then
+        return false
+    end
+
+    local mana, range, moving = readinessOptions(profile, 'bar')
+    local previewMana, previewRange, previewMoving = readinessOptions(profile, 'preview')
+    return mana ~= previewMana or range ~= previewRange or moving ~= previewMoving
+end
+
 -- Builds one readiness memo for a platform.
 -- @param platform table  The Platform adapter every observation is read through.
+-- @param output string|nil  Whose options it follows: 'preview' for the preview window, otherwise the bar glow.
 -- @return function  ready(kind, id, itemID), the readiness answer for conditions and the sequence executor.
 -- @return function  reset(at), which starts a new poll on the same memo.
 --
 -- Observations live for one evaluation only. Conditions can still inspect other spells; a condition never overrides the
 -- action's own availability. One memo per evaluation: each observation is made at most once per poll. Entries carry the
 -- stamp of the poll that made them, so reset() starts a new poll without discarding (and reallocating) the tables.
-local function buildReadiness(platform)
+local function buildReadiness(platform, output)
     local spells, spellStamps, items, itemStamps, availability, availableStamps = {}, {}, {}, {}, {}, {}
     local range, resetRange = platform:NewSpellRangeReader()
     local stamp, now = 0, nil
     -- Profile options read once per poll (reset): "Ignore Mana" lets a spell
     -- the game calls unusable only for want of mana through, "Ignore Range"
-    -- skips the range read of spells and items alike.
-    local ignoreMana, ignoreRange = false, false
+    -- skips the range read of spells and items alike. Without "Ignore Moving", a spell with a cast time is not ready
+    -- while you move (moving is read once per poll, from the movement observation).
+    local ignoreMana, ignoreRange, ignoreMoving, moving = false, false, false, false
 
     -- Reports whether an id is a readable positive whole number; restricted or malformed ids are never ready.
     -- @param id any  The candidate spell or item id.
@@ -122,6 +160,15 @@ local function buildReadiness(platform)
                 -- An unreadable answer (usable is nil) is never accepted.
                 local affordable = usable == true and power == false or ignoreMana and (usable == true or power == true)
                 availability[id] = affordable == true and platform:IsSpellReady(id, now) == true
+
+                -- A cast time cannot be cast on the move. The cast time is read this poll, so a proc that makes the
+                -- spell instant (cast time 0) lets it through; pet spells are cast by the pet.
+                if availability[id] and moving and kind ~= "pet" then
+                    local info = platform:GetSpellInfo(id)
+                    local cast = info and info.castTime
+                    availability[id] = not (type(cast) == "number" and cast > 0)
+                end
+
                 availableStamps[id] = stamp
             end
 
@@ -168,8 +215,13 @@ local function buildReadiness(platform)
         local db = addon.db
         local profile = db and db.profile
 
-        ignoreMana, ignoreRange =
-            profile ~= nil and profile.ignore_mana == true, profile ~= nil and profile.ignore_range == true
+        ignoreMana, ignoreRange, ignoreMoving = readinessOptions(profile, output)
+        moving = false
+
+        if not ignoreMoving and type(platform.GetPlayerMovementObservation) == "function" then
+            local observed = platform:GetPlayerMovementObservation()
+            moving = type(observed) == "table" and type(observed.speed) == "number" and observed.speed > 0
+        end
 
         if resetRange then
             resetRange()
@@ -181,29 +233,35 @@ end
 
 -- Returns a fresh readiness function with its own memo for one evaluation.
 -- @param now number  The time of the evaluation.
+-- @param output string|nil  'preview' for the preview window's options; otherwise the bar glow's.
 -- @return function  ready(kind, id, itemID), as built by buildReadiness.
 --
 -- Callers that evaluate outside the steady poll (previews, glow diagnostics) use this so they never disturb the shared
 -- poll memo.
-function addon:NewActionReadiness(now)
-    local ready, reset = buildReadiness(self.Platform)
+function addon:NewActionReadiness(now, output)
+    local ready, reset = buildReadiness(self.Platform, output)
     reset(now)
     return ready
 end
 
--- Steady-state polling keeps one memo and starts a new poll on it.
-local shared
+-- Steady-state polling keeps one memo per output and starts a new poll on it.
+local sharedMemos = {}
 
 -- Returns the shared readiness function after starting a new poll on it.
 -- @param now number  The time of the poll.
+-- @param output string|nil  'preview' for the preview window's options; otherwise the bar glow's.
 -- @return function  ready(kind, id, itemID), the shared readiness function.
 --
 -- The memo is rebuilt only when the platform object is replaced (tests do this); steady-state polls reuse the same
 -- tables to avoid per-poll allocation.
-function addon:ResetActionReadiness(now)
+function addon:ResetActionReadiness(now, output)
+    local key = output == 'preview' and 'preview' or 'bar'
+    local shared = sharedMemos[key]
+
     if not shared or shared.platform ~= self.Platform then
         shared = { platform = self.Platform }
-        shared.ready, shared.reset = buildReadiness(self.Platform)
+        shared.ready, shared.reset = buildReadiness(self.Platform, key)
+        sharedMemos[key] = shared
     end
 
     shared.reset(now)

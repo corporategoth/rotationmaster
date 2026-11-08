@@ -458,4 +458,93 @@ test('release stale callbacks and profile reacquisition retain their current lea
     assert(w.count == 1 and w.icons[1].spellId == 8042 and w.icons[1]:GetWidth() == 80)
 end)
 
+test(
+    'preview icons draw the spell cooldown from the game duration object or readable times, never for items',
+    function()
+        local _, a = fixture()
+        local w = a:CreateNativePreviewWindow()
+        local seen = {}
+        local display = { kind = 'duration', value = { duration = true } }
+
+        a.Platform.GetSpellCooldownDisplay = function(_, id)
+            seen[#seen + 1] = id
+            return display.kind, display.value, display.duration, display.rate
+        end
+
+        w:AddRecommendation(403)
+        local cd = w.icons[1].cooldown
+
+        if not cd then
+            return  -- the UI model has no Cooldown frames
+        end
+
+        local calls = {}
+
+        function cd:SetCooldownFromDurationObject(d)
+            calls[#calls + 1] = { 'duration', d }
+        end
+
+        function cd:SetCooldown(s, d)
+            calls[#calls + 1] = { 'times', s, d }
+        end
+
+        w:ReleaseChildren()
+        w:AddRecommendation(403)
+        assert(calls[1][1] == 'duration' and calls[1][2] == display.value and cd:IsShown(), 'duration object')
+        display.kind, display.value, display.duration = 'times', 99, 1.5
+        w:ReleaseChildren()
+        w:AddRecommendation(403)
+        assert(calls[2][1] == 'times' and calls[2][2] == 99 and calls[2][3] == 1.5 and cd:IsShown(), 'readable times')
+        display.kind = nil
+        w:ReleaseChildren()
+        w:AddRecommendation(403)
+        assert(not cd:IsShown(), 'nothing to show')
+
+        function cd:SetCooldownFromDurationObject()
+            error('protected')
+        end
+
+        display.kind, display.value = 'duration', {}
+        w:ReleaseChildren()
+        w:AddRecommendation(403)
+        assert(not cd:IsShown(), 'a refused call hides the swipe')
+        local count = #seen
+        w:ReleaseChildren()
+        w:AddRecommendation(403, 5512)
+        assert(#seen == count and not cd:IsShown(), 'items show no swipe')
+    end
+)
+
+test('the optional target health bar takes the values as they come and hides without a target', function()
+    local _, a = fixture()
+    local w = a:CreateNativePreviewWindow()
+    local health = { 'hidden-current', 'hidden-max' }
+    a.Platform.GetUnitHealthPassthrough = function() return health[1], health[2] end
+    w:PauseLayout()
+    w:ResumeLayout()
+    assert(not w.healthBar, 'off by default')
+    a.db.profile.preview_target_health = true
+    local values = {}
+    w:ResumeLayout()
+    local bar = assert(w.healthBar, 'bar not made')
+
+    function bar:SetMinMaxValues(lo, hi)
+        values.lo, values.hi = lo, hi
+    end
+
+    function bar:SetValue(v)
+        values.v = v
+    end
+
+    w:ResumeLayout()
+    assert(values.hi == 'hidden-max' and values.v == 'hidden-current' and bar:IsShown(), 'values passed through')
+    health = {}
+    w:ResumeLayout()
+    assert(not bar:IsShown(), 'no target')
+    a.db.profile.preview_target_health = false
+    health = { 1, 2 }
+    w:ResumeLayout()
+    assert(not bar:IsShown(), 'option off')
+end)
+
 finish()

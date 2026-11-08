@@ -52,6 +52,12 @@ Platform/points.lua
 Platform/runes.lua
 Platform/unit_identity.lua
 Platform/unit_metadata.lua
+Platform/unit_rank.lua
+Platform/combat_events.lua
+Platform/swing_timer.lua
+Platform/cooldown_viewer.lua
+Platform/memory.lua
+Platform/gates.lua
 Platform/creature_type.lua
 Platform/unit_presence.lua
 Platform/pet.lua
@@ -102,6 +108,7 @@ Diagnostics/cpu_runtime.lua
 Diagnostics/memory.lua
 Core/conditions.lua
 Core/condition_support.lua
+Core/condition_restrictions.lua
 Core/condition_runtime.lua
 Core/condition_catalog.lua
 Core/item_conditions.lua
@@ -184,6 +191,7 @@ Diagnostics/glow.lua
 Diagnostics/talents.lua
 Diagnostics/timeline.lua
 Diagnostics/raid_marks.lua
+Diagnostics/secrets.lua
 Core/unit_state_conditions.lua
 Core/assisted_highlight.lua
 Core/tooltips.lua
@@ -321,6 +329,9 @@ Conditions/combat.lua
 Conditions/unit_states.lua
 Conditions/casting.lua
 Conditions/channeling.lua
+Conditions/unit_rank.lua
+Conditions/combat_events.lua
+Conditions/swing_timer.lua
 Conditions/spatial.lua
 Conditions/range.lua
 Conditions/spatial_stats.lua
@@ -334,6 +345,7 @@ Conditions/encounter_state.lua
 Conditions/group_state.lua
 Conditions/hero_talent.lua
 Conditions/proc_glow.lua
+Conditions/spell_usable.lua
 Conditions/edition_state.lua
 Conditions/world_seed.lua
 Conditions/raid_marks.lua

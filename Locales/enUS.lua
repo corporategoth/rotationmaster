@@ -6703,8 +6703,6 @@ T["Observe the explicitly selected TBC player combo transport. Current uses exac
 T["Observe the first role result of the exact legacy GetTalentGroupRole(group) dot call on probe- and restricted-policy clients. Forward the readable selected group unchanged, including nil as one argument; do not infer group bounds, substitute another API or query a player unit. The complete legacy primary declaration is not established. Missing, failed, restricted, empty or malformed role data is unavailable; readable nonempty future strings remain exact."] = 2181
 -- 79e9c144
 T["Observe the first zone PvP classification result with one protected zero-argument dot call. Prefer callable C_PvP.GetZonePVPInfo and use the global helper only when the modern callable is absent. A successful nil or no returned values produces a known empty record; missing, failed, restricted or malformed observations remain unavailable. Readable empty and future strings retain their exact meaning, and unused return fields do not determine availability. Never switch backends after a modern result or failure."] = 2182
--- 9570ca02
-T["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = 2183
 -- 6b0f7980
 T["Observe unit presence on identified client families. Pass the selected unit unchanged to one protected UnitExists call. Preserve readable true and false; missing, failed, restricted, nil or malformed required observations return nil with a reason. No identity, visibility, range or combat-state query is added."] = 2184
 -- a754c7d3
@@ -9401,8 +9399,8 @@ T["No glow diagnostic is saved yet. Run /rm debug glow."] = 3230
 T["Talent diagnostic"] = 3231
 -- c728736f
 T["Talent diagnostic saved."] = 3232
--- 8110cef6
-T["Usage: /rm debug glow [seconds||show], /rm debug talents [views] or /rm debug editor"] = 3233
+-- 311c1134
+T["Usage: /rm debug glow [seconds||show], /rm debug talents [views], /rm debug secrets [reset] or /rm debug editor"] = 3233
 -- 268f14bb
 T["Diagnostics"] = 3234
 -- bdd4e1fa
@@ -10045,6 +10043,122 @@ T["These conditions cannot work on this client. They are kept as imported and th
 T["This import cannot be shown in full (%s)."] = 3468
 -- e981ddae
 T["Warning"] = 3469
+-- 21458732
+T["The game hides this in combat, during boss encounters, in Mythic+ and in PvP matches."] = 3470
+-- fbee2ed7
+T["The game hides this in combat."] = 3471
+-- e29f6a9e
+T["The game hides this for units that are not you, your pet or in your group."] = 3472
+-- a6e4e3af
+T["The game hides this for anyone but you and your pet."] = 3473
+-- 17d9390b
+T["The game hides this in dungeons and raids."] = 3474
+-- b2ffba0d
+T["The game always hides this for the chosen spell."] = 3475
+-- 205d3409
+T["While hidden, the condition is unavailable: a Branch or Stop waits and an action is skipped."] = 3476
+-- 5807f6aa
+T["Matches when the selected unit is a boss: the game marks it as a boss, it is a World Boss, or it is an elite whose level shows as a skull. For \"a boss fight is in progress\", use Boss Encounter."] = 3477
+-- 41861209
+T["Is Elite"] = 3478
+-- d6a0f84f
+T["{unit} {{!is elite|is not elite}}"] = 3479
+-- ee223e20
+T["Matches when the selected unit is elite or better: Elite, Rare Elite or World Boss. Unit Classification matches one classification exactly."] = 3480
+-- 81a052dc
+T["Casting or Channeling"] = 3481
+-- e42399ee
+T["{unit} {{!are casting or channeling|are not casting or channeling}}"] = 3482
+-- f5e18b19
+T["{unit} {{!is casting or channeling|is not casting or channeling}}"] = 3483
+-- 6533d631
+T["Matches when the selected unit is casting or channeling any spell. It does not look at which spell, so it still works when the game hides the spell from addons."] = 3484
+-- 8e63c18d
+T["Is a Boss"] = 3485
+-- 6a8f952c
+T["{unit} {{!is a boss|is not a boss}}"] = 3486
+-- e6e573dc
+T["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Where the client hides the speed (Retail and Forever in combat), the record comes from PLAYER_STARTED_MOVING and PLAYER_STOPPED_MOVING with estimated = true: 0 when stopped, the last readable moving speed when moving. Missing, failed or malformed observations, and a hidden speed before any movement event or readable speed, return nil with a reason."] = 3487
+-- 4f0715cc
+T["Usable now"] = 3488
+-- 0d5ead16
+T["Enough resources"] = 3489
+-- 4b58dec0
+T["Usable now matches when the game says you can cast the spell now, apart from its cooldown: resources, stance or form, and a spell's own requirements, such as a target at low health or a recent dodge, are all part of the answer. Enough resources matches when only the cost is covered. Both still read in combat on clients that hide your power and your target's health from addons, so Usable now on a spell that needs a low-health target tells you whether the target is low enough."] = 3490
+-- c674e289
+T["Spell Usable"] = 3491
+-- 9b59d885
+T["you {{!have|do not have}} the resources for %s"] = 3492
+-- 1f816df2
+T["%s {{!is|is not}} usable now"] = 3493
+-- d18461b3
+T["{unit} {{!are a boss|are not a boss}}"] = 3494
+-- e16d17d5
+T["{unit} {{!are elite|are not elite}}"] = 3495
+-- 4e2c25be
+T["Preview uses its own readiness options"] = 3496
+-- a1295dfe
+T["Give the preview window its own Ignore Mana, Ignore Range and Ignore Moving. The bar highlight keeps the options under Recommendations, and the preview shows the first steps that are ready under its own, so it can, for example, show a spell that is out of range while the bar highlights the next one you can use. Off, the preview follows the same options as the bar highlight."] = 3497
+-- 3cc80b28
+T["Ignore Moving"] = 3498
+-- f3a9c70c
+T["Advise a spell with a cast time even while you are moving. Without this, such a spell is skipped while you move, because it cannot be cast on the move; an instant spell, or one a proc has made instant, is still advised. Retail and Forever hide your speed in combat, so moving is then taken from the game's start and stop moving events."] = 3499
+-- 12f1ff04
+T["Ignore moving"] = 3500
+-- 09ac991a
+T["Preview: ignore mana"] = 3501
+-- b6e79743
+T["Preview: ignore range"] = 3502
+-- 50bc516c
+T["Preview: ignore moving"] = 3503
+-- 3d41d29f
+T["Recent Kill"] = 3504
+-- 8505c344
+T["you or your group {{!killed|did not kill}} something in the last %s seconds"] = 3505
+-- 56b6a414
+T["Matches when you or a member of your group killed something within the chosen number of seconds, from the game's kill event, which still fires when the combat log is closed to addons. Useful for abilities that a kill makes available."] = 3506
+-- 42dd3e08
+T["Enemies Targeting You"] = 3507
+-- dec102d9
+T["Number of enemies with you as their target"] = 3508
+-- 00285078
+T["Counts the enemies with a nameplate whose target is you, for example to switch to an area or defensive priority when several are on you. Nameplates must be shown. Retail and Forever hide target comparisons in dungeons and raids, where the count is unavailable."] = 3509
+-- 45ddcd22
+T["Compares the seconds until your next melee swing with the chosen number, using the game's own swing timer, which includes haste and still reads in combat. While no swing is under way it reads 0. Only clients with that timer (Forever) offer it; elsewhere use Weapon Swing Time Remaining."] = 3510
+-- d9cbd3be
+T["Time Until Next Swing"] = 3511
+-- 072692ed
+T["Time until your next off-hand swing"] = 3512
+-- c0bd3d44
+T["Time until your next main-hand swing"] = 3513
+-- 459e6841
+T["Remember hidden buffs and cooldowns"] = 3514
+-- 09eb1a1c
+T["Retail and Forever hide your buffs and cooldowns from addons in combat, and conditions that need them are then unavailable. With this on, your own buffs and your spell cooldowns answer from what was last read, restarted when you cast the spell: a buff keeps its last remaining time and stacks, a cooldown its last length. This can be wrong when something else changes them unseen, such as a dispel or a cooldown reset, so it is off by default. Blizzard's Cooldown Manager is asked first where it tracks the buff."] = 3515
+-- 775eccf2
+T["Shown by the game when"] = 3516
+-- de4f4d0f
+T["Only advise this step while a health or power percent is below or above a threshold. Where the game hides that value from addons (Retail and Forever), the game itself decides at draw time, so the step can only appear in the preview window, drawn over the next recommendation."] = 3517
+-- 6532aeb7
+T["is below"] = 3518
+-- 3098f5fd
+T["is above"] = 3519
+-- 71fafb74
+T["%d%%"] = 3520
+-- 716d633b
+T["Percent"] = 3521
+-- 09d551ff
+T["Show target health under the preview"] = 3522
+-- bea87231
+T["Shows your target's health as a thin bar under the preview window. The game draws it from the real health even where it hides health from addons (Retail and Forever in combat), so it is shown but never used to choose a step."] = 3523
+-- 49c2091d
+T["Secret value counts cleared."] = 3524
+-- 627deef8
+T["Secret value probe"] = 3525
+-- aaf11c64
+T["Blizzard's Cooldown Manager, or the last readable value when Remember hidden buffs and cooldowns is on, can still answer for your own buffs and cooldowns."] = 3526
+-- 8211fded
+T["Your own totems are still followed from the game's totem events once their duration has been seen."] = 3527
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

@@ -952,6 +952,7 @@ local function validate(envelope, options, bodyOnly)
                     disabled = true,
                     conditions = true,
                     suppress_attack = true,
+                    gate = true,
                     effect = true,
                     color = true,
                     magnification = true,
@@ -1033,6 +1034,33 @@ local function validate(envelope, options, bodyOnly)
             end
             if step.suppress_attack ~= nil and step.type ~= "stop" then
                 issue("unexpected-stop-option", where .. ".suppress_attack", "warning", "unsupported")
+            end
+
+            -- A display gate: the step shows only while a health or power percent is past a threshold, decided by the
+            -- game where the value is hidden (main.lua, UI/preview.lua).
+            if step.gate ~= nil then
+                local gate = step.gate
+
+                if step.type == "stop" or step.type == "mark" then
+                    issue("unexpected-gate-option", where .. ".gate", "warning", "unsupported")
+                elseif type(gate) ~= "table" then
+                    issue("invalid-field-type", where .. ".gate", "error")
+                else
+                    unknown(gate, { unit = true, kind = true, operator = true, value = true }, where .. ".gate")
+
+                    if gate.unit ~= "player" and gate.unit ~= "target" then
+                        issue("invalid-field-value", where .. ".gate.unit", "error")
+                    end
+                    if gate.kind ~= "health" and gate.kind ~= "power" then
+                        issue("invalid-field-value", where .. ".gate.kind", "error")
+                    end
+                    if gate.operator ~= "LESSTHAN" and gate.operator ~= "GREATERTHAN" then
+                        issue("invalid-field-value", where .. ".gate.operator", "error")
+                    end
+                    if type(gate.value) ~= "number" or gate.value < 1 or gate.value > 99 then
+                        issue("invalid-field-value", where .. ".gate.value", "error")
+                    end
+                end
             end
 
             for _, label in ipairs({ "name", "effect", "setpoint", "announce", "announce_sound" }) do

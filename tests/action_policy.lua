@@ -365,4 +365,60 @@ test('Attack uses the same confirmed melee observation when its native spell ran
     assert(not a:NewActionReadiness(100)('spell', 6603), 'uncertain melee interval became in range')
 end)
 
+test('without Ignore Moving a spell with a cast time is not ready while you move', function()
+    local f, state = fixture()
+    local a = f.addon
+    local motion, cast = { speed = 7 }, { [403] = 2000, [974] = 1500 }
+    a.Platform.GetPlayerMovementObservation = function() return motion end
+    local info = a.Platform.GetSpellInfo
+
+    a.Platform.GetSpellInfo = function(p, id)
+        local record = info(p, id) or { name = 'Spell' }
+        record.castTime = cast[id]
+        return record
+    end
+
+    a.db.profile.ignore_moving = false
+    assert(a:NewActionReadiness(100)('spell', 403) == false, 'cast-time spell advised while moving')
+    assert(a:NewActionReadiness(100)('pet', 974) == true, 'pet spells are cast by the pet')
+    cast[403] = 0
+    assert(a:NewActionReadiness(100)('spell', 403) == true, 'an instant (or proc-instant) spell is ready')
+    cast[403] = 2000
+    motion = { speed = 0 }
+    assert(a:NewActionReadiness(100)('spell', 403) == true, 'standing still')
+    motion = nil
+    assert(a:NewActionReadiness(100)('spell', 403) == true, 'unknown movement is not moving')
+    motion = { speed = 7 }
+    a.db.profile.ignore_moving = true
+    assert(a:NewActionReadiness(100)('spell', 403) == true, 'Ignore Moving')
+    assert(state)
+end)
+
+test('the preview can follow its own readiness options', function()
+    local f, state = fixture()
+    local a = f.addon
+    state.range = false
+
+    assert(
+        a:NewActionReadiness(100)('spell', 403) == false and a:NewActionReadiness(100, 'preview')('spell', 403) == false
+    )
+
+    assert(not a:IsPreviewReadinessSeparate())
+    a.db.profile.preview_ignore_range = true
+    assert(not a:IsPreviewReadinessSeparate(), 'preview options count only while the preview has its own')
+    assert(a:NewActionReadiness(100, 'preview')('spell', 403) == false)
+    a.db.profile.preview_readiness = true
+    assert(a:IsPreviewReadinessSeparate())
+    assert(a:NewActionReadiness(100)('spell', 403) == false, 'the bar keeps its own options')
+    assert(a:NewActionReadiness(100, 'preview')('spell', 403) == true, 'the preview ignores range')
+
+    assert(
+        a:ResetActionReadiness(100, 'preview')('spell', 403) == true
+            and a:ResetActionReadiness(100)('spell', 403) == false
+    )
+
+    a.db.profile.ignore_range = true
+    assert(not a:IsPreviewReadinessSeparate(), 'identical options are one judgment')
+end)
+
 finish()

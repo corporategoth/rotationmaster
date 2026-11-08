@@ -156,7 +156,7 @@ function addon:BuildGeneralSettings(p)
         end
     )
 
-    -- Both options only change what counts as ready for advice (Core/action_policy.lua reads them each poll).
+    -- These options only change what counts as ready for advice (Core/action_policy.lua reads them each poll).
     local readinessY = p.y
 
     p:Check('ignore_mana', L['Ignore Mana'], profile.ignore_mana == true, function(v)
@@ -167,8 +167,25 @@ function addon:BuildGeneralSettings(p)
         profile.ignore_range = v
     end)
 
-    self:LayoutWorkbenchRow({ p.fields.ignore_mana, p.fields.ignore_range }, 0, readinessY, p.width, { text = 22 })
+    p:Check('ignore_moving', L['Ignore Moving'], profile.ignore_moving == true, function(v)
+        profile.ignore_moving = v
+    end)
+
+    self:LayoutWorkbenchRow(
+        { p.fields.ignore_mana, p.fields.ignore_range, p.fields.ignore_moving },
+        0,
+        readinessY,
+        p.width,
+        { text = 22 }
+    )
+
     p.y = readinessY + 30
+
+    -- Off by default: remembered values can be stale (Platform/auras.lua, Platform/spells.lua).
+    p:Check('remember_hidden', L['Remember hidden buffs and cooldowns'], profile.remember_hidden == true, function(v)
+        profile.remember_hidden = v
+    end)
+
     p:Heading(L['History'])
 
     for _, entry in ipairs({
@@ -322,6 +339,57 @@ function addon:BuildGeneralSettings(p)
 
     locked:GetFontString():SetWidth(third - 30)
     p.y = previewY + 30
+
+    -- The preview can judge readiness by its own three options (Core/action_policy.lua, both engines in main.lua); off,
+    -- it follows the ones above. The three are disabled while it is off.
+    p:Check(
+        'preview_readiness',
+        L['Preview uses its own readiness options'],
+        profile.preview_readiness == true,
+        function(v)
+            profile.preview_readiness = v
+            p:Draw()
+        end
+    )
+
+    local previewReadinessY = p.y
+
+    for _, entry in ipairs({
+        { 'preview_ignore_mana', 'Ignore Mana' },
+        { 'preview_ignore_range', 'Ignore Range' },
+        { 'preview_ignore_moving', 'Ignore Moving' },
+    }) do
+        local key = entry[1]
+
+        local box = p:Check(key, L[entry[2]], profile[key] == true, function(v)
+            profile[key] = v
+        end)
+
+        if profile.preview_readiness ~= true then
+            box:Disable()
+        end
+    end
+
+    self:LayoutWorkbenchRow(
+        { p.fields.preview_ignore_mana, p.fields.preview_ignore_range, p.fields.preview_ignore_moving },
+        0,
+        previewReadinessY,
+        p.width,
+        { text = 22 }
+    )
+
+    p.y = previewReadinessY + 30
+
+    p:Check(
+        'preview_target_health',
+        L['Show target health under the preview'],
+        profile.preview_target_health == true,
+        function(v)
+            profile.preview_target_health = v
+            previewChanged()
+        end
+    )
+
     -- Masque owns this immediate appearance preference. Keep it outside the
     -- General draft so Discard never rewinds another addon's skin settings.
     local skinY = p:Row(L['Skin'], 28)

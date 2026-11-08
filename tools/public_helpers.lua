@@ -1031,7 +1031,7 @@ return {
         module = 'Platform/player_movement.lua',
         member = 'Platform.GetPlayerMovementObservation',
         callName = 'addon.Platform:GetPlayerMovementObservation',
-        description = 'Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason.',
+        description = 'Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Where the client hides the speed (Retail and Forever in combat), the record comes from PLAYER_STARTED_MOVING and PLAYER_STOPPED_MOVING with estimated = true: 0 when stopped, the last readable moving speed when moving. Missing, failed or malformed observations, and a hidden speed before any movement event or readable speed, return nil with a reason.',
         args = {
             self = {
                 type = 'RMPlatform',

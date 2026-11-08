@@ -109,4 +109,31 @@ test('beyond-melee condition preserves unavailable estimates under NOT', functio
     assert(not f.addon:evaluateCondition(value))
 end)
 
+test('an open-ended or absent LibRangeCheck answer falls back to the ranges of the spells on the bars', function()
+    local answer = { 100, nil }
+    local provider = { GetRange = function() return answer[1], answer[2] end }
+    local p, _, addon = fixture({ LibStub = function() return provider end }, modules)
+    local ranges = { [1] = { max = 5 }, [2] = { max = 30 }, [3] = { max = 40 }, [4] = { max = 35, min = 8 } }
+    local inRange = { [1] = false, [2] = true, [3] = true, [4] = true }
+    addon.GetBarSpellIds = function() return { 1, 2, 3, 4 } end
+    p.GetSpellInfo = function(_, id) return { name = 'S', maxRange = ranges[id].max, minRange = ranges[id].min } end
+    p.GetSpellRangeState = function(_, id) return { applicable = true, inRange = inRange[id] } end
+    local bounds = p:GetRangeCheckBounds('target')
+    assert(bounds.source == 'spells' and bounds.minimum == 8 and bounds.maximum == 30, 'spell bracket')
+    answer = { nil, nil }
+    assert(p:GetRangeCheckBounds('target').source == 'spells', 'absent answer')
+    answer = { 5, 10 }
+    bounds = p:GetRangeCheckBounds('target')
+
+    assert(
+        bounds.source == nil and bounds.minimum == 5 and bounds.maximum == 10,
+        'a closed LibRangeCheck answer is kept'
+    )
+
+    answer = { 100, nil }
+    addon.GetBarSpellIds = function() return {} end
+    bounds = p:GetRangeCheckBounds('target')
+    assert(bounds.minimum == 100 and bounds.maximum == nil, 'no spell answer keeps LibRangeCheck')
+end)
+
 finish()

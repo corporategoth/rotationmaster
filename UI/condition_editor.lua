@@ -1225,6 +1225,21 @@ local function createShell()
         local function build()
             if definition then
                 addon:widgetCondition(pane, active.spec, node)
+
+                -- Where the game hides this condition's data on a restricted client (Core/condition_restrictions.lua).
+                local hidden = addon.DescribeConditionRestrictions and addon:DescribeConditionRestrictions(
+                    node.type,
+                    node
+                )
+
+                if hidden then
+                    local note = addon:CreateConditionLabel()
+                    note:SetFullWidth(true)
+                    note:SetColor(1, .82, .4)
+                    note:SetText(hidden)
+                    pane:AddChild(note)
+                end
+
                 addon:configure_frame(pane)
 
                 -- Wraps every widget callback so it runs only while the card is alive, and reports pending input

@@ -207,4 +207,25 @@ test('clock access is guarded field-level and cannot disable a readable active/n
     end
 end)
 
+test('a hidden interruptibility flag follows the interruptible events for that unit', function()
+    local f, p, s = fixture(18)
+    local secret = {}
+    local readable = p.CanReadValue
+    p.CanReadValue = function(self, v) return v ~= secret and readable(self, v) end
+    s.flag = secret
+    local record = p:GetUnitCastObservation('target', 'cast')
+    assert(record.interruptible == nil and record.interruptibleReason == 'restricted-value', 'no event yet')
+    p:NoteCastInterruptible('target', false)
+    record = p:GetUnitCastObservation('target', 'cast')
+    assert(record.interruptible == false and record.interruptibleReason == nil, 'not interruptible event')
+    p:NoteCastInterruptible('target', true)
+    assert(p:GetUnitCastObservation('target', 'cast').interruptible == true, 'interruptible event')
+    p:NoteCastInterruptible('target', nil)
+    assert(p:GetUnitCastObservation('target', 'cast').interruptible == nil, 'a new cast forgets it')
+    s.flag = true
+    p:NoteCastInterruptible('target', true)
+    assert(p:GetUnitCastObservation('target', 'cast').interruptible == false, 'a readable flag wins')
+    assert(f)
+end)
+
 finish()

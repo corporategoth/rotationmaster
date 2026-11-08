@@ -5,8 +5,19 @@
 -- restricted clients. Must not decide which totem a spell makes; the TOTEM conditions in Conditions/totem.lua do
 -- that. Loaded from RotationMaster.toc after Platform/inventory.lua. Not a Built In helper source, so it has no
 -- generated bindings block.
+--
+-- Retail and Forever hide totem slots in combat (SecretWhenTotemSlotSecret). PLAYER_TOTEM_UPDATE still fires, so a
+-- slot is tracked: a readable read records it (and the duration of its totem spell); an update right after one of your
+-- own casts is that spell's totem being summoned; any other update means the totem is gone (destroyed or expired).
+-- While the slot is hidden, GetTotemInfo answers from that record, marked estimated, when the totem's duration is known.
 local _, addon = ...
 local platform = addon.Platform
+
+-- Per slot: { active, spellID, startTime, duration }; per spell: the duration last read for its totem; the last cast.
+local trackedSlots, totemDurations, lastCast = {}, {}, { time = -math.huge }
+
+-- How soon after your cast a slot update counts as that cast's totem, in seconds.
+local SUMMON_WINDOW = 0.5
 
 -- Whether a value is a number that is neither NaN nor infinite.
 -- @param value any  The value to test.
@@ -105,9 +116,92 @@ local function normalize(slot, have, name, start, duration, icon, rate, id)
     }
 end
 
+-- Answers a hidden slot from its tracked record.
+-- @param slot number  The totem slot.
+-- @return table|nil  A record shaped like normalize's, with estimated = true; nil when the slot was never tracked, or
+--   holds a totem whose duration is unknown.
+local function trackedRecord(slot)
+    local tracked = trackedSlots[slot]
+
+    if not tracked then
+        return nil
+    end
+    if not tracked.active then
+        return { slot = slot, active = false, startTime = 0, duration = 0, modRate = 1, estimated = true }
+    end
+    if not tracked.duration then
+        return nil
+    end
+
+    local info = tracked.spellID and platform.GetSpellInfo and platform:GetSpellInfo(tracked.spellID)
+
+    return {
+        slot = slot,
+        active = true,
+        name = info and info.name or "",
+        startTime = tracked.startTime,
+        duration = tracked.duration,
+        modRate = 1,
+        spellID = tracked.spellID,
+        estimated = true,
+    }
+end
+
+-- Notes a slot update while the slot is hidden: a summon of the spell you just cast, or the totem going away.
+-- @param slot number  The slot from PLAYER_TOTEM_UPDATE.
+-- @param now number  The time of the update.
+function platform:NoteTotemSlotUpdate(slot, now)
+    if not slotNumber(slot) then
+        return
+    end
+
+    if now - lastCast.time <= SUMMON_WINDOW and lastCast.spellID then
+        trackedSlots[slot] = {
+            active = true,
+            spellID = lastCast.spellID,
+            startTime = now,
+            duration = totemDurations[lastCast.spellID],
+        }
+
+        lastCast.time = -math.huge
+    else
+        trackedSlots[slot] = { active = false }
+    end
+end
+
+-- Notes one of your own successful casts, for matching the totem it summons.
+-- @param spellID any  The cast spell id; a hidden or malformed id still marks the time, with no spell.
+-- @param now number  The time of the cast.
+function platform:NoteTotemCast(spellID, now)
+    lastCast.time = now
+    lastCast.spellID = self:CanReadValue(spellID) and finite(spellID) and spellID > 0 and spellID or nil
+end
+
+if type(CreateFrame) == "function" then
+    local events = CreateFrame("Frame")
+    pcall(events.RegisterEvent, events, "PLAYER_TOTEM_UPDATE")
+
+    if not pcall(events.RegisterUnitEvent, events, "UNIT_SPELLCAST_SUCCEEDED", "player") then
+        pcall(events.RegisterEvent, events, "UNIT_SPELLCAST_SUCCEEDED")
+    end
+
+    events:SetScript("OnEvent", function(_, event, a, _, c)
+        local now = type(GetTime) == "function" and GetTime() or 0
+
+        if event == "PLAYER_TOTEM_UPDATE" then
+            if platform:CanReadValue(a) then
+                platform:NoteTotemSlotUpdate(a, now)
+            end
+        elseif platform:CanReadValue(a) and a == "player" then
+            platform:NoteTotemCast(c, now)
+        end
+    end)
+end
+
 -- Reads one totem slot (GetTotemInfo).
 -- @param slot number  The totem slot, an integer from 1 to 64.
--- @return table|nil  The normalized record, as described above normalize; nil when it cannot be read.
+-- @return table|nil  The normalized record, as described above normalize; nil when it cannot be read. A slot the
+--   client hides is answered from its tracked record (estimated = true) when there is one.
 -- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetTotemInfo(slot)
     if not slotNumber(slot) then
@@ -123,5 +217,30 @@ function platform:GetTotemInfo(slot)
         return nil, "api-error"
     end
 
-    return normalize(slot, have, name, start, duration, icon, rate, id)
+    local record, reason = normalize(slot, have, name, start, duration, icon, rate, id)
+
+    if record then
+        trackedSlots[slot] = {
+            active = record.active,
+            spellID = record.spellID,
+            startTime = record.startTime,
+            duration = record.active and record.duration or nil,
+        }
+
+        if record.active and record.spellID then
+            totemDurations[record.spellID] = record.duration
+        end
+
+        return record
+    end
+
+    if reason == "restricted-value" then
+        local tracked = trackedRecord(slot)
+
+        if tracked then
+            return tracked
+        end
+    end
+
+    return nil, reason
 end

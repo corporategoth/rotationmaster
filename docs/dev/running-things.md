@@ -115,7 +115,7 @@ python3 tools/locales.py check
 | `/rm enable`, `/rm disable`, `/rm toggle` | Turn advising on and off |
 | `/rm errors` | The session error report in a copyable window |
 | `/rm check`, `/rm repair` | Validate the saved data; repair what internal validation can |
-| `/rm debug glow [seconds\|show]`, `/rm debug talents [views]`, `/rm debug editor` | See `docs/dev/debugging.md` |
+| `/rm debug glow [seconds\|show]`, `/rm debug talents [views]`, `/rm debug secrets [reset]`, `/rm debug editor` | See `docs/dev/debugging.md` |
 | `/rm perf cpu\|runtime\|memory [seconds\|stop\|report]`, `/rm perf probe`, `/rm perf engine [lean\|standard]` | Capture performance observations; choose the evaluation engine |
 
 ## Tool reference

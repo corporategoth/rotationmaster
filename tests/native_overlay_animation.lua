@@ -270,4 +270,65 @@ test('without the animation API, or for a malformed step, the Lua timer runs as 
     assert(not b.rmOverlays.x.rmNative, 'malformed custom step went native')
 end)
 
+test('a hidden button size keeps the last readable one instead of failing', function()
+    for _, animations in ipairs({ true, false }) do
+        local a, _, b = fixture(animations)
+        a:Glow(b, 'first', pulse, white, 1, 'CENTER', 0, 0)
+
+        local secret = setmetatable({}, {
+            __mul = function()
+                error('secret size multiplied')
+            end,
+        })
+
+        local readable = a.Platform.CanReadValue
+        a.Platform.CanReadValue = function(p, v) return v ~= secret and readable(p, v) end
+        b.GetWidth = function() return secret end
+        b.GetHeight = function() return secret end
+        a:Glow(b, 'second', pulse, white, 1, 'CENTER', 0, 0)
+        local overlay = b.rmOverlays.second
+        assert(overlay:IsShown(), 'glow lost with a hidden size')
+
+        if animations then
+            local w, h = overlay.rmStepTextures[1]:GetSize()
+            assert(math.abs(w - 40 * .4) < 1e-9 and math.abs(h - 30 * .4) < 1e-9, 'native steps lost the size')
+        else
+            assert(math.abs(overlay:GetWidth() - 40 * .4) < 1e-9, 'timer overlay lost the size')
+        end
+    end
+end)
+
+test('a glow beside its button is a screen-level overlay that follows the button', function()
+    local a, _, b = fixture(false)
+    local screen = UIParent or b:GetParent()
+    a:SetGlowBeside(b, true)
+    a:Glow(b, 'beside', pulse, white, 1, 'CENTER', 0, 0)
+    local overlay = b.rmOverlays.beside
+    assert(overlay.rmAnchor == b and overlay:GetParent() ~= b, 'overlay inside the button')
+    assert(math.abs(overlay:GetWidth() - 40 * .4) < 1e-9, 'sized from the button')
+
+    -- The frame model records hooks without running them; run them as the client would.
+    local function fire(event)
+        for _, hook in ipairs(b.hooks and b.hooks[event] or {}) do
+            hook(b)
+        end
+    end
+
+    assert(b.hooks and b.hooks.OnHide, 'the button visibility hooks were not installed')
+
+    do
+        b:Hide()
+        fire('OnHide')
+        assert(not overlay:IsShown(), 'overlay stayed on screen with its button hidden')
+        b:Show()
+        fire('OnShow')
+        assert(overlay:IsShown(), 'overlay did not come back with its button')
+    end
+
+    assert(screen)
+    a:SetGlowBeside(b, false)
+    a:Glow(b, 'inside', pulse, white, 1, 'CENTER', 0, 0)
+    assert(b.rmOverlays.inside:GetParent() == b and b.rmOverlays.inside.rmAnchor == nil, 'inside again')
+end)
+
 finish()

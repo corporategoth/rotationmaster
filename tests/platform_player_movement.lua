@@ -27,6 +27,24 @@ local function fixture(project)
         error('movement invented a form dependency')
     end
 
+    -- A frame model that keeps the movement event handler, so tests can fire the events.
+    e.CreateFrame = function()
+        local frame = { events = {} }
+
+        function frame:RegisterEvent(event)
+            self.events[event] = true
+        end
+
+        function frame:SetScript(_, handler)
+            s.fire = function(event)
+                assert(self.events[event])
+                handler(self, event)
+            end
+        end
+
+        return frame
+    end
+
     local file = io.open('Platform/player_movement.lua')
 
     if file then
@@ -123,6 +141,30 @@ test('unused run flight and swim fields do not hide a readable current speed', f
     s.flight = secret
     s.swim = secret
     assert(p:GetPlayerMovementObservation().speed == 0 and s.calls == 1)
+end)
+
+test('a hidden speed is answered from the movement events and the last readable speed', function()
+    local f, p, s = fixture(18)
+    local secret = {}
+    f.env.issecretvalue = function(v) return rawequal(v, secret) end
+    s.speed = secret
+    local r, why = p:GetPlayerMovementObservation()
+    assert(r == nil and why == 'restricted-value', 'no event or readable speed yet')
+    s.fire('PLAYER_STARTED_MOVING')
+    r = p:GetPlayerMovementObservation()
+    assert(r.speed == 7 and r.estimated == true, 'moving before any readable speed')
+    s.fire('PLAYER_STOPPED_MOVING')
+    r = p:GetPlayerMovementObservation()
+    assert(r.speed == 0 and r.estimated == true, 'stopped')
+    s.speed = 4.5
+    assert(p:GetPlayerMovementObservation().estimated == nil, 'a readable speed is not estimated')
+    s.speed = secret
+    r = p:GetPlayerMovementObservation()
+    assert(r.speed == 4.5 and r.estimated, 'the last readable moving speed carries over')
+    s.speed = 0
+    assert(p:GetPlayerMovementObservation().speed == 0)
+    s.speed = secret
+    assert(p:GetPlayerMovementObservation().speed == 0, 'a readable stop carries over')
 end)
 
 finish()

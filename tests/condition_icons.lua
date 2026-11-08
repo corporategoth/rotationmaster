@@ -39,6 +39,13 @@ local borrowed = {
     MARK_COUNT = 'DISTANCE_COUNT',
     UNIT_EXISTS = 'FRIENDLY',
     RAID_ROLE = 'GROUP',
+    BOSS = 'CLASSIFICATION',
+    ELITE = 'CLASSIFICATION',
+    CASTING_ANY = 'CASTING',
+    SPELL_USABLE = 'SPELL_AVAIL',
+    ENEMIES_TARGETING = 'THREAT_COUNT',
+    RECENT_KILL = 'COMBAT_HISTORY_TIME',
+    NEXT_SWING = 'SWING_TIME_REMAIN',
 }
 
 test('all reviewed Built In declarations use bundled original semantic icons', function()
@@ -97,7 +104,7 @@ test('all reviewed Built In declarations use bundled original semantic icons', f
         count = count + 1
     end
 
-    assert(count == 145, 'reviewed icon inventory changed: ' .. count)
+    assert(count == 152, 'reviewed icon inventory changed: ' .. count)
 end)
 
 test('category defaults follow stable identity while saved custom choices remain exact', function()

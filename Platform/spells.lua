@@ -380,6 +380,75 @@ local function cooldownFlags(self, record)
     return enabled, active, onGCD
 end
 
+-- Remembered cooldowns for "Remember hidden buffs and cooldowns" (profile.remember_hidden, off by default). A readable
+-- read learns a spell's cooldown (end and length; anything over 1.5 seconds, so not the global cooldown), and your own
+-- successful cast of the spell starts it again from the learned length. While the times are secret, GetSpellCooldown
+-- then answers from memory, combined with the never-secret flags: inactive is ready (0 remaining), a global cooldown
+-- or an expired memory stays unavailable. Readiness keeps using the flags alone (cooldownValues).
+local cooldownMemory, cooldownLengths = {}, {}
+
+-- Reports whether remembered values may answer for hidden ones.
+-- @return boolean  True when the profile opts in.
+local function remembering()
+    local db = addon.db
+    return type(db) == "table" and type(db.profile) == "table" and db.profile.remember_hidden == true
+end
+
+-- Answers a hidden cooldown from memory and the never-secret flags.
+-- @param spell number|string  The spell.
+-- @param enabled boolean|nil  isEnabled.
+-- @param active boolean|nil  isActive.
+-- @param onGCD boolean|nil  isOnGCD.
+-- @return table|nil  A cooldown record with estimated = true and the flags; nil when memory cannot answer.
+local function rememberedCooldown(spell, enabled, active, onGCD)
+    if not remembering() or enabled == nil or active == nil then
+        return nil
+    end
+    if not active then
+        return {
+            startTime = 0,
+            duration = 0,
+            isEnabled = enabled,
+            modRate = 1,
+            estimated = true,
+            isActive = false,
+            isOnGCD = onGCD,
+        }
+    end
+
+    local memory = cooldownMemory[spell]
+    local now = type(GetTime) == "function" and GetTime() or nil
+
+    if onGCD == true or not memory or not now or memory.ends <= now then
+        return nil
+    end
+
+    return {
+        startTime = memory.ends - memory.duration,
+        duration = memory.duration,
+        isEnabled = enabled,
+        modRate = 1,
+        estimated = true,
+        isActive = true,
+        isOnGCD = onGCD,
+    }
+end
+
+-- Notes your own successful cast, restarting a learned cooldown (the UNIT_SPELLCAST_SUCCEEDED handler; also tests).
+-- @param spell any  The cast spell id; a hidden id is ignored.
+-- @param now number  The time of the cast.
+function platform:NoteCooldownCast(spell, now)
+    if not self:CanReadValue(spell) or type(spell) ~= "number" then
+        return
+    end
+
+    local length = cooldownLengths[spell]
+
+    if length then
+        cooldownMemory[spell] = { ends = now + length, duration = length }
+    end
+end
+
 -- Reads the cooldown of a spell.
 -- @param spell number|string  The spell id or name.
 -- @return table|nil  { startTime, duration, isEnabled, modRate }; nil when it cannot be read.
@@ -392,34 +461,88 @@ end
 -- uses cooldownValues instead where it can.
 function platform:GetSpellCooldown(spell)
     local valid, reason = identifier(spell)
-    if not valid then return nil, reason end
+
+    if not valid then
+        return nil, reason
+    end
+
     local ok, record, built
+
     if C_Spell and type(C_Spell.GetSpellCooldown) == "function" then
         ok, record = pcall(C_Spell.GetSpellCooldown, spell)
     elseif type(GetSpellCooldown) == "function" then
         local start, duration, enabled, rate
         ok, start, duration, enabled, rate = pcall(GetSpellCooldown, spell)
-        if not ok then return nil, "api-error" end
-        if not self:CanReadValue(start) or not self:CanReadValue(duration) or not self:CanReadValue(enabled)
-            or not self:CanReadValue(rate) then return nil, "restricted-value" end
-        if start ~= nil then
-            if enabled ~= 0 and enabled ~= 1 then return nil, "invalid-api-result" end
-            record = {startTime=start, duration=duration, isEnabled=enabled == 1, modRate=rate or 1};built = true
+
+        if not ok then
+            return nil, "api-error"
         end
-    else return nil, "missing-api" end
-    if not ok then return nil, "api-error" end
-    if not self:CanReadValue(record) then return nil, "restricted-value" end
-    if record == nil then return nil, "spell-data-unavailable" end
+        if
+            not self:CanReadValue(start)
+            or not self:CanReadValue(duration)
+            or not self:CanReadValue(enabled)
+            or not self:CanReadValue(rate)
+        then
+            return nil, "restricted-value"
+        end
+
+        if start ~= nil then
+            if enabled ~= 0 and enabled ~= 1 then
+                return nil, "invalid-api-result"
+            end
+
+            record = { startTime = start, duration = duration, isEnabled = enabled == 1, modRate = rate or 1 }
+            built = true
+        end
+    else
+        return nil, "missing-api"
+    end
+
+    if not ok then
+        return nil, "api-error"
+    end
+    if not self:CanReadValue(record) then
+        return nil, "restricted-value"
+    end
+    if record == nil then
+        return nil, "spell-data-unavailable"
+    end
+
     local cooldown, why = own(record, cooldownFields, built)
+
     if not cooldown then
-        if why == "restricted-value" and not built then return nil, why, cooldownFlags(self, record) end
+        if why == "restricted-value" and not built then
+            local enabled, active, onGCD = cooldownFlags(self, record)
+            local remembered = rememberedCooldown(spell, enabled, active, onGCD)
+
+            if remembered then
+                return remembered
+            end
+
+            return nil, why, enabled, active, onGCD
+        end
+
         return nil, why
     end
-    if cooldown.startTime == nil or cooldown.duration == nil or cooldown.isEnabled == nil
-        or cooldown.startTime < 0 or cooldown.duration < 0 or (cooldown.modRate and cooldown.modRate <= 0) then
+
+    if
+        cooldown.startTime == nil
+        or cooldown.duration == nil
+        or cooldown.isEnabled == nil
+        or cooldown.startTime < 0
+        or cooldown.duration < 0
+        or (cooldown.modRate and cooldown.modRate <= 0)
+    then
         return nil, "invalid-api-result"
     end
+
     cooldown.modRate = cooldown.modRate or 1
+
+    if cooldown.duration > 1.5 then
+        cooldownMemory[spell] = { ends = cooldown.startTime + cooldown.duration, duration = cooldown.duration }
+        cooldownLengths[spell] = cooldown.duration
+    end
+
     return cooldown
 end
 
@@ -456,6 +579,38 @@ function platform:GetSpellLink(spell)
     end
 
     return link
+end
+
+-- Reads what a cooldown display needs for a spell. Where the client has C_Spell.GetSpellCooldownDuration (Retail,
+-- Forever), the game's duration object is handed on: it carries the times into a Cooldown frame even while they are
+-- secret to addons (Hekili Forever draws its swipes this way in combat). Elsewhere the readable start and duration.
+-- @param spell number  The spell id.
+-- @return string|nil  'duration' or 'times'; nil when there is nothing to show or it cannot be read.
+-- @return any  The duration object ('duration'), or the start time ('times').
+-- @return number|nil  The duration in seconds ('times' only).
+-- @return number|nil  The rate ('times' only).
+function platform:GetSpellCooldownDisplay(spell)
+    if not identifier(spell) then
+        return nil
+    end
+
+    local spells = C_Spell
+
+    if type(spells) == "table" and type(spells.GetSpellCooldownDuration) == "function" then
+        local ok, duration = pcall(spells.GetSpellCooldownDuration, spell, false)
+
+        if ok and duration ~= nil and self:CanReadValue(duration) then
+            return "duration", duration
+        end
+
+        return nil
+    end
+
+    local cooldown = self:GetSpellCooldown(spell)
+
+    if cooldown and cooldown.duration > 0 then
+        return "times", cooldown.startTime, cooldown.duration, cooldown.modRate
+    end
 end
 
 -- Recommendation readiness permits a next action during the global cooldown,
@@ -505,23 +660,46 @@ end
 -- Readiness runs for every reached action each poll. On classic builds without secrets the multi-value cooldown API
 -- is read directly: the same values GetSpellCooldown validates, without a result table per call.
 local function cooldownValues(self, spell)
-    local legacy=self.secretsUnrestricted and GetSpellCooldown
-    if type(legacy)~="function" then
-        local cooldown,reason,enabled,active,onGCD=self:GetSpellCooldown(spell)
-        if not cooldown then return nil,nil,enabled,reason,active,onGCD end
-        return cooldown.startTime,cooldown.duration,cooldown.isEnabled
+    local legacy = self.secretsUnrestricted and GetSpellCooldown
+
+    if type(legacy) ~= "function" then
+        local cooldown, reason, enabled, active, onGCD = self:GetSpellCooldown(spell)
+
+        if cooldown and cooldown.estimated then
+            return nil, nil, cooldown.isEnabled, "restricted-value", cooldown.isActive, cooldown.isOnGCD
+        end
+        if not cooldown then
+            return nil, nil, enabled, reason, active, onGCD
+        end
+
+        return cooldown.startTime, cooldown.duration, cooldown.isEnabled
     end
-    local valid,reason=identifier(spell)
-    if not valid then return nil,nil,nil,reason end
-    local ok,start,duration,enabled=pcall(legacy,spell)
-    if not ok then return nil,nil,nil,"api-error" end
+
+    local valid, reason = identifier(spell)
+
+    if not valid then
+        return nil, nil, nil, reason
+    end
+
+    local ok, start, duration, enabled = pcall(legacy, spell)
+
+    if not ok then
+        return nil, nil, nil, "api-error"
+    end
     if not self:CanReadValue(start) or not self:CanReadValue(duration) or not self:CanReadValue(enabled) then
-        return nil,nil,nil,"restricted-value"
+        return nil, nil, nil, "restricted-value"
     end
-    if start==nil then return nil,nil,nil,"spell-data-unavailable" end
-    if enabled~=0 and enabled~=1 and enabled~=true and enabled~=false then return nil,nil,nil,"invalid-api-result" end
-    if not finiteNonNegative(start) or not finiteNonNegative(duration) then return nil,nil,nil,"invalid-api-result" end
-    return start,duration,enabled==1 or enabled==true
+    if start == nil then
+        return nil, nil, nil, "spell-data-unavailable"
+    end
+    if enabled ~= 0 and enabled ~= 1 and enabled ~= true and enabled ~= false then
+        return nil, nil, nil, "invalid-api-result"
+    end
+    if not finiteNonNegative(start) or not finiteNonNegative(duration) then
+        return nil, nil, nil, "invalid-api-result"
+    end
+
+    return start, duration, enabled == 1 or enabled == true
 end
 
 -- Tells whether the global cooldown is running.
@@ -731,6 +909,8 @@ do
         if name=="chargeFields" then return chargeFields end
         if name=="cooldownFields" then return cooldownFields end
         if name=="cooldownFlags" then return cooldownFlags end
+        if name=="cooldownLengths" then return cooldownLengths end
+        if name=="cooldownMemory" then return cooldownMemory end
         if name=="cooldownValues" then return cooldownValues end
         if name=="copy" then return copy end
         if name=="finiteNonNegative" then return finiteNonNegative end
@@ -740,6 +920,8 @@ do
         if name=="identifier" then return identifier end
         if name=="own" then return own end
         if name=="platform" then return platform end
+        if name=="rememberedCooldown" then return rememberedCooldown end
+        if name=="remembering" then return remembering end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("Platform/spells.lua", sourceGetter)

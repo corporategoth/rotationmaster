@@ -154,7 +154,6 @@ test('conditionally secret readers read a readable value and are unavailable on 
 
         local cases = {
             { { type = 'THREAT', unit = 'target', threat = 3 }, 'threat' },
-            { { type = 'MOVING' }, 'speed' },
             { { type = 'CLASS', unit = 'target', value = 'MAGE' }, 'class' },
             { { type = 'ISSAME', unit = 'target', otherunit = 'focus' }, 'same' },
             { { type = 'PVP', unit = 'target' }, 'pvp' },
@@ -170,6 +169,11 @@ test('conditionally secret readers read a readable value and are unavailable on 
             expect(a, case[1], 'unavailable', project .. ' secret ' .. case[1].type)
             state[case[2]] = saved
         end
+
+        -- MOVING answers a hidden speed from the movement events and the last readable speed (Platform/player_movement.lua).
+        expect(a, { type = 'MOVING' }, 'match', project .. ' readable MOVING')
+        state.speed = SECRET
+        expect(a, { type = 'MOVING' }, 'match', project .. ' hidden speed after a readable one')
     end
 end)
 

@@ -233,8 +233,9 @@ test('public observer source clones preserve the native boundary and actual help
     local secret = {}
     f.env.issecretvalue = function(v) return rawequal(v, secret) end
     s.speed = secret
-    local r, why = fn(a.Platform)
-    assert(r == nil and why == 'restricted-value')
+    -- A hidden speed follows the last readable one (Platform/player_movement.lua), shared with the clone.
+    local r = fn(a.Platform)
+    assert(r and r.speed == .25 and r.estimated == true)
 
     assert(
         a:ResolveFunctionBinding(id) == a.Platform.GetPlayerMovementObservation

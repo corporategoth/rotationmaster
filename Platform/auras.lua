@@ -79,6 +79,7 @@ local function normalize(raw, owned)
 end
 
 -- Reads one aura of a unit by position.
+-- @param self table  The platform table.
 -- @param unit string  The unit token to read; must be a non-empty string.
 -- @param index number  The aura position, an integer from 1 to 256.
 -- @param filter string  "HELPFUL", "HARMFUL" or "HARMFUL|RAID".
@@ -87,7 +88,7 @@ end
 --
 -- Never retains the native record. On Era, LibClassicDurations (when present) supplies otherwise unavailable timer
 -- estimates; it stays optional and never substitutes for a restricted native result.
-function platform:GetAuraByIndex(unit, index, filter)
+local function readAuraByIndex(self, unit, index, filter)
     if not self:CanReadValue(unit) or not self:CanReadValue(index) or not self:CanReadValue(filter) then
         return nil, "restricted-value"
     end
@@ -174,6 +175,53 @@ function platform:GetAuraByIndex(unit, index, filter)
     }, true)
 end
 
+-- Your own auras last read readably, by spell id: { expires, stacks, duration }, for "Remember hidden buffs and
+-- cooldowns" (profile.remember_hidden). Learned on every readable read of the player's auras; your own cast of the
+-- spell restarts it from the learned duration (NoteAuraCast).
+local auraMemory = {}
+
+-- Reads the aura at an index of a unit's aura list, learning your own auras for the memory above.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param index number  The 1-based position in the filtered list.
+-- @param filter string|nil  The aura filter.
+-- @return table|nil  The validated aura; nil at the end of the list or when it cannot be read.
+-- @return string|nil  The reason code when the read failed; nil otherwise.
+function platform:GetAuraByIndex(unit, index, filter)
+    local aura, reason = readAuraByIndex(self, unit, index, filter)
+
+    if aura and unit == "player" and not aura.unavailable then
+        local spell, expires = aura.spellID, aura.expirationTime
+
+        if type(spell) == "number" and type(expires) == "number" then
+            auraMemory[spell] = { expires = expires, stacks = aura.applications, duration = aura.duration }
+        end
+    end
+
+    return aura, reason
+end
+
+-- Notes your own successful cast, restarting a remembered aura of that spell from its learned duration.
+-- @param spell any  The cast spell id; a hidden id is ignored.
+-- @param now number  The time of the cast.
+function platform:NoteAuraCast(spell, now)
+    if not self:CanReadValue(spell) or type(spell) ~= "number" then
+        return
+    end
+
+    local memory = auraMemory[spell]
+
+    if memory and type(memory.duration) == "number" and memory.duration > 0 then
+        memory.expires = now + memory.duration
+    end
+end
+
+-- Reads a remembered aura of yours.
+-- @param spell number  The spell id.
+-- @return table|nil  { expires, stacks, duration }; nil when it was never read.
+function platform:GetRememberedAura(spell)
+    return auraMemory[spell]
+end
+
 -- Finds the first aura with a spell name that a filter admits.
 -- @param unit string  The unit token to read; must be a non-empty string.
 -- @param name string  The spell name to look up; must be a non-empty string.
@@ -197,6 +245,31 @@ function platform:GetAuraBySpellName(unit, name, filter)
     end
 
     return normalize(raw, true)
+end
+
+-- Whether the game hides aura data from addons right now (C_Secrets.ShouldAurasBeSecret, on the restricted policy only).
+-- Forever was seen handing back an empty player aura list in combat (Glowing Bars' notes), so an empty list read while
+-- this is true proves nothing.
+-- @return boolean  True while auras are hidden, or when the answer cannot be read; false without the API or off the
+--   restricted policy.
+function platform:AreAurasHidden()
+    if self:GetCombatDataPolicy() ~= "restricted" then
+        return false
+    end
+
+    local secrets = C_Secrets
+
+    if type(secrets) ~= "table" or type(secrets.ShouldAurasBeSecret) ~= "function" then
+        return false
+    end
+
+    local ok, hidden = pcall(secrets.ShouldAurasBeSecret)
+
+    if not ok or not self:CanReadValue(hidden) then
+        return true
+    end
+
+    return hidden == true
 end
 
 -- Reads one field of a validated aura.

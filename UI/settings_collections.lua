@@ -212,13 +212,15 @@ function addon:OpenNativeSettings(parent, key, cached)
         },
         General = {
             profile = {
-                'enable', 'poll', 'idle_poll', 'autoswitch_poll', 'ignore_mana', 'ignore_range', 'effect', 'color',
-                'magnification', 'setpoint', 'xoffs', 'yoffs', 'loglevel', 'detailed_profiling', 'disable_autoswitch',
-                'live_config_update', 'spell_history', 'combat_history', 'damage_history', 'disable_buttons',
-                'assisted_highlight', 'tooltips', 'tooltip_itemsets', 'tooltip_rotations', 'tooltip_conditions',
-                'tooltip_disabled_rotations', 'tooltip_exclude_disabled_conditions', 'tooltip_limit', 'rotation_view',
-                'preview_spells', 'preview_vertical', 'preview_locked', 'preview_opacity', 'preview_icon_size',
-                'preview_window', 'minimap'
+                'enable', 'poll', 'idle_poll', 'autoswitch_poll', 'ignore_mana', 'ignore_range', 'ignore_moving',
+                'remember_hidden', 'preview_readiness', 'preview_ignore_mana', 'preview_ignore_range',
+                'preview_ignore_moving', 'preview_target_health', 'effect', 'color', 'magnification', 'setpoint',
+                'xoffs', 'yoffs', 'loglevel', 'detailed_profiling', 'disable_autoswitch', 'live_config_update',
+                'spell_history', 'combat_history', 'damage_history', 'disable_buttons', 'assisted_highlight',
+                'tooltips', 'tooltip_itemsets', 'tooltip_rotations', 'tooltip_conditions', 'tooltip_disabled_rotations',
+                'tooltip_exclude_disabled_conditions', 'tooltip_limit', 'rotation_view', 'preview_spells',
+                'preview_vertical', 'preview_locked', 'preview_opacity', 'preview_icon_size', 'preview_window',
+                'minimap'
             },
             char = { 'specs' },
         },

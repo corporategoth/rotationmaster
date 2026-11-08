@@ -3,8 +3,8 @@
 local F = dofile('tests/fixtures/addon.lua')
 local test, finish = F.suite()
 
-local function fixture(modern)
-    local f = F.new()
+local function fixture(modern, project)
+    local f = F.new(project, project and 12 or nil)
     f.env.UnitExists = function(unit) return unit ~= 'target' end
     f.env.C_UnitAuras = modern and { GetAuraDataByIndex = function() end } or nil
 
@@ -426,6 +426,84 @@ test('all six spell aura schemas accept the rank option and summaries expose it'
             }).valid
         )
     end
+end)
+
+test('an empty list of your own auras while the game hides auras is unavailable, not absent', function()
+    local f = fixture(true, 18)
+    local hidden = true
+    f.env.C_Secrets = f.env.C_Secrets or {}
+    f.env.C_Secrets.ShouldAurasBeSecret = function() return hidden end
+    buff(f, {})
+    local mine = value('BUFF', { unit = 'player' })
+    assert(f.addon:evaluateConditionResult(mine).status == 'unavailable', 'hidden empty list read as absent')
+    assert(f.addon:evaluateConditionResult({ type = 'NOT', value = mine }).status == 'unavailable')
+    assert(f.addon:evaluateConditionResult(value('BUFF', { unit = 'focus' })).status == 'no-match', 'other units')
+    hidden = false
+    assert(f.addon:evaluateConditionResult(mine).status == 'no-match', 'visible empty list')
+    hidden = true
+    buff(f, { { name = 'Lightning Shield', spellId = 324, sourceUnit = 'player', applications = 3 } })
+    assert(f.addon:evaluateConditionResult(mine).status == 'no-match', 'a readable list without the buff')
+end)
+
+test('an unavailable presence check asks the Cooldown Manager for your own auras', function()
+    local f = fixture(true, 18)
+    f.env.C_Secrets = f.env.C_Secrets or {}
+    f.env.C_Secrets.ShouldAurasBeSecret = function() return true end
+    buff(f, {})
+    local p = f.addon.Platform
+    local shown = {}
+    p.GetCooldownViewerPresence = function(_, spell, unit) return shown[unit .. spell] end
+    local mine = { type = 'BUFF', unit = 'player', spell = 974 }
+    assert(f.addon:evaluateConditionResult(mine).status == 'unavailable', 'untracked')
+    shown.player974 = true
+    assert(f.addon:evaluateConditionResult(mine).status == 'match', 'tracked up')
+    shown.player974 = false
+    assert(f.addon:evaluateConditionResult(mine).status == 'no-match', 'tracked down')
+
+    assert(
+        f.addon:evaluateConditionResult({ type = 'BUFF', unit = 'player', spell = 'Earth Shield' }).status
+            == 'unavailable',
+        'a spell saved by name is not looked up'
+    )
+end)
+
+test('with Remember hidden buffs and cooldowns your own auras answer from the last readable read', function()
+    local f = fixture(true, 18)
+    local a = f.addon
+    f.env.C_Secrets = f.env.C_Secrets or {}
+    f.env.C_Secrets.ShouldAurasBeSecret = function() return true end
+    f.env.GetTime = function() return 100 end
+
+    buff(f, {
+        {
+            name = 'Lightning Shield',
+            spellId = 324,
+            sourceUnit = 'player',
+            applications = 3,
+            duration = 600,
+            expirationTime = 650,
+        },
+    })
+
+    local present = { type = 'BUFF', unit = 'player', spell = 324 }
+    assert(a:evaluateConditionResult(present).status == 'match', 'readable read')
+    buff(f, {})
+    assert(a:evaluateConditionResult(present).status == 'unavailable', 'off by default')
+    a.db.profile.remember_hidden = true
+    assert(a:evaluateConditionResult(present).status == 'match', 'remembered')
+    local stacks = { type = 'BUFF_STACKS', unit = 'player', spell = 324, operator = 'EQUALS', value = 3 }
+    assert(a:evaluateConditionResult(stacks).status == 'match', 'remembered stacks')
+    local remain = { type = 'BUFF_REMAIN', unit = 'player', spell = 324, operator = 'GREATERTHAN', value = 500 }
+    assert(a:evaluateConditionResult(remain).status == 'match', 'remembered remaining time')
+    f.env.GetTime = function() return 700 end
+    assert(a:evaluateConditionResult(present).status == 'no-match', 'expired')
+    a.Platform:NoteAuraCast(324, 700)
+    assert(a:evaluateConditionResult(present).status == 'match', 'your cast restarts it from the learned duration')
+
+    assert(
+        a:evaluateConditionResult({ type = 'BUFF', unit = 'player', spell = 974 }).status == 'unavailable',
+        'never read'
+    )
 end)
 
 finish()

@@ -273,7 +273,8 @@ end
 -- Scratch memo for one scan's any-rank name; reset per scan, never retained.
 local identity = {}
 
--- Evaluates a buff or debuff condition on `value.unit`.
+-- Scans a unit's auras for a buff or debuff condition on `value.unit`.
+-- @param self table  The addon.
 -- @param value table  The condition value (unit, spell, operator, value, dispellable, ...).
 -- @param cache table|nil  The per-pass cache for aura reads.
 -- @param start number|nil  The poll's time.
@@ -284,7 +285,7 @@ local identity = {}
 --
 -- For presence-style modes a field read that fails only counts if no other aura matches; the other modes fail at once.
 -- The scan stops at 256 auras.
-function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
+local function evaluateAura(self, value, cache, start, filter, mode)
     if type(UnitExists) ~= "function" then
         return nil, "missing-api"
     end
@@ -333,6 +334,11 @@ function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
                 return nil, pendingReason
             end
 
+            -- An empty list of your own auras while the game hides auras is not proof of absence.
+            if index == 1 and value.unit == "player" and platform:AreAurasHidden() then
+                return nil, "auras-hidden"
+            end
+
             return false
         end
 
@@ -352,6 +358,67 @@ function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
     end
 
     return nil, pendingReason or "aura-scan-limit"
+end
+
+-- Evaluates a Built In buff or debuff condition, falling back where the game hides the aura data.
+-- @param value table  The condition value (unit, spell, operator, value and the per-condition options).
+-- @param cache table|nil  The per-pass cache.
+-- @param start number|nil  The poll's time.
+-- @param filter string  The aura list: "HELPFUL", "HARMFUL", ...
+-- @param mode string  'present', 'remaining', 'stacks', 'dispel' or 'stealable'.
+-- @return boolean|nil  The condition's answer; nil when unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- When the scan is unavailable, a presence check of a spell on you or your target asks the Cooldown Manager
+-- (Platform/cooldown_viewer.lua). A "down" there counts on your target only for your own debuff, since another caster's
+-- copy may still be up. With "Remember hidden buffs and cooldowns" on, your own auras then answer from what was last
+-- read (Platform/auras.lua): presence, remaining time and stacks, until the remembered expiry.
+function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
+    local result, reason = evaluateAura(self, value, cache, start, filter, mode)
+
+    if result ~= nil or type(value.spell) ~= 'number' then
+        return result, reason
+    end
+
+    -- The Cooldown Manager sees real presence, so it answers first.
+    if
+        mode == 'present' and (value.unit == 'player' or value.unit == 'target') and platform.GetCooldownViewerPresence
+    then
+        local up = platform:GetCooldownViewerPresence(value.spell, value.unit)
+
+        if up == true or up == false and (value.unit == 'player' or value.owndebuff or value.ownbuff) then
+            return up
+        end
+    end
+
+    local profile = self.db and self.db.profile
+
+    if
+        value.unit == 'player'
+        and (mode == 'present' or mode == 'remaining' or mode == 'stacks')
+        and profile
+        and profile.remember_hidden == true
+        and platform.GetRememberedAura
+    then
+        local memory = platform:GetRememberedAura(value.spell)
+        local now = start or (type(GetTime) == 'function' and GetTime()) or nil
+
+        if memory and now then
+            local left = memory.expires == 0 and math.huge or memory.expires - now
+
+            if mode == 'present' then
+                return left > 0
+            elseif left <= 0 then
+                return false
+            elseif mode == 'remaining' then
+                return addon.Functions.values.compare(value.operator, left, value.value)
+            end
+
+            return addon.Functions.values.compare(value.operator, memory.stacks or 1, value.value)
+        end
+    end
+
+    return result, reason
 end
 
 -- Enrolls the helper with the condition runtime; skipped when the condition runtime is not loaded.

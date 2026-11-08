@@ -145,6 +145,38 @@ function addon:RotationProfileChanged()
         return nil, 'rotation-transition-superseded'
     end
 
+    -- The preview window belongs to the profile it was built for (UI/preview.lua, window:Valid) and drops every
+    -- recommendation for any other, while the buttons keep glowing. Release it and build it again from the new profile
+    -- (slots, size, position), or leave it released when that profile has advice off, as addon:disable() does. Any other
+    -- preview object is left alone, without calling its methods.
+    local window = self.nextWindow
+
+    if type(window) == 'table' and window.nativePreview == true then
+        window:Release()
+
+        if not activeCurrent(self, change) then
+            return nil, 'rotation-transition-superseded'
+        end
+
+        if self.nextWindow == window then
+            self.nextWindow = nil
+        end
+    end
+
+    if ok and self.db.profile.enable and self.RefreshPreviewWindow then
+        local preview = self.RefreshPreviewWindow
+
+        if not activeCurrent(self, change) then
+            return nil, 'rotation-transition-superseded'
+        end
+
+        preview(self)
+
+        if not activeCurrent(self, change) then
+            return nil, 'rotation-transition-superseded'
+        end
+    end
+
     if ok and self.db.profile.enable and self.EnableRotation then
         local enable = self.EnableRotation
 

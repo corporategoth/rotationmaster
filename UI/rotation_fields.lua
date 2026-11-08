@@ -822,6 +822,84 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         end
     end
 
+    -- A display gate on an action step of the rotation list (Platform/gates.lua): where the value is readable it is a
+    -- test like a condition; where the game hides it (Retail and Forever) the step can only show in the preview window.
+    local gated = step.type == 'spell' or step.type == 'pet' or step.type == 'any' or step.type == 'item'
+
+    if gated and model.section ~= 'cooldowns' then
+        local gate = type(step.gate) == 'table' and step.gate or nil
+
+        local toggle = flag('gate', L['Shown by the game when'], gate ~= nil, function(value)
+            if value then
+                patch({ gate = { unit = 'target', kind = 'health', operator = 'LESSTHAN', value = 20 } })
+            else
+                patch(nil, { 'gate' })
+            end
+        end)
+
+        toggle.tooltip = L['Only advise this step while a health or power percent is below or above a threshold. Where the game hides that value from addons (Retail and Forever), the game itself decides at draw time, so the step can only appear in the preview window, drawn over the next recommendation.']
+
+        if gate then
+            -- Stores one field of the gate, keeping the others.
+            -- @param key string  The gate field.
+            -- @param value any  Its new value.
+            local function set(key, value)
+                local copy = { unit = gate.unit, kind = gate.kind, operator = gate.operator, value = gate.value }
+                copy[key] = value
+                patch({ gate = copy })
+            end
+
+            choice(
+                'gate_unit',
+                L['Unit'],
+                {
+                    { value = 'target', text = L['your target'] },
+                    { value = 'player', text = L['you'] },
+                },
+                gate.unit,
+                function(value)
+                    set('unit', value)
+                end
+            )
+
+            choice(
+                'gate_kind',
+                L['Value'],
+                {
+                    { value = 'health', text = L['Health'] },
+                    { value = 'power', text = L['Power'] },
+                },
+                gate.kind,
+                function(value)
+                    set('kind', value)
+                end
+            )
+
+            choice(
+                'gate_operator',
+                L['Comparison'],
+                {
+                    { value = 'LESSTHAN', text = L['is below'] },
+                    { value = 'GREATERTHAN', text = L['is above'] },
+                },
+                gate.operator,
+                function(value)
+                    set('operator', value)
+                end
+            )
+
+            local percents = {}
+
+            for percent = 5, 95, 5 do
+                percents[#percents + 1] = { value = percent, text = string.format(L['%d%%'], percent) }
+            end
+
+            choice('gate_value', L['Percent'], percents, gate.value, function(value)
+                set('value', value)
+            end)
+        end
+    end
+
     if model.section == 'cooldowns' then
         y = addon:BuildRotationEffectFields(owner, card, model, alive, {
             controls = controls,

@@ -465,6 +465,13 @@ local defaults = {
         autoswitch_poll = 1.0,
         ignore_mana = false,
         ignore_range = false,
+        ignore_moving = false,
+        remember_hidden = false,
+        preview_readiness = false,
+        preview_ignore_mana = false,
+        preview_ignore_range = false,
+        preview_ignore_moving = false,
+        preview_target_health = false,
         effect = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
         color = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
         magnification = 1.4,
@@ -3251,6 +3258,12 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
         recCond = {},
         recIndex = {},
         recItem = {},
+        recRole = {},
+        gatedSpell = {},
+        gatedItem = {},
+        gatedGate = {},
+        gatedAfter = {},
+        gatedEntries = {},
         obsSpell = {},
         obsEnabled = {},
         obsItem = {},
@@ -3291,6 +3304,10 @@ end
 -- @return number|nil  The mapped spell; nil when the step has no usable action or its conditions do not match.
 -- @return boolean  Whether it is ready (and so may be recommended).
 -- @return number|nil  The item id.
+-- @return number|nil  With separate preview readiness (plan.previewReady, rotation steps only): the first mapped spell
+--   ready under the preview's options; nil otherwise.
+-- @return boolean|nil  Whether the preview has a ready spell.
+-- @return number|nil  The preview spell's item id.
 local function leanAction(plan, entry, decisionRow)
     local decisionSink = plan.decisionSink
     local cond = entry.step
@@ -3344,6 +3361,10 @@ local function leanAction(plan, entry, decisionRow)
         end
     end
 
+    -- With separate preview readiness the walk keeps going after the bar's ready spell until the preview has one too.
+    local previewReady = decisionRow == 'rotation' and plan.previewReady or nil
+    local readyMapped, readyItem, previewMapped, previewItem
+
     for index, id in ipairs(spellids or noIds) do
         local itemId = itemids and itemids[index]
         scratchSpell[1] = id
@@ -3366,16 +3387,38 @@ local function leanAction(plan, entry, decisionRow)
                 firstMapped, firstItem = mapped, itemId
             end
 
-            local ready = plan.actionReady(cond.type, id, itemId)
+            if not readyMapped then
+                local ready = plan.actionReady(cond.type, id, itemId)
 
-            if decisionSink then
-                decisionSink(decisionRow, ready and 'ready' or 'notready')
+                if decisionSink then
+                    decisionSink(decisionRow, ready and 'ready' or 'notready')
+                end
+
+                if ready then
+                    if not previewReady then
+                        return mapped, true, itemId
+                    end
+
+                    readyMapped, readyItem = mapped, itemId
+                end
             end
 
-            if ready then
-                return mapped, true, itemId
+            if previewReady and not previewMapped and previewReady(cond.type, id, itemId) then
+                previewMapped, previewItem = mapped, itemId
+            end
+
+            if readyMapped and previewMapped then
+                break
             end
         end
+    end
+
+    if previewReady then
+        if readyMapped then
+            return readyMapped, true, readyItem, previewMapped, previewMapped ~= nil, previewItem
+        end
+
+        return firstMapped, false, firstItem, previewMapped, previewMapped ~= nil, previewItem
     end
 
     return firstMapped, false, firstItem
@@ -3387,10 +3430,20 @@ end
 -- @param cond table  The step.
 -- @param index number  The step's ordinal.
 -- @param itemId number|nil  The item id.
-local function leanRecommend(plan, spellid, cond, index, itemId)
+-- @param role string|nil  'glow' for the bar glow only, 'preview' for the preview only (separate preview readiness);
+--   nil for both, where the first such recommendation is the glow.
+local function leanRecommend(plan, spellid, cond, index, itemId, role)
     local n = plan.recommended + 1
     plan.recommended = n
     plan.recSpell[n], plan.recCond[n], plan.recIndex[n], plan.recItem[n] = spellid, cond, index, itemId
+    plan.recRole[n] = role or false
+
+    if role ~= 'preview' and not plan.glowIndex then
+        plan.glowIndex = n
+    end
+    if role ~= 'glow' then
+        plan.previewCount = plan.previewCount + 1
+    end
 end
 
 -- Walks a compiled step list with the same control flow as Core/rotation_sequence.lua execute().
@@ -3430,9 +3483,48 @@ local function leanWalk(plan, list)
                     return status == "unavailable" and "unavailable" or "stopped"
                 end
             else
-                local spellid, enabled, itemId = leanAction(plan, entry, 'rotation')
+                local spellid, enabled, itemId, previewSpell, previewEnabled, previewItem = leanAction(
+                    plan,
+                    entry,
+                    'rotation'
+                )
 
-                if enabled then
+                -- A display gate (Platform/gates.lua): readable, an ordinary test; hidden, the step goes to the preview
+                -- only, drawn over the next recommendation, and the walk continues.
+                if step.gate and (enabled or previewEnabled) then
+                    local open, why = addon.Platform:GetGateObservation(step.gate)
+
+                    if open == nil and why == 'restricted-value' then
+                        local shown = plan.previewReady and previewEnabled or not plan.previewReady and enabled
+
+                        if shown then
+                            plan.gatedCount = plan.gatedCount + 1
+                            plan.gatedSpell[plan.gatedCount] = plan.previewReady and previewSpell or spellid
+                            plan.gatedItem[plan.gatedCount] = plan.previewReady and previewItem or itemId
+                            plan.gatedGate[plan.gatedCount] = step.gate
+                            plan.gatedAfter[plan.gatedCount] = plan.previewCount
+                        end
+                    end
+
+                    if open ~= true then
+                        enabled, previewEnabled = false, false
+                    end
+                end
+
+                if plan.previewReady then
+                    -- Separate preview readiness: the bar glow is the first step ready under its options, the preview
+                    -- the first steps ready under the preview's.
+                    if enabled and not plan.glowIndex then
+                        leanRecommend(plan, spellid, step, entry.ordinal, itemId, 'glow')
+                    end
+                    if previewEnabled and plan.previewCount < plan.profile.preview_spells then
+                        leanRecommend(plan, previewSpell, step, entry.ordinal, previewItem, 'preview')
+                    end
+
+                    if plan.glowIndex and plan.previewCount >= plan.profile.preview_spells then
+                        return "selected"
+                    end
+                elseif enabled then
                     leanRecommend(plan, spellid, step, entry.ordinal, itemId)
 
                     if not plan.nativePreview or plan.recommended >= plan.profile.preview_spells then
@@ -3467,10 +3559,12 @@ local function leanPublish(self, plan)
         end
     end
 
+    local gated, shown = 1, 0
+
     for n = 1, plan.recommended do
         local spellid, cond, index, itemId = plan.recSpell[n], plan.recCond[n], plan.recIndex[n], plan.recItem[n]
 
-        if n == 1 then
+        if n == plan.glowIndex then
             -- BEGIN ANALYTICS PRIMARY ADVICE
             if adviceCapture then
                 adviceCapture("advice", previewWindow, current, cond.type, spellid)
@@ -3522,8 +3616,22 @@ local function leanPublish(self, plan)
             return
         end
 
-        if nativePreview then
+        if nativePreview and plan.recRole[n] ~= 'glow' then
+            -- Gated steps reached before this preview entry are drawn over it (Platform/gates.lua).
+            while gated <= plan.gatedCount and plan.gatedAfter[gated] <= shown do
+                if previewWindow.AddGatedRecommendation then
+                    previewWindow:AddGatedRecommendation(
+                        plan.gatedSpell[gated],
+                        plan.gatedItem[gated],
+                        plan.gatedGate[gated]
+                    )
+                end
+
+                gated = gated + 1
+            end
+
             previewWindow:AddRecommendation(spellid, itemId)
+            shown = shown + 1
         end
 
         if not current() then
@@ -3531,7 +3639,7 @@ local function leanPublish(self, plan)
         end
     end
 
-    if plan.recommended == 0 then
+    if not plan.glowIndex then
         -- BEGIN ANALYTICS EMPTY ADVICE
         if adviceCapture then
             adviceCapture("retire")
@@ -3568,11 +3676,47 @@ local function leanPublish(self, plan)
     end
 
     if nativePreview then
+        -- Gated steps after the last preview entry show on their own.
+        while gated <= plan.gatedCount do
+            if previewWindow.AddGatedRecommendation then
+                previewWindow:AddGatedRecommendation(
+                    plan.gatedSpell[gated],
+                    plan.gatedItem[gated],
+                    plan.gatedGate[gated]
+                )
+            end
+
+            gated = gated + 1
+        end
+
         previewWindow:ResumeLayout()
 
         if current() then
             previewWindow:DoLayout()
         end
+
+        if not current() then
+            return
+        end
+    end
+
+    if not profile.disable_buttons and addon.SetGatedGlows and (plan.gatedCount > 0 or addon:HasGatedGlows()) then
+        local entries = plan.gatedEntries
+
+        for index = 1, math.max(#entries, plan.gatedCount) do
+            if index <= plan.gatedCount then
+                local entry = entries[index] or {}
+
+                entry.spellId, entry.itemId, entry.gate =
+                    plan.gatedSpell[index], plan.gatedItem[index], plan.gatedGate[index]
+
+                entries[index] = entry
+            else
+                entries[index] = nil
+            end
+        end
+
+        addon:SetGatedGlows(entries)
 
         if not current() then
             return
@@ -3799,7 +3943,18 @@ local function evaluateLean(self)
     plan.decisionSink = runtimeDecisionSink
     local previewWindow = plan.window
     plan.nativePreview = previewWindow and type(previewWindow.AddRecommendation) == "function"
-    plan.recommended, plan.suppressAttack = 0, false
+    plan.recommended, plan.suppressAttack, plan.previewCount, plan.glowIndex = 0, false, 0, nil
+    plan.gatedCount = 0
+    plan.previewReady = nil
+
+    -- The preview judges readiness by its own options only when they differ from the bar glow's.
+    if plan.nativePreview and self.IsPreviewReadinessSeparate and self:IsPreviewReadinessSeparate() then
+        if self.NewActionReadiness == ownedActionReadiness and self.ResetActionReadiness then
+            plan.previewReady = self:ResetActionReadiness(now, 'preview')
+        else
+            plan.previewReady = self:NewActionReadiness(now, 'preview')
+        end
+    end
 
     self.evaluationProfile:child("rotation"):start()
     local ended = leanWalk(plan, plan.steps)
@@ -3810,11 +3965,11 @@ local function evaluateLean(self)
         plan.suppressAttack = false
     end
 
-    if plan.recommended == 0 and not plan.suppressAttack then
+    if not plan.glowIndex and not plan.suppressAttack then
         local attack = self:ResolveImplicitAttack(plan.actionReady)
 
         if attack then
-            leanRecommend(plan, attack, implicitAttack, plan.fallbackOrdinal)
+            leanRecommend(plan, attack, implicitAttack, plan.fallbackOrdinal, plan.previewCount > 0 and 'glow' or nil)
         end
     end
 
@@ -4001,6 +4156,15 @@ function addon:EvaluateNextActionInternal()
         local now, cache = prepareEvaluation(self)
 
         local actionReady = self:NewActionReadiness(now)
+        local previewTarget = self.nextWindow
+
+        -- The preview judges readiness by its own options only when they differ from the bar glow's.
+        local previewReady = previewTarget
+            and type(previewTarget.AddRecommendation) == "function"
+            and self.IsPreviewReadinessSeparate
+            and self:IsPreviewReadinessSeparate()
+            and self:NewActionReadiness(now, 'preview')
+            or nil
 
         -- Preparation can call public providers. Check the compiled graph's
         -- source authority once here, before any cached condition is reused.
@@ -4017,12 +4181,16 @@ function addon:EvaluateNextActionInternal()
         --   false, so a disabled cooldown can clear its glow.
         -- @return boolean  Whether it is ready.
         -- @return number|nil  The item id.
+        -- @return number|nil  With separate preview readiness (rotation steps only): the first mapped spell ready under
+        --   the preview's options; nil otherwise.
+        -- @return boolean|nil  Whether the preview has a ready spell.
+        -- @return number|nil  The preview spell's item id.
         local function eval(cond, decisionRow)
             if decisionSink then
                 decisionSink(decisionRow, 'attempt')
             end
 
-            local firstMapped, firstItem
+            local firstMapped, firstItem, previewMapped, previewItem
             local matches
             local action = cond.action
 
@@ -4051,6 +4219,10 @@ function addon:EvaluateNextActionInternal()
                 end
 
                 local spellids, itemids = addon:GetSpellIds(cond)
+                -- With separate preview readiness the walk keeps going after the bar's ready spell until the preview
+                -- has one too.
+                local previewFor = decisionRow == 'rotation' and previewReady or nil
+                local readyMapped, readyItem
 
                 for index, id in ipairs(spellids or {}) do
                     local itemId = itemids and itemids[index]
@@ -4065,24 +4237,43 @@ function addon:EvaluateNextActionInternal()
                             firstMapped, firstItem = mapped, itemId
                         end
 
-                        local ready = actionReady(cond.type, id, itemId)
+                        if not readyMapped then
+                            local ready = actionReady(cond.type, id, itemId)
 
-                        if decisionSink then
-                            decisionSink(decisionRow, ready and 'ready' or 'notready')
+                            if decisionSink then
+                                decisionSink(decisionRow, ready and 'ready' or 'notready')
+                            end
+
+                            if ready then
+                                if not previewFor then
+                                    return mapped, true, itemId
+                                end
+
+                                readyMapped, readyItem = mapped, itemId
+                            end
                         end
 
-                        if ready then
-                            return mapped, true, itemId
+                        if previewFor and not previewMapped and previewFor(cond.type, id, itemId) then
+                            previewMapped, previewItem = mapped, itemId
+                        end
+
+                        if readyMapped and previewMapped then
+                            break
                         end
                     end
                 end
+
+                if readyMapped then
+                    return readyMapped, true, readyItem, previewMapped, previewMapped ~= nil, previewItem
+                end
             end
 
-            return firstMapped, false, firstItem
+            return firstMapped, false, firstItem, previewMapped, previewMapped ~= nil, previewItem
         end
 
         self.evaluationProfile:child("rotation"):start()
-        local preview, suppressAttack = 0, false
+        -- preview counts the preview's recommendations; glowed says the bar glow has its spell.
+        local preview, suppressAttack, glowed = 0, false, false
         local weakAuras = _G.WeakAuras
         ---@type RMRecommendationPreview
         local previewWindow = self.nextWindow
@@ -4144,15 +4335,24 @@ function addon:EvaluateNextActionInternal()
         -- @param cond table  The step.
         -- @param index number  The step's ordinal.
         -- @param itemId number|nil  The item id.
+        -- @param role string|nil  'glow' for the bar glow only, 'preview' for the preview only (separate preview
+        --   readiness); nil for both.
         --
-        -- The first one becomes the current spell (glow, WeakAuras and ROTATIONMASTER_SPELL_UPDATE); every one goes to
-        -- the preview window, if any.
-        local function recommend(spellid, cond, index, itemId)
-            preview = preview + 1
-            local ordinal = preview
+        -- The first one for the glow becomes the current spell (glow, WeakAuras and ROTATIONMASTER_SPELL_UPDATE); every
+        -- one for the preview goes to the preview window, if any.
+        local function recommend(spellid, cond, index, itemId, role)
+            local glows = role ~= 'preview' and not glowed
+            local shows = role ~= 'glow'
+
+            if glows then
+                glowed = true
+            end
+            if shows then
+                preview = preview + 1
+            end
 
             stage(function()
-                if ordinal == 1 then
+                if glows then
                     -- BEGIN ANALYTICS PRIMARY ADVICE
                     if adviceCapture then
                         adviceCapture("advice", previewWindow, current, cond.type, spellid)
@@ -4202,10 +4402,42 @@ function addon:EvaluateNextActionInternal()
                     return
                 end
 
-                if nativePreview then
+                if shows and nativePreview then
                     previewWindow:AddRecommendation(spellid, itemId)
                 end
             end)
+        end
+
+        -- The steps whose display gate the game decides this poll, for the gated bar glows.
+        local gatedSteps = {}
+
+        -- Applies a step's display gate (Platform/gates.lua). Readable: an ordinary test. Hidden (Retail, Forever): the step
+        -- goes to the preview only, drawn over the next recommendation with the game deciding which shows, and the walk
+        -- continues. Returns whether the step may still be recommended normally.
+        -- @param cond table  The step.
+        -- @param spellid number|nil  The step's spell, for the preview.
+        -- @param itemId number|nil  The step's item.
+        -- @return boolean  True when the gate is open (or absent).
+        local function gateOpen(cond, spellid, itemId)
+            local open, why = addon.Platform:GetGateObservation(cond.gate)
+
+            if open ~= nil then
+                return open
+            end
+
+            if why == 'restricted-value' and spellid then
+                gatedSteps[#gatedSteps + 1] = { spellId = spellid, itemId = itemId, gate = cond.gate }
+
+                if nativePreview and previewWindow.AddGatedRecommendation then
+                    stage(function()
+                        if current() then
+                            previewWindow:AddGatedRecommendation(spellid, itemId, cond.gate)
+                        end
+                    end)
+                end
+            end
+
+            return false
         end
 
         local sequence = evaluateSequence(
@@ -4219,14 +4451,39 @@ function addon:EvaluateNextActionInternal()
                 return addon:evaluateConditionResult(condition, context)
             end,
             function(cond, index)
-                if cond.type == 'mark' and preview > 0 then
+                if cond.type == 'mark' and (glowed or preview > 0) then
                     return true
                 end
 
-                local spellid, enabled, itemId = eval(cond, 'rotation')
+                local spellid, enabled, itemId, previewSpell, previewEnabled, previewItem = eval(cond, 'rotation')
 
                 if not dispatchCurrent('resume') then
                     return false
+                end
+
+                if cond.gate and (enabled or previewEnabled) then
+                    local shown = previewReady and previewEnabled or not previewReady and enabled
+
+                    if not gateOpen(
+                        cond,
+                        shown and (previewReady and previewSpell or spellid) or nil,
+                        previewReady and previewItem or itemId
+                    ) then
+                        enabled, previewEnabled = false, false
+                    end
+                end
+
+                if previewReady and nativePreview then
+                    -- Separate preview readiness: the bar glow is the first step ready under its options, the preview
+                    -- the first steps ready under the preview's.
+                    if enabled and not glowed then
+                        recommend(spellid, cond, index, itemId, 'glow')
+                    end
+                    if previewEnabled and preview < self.db.profile.preview_spells then
+                        recommend(previewSpell, cond, index, previewItem, 'preview')
+                    end
+
+                    return not (glowed and preview >= self.db.profile.preview_spells)
                 end
 
                 if enabled then
@@ -4249,19 +4506,21 @@ function addon:EvaluateNextActionInternal()
 
         suppressAttack = sequence.suppressAttack
 
-        if preview == 0 and not suppressAttack then
+        if not glowed and not suppressAttack then
             local attack = self:ResolveImplicitAttack(actionReady)
 
             if attack then
                 recommend(
                     attack,
                     { id = "RM-IMPLICIT:ATTACK", type = "spell" },
-                    sequence.fallbackOrdinal or #(rot.rotation or {}) + 1
+                    sequence.fallbackOrdinal or #(rot.rotation or {}) + 1,
+                    nil,
+                    preview > 0 and 'glow' or nil
                 )
             end
         end
 
-        if preview == 0 then
+        if not glowed then
             stage(function()
                 -- BEGIN ANALYTICS EMPTY ADVICE
                 if adviceCapture then
@@ -4300,6 +4559,13 @@ function addon:EvaluateNextActionInternal()
 
                 if current() then
                     previewWindow:DoLayout()
+                end
+            end)
+        end
+        if addon.SetGatedGlows and (gatedSteps[1] or addon:HasGatedGlows()) then
+            stage(function()
+                if current() and not self.db.profile.disable_buttons then
+                    addon:SetGatedGlows(gatedSteps)
                 end
             end)
         end

@@ -11,6 +11,7 @@ report opens it in a selectable window (click Copy, press Ctrl+C) because chat t
 | Why was this rotation chosen, or not? | `/rm why` | Lists every rotation for the character with the reason it can or cannot be selected |
 | What can I give to `/rm set`? | `/rm list` | Identifiers of selectable rotations |
 | A step is right but no button lights | `/rm debug glow [seconds]` | Walks the chain in order (client and bar APIs, active rotation, button scan, each step's conditions, spell IDs and buttons, readiness, Blizzard's suggestion, the glow request) and names the first link that drops the recommendation. With seconds, one compact line per second follows, to catch combat. `/rm debug glow show` reopens the last report |
+| A condition is unavailable on Retail or Forever, or a fallback (movement events, remembered values, Cooldown Manager, range bracket, swing timer, display gates) seems not to work | `/rm debug secrets [reset]` | A copyable report of the restriction state, what each fallback reads in game, and which conditions were unavailable how often since the last reset (`Diagnostics/secrets.lua`) |
 | Retail or Forever talent lists are short or empty | `/rm debug talents [views]` | One trait call at a time with what each answered; `views` also lists the class's other specializations |
 | The Lua editor misbehaves | `/rm debug editor` | Copies the native Lua input diagnostics |
 | Errors | `/rm errors` | The bounded session error report; names, GUIDs and home paths are redacted unless you choose the original text |

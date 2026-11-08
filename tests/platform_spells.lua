@@ -632,4 +632,39 @@ test('readiness from the multi-value cooldown API matches the C_Spell record pat
     assert(a == nil and why == 'invalid-api-result')
 end)
 
+test('remembered cooldowns answer hidden times with the flags, and readiness keeps the flags alone', function()
+    local SECRET = {}
+    local cd = { startTime = 100, duration = 30, isEnabled = true, modRate = 1, isActive = true, isOnGCD = false }
+    local now = 110
+
+    local p, env, addon = fixture({
+        C_Spell = { GetSpellCooldown = function() return cd end },
+        GetTime = function() return now end,
+        issecretvalue = function(v) return v == SECRET end,
+        canaccessvalue = function(v) return v ~= SECRET end,
+    })
+
+    addon.db = { profile = {} }
+    assert(p:GetSpellCooldown(1).duration == 30, 'readable read learns it')
+    cd.startTime, cd.duration = SECRET, SECRET
+    assert(p:GetSpellCooldown(1) == nil, 'off by default')
+    addon.db.profile.remember_hidden = true
+    local remembered = p:GetSpellCooldown(1)
+    assert(remembered.estimated and remembered.startTime == 100 and remembered.duration == 30, 'remembered')
+    local ready = p:IsSpellReady(1, now)
+    assert(ready == false, 'readiness from the flags: own cooldown active')
+    cd.isActive = false
+    remembered = p:GetSpellCooldown(1)
+    assert(remembered.duration == 0 and p:IsSpellReady(1, now) == true, 'inactive flag means ready')
+    cd.isActive = true
+    now = 200
+    assert(p:GetSpellCooldown(1) == nil, 'expired memory stays unavailable')
+    p:NoteCooldownCast(1, 200)
+    remembered = p:GetSpellCooldown(1)
+    assert(remembered.startTime == 200 and remembered.duration == 30, 'your cast restarts it')
+    cd.isOnGCD = true
+    assert(p:GetSpellCooldown(1) == nil, 'a global cooldown is not remembered')
+    assert(env)
+end)
+
 finish()

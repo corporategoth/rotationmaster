@@ -115,6 +115,7 @@ local incompatibleBranchFields = {
     ranked = true,
     use_name = true,
     suppress_attack = true,
+    gate = true,
     effect = true,
     color = true,
     magnification = true,

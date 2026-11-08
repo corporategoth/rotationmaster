@@ -22,9 +22,9 @@
     "name": "Claude (AI draft)",
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
-    "strings": 8,
+    "strings": 69,
     "first": "2026-11-01",
-    "last": "2026-11-01"
+    "last": "2026-11-08"
    }
   ],
   "help": [
@@ -43,6 +43,14 @@
     "strings": 1,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "conditions": [
@@ -61,6 +69,14 @@
     "strings": 2,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "diagnostics": [
@@ -69,6 +85,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 106
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "integrations": [
@@ -77,6 +101,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 118
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "class-shaman": [
@@ -258,9 +290,9 @@
     "name": "Claude (AI draft)",
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
-    "strings": 8,
+    "strings": 69,
     "first": "2026-11-01",
-    "last": "2026-11-01"
+    "last": "2026-11-08"
    }
   ],
   "help": [
@@ -279,6 +311,14 @@
     "strings": 1,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "conditions": [
@@ -297,6 +337,14 @@
     "strings": 2,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "diagnostics": [
@@ -305,6 +353,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 106
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "integrations": [
@@ -313,6 +369,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 118
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "class-shaman": [
@@ -494,9 +558,9 @@
     "name": "Claude (AI draft)",
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
-    "strings": 8,
+    "strings": 69,
     "first": "2026-11-01",
-    "last": "2026-11-01"
+    "last": "2026-11-08"
    }
   ],
   "help": [
@@ -515,6 +579,14 @@
     "strings": 1,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "conditions": [
@@ -533,6 +605,14 @@
     "strings": 2,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "diagnostics": [
@@ -541,6 +621,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 106
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "integrations": [
@@ -549,6 +637,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 118
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "class-shaman": [
@@ -730,9 +826,9 @@
     "name": "Claude (AI draft)",
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
-    "strings": 8,
+    "strings": 69,
     "first": "2026-11-01",
-    "last": "2026-11-01"
+    "last": "2026-11-08"
    }
   ],
   "help": [
@@ -751,6 +847,14 @@
     "strings": 1,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "conditions": [
@@ -769,6 +873,14 @@
     "strings": 2,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "diagnostics": [
@@ -777,6 +889,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 106
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "integrations": [
@@ -785,6 +905,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 118
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "class-shaman": [
@@ -966,9 +1094,9 @@
     "name": "Claude (AI draft)",
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
-    "strings": 8,
+    "strings": 69,
     "first": "2026-11-01",
-    "last": "2026-11-01"
+    "last": "2026-11-08"
    }
   ],
   "help": [
@@ -987,6 +1115,14 @@
     "strings": 1,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "conditions": [
@@ -1005,6 +1141,14 @@
     "strings": 2,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "diagnostics": [
@@ -1013,6 +1157,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 106
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "integrations": [
@@ -1021,6 +1173,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 118
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "class-shaman": [
@@ -1202,9 +1362,9 @@
     "name": "Claude (AI draft)",
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
-    "strings": 8,
+    "strings": 69,
     "first": "2026-11-01",
-    "last": "2026-11-01"
+    "last": "2026-11-08"
    }
   ],
   "help": [
@@ -1223,6 +1383,14 @@
     "strings": 1,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "conditions": [
@@ -1241,6 +1409,14 @@
     "strings": 2,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "diagnostics": [
@@ -1249,6 +1425,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 106
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "integrations": [
@@ -1257,6 +1441,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 118
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "class-shaman": [
@@ -1438,9 +1630,9 @@
     "name": "Claude (AI draft)",
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
-    "strings": 8,
+    "strings": 69,
     "first": "2026-11-01",
-    "last": "2026-11-01"
+    "last": "2026-11-08"
    }
   ],
   "help": [
@@ -1459,6 +1651,14 @@
     "strings": 1,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "conditions": [
@@ -1477,6 +1677,14 @@
     "strings": 2,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "diagnostics": [
@@ -1485,6 +1693,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 106
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "integrations": [
@@ -1493,6 +1709,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 118
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "class-shaman": [
@@ -1674,9 +1898,9 @@
     "name": "Claude (AI draft)",
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
-    "strings": 8,
+    "strings": 69,
     "first": "2026-11-01",
-    "last": "2026-11-01"
+    "last": "2026-11-08"
    }
   ],
   "help": [
@@ -1695,6 +1919,14 @@
     "strings": 1,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "conditions": [
@@ -1713,6 +1945,14 @@
     "strings": 2,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "diagnostics": [
@@ -1721,6 +1961,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 106
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "integrations": [
@@ -1729,6 +1977,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 118
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "class-shaman": [
@@ -1910,9 +2166,9 @@
     "name": "Claude (AI draft)",
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
-    "strings": 8,
+    "strings": 69,
     "first": "2026-11-01",
-    "last": "2026-11-01"
+    "last": "2026-11-08"
    }
   ],
   "help": [
@@ -1931,6 +2187,14 @@
     "strings": 1,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "conditions": [
@@ -1949,6 +2213,14 @@
     "strings": 2,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "diagnostics": [
@@ -1957,6 +2229,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 106
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "integrations": [
@@ -1965,6 +2245,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 118
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "class-shaman": [
@@ -2146,9 +2434,9 @@
     "name": "Claude (AI draft)",
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
-    "strings": 8,
+    "strings": 69,
     "first": "2026-11-01",
-    "last": "2026-11-01"
+    "last": "2026-11-08"
    }
   ],
   "help": [
@@ -2167,6 +2455,14 @@
     "strings": 1,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "conditions": [
@@ -2185,6 +2481,14 @@
     "strings": 2,
     "first": "2026-10-29",
     "last": "2026-10-29"
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "diagnostics": [
@@ -2193,6 +2497,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 106
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "integrations": [
@@ -2201,6 +2513,14 @@
     "kind": "ai",
     "note": "AI-assisted, not yet reviewed by a native speaker",
     "strings": 118
+   },
+   {
+    "name": "Claude (AI draft)",
+    "kind": "ai",
+    "note": "AI-assisted, not yet reviewed by a native speaker",
+    "strings": 59,
+    "first": "2026-11-08",
+    "last": "2026-11-08"
    }
   ],
   "class-shaman": [

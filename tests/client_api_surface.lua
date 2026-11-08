@@ -54,6 +54,16 @@ local GUARDED = {
             'init.lua', 'main.lua'
         },
     },
+    UnitIsBossMob = {
+        'Retail and Forever only; read behind type(UnitIsBossMob) == "function", and BOSS then falls back to World Boss and skull-level elites.',
+        { 'Platform/unit_rank.lua', 'Diagnostics/secrets.lua' },
+        clients = { mists = true, tbc = true, era = true },
+    },
+    C_SwingTimer = {
+        'Forever only; read behind type(C_SwingTimer) == "table", and NEXT_SWING is unsupported where it is missing.',
+        { 'Platform/swing_timer.lua' },
+        clients = { retail = true, mists = true, tbc = true, era = true },
+    },
     IsPassiveSpell = {
         'Legacy spellbook scan only (no C_SpellBook.GetSpellBookItemInfo); the modern scan reads isPassive from the record.',
         { 'Platform/spellbook.lua' },

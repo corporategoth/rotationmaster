@@ -344,6 +344,29 @@ function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
     end
 end
 
+-- Buttons whose glow sits beside them rather than inside them, weakly keyed. Forever's gamepad bar buttons are among
+-- them: a child frame on one tainted the game's gamepad targeting (Glowing Bars' finding), so their overlay is a
+-- UIParent frame anchored to the button that hides with it.
+local besideButtons = setmetatable({}, { __mode = 'k' })
+local besideHooked = setmetatable({}, { __mode = 'k' })
+
+-- Marks a button whose glow must sit beside it (a UIParent overlay anchored to it) instead of inside it. Forever's
+-- gamepad buttons are marked by the bar scan; a registered button provider can mark its own.
+-- @param button table  The button frame.
+-- @param beside boolean|nil  True to glow beside it; false or nil to glow inside it (the default).
+function addon:SetGlowBeside(button, beside)
+    if type(button) == 'table' then
+        besideButtons[button] = beside == true or nil
+    end
+end
+
+-- The frame an overlay is placed on and sized from: its button.
+-- @param frame table  The overlay frame.
+-- @return table  The button (rmAnchor for an overlay beside its button, else the parent).
+local function anchorOf(frame)
+    return frame.rmAnchor or frame:GetParent()
+end
+
 -- Marks an overlay frame as needing a full repaint and bumps its generation.
 -- @param frame table  The overlay frame.
 --
@@ -352,6 +375,32 @@ local function InvalidateOverlay(frame)
     frame.rmOverlayGeneration = (frame.rmOverlayGeneration or 0) + 1
     frame.rmOverlayDirty = true
     frame.rmOverlayParent = nil
+end
+
+-- The last readable size of each button an overlay sits on, weakly keyed so buttons can be collected.
+local readableSizes = setmetatable({}, { __mode = 'k' })
+
+-- Reads a button's width or height for sizing an overlay. Forever hides a protected button's geometry in combat (a
+-- secret value, which cannot be multiplied or compared; Glowing Bars 1.2.0 hit it), so the last readable size is kept
+-- per button and used instead.
+-- @param button table  The frame the overlay sits on.
+-- @param getter string  'GetWidth' or 'GetHeight'.
+-- @return number  The readable size; else the last one read for this button; else 36, a standard action button.
+local function readableSize(button, getter)
+    local sizes = readableSizes[button]
+    local ok, size = pcall(button[getter], button)
+
+    if ok and addon.Platform:CanReadValue(size) and type(size) == 'number' and size == size then
+        if not sizes then
+            sizes = {}
+            readableSizes[button] = sizes
+        end
+
+        sizes[getter] = size
+        return size
+    end
+
+    return sizes and sizes[getter] or 36
 end
 
 -- Paints one frame of a texture overlay: anchor, size, color, texture and rotation.
@@ -373,7 +422,7 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
     -- keep the complete legacy write path; sample the script each tick so late
     -- registration is covered without an observer or new subscription.
     local sizeScript = frame:GetScript('OnSizeChanged') ~= nil
-    local parent = frame:GetParent()
+    local parent = anchorOf(frame)
 
     if frame.rmOverlayGeneration ~= generation then
         return false
@@ -398,7 +447,7 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
             return false
         end
 
-        parent = frame:GetParent()
+        parent = anchorOf(frame)
 
         if frame.rmOverlayGeneration ~= generation then
             return false
@@ -413,7 +462,7 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
         frame.rmOverlayParent, frame.rmOverlayPoint = parent, setp
         frame.rmOverlayX, frame.rmOverlayY = xoffs, yoffs
         -- Anchor setters can invoke native callbacks which reparent the frame.
-        parent = frame:GetParent()
+        parent = anchorOf(frame)
 
         if frame.rmOverlayGeneration ~= generation then
             return false
@@ -421,7 +470,7 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
     end
 
     local sizeChanged = false
-    local width = parent:GetWidth() * (mags or 1.0)
+    local width = readableSize(parent, 'GetWidth') * (mags or 1.0)
 
     if frame.rmOverlayGeneration ~= generation then
         return false
@@ -436,7 +485,7 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
         end
 
         sizeChanged = true
-        parent = frame:GetParent()
+        parent = anchorOf(frame)
 
         if frame.rmOverlayGeneration ~= generation then
             return false
@@ -445,7 +494,7 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
 
     -- Size setters can dispatch native OnSizeChanged callbacks. Read later
     -- inputs only after those callbacks, just as the original renderer did.
-    local height = parent:GetHeight() * (mags or 1.0)
+    local height = readableSize(parent, 'GetHeight') * (mags or 1.0)
 
     if frame.rmOverlayGeneration ~= generation then
         return false
@@ -671,8 +720,8 @@ local function StartNativeOverlay(frame, effect, color, mags, setp, xoffs, yoffs
     end
 
     StopNativeOverlay(frame)
-    local parent = frame:GetParent()
-    local width, height = parent:GetWidth(), parent:GetHeight()
+    local parent = anchorOf(frame)
+    local width, height = readableSize(parent, 'GetWidth'), readableSize(parent, 'GetHeight')
     frame:ClearAllPoints()
     frame:SetPoint("CENTER", parent, setp, xoffs, yoffs)
     frame:SetSize(width, height)
@@ -1026,19 +1075,45 @@ end
 -- Callers also pass the string id of the overlay (a frame can have multiple overlays); this function does not use it.
 local function CreateOverlay(parent)
     local frame = tremove(FramePool)
+    local beside = besideButtons[parent] == true
+    local holder = beside and UIParent or parent
 
     if not frame then
-        frame = CreateFrame('Frame', addon_name .. '_Overlay_' .. addon.uuid(), parent)
+        frame = CreateFrame('Frame', addon_name .. '_Overlay_' .. addon.uuid(), holder)
     else
-        frame:SetParent(parent)
+        frame:SetParent(holder)
     end
 
+    frame.rmAnchor = beside and parent or nil
     InvalidateOverlay(frame)
 
     frame:SetFrameStrata(parent.GetFrameStrata and parent:GetFrameStrata() or 'HIGH')
 
     if frame.SetFrameLevel and parent.GetFrameLevel then
-        frame:SetFrameLevel(parent:GetFrameLevel() + 1)
+        frame:SetFrameLevel(parent:GetFrameLevel() + (beside and 6 or 1))
+    end
+
+    -- An overlay beside its button follows the button's visibility (hooked once per button).
+    if beside and not besideHooked[parent] and parent.HookScript then
+        besideHooked[parent] = true
+
+        parent:HookScript('OnHide', function(button)
+            for _, overlay in pairs(button.rmOverlays or {}) do
+                if overlay.rmAnchor == button and overlay:IsShown() then
+                    overlay.rmHiddenWithAnchor = true
+                    overlay:Hide()
+                end
+            end
+        end)
+
+        parent:HookScript('OnShow', function(button)
+            for _, overlay in pairs(button.rmOverlays or {}) do
+                if overlay.rmAnchor == button and overlay.rmHiddenWithAnchor then
+                    overlay.rmHiddenWithAnchor = nil
+                    overlay:Show()
+                end
+            end
+        end)
     end
 
     local t = frame.texture
@@ -1068,8 +1143,8 @@ local function DestroyOverlay(frame, id)
         return
     end
 
-    if frame:GetParent().rmOverlays ~= nil and frame:GetParent().rmOverlays[id] then
-        frame:GetParent().rmOverlays[id] = nil
+    if anchorOf(frame).rmOverlays ~= nil and anchorOf(frame).rmOverlays[id] then
+        anchorOf(frame).rmOverlays[id] = nil
     end
 
     frame:ClearAllPoints()
@@ -2378,6 +2453,65 @@ local function FetchBlizzard()
     end
 end
 
+-- The shaman totem bar (Classic families), DaylightUI's bars and Forever's gamepad bars. The gamepad buttons are found
+-- under GamepadMainActionBarFrame (their names vary), only while that frame is shown: outside gamepad mode it stays
+-- loaded, hidden, with stale slots. Their glow sits beside them (besideButtons).
+local function FetchExtraBars()
+    for i = 1, 12 do
+        AddStandardButton(rawget(_G, 'MultiCastActionButton' .. i))
+    end
+
+    for bar = 1, 8 do
+        for i = 1, 12 do
+            AddStandardButton(rawget(_G, 'DaylightUIBar' .. bar .. 'Button' .. i))
+        end
+    end
+
+    local root = rawget(_G, 'GamepadMainActionBarFrame')
+
+    if type(root) ~= 'table' or type(root.GetChildren) ~= 'function' then
+        return
+    end
+
+    if not besideHooked[root] and root.HookScript then
+        besideHooked[root] = true
+
+        -- Gamepad mode coming or going changes which buttons are on screen.
+        local function rescan()
+            if type(addon.ButtonFetch) == 'function' then
+                addon:ButtonFetch()
+            end
+        end
+
+        root:HookScript('OnShow', rescan)
+        root:HookScript('OnHide', rescan)
+    end
+
+    if not root:IsVisible() then
+        return
+    end
+
+    -- Collects the action buttons under a frame, at most six levels deep.
+    -- @param frame table  The frame whose children are searched.
+    -- @param depth number  How deep this frame is under the gamepad bar.
+    local function collect(frame, depth)
+        if depth > 6 then
+            return
+        end
+
+        for _, child in ipairs({ frame:GetChildren() }) do
+            if type(rawget(child, 'action')) == 'number' then
+                addon:SetGlowBeside(child, true)
+                AddStandardButton(child)
+            elseif type(child.GetChildren) == 'function' then
+                collect(child, depth + 1)
+            end
+        end
+    end
+
+    collect(root, 0)
+end
+
 -- ElvUI's pet bar (its action buttons come through LibActionButton).
 local function FetchElvUIPet()
     for i = 1, 10 do
@@ -2456,6 +2590,7 @@ function addon:Fetch()
     end
 
     FetchBlizzard()
+    FetchExtraBars()
 
     -- It does not alter original button frames so it needs to be fetched too
     if IsAddOnLoaded('Bartender4') then
@@ -2697,6 +2832,27 @@ function addon:ExplainStepBinding(step)
     end
 
     return result
+end
+
+-- The spell ids on the indexed action bars, rebuilt once per bar scan. Platform/range.lua probes their ranges when
+-- LibRangeCheck cannot bracket a distance.
+local barSpellIds, barSpellStamp = {}, nil
+
+-- Lists the spell ids on the action bars.
+-- @return table  An array of spell ids, owned by this file; do not modify it.
+function addon:GetBarSpellIds()
+    if barSpellStamp ~= FetchCount then
+        barSpellIds = {}
+
+        for id in pairs(Spells) do
+            barSpellIds[#barSpellIds + 1] = id
+        end
+
+        table.sort(barSpellIds)
+        barSpellStamp = FetchCount
+    end
+
+    return barSpellIds
 end
 
 -- Describes what the last scan holds, for the same report.
@@ -3192,6 +3348,71 @@ end
 
 if type(publishActivePresentation) == 'function' then
     publishActivePresentation(addon, addon.GlowCooldown, getfenv(1))
+end
+
+-- Gated glows: the steps whose display gate the game decides this poll (Platform/gates.lua), by spell id.
+local gatedGlows = {}
+
+-- Whether any gated glow is lit, so a poll with no gated step can skip SetGatedGlows.
+-- @return boolean  True while a gated glow is lit.
+function addon:HasGatedGlows()
+    return next(gatedGlows) ~= nil
+end
+
+-- Lights a glow (key 'gated') on the buttons of each gated step and lets the game set its visibility: the overlay's
+-- alpha is the gate's secret 0 or 1 (Platform:GetGateAlphas). Gated steps no longer listed lose their glow. Called
+-- by both engines on a poll that has a gated step or still shows one; an overlay is re-lit only when it is missing or hidden, so its animation keeps running.
+-- @param entries table  Array of { spellId, itemId, gate }; empty to clear them all.
+function addon:SetGatedGlows(entries)
+    local seen, profile = {}, self.db.profile
+
+    for _, entry in ipairs(entries) do
+        local spellId = entry.spellId
+        seen[spellId] = true
+        local buttons = Spells[spellId] or {}
+        local lit = gatedGlows[spellId] ~= nil
+
+        for _, button in pairs(buttons) do
+            local overlay = button.rmOverlays and button.rmOverlays.gated
+
+            if not overlay or not overlay:IsShown() then
+                lit = false
+            end
+        end
+
+        if not lit then
+            GlowIndependent(
+                spellId,
+                'gated',
+                profile.effect,
+                profile.color,
+                profile.magnification,
+                profile.setpoint,
+                profile.xoffs,
+                profile.yoffs,
+                profile.angle,
+                entry.itemId
+            )
+        end
+
+        gatedGlows[spellId] = true
+        local alpha = self.Platform:GetGateAlphas(entry.gate)
+
+        for _, button in pairs(buttons) do
+            local overlay = button.rmOverlays and button.rmOverlays.gated
+
+            if overlay and not (alpha ~= nil and pcall(overlay.SetAlpha, overlay, alpha)) then
+                overlay:SetAlpha(0)
+            end
+        end
+    end
+
+    for spellId in pairs(gatedGlows) do
+        if not seen[spellId] then
+            ClearGlowIndependent(spellId, 'gated')
+            gatedGlows[spellId] = nil
+        end
+    end
 end
 
 -- Lights the recommendation glow (key 'next') on every button holding a spell.

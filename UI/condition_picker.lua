@@ -157,6 +157,9 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
                 selectType(tag)
             end)
 
+            -- The hover tip says where the game hides this condition's data on a restricted client
+            -- (Core/condition_restrictions.lua); the workbench button shows `tooltip` on hover.
+            row.tooltip = addon.DescribeConditionRestrictions and addon:DescribeConditionRestrictions(tag) or nil
             row:Show()
         end
 

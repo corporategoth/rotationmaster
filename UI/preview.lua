@@ -129,6 +129,25 @@ function addon:CreateNativePreviewWindow()
                 icon = CreateFrame('Button', nil, self.frame)
                 icon.texture = icon:CreateTexture(nil, 'ARTWORK')
                 icon.texture:SetAllPoints(icon)
+
+                -- The spell's cooldown swipe, global cooldown included, as on an action button.
+                local made, cooldown = pcall(CreateFrame, 'Cooldown', nil, icon, 'CooldownFrameTemplate')
+
+                if made and cooldown then
+                    cooldown:SetAllPoints(icon)
+                    cooldown:SetFrameLevel(icon:GetFrameLevel() + 3)
+                    cooldown:Hide()
+                    icon.cooldown = cooldown
+                end
+
+                -- A gated step drawn over this icon, its visibility decided by the game (AddGatedRecommendation).
+                icon.gateFrame = CreateFrame('Frame', nil, icon)
+                icon.gateFrame:SetAllPoints(icon)
+                icon.gateFrame:SetFrameLevel(icon:GetFrameLevel() + 4)
+                icon.gateTexture = icon.gateFrame:CreateTexture(nil, 'ARTWORK')
+                icon.gateTexture:SetAllPoints(icon.gateFrame)
+                icon.gateFrame:Hide()
+
                 icon:Hide()
                 self.icons[index] = icon
                 -- Icons already take the mouse for tooltips. Left-drag moves an
@@ -158,6 +177,7 @@ function addon:CreateNativePreviewWindow()
         function window:ReleaseChildren()
             self.count = 0
             self.sampleCount = 0
+            self.pendingGate = nil
 
             for _, icon in ipairs(self.icons) do
                 if GameTooltip and GameTooltip:IsOwned(icon) then
@@ -165,6 +185,12 @@ function addon:CreateNativePreviewWindow()
                 end
 
                 icon:Hide()
+
+                if icon.cooldown then
+                    icon.cooldown:Hide()
+                end
+
+                addon:ClearPreviewGate(icon)
                 icon.sample, icon.spellId, icon.itemId = nil, nil, nil
                 addon:SetUIScript(icon, 'OnEnter', nil)
                 addon:SetUIScript(icon, 'OnLeave', nil)
@@ -399,6 +425,13 @@ function addon:CreateNativePreviewWindow()
                 icon.masqueSurface.texture:SetTexture(info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark')
             end
 
+            addon:ShowPreviewCooldown(icon, spellId, itemId)
+
+            if self.pendingGate then
+                addon:ShowPreviewGate(icon, self.pendingGate)
+                self.pendingGate = nil
+            end
+
             local generation = self.generation
 
             addon:SetUIScript(icon, 'OnEnter', function()
@@ -501,6 +534,45 @@ function addon:CreateNativePreviewWindow()
 
         nativeAddRecommendation = window.AddRecommendation
 
+        -- Holds a step with a display gate the client hides (main.lua, Platform/gates.lua): it is drawn over the next
+        -- recommendation's icon, and the game's curve output decides which of the two shows. One with nothing after it
+        -- shows on its own at ResumeLayout. Never the bar glow: such a step can only be shown here.
+        -- @param spellId number  The gated step's spell.
+        -- @param itemId number|nil  Its item, when the step is an item.
+        -- @param gate table  The step's gate.
+        function window:AddGatedRecommendation(spellId, itemId, gate)
+            if not self:Valid() then
+                return
+            end
+
+            self:FlushGate()
+            self.pendingGate = { spellId = spellId, itemId = itemId, gate = gate }
+        end
+
+        -- Shows a held gated step in a slot of its own (nothing followed it), when there is room.
+        function window:FlushGate()
+            local pending = self.pendingGate
+            self.pendingGate = nil
+
+            if not pending or not self:Valid() or self.count >= self.slots then
+                return
+            end
+
+            self.count = self.count + 1
+            ---@type any
+            local icon = self:EnsureIcon(self.count)
+            icon.spellId, icon.itemId = pending.spellId, pending.itemId
+            icon.texture:SetTexture(nil)
+
+            if icon.masqueOwner then
+                icon.masqueSurface.texture:SetTexture(nil)
+            end
+
+            addon:ShowPreviewGate(icon, pending)
+            icon:Show()
+            self:DoLayout()
+        end
+
         -- Starts a publication batch: no sample icons are painted until ResumeLayout.
         function window:PauseLayout()
             self.sampleBatch = true
@@ -512,6 +584,8 @@ function addon:CreateNativePreviewWindow()
 
         -- Ends a publication batch and repaints samples if nothing real was shown.
         function window:ResumeLayout()
+            self:FlushGate()
+            addon:UpdatePreviewHealthBar(self)
             self.sampleBatch = false
 
             if sampleProfile == self.profile then
@@ -796,6 +870,146 @@ function addon:CreateNativePreviewWindow()
 
     window.frame:Show()
     return window
+end
+
+-- Draws (or hides) a preview icon's cooldown swipe from Platform:GetSpellCooldownDisplay. Items show none. The
+-- Cooldown setters are documented as protected, so every call is guarded; a refused call just hides the swipe.
+-- @param icon table  The preview icon.
+-- @param spellId number  The recommended spell.
+-- @param itemId number|nil  The item, when the recommendation is an item.
+function addon:ShowPreviewCooldown(icon, spellId, itemId)
+    local cooldown = icon.cooldown
+
+    if not cooldown then
+        return
+    end
+
+    local kind, value, duration, rate
+
+    if not itemId and self.Platform.GetSpellCooldownDisplay then
+        kind, value, duration, rate = self.Platform:GetSpellCooldownDisplay(spellId)
+    end
+
+    local shown = false
+
+    if kind == 'duration' and type(cooldown.SetCooldownFromDurationObject) == 'function' then
+        shown = pcall(cooldown.SetCooldownFromDurationObject, cooldown, value, true)
+    elseif kind == 'times' and type(cooldown.SetCooldown) == 'function' then
+        shown = pcall(cooldown.SetCooldown, cooldown, value, duration, rate)
+    end
+
+    if shown then
+        cooldown:Show()
+    else
+        cooldown:Hide()
+    end
+end
+
+-- Draws a gated step over a preview icon. The gate's alpha pair comes from the game (Platform:GetGateAlphas, secret 0
+-- or 1 values RM never reads): the gated icon takes one, the icon under it the other. Where the client cannot do this,
+-- the gated icon is left hidden, so the next recommendation shows as it would without the gated step.
+-- @param icon table  The preview icon.
+-- @param pending table  { spellId, itemId, gate }.
+function addon:ShowPreviewGate(icon, pending)
+    local frame, texture = icon.gateFrame, icon.gateTexture
+
+    if not frame then
+        return
+    end
+
+    local info
+
+    if pending.itemId then
+        info = self.Platform:GetItemDisplayInfo(pending.itemId)
+    else
+        info = self.Platform:GetSpellInfo(pending.spellId)
+    end
+
+    local alpha, inverse = self.Platform:GetGateAlphas(pending.gate)
+
+    if alpha == nil then
+        frame:Hide()
+        return
+    end
+
+    texture:SetTexture(info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark')
+    local shown = pcall(texture.SetAlpha, texture, alpha)
+    local under = icon.masqueOwner and icon.masqueSurface and icon.masqueSurface.texture or icon.texture
+
+    if shown and pcall(under.SetAlpha, under, inverse) then
+        icon.gated = true
+        frame:Show()
+    else
+        pcall(under.SetAlpha, under, 1)
+        frame:Hide()
+    end
+end
+
+-- Shows your target's health as a thin bar under the preview window when profile.preview_target_health is on. The
+-- values go straight to the StatusBar (Platform:GetUnitHealthPassthrough), so the bar shows real health in combat on
+-- Retail and Forever, where RM itself cannot read it. Hidden without a target or with the option off.
+-- @param window table  The preview window.
+function addon:UpdatePreviewHealthBar(window)
+    local bar = window.healthBar
+    local wanted = window.profile and window.profile.preview_target_health == true
+
+    if not wanted then
+        if bar then
+            bar:Hide()
+        end
+
+        return
+    end
+
+    if not bar then
+        local made, created = pcall(CreateFrame, 'StatusBar', nil, window.frame)
+
+        if not made or not created then
+            return
+        end
+
+        bar = created
+        bar:SetPoint('TOPLEFT', window.frame, 'BOTTOMLEFT', 0, -2)
+        bar:SetPoint('TOPRIGHT', window.frame, 'BOTTOMRIGHT', 0, -2)
+        bar:SetHeight(6)
+
+        if bar.SetStatusBarTexture then
+            pcall(bar.SetStatusBarTexture, bar, 'Interface\\TargetingFrame\\UI-StatusBar')
+        end
+        if bar.SetStatusBarColor then
+            bar:SetStatusBarColor(.2, .8, .2)
+        end
+
+        window.healthBar = bar
+    end
+
+    local current, maximum = self.Platform:GetUnitHealthPassthrough('target')
+
+    if current ~= nil and pcall(bar.SetMinMaxValues, bar, 0, maximum) and pcall(bar.SetValue, bar, current) then
+        bar:Show()
+    else
+        bar:Hide()
+    end
+end
+
+-- Removes a gated step from a preview icon and restores the icon under it.
+-- @param icon table  The preview icon.
+function addon:ClearPreviewGate(icon)
+    if icon.gateFrame then
+        icon.gateFrame:Hide()
+    end
+
+    if not icon.gated then
+        return
+    end
+
+    icon.gated = nil
+
+    for _, texture in ipairs({ icon.texture, icon.masqueSurface and icon.masqueSurface.texture }) do
+        if texture and texture.SetAlpha then
+            texture:SetAlpha(1)
+        end
+    end
 end
 
 -- Shifts a saved preview position once per profile after the window lost its 20-pixel title bar, so the icons stay

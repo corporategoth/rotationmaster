@@ -89,6 +89,59 @@ answer cannot be read, which counts as restricted) is checked live: health and
 power then read normally. The answer is read at validation; validation
 results are cached by the validation stamp.
 
+## Where the game hides a supported condition
+
+A condition marked C works, but is unavailable while the game hides its data.
+`Core/condition_restrictions.lua` lists, per condition, the situations its
+predicate names. The editor shows them as a note under the condition's fields
+and as the hover tip in the condition picker:
+
+| Note | Predicate | Conditions |
+|---|---|---|
+| In combat, boss encounters, Mythic+ and PvP matches | `SecretWhenUnitAuraRestricted`, `SecretWhenCooldownsRestricted`, `SecretWhenTotemSlotSecret` | BUFF, BUFF_REMAIN, BUFF_STACKS, DEBUFF, DEBUFF_REMAIN, DEBUFF_STACKS, DISPELLABLE, STEALABLE, SPELL_COOLDOWN, SPELL_CHARGES, SPELL_REMAIN, the ANYSPELL_ and PETSPELL_ cooldown, charges and remaining forms, TOTEM, TOTEM_REMAIN, TOTEM_SPELL, TOTEM_SPELL_REMAIN |
+| In combat | `SecretWhenUnitStatsRestricted` (secret in combat per Hekili Forever's probes) | STAT, SWING_TIME |
+| For units that are not you, your pet or in your group | `SecretWhenUnitIdentityRestricted`, `SecretWhenUnitNameIdentityRestricted` | CLASS, CREATURE, PVP, IMMUNE, RESIST, RUNNER |
+| For anyone but you and your pet | `SecretWhenUnitSpellCastRestricted` | CASTING_SPELL, CASTING_REMAIN, CASTING_PROGRESS, CAST_INTERRUPTABLE and the CHANNELING twins |
+| In dungeons and raids | `SecretWhenUnitComparisonRestricted` (restricted maps); `UnitPosition` is nil there | ISSAME, PROXIMITY |
+
+A unit-bound note is left out when the condition's unit is you, your pet or a
+group unit type. For a condition saved with a spell ID, `C_Secrets`
+`GetSpellAuraSecrecy`, `GetSpellCooldownSecrecy` or `GetSpellCastSecrecy`
+refines the note: `NeverSecret` (0) removes it, `AlwaysSecret` (1) replaces it
+with "the game always hides this for the chosen spell", and an unreadable or
+contextual (2) level keeps it. The situations are Blizzard's
+`Enum.AddOnRestrictionType` (Combat, Encounter, ChallengeMode, PvPMatch, Map),
+readable live through `C_RestrictedActions.IsAddOnRestrictionActive` and
+`ADDON_RESTRICTION_STATE_CHANGED`; RM does not read the live state, since a
+hidden value already makes the condition unavailable at that poll.
+
+An empty aura list is not always proof of absence. Glowing Bars (Forever)
+records that in combat the game can hand back an empty list of the player's
+auras rather than secret entries. So while `C_Secrets.ShouldAurasBeSecret()` is
+true (or unreadable), an aura condition on `player` whose scan finds no aura at
+all is unavailable (`auras-hidden`) instead of false
+(`Platform:AreAurasHidden`, `Core/aura_conditions.lua`). A list with readable
+entries, other units, and clients without the API are unchanged. This is
+unverified in game on RM's side.
+
+## What still answers while the game hides a value
+
+These sources stay readable on Retail and Forever, so RM uses them where the direct read is secret. `/rm debug secrets`
+(`Diagnostics/secrets.lua`) reports what each one reads in game and which conditions were unavailable how often.
+
+| Fallback | Source | Used by | Limits |
+|---|---|---|---|
+| Movement events | `PLAYER_STARTED_MOVING` / `PLAYER_STOPPED_MOVING`, last readable `GetUnitSpeed` (`Platform/player_movement.lua`) | MOVING, Ignore Moving | the speed while moving is the last readable one, marked `estimated` |
+| Cooldown Manager | buff viewer items' `auraInstanceID` presence (`Platform/cooldown_viewer.lua`; Hekili Forever measured it) | BUFF/DEBUFF presence on `player` and `target` for a spell saved by ID | only auras tracked in Blizzard's Cooldown Manager; presence only; a "down" on the target counts for your own debuff only |
+| Remembered values (opt-in, `remember_hidden`) | last readable aura (`Platform/auras.lua`) and cooldown (`Platform/spells.lua`), restarted by your own `UNIT_SPELLCAST_SUCCEEDED` (`Platform/memory.lua`) | BUFF, BUFF_REMAIN, BUFF_STACKS on `player`; SPELL_COOLDOWN and the conditions reading `GetSpellCooldown` | can be stale after a dispel or a reset; readiness keeps the never-secret cooldown flags only |
+| Totem events | `PLAYER_TOTEM_UPDATE` after your cast, last readable `GetTotemInfo` (`Platform/totems.lua`) | the TOTEM conditions | needs the totem's duration from an earlier readable read |
+| Interruptible events | `UNIT_SPELLCAST_INTERRUPTIBLE` / `NOT_INTERRUPTIBLE` (`Platform/casting.lua`) | CAST_INTERRUPTABLE, CHANNEL_INTERRUPTABLE | known only after a change during the cast |
+| Spell range bracket | `C_Spell.GetSpellInfo` ranges and the in-range answers of the spells on your bars (`Platform/range.lua`) | DISTANCE, when LibRangeCheck gives no answer or an open-ended one | as fine as the ranges on your bars |
+| Game swing timer | `PLAYER_SWING` (`Platform/swing_timer.lua`) | NEXT_SWING (Forever only) | none known |
+| Usable answer | `C_Spell.IsSpellUsable` | SPELL_USABLE | none known |
+| Display gates | `UnitHealthPercent` / `UnitPowerPercent` through a step curve into `SetAlpha` (`Platform/gates.lua`) | a step's "Shown by the game when", in the preview window and as a gated glow | display only: the rotation cannot branch on it |
+| Health passthrough | `UnitHealth` / `UnitHealthMax` into a StatusBar | the preview's target health bar (`preview_target_health`) | display only |
+
 ## Per condition
 
 Retail and Forever share every classification below unless the row says
@@ -113,6 +166,7 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `BOSSMOD_ENCOUNTER` | boss mod addon state | n/a (edition gate) | n/a (edition gate) | `bossmodFamilies` | n/a |
 | `BOSSMOD_STAGE` | boss mod addon state | n/a (edition gate) | n/a (edition gate) | `bossmodFamilies` | n/a |
 | `BOSSMOD_TIMER` | boss mod addon state | n/a (edition gate) | n/a (edition gate) | `bossmodFamilies` | n/a |
+| `BOSS` | `UnitClassification`, `UnitIsBossMob` (Retail and Forever only; elsewhere World Boss and skull-level elites), `UnitLevel` | N | N | no annotation | n/a |
 | `BUFF` | `C_UnitAuras.GetAuraDataByIndex` `name`/`spellId`/`sourceUnit` | C (auras restricted, per spell) | C | `SecretWhenUnitAuraRestricted`, `RequiresUnitAuraAccess` | unavailable |
 | `BUFF_REMAIN` | aura `expirationTime` | C | C | `SecretWhenUnitAuraRestricted` | unavailable |
 | `BUFF_STACKS` | aura `applications` | C | C | `SecretWhenUnitAuraRestricted` | unavailable |
@@ -122,6 +176,7 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `CASTING_REMAIN` | `UnitCastingInfo` `endTimeMs` | C | C | `SecretWhenUnitSpellCastRestricted` | unavailable |
 | `CASTING_SPELL` | `UnitCastingInfo` `name`/`castingSpellID` | C | C | `SecretWhenUnitSpellCastRestricted`; spell ID readable in game | unavailable |
 | `CAST_INTERRUPTABLE` | `UnitCastingInfo` `notInterruptible` | C | C | `SecretWhenUnitSpellCastRestricted` | unavailable |
+| `CASTING_ANY` | `UnitCastingInfo` and `UnitChannelInfo` presence | C (presence still proven by a secret name) | C | `SecretWhenUnitSpellCastRestricted` | a secret name still means casting or channeling |
 | `CHANNELING` | `UnitChannelInfo` presence | C (presence still proven by a secret name) | C | `SecretWhenUnitSpellCastRestricted` | a secret name still means channeling |
 | `CHANNELING_PROGRESS` | `UnitChannelInfo` times | C | C | `SecretWhenUnitSpellCastRestricted` | unavailable |
 | `CHANNELING_REMAIN` | `UnitChannelInfo` `endTimeMs` | C | C | `SecretWhenUnitSpellCastRestricted` | unavailable |
@@ -143,6 +198,8 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `DISTANCE_COUNT` | `NAME_PLATE_UNIT_ADDED/REMOVED` tokens, `UnitExists`, `UnitIsEnemy`, LibRangeCheck, `nameplateMaxDistance`; with In Combat, `UnitAffectingCombat` of each counted token | C (nameplate tokens; an NPC GUID is secret, so no GUID is read) | C | events carry no annotation; `UnitGUID` `SecretWhenUnitIdentityRestricted`; `UnitAffectingCombat` is `SecretArguments` only, its answer plain (still read through `CanReadValue`; unverified in game) | unavailable |
 | `ECLIPSE` | `GetEclipseDirection` (direction), `UnitPower("player", Enum.PowerType.Balance)` (energy), `UnitClass` | n/a (edition gate) | n/a (edition gate) | `no-eclipse`: Wrath through Mists only | n/a |
 | `ENCOUNTER` | `C_InstanceEncounter.IsEncounterInProgress` | N | N | no annotation; returns a non-nilable bool | n/a |
+| `ELITE` | `UnitClassification` (Elite, Rare Elite or World Boss) | N | N | no annotation | n/a |
+| `ENEMIES_TARGETING` | nameplate tokens `nameplate1`-`40`: `UnitExists`, `UnitCanAttack`, `UnitIsUnit("nameplateNtarget", "player")` | C (compound-token comparison is secret on restricted maps) | C | `SecretWhenUnitComparisonRestricted` | unavailable |
 | `ENEMY` | `UnitIsEnemy` | N | N | no annotation | n/a |
 | `EQUIPPED` | `C_Item.IsEquippedItem` | N | N | no annotation | n/a |
 | `FORM` | `GetShapeshiftForm`, `GetShapeshiftFormInfo`/`GetShapeshiftFormID` | C (undocumented; checked) | C | not in the generated documentation | unavailable |
@@ -170,7 +227,8 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `RAID_ROLE` | `IsInRaid`, `UnitIsGroupLeader`, `UnitIsGroupAssistant` | N | N | group-role APIs | false outside a raid; unavailable when the role cannot be read |
 | `MARKED` | `UnitExists`, `GetRaidTargetIndex(unit)` | A (`unsupported-client`) | A (`unsupported-client`) | Retail in-game test returned a secret marker | unavailable on these clients, also under NOT |
 | `MARK_COUNT` | marker table and reachable unit observations | A (`unsupported-client`) | A (`unsupported-client`) | same marker restriction as MARKED | unavailable on these clients |
-| `MOVING` | `GetUnitSpeed("player")` | C (stats restricted) | C | `SecretWhenUnitStatsRestricted` | unavailable |
+| `MOVING` | `GetUnitSpeed("player")`; when it is secret, `PLAYER_STARTED_MOVING` / `PLAYER_STOPPED_MOVING` and the last readable speed (`Platform/player_movement.lua`) | C (stats restricted; the events are not annotated) | C | `SecretWhenUnitStatsRestricted` on the speed only | answered from the events; unavailable only before the first event or readable speed |
+| `NEXT_SWING` | `PLAYER_SWING(swingDuration, swingType)`, `GetTime` | n/a (no `C_SwingTimer`) | N (payload plain in combat per Hekili Forever's probes) | no annotation | n/a |
 | `OUTDOORS` | `IsOutdoors` | N | N | no annotation | n/a |
 | `PET` | `UnitExists("pet")` | N | N | no annotation | n/a |
 | `PET_HAPPINESS` | `GetPetHappiness` | n/a (edition gate) | n/a (edition gate) | `no-pet-happiness`: Classic Era, Burning Crusade and Wrath only | n/a |
@@ -198,6 +256,7 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `PROXIMITY_MANAPCT` | + `UnitPower`/`UnitPowerMax` (Mana) | A unless flagged | A unless flagged | `SecretWhenUnitPowerRestricted` | unsupported |
 | `PROXIMITY_MANAPCT_COUNT` | + `UnitPower`/`UnitPowerMax` (Mana) | A unless flagged | A unless flagged | `SecretWhenUnitPowerRestricted` | unsupported |
 | `PVP` | `UnitIsPVP` | C (identity) | C | `SecretWhenUnitIdentityRestricted` | unavailable |
+| `RECENT_KILL` | `PARTY_KILL` event time, `GetTime` | N (the event fires; its GUIDs are not read) | N | `SecretWhenUnitIdentityRestricted` on the GUID payload only | n/a |
 | `RESIST` | MobInfo2 data by `UnitName`, `UnitLevel` | C (name identity) | C | `SecretWhenUnitNameIdentityRestricted` | unavailable |
 | `ROLE` | `C_SpecializationInfo.GetInspectSpecialization` / `GetTalentGroupRole` | C (identity; group members readable) | C | `SecretWhenUnitIdentityRestricted` | unavailable |
 | `RUNE` | `GetRuneType`, `GetRuneCooldown` | N (`GetRuneType` is undocumented; missing API is reported as such) | N | no annotation on `GetRuneCooldown`; Runes are never secret | n/a |
@@ -213,6 +272,7 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `SPELL_CHARGES` | `C_Spell.GetSpellCharges` `currentCharges` | C | C | `SecretWhenCooldownsRestricted` (`maxCharges`, `isActive` `NeverSecret`) | unavailable |
 | `SPELL_COOLDOWN` | `C_Spell.GetSpellCooldown` times | C (per spell; the GCD is readable) | C | `SecretWhenCooldownsRestricted`; in game | unavailable |
 | `SPELL_GLOW` | `C_SpellActivationOverlay.IsSpellOverlayed` (the spell and its base and override IDs) | N | N | `SecretArguments` only; the proc glow is plain even where the aura behind it is not | an unreadable relative leaves "not glowing" unproven: unavailable |
+| `SPELL_USABLE` | `C_Spell.IsSpellUsable` (`usable`, `insufficientPower`) | N | N | no annotation; Hekili Forever reads it in combat for every spender | an unreadable answer: unavailable |
 | `SPELL_HISTORY` | `UNIT_SPELLCAST_SUCCEEDED` (player) | C (event recorded; secret spell recorded as unknown) | C | `SecretWhenUnitSpellCastRestricted`: the player is readable unless the spell is flagged | unavailable at that position |
 | `SPELL_HISTORY_TIME` | `UNIT_SPELLCAST_SUCCEEDED` (player), `GetTime` | C | C | as above | unavailable within the window |
 | `SPELL_KNOWN` | `C_SpellBook.IsSpellKnown` | N | N | no annotation | n/a |
@@ -266,6 +326,11 @@ are usable (docs/unit-types.md).
 |---|---|---|---|---|---|
 | Ignore Mana (`ignore_mana`) | `C_Spell.IsSpellUsable` (`usable`, `noMana`) | N | N | no annotation | a hidden answer is never accepted: the spell is skipped, with or without the option (the General help says so on these clients) |
 | Ignore Range (`ignore_range`) | none: the range read is skipped | n/a | n/a | n/a | nothing is read, so nothing can be secret; learned, usable, cooldown and conditions still apply |
+| Ignore Moving (`ignore_moving`); off, a spell with a cast time is not ready while you move | `Platform:GetPlayerMovementObservation` (`GetUnitSpeed`, or the movement events when it is secret), `C_Spell.GetSpellInfo` `castTime` | N (events) | N (events) | the speed is `SecretWhenUnitStatsRestricted`; the events and `castTime` carry no annotation | unknown movement counts as not moving; an unreadable cast time lets the spell through |
+
+The preview window can use its own copies of these three options (`preview_readiness`, `preview_ignore_mana`,
+`preview_ignore_range`, `preview_ignore_moving`); both engines then judge each matching step under both sets of options in
+one walk, so the bar glow and the preview can differ. With the option off, or the same values, it is one judgment.
 
 `IsUsableSpell` answers `false, true` when only the resource is missing (the pair action bars color blue); the option
 accepts that pair as well as a usable spell. Unverified in game on Retail and Forever.
@@ -311,6 +376,7 @@ unit now on that plate.
   there is none; `/rm debug timeline [seconds]` records what a real encounter hands an addon.
 - **Per-spell static support.** `C_Secrets.GetSpellCooldownSecrecy`,
   `GetSpellAuraSecrecy` and `GetSpellCastSecrecy` return a spell's
-  `Enum.SecrecyLevel`. RM does not call them: a condition naming a spell flagged
-  `AlwaysSecret` is unavailable at every poll rather than declared unsupported for
-  that saved value, and what those calls report in a real client is unconfirmed.
+  `Enum.SecrecyLevel`. RM reads them only for the editor note (above): a
+  condition naming a spell flagged `AlwaysSecret` is still unavailable at every
+  poll rather than declared unsupported for that saved value, and what those
+  calls report in a real client is unconfirmed.

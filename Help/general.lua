@@ -76,6 +76,16 @@ function addon:GetGeneralOptionHelp()
             text = L["Advise a spell or item even when your target is out of its range. Without this, a step whose range check fails is skipped. The spell or item must still be learned or owned, off cooldown and usable, and its conditions still apply."],
         },
         {
+            id = "ignore_moving",
+            title = L["Ignore Moving"],
+            text = L["Advise a spell with a cast time even while you are moving. Without this, such a spell is skipped while you move, because it cannot be cast on the move; an instant spell, or one a proc has made instant, is still advised. Retail and Forever hide your speed in combat, so moving is then taken from the game's start and stop moving events."],
+        },
+        {
+            id = "remember_hidden",
+            title = L["Remember hidden buffs and cooldowns"],
+            text = L["Retail and Forever hide your buffs and cooldowns from addons in combat, and conditions that need them are then unavailable. With this on, your own buffs and your spell cooldowns answer from what was last read, restarted when you cast the spell: a buff keeps its last remaining time and stacks, a cooldown its last length. This can be wrong when something else changes them unseen, such as a dispel or a cooldown reset, so it is off by default. Blizzard's Cooldown Manager is asked first where it tracks the buff."],
+        },
+        {
             id = "spell_history",
             title = L["Spell History Memory (seconds)"],
             text = L["Choose how many seconds of previous spell casts to retain for history-based conditions. Older casts are removed as recommendations update. A longer history retains more records."],
@@ -109,6 +119,16 @@ function addon:GetGeneralOptionHelp()
             id = "preview_vertical",
             title = L["Horizontal"],
             text = L["Arrange preview icons horizontally (default) or vertically. Lock, Direction and Reset share one row below the opacity slider. Changing direction keeps icons square and adjusts the window ratio."],
+        },
+        {
+            id = "preview_readiness",
+            title = L["Preview uses its own readiness options"],
+            text = L["Give the preview window its own Ignore Mana, Ignore Range and Ignore Moving. The bar highlight keeps the options under Recommendations, and the preview shows the first steps that are ready under its own, so it can, for example, show a spell that is out of range while the bar highlights the next one you can use. Off, the preview follows the same options as the bar highlight."],
+        },
+        {
+            id = "preview_target_health",
+            title = L["Show target health under the preview"],
+            text = L["Shows your target's health as a thin bar under the preview window. The game draws it from the real health even where it hides health from addons (Retail and Forever in combat), so it is shown but never used to choose a step."],
         },
         {
             id = "preview_reset",

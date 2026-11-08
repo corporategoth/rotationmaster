@@ -286,4 +286,34 @@ test('an observed zero slot count is an empty complete specific-totem scan', fun
     assert(a:evaluateCondition({ type = 'NOT', value = value('TOTEM_SPELL', 8071) }))
 end)
 
+test('a hidden totem slot is answered from summons after your casts and from the last readable read', function()
+    local f = fixture()
+    local p = f.addon.Platform
+    local secret = {}
+    local readable = p.CanReadValue
+    p.CanReadValue = function(self, v) return v ~= secret and readable(self, v) end
+    local slot = { true, 'Healing Stream Totem', 100, 60, 1, 1, 5394 }
+    f.env.GetTotemInfo = function() return unpack(slot, 1, 7) end
+    assert(p:GetTotemInfo(2).active == true and not p:GetTotemInfo(2).estimated, 'readable read')
+    slot[1] = secret
+    local hidden = p:GetTotemInfo(2)
+    assert(hidden.active and hidden.estimated and hidden.spellID == 5394 and hidden.duration == 60, 'kept while hidden')
+    p:NoteTotemSlotUpdate(2, 130)
+    hidden = p:GetTotemInfo(2)
+    assert(hidden.estimated and hidden.active == false, 'an update with no cast of yours is the totem going away')
+    p:NoteTotemCast(5394, 140)
+    p:NoteTotemSlotUpdate(2, 140.2)
+    hidden = p:GetTotemInfo(2)
+    assert(hidden.active and hidden.startTime == 140.2 and hidden.duration == 60, 'summon after your cast')
+    assert(hidden.name == 'Healing Stream Totem')
+    p:NoteTotemCast(8071, 150)
+    p:NoteTotemSlotUpdate(3, 151)
+    assert(p:GetTotemInfo(3).active == false, 'outside the summon window')
+    p:NoteTotemCast(8071, 160)
+    p:NoteTotemSlotUpdate(3, 160.1)
+    local record, reason = p:GetTotemInfo(3)
+    assert(record == nil and reason == 'restricted-value', 'a totem whose duration was never seen stays unavailable')
+    assert(select(2, p:GetTotemInfo(4)) == 'restricted-value', 'an untracked slot stays unavailable')
+end)
+
 finish()

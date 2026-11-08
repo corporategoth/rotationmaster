@@ -118,6 +118,50 @@ function platform:GetNameplateMaxDistance()
     return maximum
 end
 
+-- Brackets a unit's distance from the ranges of the spells on your bars (C_Spell.GetSpellInfo maxRange and
+-- minRange, with the in-range answer of each): the shortest range it is within is the maximum, the longest range it is
+-- beyond is the minimum. Used when LibRangeCheck cannot bracket the distance; Hekili Forever found LibRangeCheck
+-- answering "100, nil" on Forever, and spell ranges carry no secret annotation.
+-- @param unit string  The unit token.
+-- @return table|nil  { minimum = number|nil, maximum = number|nil, source = 'spells' }; nil when no spell answered.
+-- @return string|nil  'range-unavailable' when the first return is nil; nil otherwise.
+function platform:GetSpellRangeBounds(unit)
+    local ids = addon.GetBarSpellIds and addon:GetBarSpellIds() or {}
+    local minimum, maximum
+
+    for index = 1, math.min(#ids, 80) do
+        local id = ids[index]
+        local info = self:GetSpellInfo(id)
+        local range = info and info.maxRange
+
+        if type(range) == 'number' and range > 0 and range < 100 then
+            local state = self:GetSpellRangeState(id, unit, 'any')
+
+            if type(state) == 'table' and state.applicable ~= false then
+                if state.inRange == true then
+                    maximum = math.min(maximum or range, range)
+                    local near = info.minRange
+
+                    if type(near) == 'number' and near > 0 then
+                        minimum = math.max(minimum or 0, near)
+                    end
+                elseif state.inRange == false then
+                    minimum = math.max(minimum or 0, range)
+                end
+            end
+        end
+    end
+
+    if minimum == nil and maximum == nil then
+        return nil, 'range-unavailable'
+    end
+    if minimum and maximum and minimum > maximum then
+        return nil, 'range-unavailable'
+    end
+
+    return { minimum = minimum, maximum = maximum, source = 'spells' }
+end
+
 -- Reads the LibRangeCheck distance interval for a unit.
 -- @param unit string  The unit token to read; must be a non-empty string.
 -- @return table|nil  { minimum = number|nil, maximum = number|nil } with at least one bound present; nil when it
@@ -125,7 +169,8 @@ end
 -- @return string|nil  The reason code when the first return is nil; nil otherwise.
 --
 -- Public LibRangeCheck intervals retain their bounds. Never invent an exact distance from either bound or turn an
--- absent result into an outside result.
+-- absent result into an outside result. An open-ended or absent LibRangeCheck answer falls back to the spell bracket
+-- (GetSpellRangeBounds) when that has one.
 function platform:GetRangeCheckBounds(unit)
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
@@ -137,6 +182,10 @@ function platform:GetRangeCheckBounds(unit)
     if not self:CanReadValue(minimum) or not self:CanReadValue(maximum) then return nil,'restricted-value' end
     for _,bound in pairs({minimum=minimum,maximum=maximum}) do
         if type(bound)~='number' or bound~=bound or bound<0 or bound==math.huge then return nil,'invalid-range-result' end
+    end
+    if maximum==nil and self.GetSpellRangeBounds then
+        local spells=self:GetSpellRangeBounds(unit)
+        if spells then return spells end
     end
     if minimum==nil and maximum==nil then return nil,'range-unavailable' end
     if minimum and maximum and minimum>maximum then return nil,'invalid-range-result' end
