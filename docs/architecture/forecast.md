@@ -54,7 +54,11 @@ Slot confidence starts at 1 and each predicted step multiplies it by 0.9, by 0.9
 for a spell with a cast time (it can be interrupted or moved away from), and by 0.88 for a cost in a resource the pass does not
 project. With prediction tracking on, the measured hit rate of that slot (over all rotations, once 20 predictions have been
 checked) is averaged with it. The preview icon fades with it (opacity 0.4 to 1) unless General > Forecast > "Fade predictions that are
-less certain" is off; the first icon never fades.
+less certain" is off; the first icon never fades. Each predicted icon also says, over its middle, how many seconds after the
+first spell it would be cast ("+3.5s"), and, at its foot, the confidence as a percentage (the percentage follows the same setting).
+When nothing is ready after a cast the projection moves forward a second at a time, up to ten seconds, to the next step that is,
+so the queue is filled even while everything cools down; each second waited costs 3% of the confidence. The preview icons draw no
+cooldown dial.
 
 ## Measuring it (`Analytics/metrics.lua`)
 

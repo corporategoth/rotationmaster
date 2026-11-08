@@ -21,9 +21,9 @@ local function engine(engine)
     local window = a.nextWindow
     local add = window.AddRecommendation
 
-    window.AddRecommendation = function(self, spell, item, confidence)
-        seen[#seen + 1] = { spell = spell, confidence = confidence }
-        return add(self, spell, item, confidence)
+    window.AddRecommendation = function(self, spell, item, confidence, delay)
+        seen[#seen + 1] = { spell = spell, confidence = confidence, delay = delay }
+        return add(self, spell, item, confidence, delay)
     end
 
     c.seen = seen
@@ -234,7 +234,9 @@ for _, kind in ipairs({ 'standard', 'lean' }) do
         assert(seen[1].spell == 8042)
 
         for index = 2, #seen do
-            assert(seen[index].spell ~= 8042, 'Earth Shock was just cast and has six seconds to go')
+            local row = seen[index]
+            assert(row.spell ~= 8042 or row.delay >= 6, 'Earth Shock was just cast and has six seconds to go')
+            assert(row.delay and row.delay > 0, 'each later slot says how long after the first it is cast')
         end
     end)
 
