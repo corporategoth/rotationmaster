@@ -506,6 +506,50 @@ test('all six spell aura schemas accept the rank option and summaries expose it'
     end
 end)
 
+test(
+    'a lookup by ID that finds nothing while the game hides auras is unavailable, and a buff that is found still counts',
+    function()
+        local f = fixture(true, 18)
+        f.load('Platform/spells.lua')
+        f.env.C_Spell = { GetSpellInfo = function(id) return { name = 'Lightning Shield', spellID = id } end }
+        f.addon.Platform.secretsUnrestricted = false
+        local hidden, up = true, false
+        f.env.C_Secrets = { ShouldAurasBeSecret = function() return hidden end }
+
+        f.env.C_UnitAuras = {
+            GetAuraDataByIndex = function()
+                error("Auras cannot be accessed when secret while tainted by 'RotationMaster'")
+            end,
+            GetPlayerAuraBySpellID = function(id)
+                return up and id == 324 and { name = 'Lightning Shield', spellId = 324, sourceUnit = 'player' } or nil
+            end,
+        }
+
+        local shield = { type = 'BUFF', unit = 'player', spell = 324 }
+        local not_ = { type = 'NOT', value = shield }
+
+        assert(
+            f.addon:evaluateConditionResult(shield).status == 'unavailable',
+            'nothing found while hidden proves nothing'
+        )
+
+        assert(
+            f.addon:evaluateConditionResult(not_).status == 'unavailable',
+            'so "you do not have it" is not decided either'
+        )
+
+        up = true
+        assert(f.addon:evaluateConditionResult(shield).status == 'match', 'found is found')
+        assert(f.addon:evaluateConditionResult(not_).status == 'no-match')
+        up, hidden = false, false
+
+        assert(
+            f.addon:evaluateConditionResult(shield).status == 'no-match',
+            'while auras are shown, nothing found is absent'
+        )
+    end
+)
+
 test('an empty list of your own auras while the game hides auras is unavailable, not absent', function()
     local f = fixture(true, 18)
     local hidden = true

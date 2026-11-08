@@ -257,7 +257,8 @@ end
 -- @param value table  The condition value (unit, spell, anyrank, ownbuff).
 -- @param filter string  The aura filter; only "HELPFUL" is answered here.
 -- @param mode string  The evaluation mode; 'present', 'remaining' and 'stacks'.
--- @return string|nil  "none" (the player has none of the spell's ranks) or "found"; nil when the walk must decide.
+-- @return string|nil  "none" (the player has none of the spell's ranks, and the game is showing auras) or "found"; nil when
+--   the walk must decide.
 -- @return table|nil  The aura when the first return is "found"; nil otherwise.
 --
 -- Every known rank is asked for when any rank matches. A refusal, or an aura whose fields cannot be read, leaves the
@@ -332,6 +333,13 @@ local function lookupPlayerBySpell(value, filter, mode)
         if aura then
             return accept(aura, value.spell)
         end
+    end
+
+    -- While the game hides auras, nothing found is not proof that the buff is gone (Forever hands back nothing for a buff
+    -- that is up as combat starts): the walk, the Cooldown Manager and the remembered read decide, and a step whose
+    -- condition stays unavailable is simply not offered.
+    if type(platform.AreAurasHidden) == "function" and platform:AreAurasHidden() then
+        return
     end
 
     return "none"
