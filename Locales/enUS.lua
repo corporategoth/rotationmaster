@@ -10317,6 +10317,16 @@ T["a minion"] = 3630
 T["trivial (gray, no reward)"] = 3631
 -- 69ae0bd2
 T["boss %d's"] = 3632
+-- 5599d4e4
+T["Macro Condition"] = 3633
+-- 09b43ba0
+T["the macro conditions {conditions} {{!hold|do not hold}}"] = 3634
+-- 8f7dbd69
+T["<conditions>"] = 3635
+-- 9bf4185a
+T["Macro conditions"] = 3636
+-- 5ff5bea8
+T["Matches when the macro conditions hold, exactly as they would in a macro: for example [combat,harm], [stance:2], [mod:shift] or [@focus,exists,nodead]. Several bracketed groups match when any of them does. The game evaluates them itself, so this works in combat on every client. Only the bracketed conditions are accepted, never a command."] = 3637
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

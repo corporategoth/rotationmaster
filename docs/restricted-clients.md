@@ -223,6 +223,7 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `LEVEL` | `UnitLevel` | N | N | no annotation | n/a |
 | `LOC_BLOCKED` | `C_LossOfControl.GetActiveLossOfControlData` `lockoutSchool` | N (player) | N | no annotation (only `...ByUnit` is restricted) | n/a |
 | `LOC_TYPE` | `C_LossOfControl.GetActiveLossOfControlData` `locType`/`timeRemaining` | N (player) | N | no annotation | n/a |
+| `MACRO_CONDITION` | `SecureCmdOptionParse` (the game evaluates the macro conditionals) | N | N | no annotation; the answer is the game's own | n/a |
 | `MANA` | `UnitPower(unit, Mana)` | A unless Mana is flagged never secret (`secret-power`) | A unless flagged | `SecretWhenUnitPowerRestricted` | unsupported; if supported, unavailable |
 | `MANAPCT` | `UnitPower`, `UnitPowerMax` (Mana) | A unless flagged (`secret-power`) | A unless flagged | `SecretWhenUnitPowerRestricted`, `SecretWhenUnitPowerMaxRestricted` | unsupported; if supported, unavailable |
 | `UNIT_EXISTS` | `UnitExists` or group-unit resolution | N (marked-unit selectors disabled) | N (marked-unit selectors disabled) | unit presence | unavailable when the selected unit cannot be resolved |

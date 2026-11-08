@@ -53,6 +53,7 @@ Platform/runes.lua
 Platform/unit_identity.lua
 Platform/unit_metadata.lua
 Platform/unit_rank.lua
+Platform/macro_conditions.lua
 Platform/combat_events.lua
 Platform/swing_timer.lua
 Platform/cooldown_viewer.lua
@@ -340,6 +341,7 @@ Conditions/unit_states.lua
 Conditions/casting.lua
 Conditions/channeling.lua
 Conditions/unit_rank.lua
+Conditions/macro_conditions.lua
 Conditions/combat_events.lua
 Conditions/swing_timer.lua
 Conditions/spatial.lua
