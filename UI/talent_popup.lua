@@ -1305,7 +1305,13 @@ local function paintSlot(slot)
     local selected = slot.selected
 
     if slot.fancy then
-        setAtlas(slot.art, 'talents-node-' .. slot.shape .. (selected and '-yellow' or '-gray'))
+        -- Only the chosen talent has a frame: Blizzard's single gold one. The rest are bare icons.
+        if selected then
+            setAtlas(slot.art, 'talents-node-' .. slot.shape .. '-yellow')
+            slot.art:Show()
+        else
+            slot.art:Hide()
+        end
 
         if slot.hovered then
             slot.hover:Show()
@@ -1313,11 +1319,7 @@ local function paintSlot(slot)
             slot.hover:Hide()
         end
 
-        if selected then
-            setEdges(slot, 1, .82, 0, 1)
-        else
-            setEdges(slot, 0, 0, 0, 0)
-        end
+        setEdges(slot, 0, 0, 0, 0)
     else
         if selected then
             setEdges(slot, 1, .82, 0, 1)
@@ -1328,7 +1330,7 @@ local function paintSlot(slot)
         end
     end
 
-    if selected then
+    if selected and not slot.fancy then
         slot.glow:Show()
     else
         slot.glow:Hide()
@@ -1381,8 +1383,15 @@ local function newSlot(d, index)
         slot.edges[#slot.edges + 1] = art
     end
 
-    slot.rank = slot:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-    slot.rank:SetPoint('BOTTOMRIGHT', 3, -3)
+    -- A large outlined number over the bottom right corner of the icon, readable on any frame.
+    slot.rank = slot:CreateFontString(
+        nil,
+        'OVERLAY',
+        rawget(_G, 'SystemFont16_Shadow_ThickOutline') and 'SystemFont16_Shadow_ThickOutline' or 'NumberFontNormalLarge'
+    )
+
+    slot.rank:SetPoint('BOTTOMRIGHT', slot.icon, 'BOTTOMRIGHT', 1, -1)
+    slot.rank:SetTextColor(1, 1, 1)
 
     -- Shows the talent's tooltip (spell, ranks, choice note) and a click hint, and paints the hovered look.
     -- @param self table  The slot.
@@ -1756,12 +1765,6 @@ local function draw(d, ctx)
                 slot.rank:SetText('')
             else
                 slot.rank:SetText(tostring(slot.selected and ctx.rank or 0))
-            end
-
-            if slot.selected then
-                slot.rank:SetTextColor(1, .82, 0)
-            else
-                slot.rank:SetTextColor(1, 1, 1)
             end
 
             slot.hovered = nil

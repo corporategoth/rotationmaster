@@ -1003,24 +1003,22 @@ test(
 
         for _, slot in ipairs(d.slots) do
             if slot:IsShown() then
-                assert(slot.art.atlas and slot.art.atlas:find('^talents%-node%-'), 'every node wears Blizzard\'s frame')
-
                 if slot.selected then
                     selected = selected + 1
 
                     assert(
-                        slot.art.atlas:find('%-yellow$') and slot.glow:IsShown(),
-                        'the chosen talent is gold with a glow: ' .. slot.art.atlas
+                        slot.art:IsShown() and slot.art.atlas:find('^talents%-node%-.*%-yellow$'),
+                        'the chosen talent wears Blizzard\'s gold frame'
                     )
+
+                    assert(not slot.glow:IsShown(), 'one frame, not a frame and a glow')
+
+                    for _, edge in ipairs(slot.edges) do
+                        assert(edge.color == nil or edge.color[4] == 0, 'no second box')
+                    end
                 else
                     others = others + 1
-
-                    assert(
-                        slot.art.atlas:find('%-gray$') and slot.rank.text == '0',
-                        'the others wear the plain frame, never green or locked, at rank zero: ' .. slot.art.atlas
-                    )
-
-                    assert(not slot.art.atlas:find('green') and not slot.art.atlas:find('locked'))
+                    assert(not slot.art:IsShown() and slot.rank.text == '0', 'the others are bare icons at rank zero')
                 end
             end
         end
