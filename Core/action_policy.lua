@@ -33,6 +33,19 @@ local function readinessOptions(profile, output)
     return profile.ignore_mana == true, profile.ignore_range == true, profile.ignore_moving == true
 end
 
+-- Tells whether the preview ignores the player's movement.
+-- @return boolean  True when its Ignore Moving option is on (its own when it has separate options, else the bar's).
+function addon:IsPreviewIgnoringMoving()
+    local profile = self.db and self.db.profile
+
+    if not profile then
+        return false
+    end
+
+    local _, _, moving = readinessOptions(profile, 'preview')
+    return moving == true
+end
+
 -- Tells whether the preview's readiness options differ from the bar glow's, so the engines must judge each step for
 -- both outputs.
 -- @return boolean  True when preview_readiness is on and at least one option differs.
