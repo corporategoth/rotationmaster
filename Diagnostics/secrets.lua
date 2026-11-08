@@ -108,6 +108,79 @@ function addon:BuildSecretsDiagnostic()
         return type(ids) == 'table' and #ids or ids
     end))
 
+    -- Every own-buff check of the active rotation: Blizzard's secrecy level for the spell, what the game returns for it
+    -- now (nil, a table, or a secret), and RM's answer, so a tester can see which checks the game still answers in combat.
+    local body, seen, listed = self.GetLeanPlanRotation and self:GetLeanPlanRotation(), {}, 0
+
+    -- Collects the own-buff spells of a condition tree.
+    -- @param node any  A condition node.
+    local function collect(node)
+        if type(node) ~= 'table' then
+            return
+        end
+
+        if
+            (node.type == 'BUFF' or node.type == 'DEBUFF') and node.unit == 'player' and type(node.spell) == 'number'
+        then
+            if not seen[node.spell] and listed < 12 then
+                seen[node.spell], listed = node, listed + 1
+            end
+        end
+
+        if type(node.value) == 'table' then
+            if node.value.type then
+                collect(node.value)
+            else
+                for _, child in ipairs(node.value) do
+                    collect(child)
+                end
+            end
+        end
+    end
+
+    -- Collects from a step list, recursing into branches.
+    -- @param steps table|nil  The steps.
+    local function walk(steps)
+        for _, step in pairs(steps or {}) do
+            if type(step) == 'table' then
+                collect(step.conditions)
+                walk(step.onTrue)
+                walk(step.onFalse)
+            end
+        end
+    end
+
+    if body then
+        walk(body.cooldowns)
+        walk(body.rotation)
+    end
+
+    add('lean plan folded leaves', show(self.leanStats and self.leanStats.folded))
+
+    for spell, node in pairs(seen) do
+        local info = platform:GetSpellInfo(spell)
+        local outcome = self:evaluateConditionResult(node)
+
+        add(
+            'own aura ' .. spell .. ' ' .. tostring(info and info.name),
+            'secrecy '
+                .. probe(C_Secrets and C_Secrets.GetSpellAuraSecrecy, spell)
+                .. '; GetPlayerAuraBySpellID '
+                .. probe(function()
+                    local aura = C_UnitAuras.GetPlayerAuraBySpellID(spell)
+
+                    if aura == nil then
+                        return 'nil'
+                    end
+
+                    return type(issecretvalue) == 'function' and issecretvalue(aura) and 'secret' or type(aura)
+                end)
+                .. '; RM '
+                .. tostring(outcome.status)
+                .. (outcome.reason and (' ' .. outcome.reason) or '')
+        )
+    end
+
     add('LibRangeCheck target', probe(function()
         return LibStub('LibRangeCheck-3.0'):GetRange('target')
     end))

@@ -3205,6 +3205,12 @@ function addon:GetEvaluationEngine()
     return leanPlan and 'lean' or 'lean (building)'
 end
 
+-- Returns the rotation body the lean engine is serving, for diagnostics.
+-- @return table|nil  The body; nil while no lean plan is recorded.
+function addon:GetLeanPlanRotation()
+    return leanPlan and leanPlan.rot or nil
+end
+
 -- Constant condition trees with the evaluator's own semantics: an empty AND matches, an empty OR does not.
 local ALWAYS, NEVER = { type = 'AND', value = {} }, { type = 'OR', value = {} }
 
