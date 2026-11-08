@@ -163,6 +163,39 @@ test('Wait predicts the first spell that comes off cooldown, then what follows i
 end)
 
 for _, kind in ipairs({ 'standard', 'lean' }) do
+    test(kind .. ' engine: /rm debug preview records the polls and saves a report that only show opens', function()
+        local c = engine(kind)
+        c.on(true)
+        local a = c.a
+        c.load('Diagnostics/preview.lua')
+        _G.RotationMasterDB = nil
+        local saved = {}
+        c.e.RotationMasterDB = saved
+        local printed = {}
+
+        a.print = function(_, message, ...)
+            printed[#printed + 1] = string.format(message, ...)
+        end
+
+        local timers = {}
+
+        c.e.C_Timer = {
+            After = function(_, fn)
+                timers[#timers + 1] = fn
+            end,
+        }
+
+        a:RunPreviewDiagnostic('5')
+        c.poll()
+        timers[1]()
+        local report = saved.diagnostics and saved.diagnostics.preview
+        assert(report and #report.lines >= 1, 'a report is saved')
+        assert(report.lines[1]:find(kind, 1, true) and report.lines[1]:find('walk ended', 1, true), report.lines[1])
+        assert(#printed == 2 and printed[2]:find('saved', 1, true), 'chat gets only the saved note')
+    end)
+end
+
+for _, kind in ipairs({ 'standard', 'lean' }) do
     test(kind .. ' engine: with the switch off the preview is what it always was', function()
         local c = engine(kind)
         c.on(false)

@@ -189,6 +189,7 @@ Diagnostics/talents.lua
 Diagnostics/timeline.lua
 Diagnostics/raid_marks.lua
 Diagnostics/premade_spells.lua
+Diagnostics/preview.lua
 Core/unit_state_conditions.lua
 Core/assisted_highlight.lua
 Core/tooltips.lua

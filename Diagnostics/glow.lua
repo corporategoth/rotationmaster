@@ -1407,5 +1407,9 @@ function addon:HandleDebugCommand(args)
         return self:RunPremadeSpellDiagnostic()
     end
 
+    if what == 'preview' and self.RunPreviewDiagnostic then
+        return self:RunPreviewDiagnostic(rest)
+    end
+
     self:print(L["Usage: /rm debug glow [seconds||show], /rm debug talents [views] or /rm debug editor"])
 end
