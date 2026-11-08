@@ -560,9 +560,13 @@ local function apply(spell)
 
     if cooldown > 0 then
         -- Every rank of the spell is on that cooldown, not only the one that was picked: the rotation may name another.
-        local ids = addon.SpellCatalog and addon.SpellCatalog.GetAllSpellIds and addon.SpellCatalog:GetAllSpellIds(
-            spell
-        )
+        local catalog = addon.SpellCatalog
+
+        local found, ids = pcall(function()
+            return catalog and catalog.GetAllSpellIds and catalog:GetAllSpellIds(spell)
+        end)
+
+        ids = found and ids or nil
 
         for _, id in ipairs(ids or { spell }) do
             state.cast[id] = { at = state.t, cooldown = cooldown }

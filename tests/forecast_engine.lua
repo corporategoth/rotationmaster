@@ -93,6 +93,75 @@ for _, kind in ipairs({ 'standard', 'lean' }) do
     end)
 end
 
+-- With nothing ready (every step is on cooldown or the global cooldown) the preview shows what comes up next, and nothing is
+-- lit while the player waits.
+for _, kind in ipairs({ 'standard', 'lean' }) do
+    test(kind .. ' engine: while nothing is ready the preview shows what is coming up and nothing is lit', function()
+        local c = engine(kind)
+        c.on(true)
+        local a = c.a
+        local asked
+
+        a.Platform.IsSpellReady = function() return false end
+        a.Forecast.CastingSpell = function() return nil end
+
+        a.Forecast.Wait = function(_, _, count)
+            asked = count
+
+            return {
+                { spell = 403, cond = { id = 'a', type = 'spell' }, index = 1, confidence = .9 },
+                { spell = 8042, cond = { id = 'b', type = 'spell' }, index = 2, confidence = .8 },
+            }
+        end
+
+        local lit
+
+        a.GlowNextSpell = function(_, spell)
+            lit = spell
+        end
+
+        local seen = c.poll()
+        assert(asked == 3, 'the preview width is asked for')
+        assert(#seen == 2 and seen[1].spell == 403 and seen[2].spell == 8042, 'both upcoming spells are shown')
+        assert(lit == nil and a.currentSpell == nil, 'but the first is not lit: it cannot be cast yet')
+    end)
+end
+
+test('Wait predicts the first spell that comes off cooldown, then what follows it', function()
+    local c = engine('standard')
+    c.on(true)
+    local a = c.a
+    local started = c.e.GetTime()
+    local wait, rot = a.Forecast.Wait, nil
+
+    local function onCooldown()
+        return { startTime = started, duration = 3, isEnabled = true, modRate = 1 }
+    end
+
+    a.Platform.GetSpellCooldown = onCooldown
+
+    a.Platform.IsSpellReady = function(self, spell, now)
+        return started + 3 <= now + 0.05
+    end
+
+    a.Forecast.Wait = function(self, body, count)
+        rot = body
+        return {}
+    end
+
+    c.poll()
+    a.Forecast.Wait = wait
+    assert(rot, 'the engine asks for a wait when nothing is ready')
+    local before = a.Platform.IsSpellReady
+    local out = a.Forecast:Wait(rot, 2)
+    assert(a.Platform.IsSpellReady == before, 'the real readers are back')
+    assert(#out >= 1, 'something becomes ready once the cooldown runs out')
+
+    for _, slot in ipairs(out) do
+        assert(slot.at >= 2, 'not before the cooldown has run out')
+    end
+end)
+
 for _, kind in ipairs({ 'standard', 'lean' }) do
     test(kind .. ' engine: with the switch off the preview is what it always was', function()
         local c = engine(kind)

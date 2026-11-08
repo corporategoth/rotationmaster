@@ -3495,7 +3495,7 @@ local function leanPublish(self, plan)
     for n = 1, plan.recommended do
         local spellid, cond, index, itemId = plan.recSpell[n], plan.recCond[n], plan.recIndex[n], plan.recItem[n]
 
-        if n == 1 then
+        if n == 1 and not plan.waiting then
             -- BEGIN ANALYTICS PRIMARY ADVICE
             if adviceCapture then
                 adviceCapture("advice", previewWindow, current, cond.type, spellid)
@@ -3556,7 +3556,7 @@ local function leanPublish(self, plan)
         end
     end
 
-    if plan.recommended == 0 then
+    if plan.recommended == 0 or plan.waiting then
         -- BEGIN ANALYTICS EMPTY ADVICE
         if adviceCapture then
             adviceCapture("retire")
@@ -3861,6 +3861,25 @@ local function evaluateLean(self)
         plan.suppressAttack = false
     end
 
+    plan.waiting = false
+
+    if
+        plan.recommended == 0
+        and ended == nil
+        and plan.nativePreview
+        and self.Forecast ~= nil
+        and self.IsForecastOn ~= nil
+        and self:IsForecastOn()
+        and not self.Forecast:CastingSpell()
+    then
+        -- Nothing is ready (everything is on cooldown): the preview shows what comes up next, without lighting a button.
+        for _, slot in ipairs(self.Forecast:Wait(plan.rot, math.max(1, plan.profile.preview_spells or 1))) do
+            leanRecommend(plan, slot.spell, slot.cond, slot.index, slot.item)
+            plan.recConf[plan.recommended] = slot.confidence
+            plan.waiting = true
+        end
+    end
+
     if plan.recommended == 0 and not plan.suppressAttack then
         local attack = self:ResolveImplicitAttack(plan.actionReady)
 
@@ -4134,6 +4153,8 @@ function addon:EvaluateNextActionInternal()
 
         self.evaluationProfile:child("rotation"):start()
         local preview, suppressAttack = 0, false
+        -- True when the recommendations are only upcoming ones (nothing is ready): shown in the preview, nothing lit.
+        local waiting = false
         local weakAuras = _G.WeakAuras
         ---@type RMRecommendationPreview
         local previewWindow = self.nextWindow
@@ -4196,15 +4217,17 @@ function addon:EvaluateNextActionInternal()
         -- @param index number  The step's ordinal.
         -- @param itemId number|nil  The item id.
         -- @param confidence number|nil  How sure a predicted recommendation is (the forecast); nil when read now.
+        -- @param upcoming boolean|nil  True for a slot that cannot be cast yet (nothing is ready): shown, never lit.
         --
         -- The first one becomes the current spell (glow, WeakAuras and ROTATIONMASTER_SPELL_UPDATE); every one goes to
         -- the preview window, if any.
-        local function recommend(spellid, cond, index, itemId, confidence)
+        local function recommend(spellid, cond, index, itemId, confidence, upcoming)
             preview = preview + 1
             local ordinal = preview
+            waiting = upcoming == true
 
             stage(function()
-                if ordinal == 1 then
+                if ordinal == 1 and not upcoming then
                     -- BEGIN ANALYTICS PRIMARY ADVICE
                     if adviceCapture then
                         adviceCapture("advice", previewWindow, current, cond.type, spellid)
@@ -4332,6 +4355,20 @@ function addon:EvaluateNextActionInternal()
 
         suppressAttack = sequence.suppressAttack
 
+        if
+            preview == 0
+            and sequence.status == 'complete'
+            and nativePreview
+            and self.Forecast ~= nil
+            and self.IsForecastOn ~= nil
+            and self:IsForecastOn()
+            and not self.Forecast:CastingSpell()
+        then
+            for _, slot in ipairs(self.Forecast:Wait(rot, math.max(1, self.db.profile.preview_spells or 1))) do
+                recommend(slot.spell, slot.cond, slot.index, slot.item, slot.confidence, true)
+            end
+        end
+
         if preview == 0 and not suppressAttack then
             local attack = self:ResolveImplicitAttack(actionReady)
 
@@ -4344,7 +4381,7 @@ function addon:EvaluateNextActionInternal()
             end
         end
 
-        if preview == 0 then
+        if preview == 0 or waiting then
             stage(function()
                 -- BEGIN ANALYTICS EMPTY ADVICE
                 if adviceCapture then
