@@ -12135,4 +12135,14 @@ addon.translation = {
 --     groups match when any of them does. The game evaluates them itself, so this works in combat
 --     on every client. Only the bracketed conditions are accepted, never a command.
 [3637] = "当宏条件成立时匹配，与宏中完全相同：例如 [combat,harm]、[stance:2]、[mod:shift] 或 [@focus,exists,nodead]。多个方括号组中任意一个成立即匹配。由游戏自己判断，因此在任何客户端的战斗中都有效。只接受方括号中的条件，从不接受命令。",
+-- da7a4b58 English: Show how sure each prediction is
+[3638] = "显示每个预测的把握程度",
+-- e26e4f27 English: Show, at the foot of each predicted icon, how sure the addon is of that
+--     prediction, as a percentage.
+[3639] = "在每个预测图标的下方，以百分比显示插件对该预测的把握程度。",
+-- 3ac35345 English: Show the seconds until each prediction is cast
+[3640] = "显示每个预测还需多少秒施放",
+-- 155a0c53 English: Show, over each predicted icon, how many seconds it would be cast after the
+--     first recommendation, or from now when nothing is ready yet.
+[3641] = "在每个预测图标上方显示它将在第一条建议之后多少秒施放；若尚无可用技能，则从现在起计算。",
 }

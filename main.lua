@@ -489,6 +489,8 @@ local defaults = {
         metrics_prediction = false,
         forecast = false,
         forecast_confidence = true,
+        forecast_percent = true,
+        forecast_delay = true,
         live_config_update = 2,
         spell_history = 60,
         combat_history = 10,
@@ -7242,6 +7244,10 @@ end
 addon.UNIT_SPELLCAST_SUCCEEDED = wrapCombatEvent(function(self, event, unit, castguid, spellid)
     spellcast(self, event, unit, castguid, spellid)
 
+    if unit == 'player' and self.Forecast then
+        self.Forecast:NoteCast(spellid, GetTime())
+    end
+
     if unit == 'player' then
         if currentChannel then
             currentChannel = castguid
@@ -7265,6 +7271,10 @@ addon.UNIT_SPELLCAST_SUCCEEDED = wrapCombatEvent(function(self, event, unit, cas
         end
     end
 end, function(self, _, unit, _, spellid)
+    if unit == 'player' and self.Forecast then
+        self.Forecast:NoteCast(self.Platform:CanReadValue(spellid) and spellid or nil, GetTime())
+    end
+
     -- The player's and pet's casts are readable unless Blizzard flags the
     -- spell always secret (SecretWhenUnitSpellCastRestricted). A secret spell
     -- is still a cast: it is recorded as unknown (spell false), so a history

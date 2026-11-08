@@ -595,6 +595,19 @@ function addon:BuildGeneralSettings(p)
         end
     )
 
+    p:Check('forecast_percent', L['Show how sure each prediction is'], profile.forecast_percent ~= false, function(v)
+        profile.forecast_percent = v
+    end)
+
+    p:Check(
+        'forecast_delay',
+        L['Show the seconds until each prediction is cast'],
+        profile.forecast_delay ~= false,
+        function(v)
+            profile.forecast_delay = v
+        end
+    )
+
     p:Button('forecast_clear', L['Forget what the forecast has learned'], function()
         self:ClearForecast()
     end)

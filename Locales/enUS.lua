@@ -10327,6 +10327,14 @@ T["<conditions>"] = 3635
 T["Macro conditions"] = 3636
 -- 5ff5bea8
 T["Matches when the macro conditions hold, exactly as they would in a macro: for example [combat,harm], [stance:2], [mod:shift] or [@focus,exists,nodead]. Several bracketed groups match when any of them does. The game evaluates them itself, so this works in combat on every client. Only the bracketed conditions are accepted, never a command."] = 3637
+-- da7a4b58
+T["Show how sure each prediction is"] = 3638
+-- e26e4f27
+T["Show, at the foot of each predicted icon, how sure the addon is of that prediction, as a percentage."] = 3639
+-- 3ac35345
+T["Show the seconds until each prediction is cast"] = 3640
+-- 155a0c53
+T["Show, over each predicted icon, how many seconds it would be cast after the first recommendation, or from now when nothing is ready yet."] = 3641
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

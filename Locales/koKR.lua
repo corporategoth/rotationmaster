@@ -12135,4 +12135,14 @@ addon.translation = {
 --     groups match when any of them does. The game evaluates them itself, so this works in combat
 --     on every client. Only the bracketed conditions are accepted, never a command.
 [3637] = "매크로에서와 똑같이 매크로 조건이 충족될 때 일치합니다: 예를 들어 [combat,harm], [stance:2], [mod:shift] 또는 [@focus,exists,nodead]. 대괄호 그룹이 여러 개면 그중 하나만 충족되어도 일치합니다. 게임이 직접 평가하므로 모든 클라이언트에서 전투 중에도 작동합니다. 명령은 받지 않고 대괄호 조건만 받습니다.",
+-- da7a4b58 English: Show how sure each prediction is
+[3638] = "각 예측의 확신도 표시",
+-- e26e4f27 English: Show, at the foot of each predicted icon, how sure the addon is of that
+--     prediction, as a percentage.
+[3639] = "예측된 각 아이콘 아래쪽에 애드온이 해당 예측을 얼마나 확신하는지 백분율로 표시합니다.",
+-- 3ac35345 English: Show the seconds until each prediction is cast
+[3640] = "각 예측이 시전되기까지의 초 표시",
+-- 155a0c53 English: Show, over each predicted icon, how many seconds it would be cast after the
+--     first recommendation, or from now when nothing is ready yet.
+[3641] = "예측된 각 아이콘 위에 첫 번째 권장 사항 이후 몇 초 뒤에 시전되는지, 또는 아직 준비된 것이 없으면 지금부터 몇 초 뒤인지 표시합니다.",
 }

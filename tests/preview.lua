@@ -469,11 +469,16 @@ test('a predicted slot shows the seconds after the first spell and its confidenc
         w.icons[2].overlay:IsShown() and w.icons[2].delayText.text == '+3.5s' and w.icons[2].chanceText.text == '72%'
     )
 
-    a.db.profile.forecast_confidence = false
+    a.db.profile.forecast_percent = false
     w:ReleaseChildren()
     w:AddRecommendation(403)
     w:AddRecommendation(8042, nil, 0.72, 3.5)
     assert(w.icons[2].chanceText.text == '' and w.icons[2].delayText.text == '+3.5s')
+    a.db.profile.forecast_delay = false
+    w:ReleaseChildren()
+    w:AddRecommendation(403)
+    w:AddRecommendation(8042, nil, 0.72, 3.5)
+    assert(not w.icons[2].overlay:IsShown(), 'neither shown: nothing drawn over the icon')
 end)
 
 test('the optional target health bar takes the values as they come and hides without a target', function()
