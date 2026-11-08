@@ -12075,18 +12075,6 @@ addon.translation = {
 [3613] = "分鐘",
 -- 3eeb06f4 English: Last %d %s
 [3614] = "最近 %d %s",
--- 24a4d70c English: Show your power under the preview
-[3615] = "在預覽下方顯示你的能量",
--- aa3d11d7 English: Shows your mana, rage, energy or other main power as a thin bar under the
---     preview window, drawn by the game from the real value even where it hides it from addons. It
---     is shown but never used to choose a step.
-[3616] = "在預覽視窗下方以細條顯示你的法力、怒氣、能量或其他主要能量。即使遊戲對插件隱藏該值，也由遊戲依真實數值繪製。它只用於顯示，從不用於選擇步驟。",
--- 877db7e9 English: Show your target's cast under the preview
-[3617] = "在預覽下方顯示目標的施法",
--- ded2b801 English: Shows a cast bar under the preview window while your target casts or channels.
---     Where the game hides cast times from addons, it animates the bar itself, so it still runs in
---     combat. It is shown but never used to choose a step.
-[3618] = "當你的目標施法或引導時，在預覽視窗下方顯示施法條。在遊戲對插件隱藏施法時間的地方，由遊戲自己驅動施法條，因此戰鬥中也會前進。它只用於顯示，從不用於選擇步驟。",
 -- ddd48d90 English: Gray out preview spells you cannot afford yet
 [3619] = "將尚無法負擔的預覽法術顯示為灰色",
 -- c6fa0cb3 English: Shows a recommended spell in gray while you lack the mana, rage or other power

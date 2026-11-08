@@ -12075,18 +12075,6 @@ addon.translation = {
 [3613] = "minuti",
 -- 3eeb06f4 English: Last %d %s
 [3614] = "Ultimi %d %s",
--- 24a4d70c English: Show your power under the preview
-[3615] = "Mostra la tua risorsa sotto l'anteprima",
--- aa3d11d7 English: Shows your mana, rage, energy or other main power as a thin bar under the
---     preview window, drawn by the game from the real value even where it hides it from addons. It
---     is shown but never used to choose a step.
-[3616] = "Mostra il tuo mana, ira, energia o altra risorsa principale come una barra sottile sotto la finestra di anteprima. Il gioco la disegna dal valore reale anche dove lo nasconde agli addon. Viene mostrata ma mai usata per scegliere un passo.",
--- 877db7e9 English: Show your target's cast under the preview
-[3617] = "Mostra il lancio del tuo bersaglio sotto l'anteprima",
--- ded2b801 English: Shows a cast bar under the preview window while your target casts or channels.
---     Where the game hides cast times from addons, it animates the bar itself, so it still runs in
---     combat. It is shown but never used to choose a step.
-[3618] = "Mostra una barra di lancio sotto la finestra di anteprima mentre il tuo bersaglio lancia o canalizza. Dove il gioco nasconde i tempi di lancio agli addon, anima la barra da sé, quindi scorre anche in combattimento. Viene mostrata ma mai usata per scegliere un passo.",
 -- ddd48d90 English: Gray out preview spells you cannot afford yet
 [3619] = "Mostra in grigio gli incantesimi dell'anteprima che non puoi ancora permetterti",
 -- c6fa0cb3 English: Shows a recommended spell in gray while you lack the mana, rage or other power

@@ -12075,18 +12075,6 @@ addon.translation = {
 [3613] = "минут",
 -- 3eeb06f4 English: Last %d %s
 [3614] = "Последние %d %s",
--- 24a4d70c English: Show your power under the preview
-[3615] = "Показывать ваш ресурс под окном предпросмотра",
--- aa3d11d7 English: Shows your mana, rage, energy or other main power as a thin bar under the
---     preview window, drawn by the game from the real value even where it hides it from addons. It
---     is shown but never used to choose a step.
-[3616] = "Показывает вашу ману, ярость, энергию или другой основной ресурс тонкой полосой под окном предпросмотра. Игра рисует её по настоящему значению даже там, где скрывает его от аддонов. Полоса только показывается и никогда не используется для выбора шага.",
--- 877db7e9 English: Show your target's cast under the preview
-[3617] = "Показывать заклинание цели под окном предпросмотра",
--- ded2b801 English: Shows a cast bar under the preview window while your target casts or channels.
---     Where the game hides cast times from addons, it animates the bar itself, so it still runs in
---     combat. It is shown but never used to choose a step.
-[3618] = "Показывает полосу заклинания под окном предпросмотра, пока ваша цель произносит или поддерживает заклинание. Там, где игра скрывает время произнесения от аддонов, она сама анимирует полосу, поэтому та идёт и в бою. Полоса только показывается и никогда не используется для выбора шага.",
 -- ddd48d90 English: Gray out preview spells you cannot afford yet
 [3619] = "Делать серыми заклинания предпросмотра, на которые пока не хватает ресурса",
 -- c6fa0cb3 English: Shows a recommended spell in gray while you lack the mana, rage or other power

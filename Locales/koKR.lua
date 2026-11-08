@@ -12075,18 +12075,6 @@ addon.translation = {
 [3613] = "분",
 -- 3eeb06f4 English: Last %d %s
 [3614] = "최근 %d%s",
--- 24a4d70c English: Show your power under the preview
-[3615] = "미리보기 아래에 내 자원 표시",
--- aa3d11d7 English: Shows your mana, rage, energy or other main power as a thin bar under the
---     preview window, drawn by the game from the real value even where it hides it from addons. It
---     is shown but never used to choose a step.
-[3616] = "마나, 분노, 기력 또는 다른 주 자원을 미리보기 창 아래에 얇은 바로 표시합니다. 게임이 애드온에게 값을 숨기는 곳에서도 실제 값으로 직접 그립니다. 표시만 될 뿐 단계를 고르는 데는 쓰이지 않습니다.",
--- 877db7e9 English: Show your target's cast under the preview
-[3617] = "미리보기 아래에 대상의 시전 표시",
--- ded2b801 English: Shows a cast bar under the preview window while your target casts or channels.
---     Where the game hides cast times from addons, it animates the bar itself, so it still runs in
---     combat. It is shown but never used to choose a step.
-[3618] = "대상이 시전하거나 정신 집중하는 동안 미리보기 창 아래에 시전 바를 표시합니다. 게임이 애드온에게 시전 시간을 숨기는 곳에서는 게임이 직접 바를 움직이므로 전투 중에도 진행됩니다. 표시만 될 뿐 단계를 고르는 데는 쓰이지 않습니다.",
 -- ddd48d90 English: Gray out preview spells you cannot afford yet
 [3619] = "아직 자원이 부족한 미리보기 주문을 회색으로 표시",
 -- c6fa0cb3 English: Shows a recommended spell in gray while you lack the mana, rage or other power

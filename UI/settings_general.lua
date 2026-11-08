@@ -421,26 +421,6 @@ function addon:BuildGeneralSettings(p)
 
     p.y = previewReadinessY + 30
 
-    p:Check(
-        'preview_player_power',
-        L['Show your power under the preview'],
-        profile.preview_player_power == true,
-        function(v)
-            profile.preview_player_power = v
-            previewChanged()
-        end
-    )
-
-    p:Check(
-        'preview_target_cast',
-        L["Show your target's cast under the preview"],
-        profile.preview_target_cast == true,
-        function(v)
-            profile.preview_target_cast = v
-            previewChanged()
-        end
-    )
-
     -- A spell the player cannot afford is only shown while Ignore Mana is on (the preview's own when it has them), so the
     -- gray only has something to act on then.
     local gray = p:Check(
