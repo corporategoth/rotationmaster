@@ -92,10 +92,18 @@ function addon:ShowConditionText(value, heading)
         scroll:SetScrollChild(edit)
         local setting = false
 
-        -- Grows the edit box to fit its text so the scroll frame, not the box, provides scrolling. Falls back to an
-        -- 80-column estimate on clients whose EditBox lacks GetNumLines.
+        -- Grows the edit box to fit its text so the scroll frame, not the box, provides scrolling. The game's own line
+        -- count is not up to date until the box has been drawn once, so the height is never less than an estimate of the
+        -- wrapped lines (about 95 characters to a line); a box left too short shows nothing of a page.
         local function resize()
-            local lines = edit.GetNumLines and edit:GetNumLines() or math.ceil(#(edit:GetText() or '') / 80)
+            local text = edit:GetText() or ''
+            local estimate = 0
+
+            for line in (text .. '\n'):gmatch('(.-)\n') do
+                estimate = estimate + math.max(1, math.ceil(#line / 95))
+            end
+
+            local lines = math.max(estimate, edit.GetNumLines and edit:GetNumLines() or 0)
             edit:SetHeight(math.max(24, lines * 14 + 16))
             scroll:UpdateScrollChildRect()
         end
@@ -136,12 +144,19 @@ function addon:ShowConditionText(value, heading)
         function dialog:ShowPage(page)
             page = math.max(1, math.min(#self.pages, page))
             self.page = page
-            self.text = self.pages[page]
+            -- An empty line is held open by a space, so no page is only blank lines to the text box.
+            self.text = self.pages[page]:gsub('\n\n', '\n \n'):gsub('\n\n', '\n \n')
             setting = true
             edit:SetText(self.text)
             setting = false
             resize()
             copy()
+
+            -- Measured again once the box has been drawn.
+            if C_Timer and type(C_Timer.After) == 'function' then
+                C_Timer.After(0, resize)
+            end
+
             self.pageLabel:SetText(string.format('%d / %d', page, #self.pages))
         end
 
