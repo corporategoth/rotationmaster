@@ -506,6 +506,11 @@ test('the optional target health bar takes the values as they come and hides wit
     assert(not w.healthBar, 'off by default')
     a.db.profile.preview_target_health = true
     local values = {}
+    local attackable = true
+    a.Platform.GetUnitAttackabilityObservation = function() return attackable end
+    w:ResumeLayout()
+    assert(not w.healthBar, 'nothing predicted: no bar')
+    w:AddRecommendation(403)
     w:ResumeLayout()
     local bar = assert(w.healthBar, 'bar not made')
 
@@ -519,6 +524,16 @@ test('the optional target health bar takes the values as they come and hides wit
 
     w:ResumeLayout()
     assert(values.hi == 'hidden-max' and values.v == 'hidden-current' and bar:IsShown(), 'values passed through')
+    attackable = false
+    w:ResumeLayout()
+    assert(not bar:IsShown(), 'a friendly or an NPC gets no bar')
+    attackable = nil
+    w:ResumeLayout()
+    assert(bar:IsShown(), 'unreadable attackability: shown')
+    w:ReleaseChildren()
+    w:ResumeLayout()
+    assert(not bar:IsShown(), 'nothing predicted any more')
+    w:AddRecommendation(403)
     health = {}
     w:ResumeLayout()
     assert(not bar:IsShown(), 'no target')

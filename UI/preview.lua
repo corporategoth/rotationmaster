@@ -1087,11 +1087,24 @@ end
 
 -- Shows your target's health as a thin bar under the preview window when profile.preview_target_health is on. The
 -- values go straight to the StatusBar (Platform:GetUnitHealthPassthrough), so the bar shows real health in combat on
--- Retail and Forever, where RM itself cannot read it. Hidden without a target or with the option off.
+-- Retail and Forever, where RM itself cannot read it. Hidden without a target, with nothing predicted, for a target that
+-- cannot be attacked, or with the option off.
 -- @param window table  The preview window.
 function addon:UpdatePreviewHealthBar(window)
     local bar = window.healthBar
     local wanted = window.profile and window.profile.preview_target_health == true
+
+    -- Only an attackable target with something predicted for it gets a bar: a friendly or an NPC has no rotation to show
+    -- it beside. A target whose attackability cannot be read is given the benefit of the doubt.
+    if wanted then
+        local attackable = true
+
+        if (window.count or 0) > 0 and type(addon.Platform.GetUnitAttackabilityObservation) == 'function' then
+            attackable = addon.Platform:GetUnitAttackabilityObservation('target') ~= false
+        end
+
+        wanted = (window.count or 0) > 0 and attackable
+    end
 
     if not wanted then
         if bar then
