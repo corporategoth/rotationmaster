@@ -362,6 +362,27 @@ test('in combat a spell the player knows, found by ID with its owner hidden, cou
     assert(result.status ~= 'match', 'a spell the player has not learned is not assumed to be theirs')
 end)
 
+test('in combat a buff that carries another ID than its spell is found by name before it is called absent', function()
+    local f = fixture(true)
+    f.load('Platform/spells.lua')
+    f.env.C_Spell = { GetSpellInfo = function(id) return { name = 'Lightning Shield', spellID = id } end }
+    f.addon.Platform.secretsUnrestricted = false
+    local byName = { name = 'Lightning Shield', spellId = 26364, sourceUnit = 'player' }
+
+    f.env.C_UnitAuras = {
+        GetAuraDataByIndex = function()
+            error('refused')
+        end,
+        GetPlayerAuraBySpellID = function() return nil end,
+        GetAuraDataBySpellName = function() return byName end,
+    }
+
+    local shield = { type = 'BUFF', unit = 'player', spell = 324, anyrank = true }
+    assert(f.addon:evaluateCondition(shield) == true, 'the buff is on the player under another ID')
+    byName = nil
+    assert(f.addon:evaluateCondition(shield) == false, 'nothing by ID or name: absent')
+end)
+
 test('numeric aura families opt into readable localized names while exact IDs stay exact', function()
     local f = fixture(true)
     f.load('Platform/spells.lua')
