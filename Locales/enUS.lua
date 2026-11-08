@@ -4468,11 +4468,6 @@ T["Higher numbers are tried first; your rotations and Built Ins compete on prior
 -- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
 -- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
 T["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = 1376
--- babdd022
--- Context: Spell label with a note that any rank of the spell matches; %s is the spell name
---     (Classic ranked spells).
--- %s #1: %s #1: the spell label, its name and ID, e.g. "Rend (spell ID 772)"
-T["%s (any rank)"] = 1377
 -- a80c618c
 T["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."] = 1378
 -- 264ad9c0

@@ -220,7 +220,7 @@ test('a new condition of any type starts with no rank field, which means any ran
     end
 end)
 
-test('the description of an aura condition says any rank unless it asks for the exact rank', function()
+test("the description of an aura condition never spells out any rank", function()
     local f, a = fixture(2)
     f.load('Core/presentation.lua')
     local label = a.AuraSpellLabel
@@ -228,7 +228,7 @@ test('the description of an aura condition says any rank unless it asks for the 
     if label then
         local fresh = label(a, { spell = 10 })
         local exact = label(a, { spell = 10, anyrank = false })
-        assert(fresh:find('any rank', 1, true) and not exact:find('any rank', 1, true))
+        assert(not fresh:find('any rank', 1, true) and not exact:find('any rank', 1, true), 'no suffix either way')
     end
 end)
 

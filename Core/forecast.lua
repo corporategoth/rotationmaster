@@ -559,6 +559,15 @@ local function apply(spell)
     local info = platform:GetSpellInfo(spell)
 
     if cooldown > 0 then
+        -- Every rank of the spell is on that cooldown, not only the one that was picked: the rotation may name another.
+        local ids = addon.SpellCatalog and addon.SpellCatalog.GetAllSpellIds and addon.SpellCatalog:GetAllSpellIds(
+            spell
+        )
+
+        for _, id in ipairs(ids or { spell }) do
+            state.cast[id] = { at = state.t, cooldown = cooldown }
+        end
+
         state.cast[spell] = { at = state.t, cooldown = cooldown }
     end
 
@@ -685,6 +694,78 @@ function forecast:CastingSpell()
             return record.spellID
         end
     end
+end
+
+local WAIT_STEP, WAIT_MAX, WAIT_REUSE = 1, 10, 0.5
+local lastWait = { at = -1 }
+
+-- Predicts what will be recommended while nothing can be cast now (everything is on cooldown): time is moved forward until
+-- a step becomes ready, that is the first slot, and the later slots follow from the state after it. The answer is kept for
+-- half a second, since the rotation is asked many times a second and its answer changes slowly.
+-- @param rot table  The rotation body being advised from.
+-- @param count number  How many slots to predict, 1 to 5.
+-- @return table  A list of { spell, cond, index, item, confidence, at } (at: seconds from now); empty when nothing becomes
+--   ready within WAIT_MAX seconds, or on failure.
+function forecast:Wait(rot, count)
+    local out = {}
+
+    if type(rot) ~= 'table' or type(count) ~= 'number' or count < 1 or state then
+        return out
+    end
+
+    local clock = GetTime()
+
+    if lastWait.rot == rot and lastWait.count == count and clock - lastWait.at < WAIT_REUSE then
+        return lastWait.out
+    end
+
+    local ok, err = pcall(function()
+        state = newState(clock)
+        install()
+        local confidence = state.confidence
+
+        for slot = 1, math.min(5, count) do
+            local pick
+
+            local limit = state.t + WAIT_MAX
+
+            while state.t <= limit do
+                local ready = addon:NewActionReadiness(state.now)
+                pick = pickStep(rot, {}, ready)
+
+                if pick then
+                    break
+                end
+
+                state.t = state.t + WAIT_STEP
+            end
+
+            if not pick then
+                break
+            end
+
+            confidence = confidence * STEP_CONFIDENCE * apply(pick.spell)
+
+            out[#out + 1] = {
+                spell = pick.spell,
+                cond = pick.cond,
+                index = pick.index,
+                item = pick.item,
+                confidence = math.max(0.05, math.min(1, confidence)),
+                at = state.t,
+            }
+        end
+    end)
+
+    uninstall()
+
+    if not ok then
+        pcall(addon.verbose, addon, 'Forecast wait failed: ' .. tostring(err))
+        out = {}
+    end
+
+    lastWait.rot, lastWait.count, lastWait.at, lastWait.out = rot, count, clock, out
+    return out
 end
 
 -- Predicts the recommendations after the first.

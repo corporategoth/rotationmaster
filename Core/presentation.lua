@@ -62,40 +62,25 @@ function addon:StepSpellLabel(step)
     return self:SpellLabel(step.action, anyRank)
 end
 
--- Returns the label for an aura condition's spell; an ID matched at any rank is suffixed so the choice is visible.
+-- Returns the label for an aura condition's spell: the spell without a rank when any rank matches (the default on a client
+-- with spell ranks, so nothing needs saying), and the spell as the game links it, rank and all, for an exact rank.
 -- @param value table  The condition value (spell, anyrank).
--- @return string  The spell label, with " (any rank)" appended for a numeric spell that matches at any rank: anyrank
---   true, or unset on a client with spell ranks (the default). anyrank false asks for the exact rank.
+-- @return string  The spell label.
 function addon:AuraSpellLabel(value)
-    local label = self:SpellLabel(value.spell)
-
     local anyRank = value.anyrank
         or value.anyrank == nil and type(self.ClientHasSpellRanks) == 'function' and self:ClientHasSpellRanks()
 
-    if type(value.spell) == 'number' and anyRank then
-        return string.format(L['%s (any rank)'], label)
-    end
-
-    return label
+    return self:SpellLabel(value.spell, type(value.spell) == 'number' and anyRank or false)
 end
 
 -- Returns the label for a cast/channel condition's spell.
 -- @param value table  The condition value (spell, ranked).
--- @return string  The spell label; a ranked pick by ID appends the rank in gray.
+-- @return string  The spell label without a rank, or for an exact rank (`ranked`) the spell with its rank.
 --
 -- A cast/channel spell picked by ID matches any rank unless `ranked`.
 function addon:CastSpellLabel(value)
-    local label = self:SpellLabel(value.spell)
-
-    if type(value.spell) == 'number' and value.ranked == true and self.SpellCatalog then
-        local rank = self.SpellCatalog:SpellRank(value.spell)
-
-        if type(rank) == 'string' and rank ~= '' then
-            return label .. '|cFF888888 (' .. rank .. ')|r'
-        end
-    end
-
-    return label
+    local exact = value.ranked == true
+    return self:SpellLabel(value.spell, type(value.spell) == 'number' and not exact)
 end
 
 -- Reports whether a hyperlink is a spell link.

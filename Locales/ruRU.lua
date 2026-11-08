@@ -4624,11 +4624,6 @@ addon.translation = {
 -- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
 -- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
 [1376] = "Некорректный приоритет переключения для %s:%s; явное исправление сбросит его в ноль.",
--- babdd022 English: %s (any rank)
--- Context: Spell label with a note that any rank of the spell matches; %s is the spell name
---     (Classic ranked spells).
--- %s #1: %s #1: the spell label, its name and ID, e.g. "Rend (spell ID 772)"
-[1377] = "%s (любой ранг)",
 -- a80c618c English: Unticked, any rank of the spell matches. Ticked, only the rank you chose
 --     matches.
 [1378] = "Если флажок снят, подходит любой ранг заклинания. Если установлен, подходит только выбранный ранг.",

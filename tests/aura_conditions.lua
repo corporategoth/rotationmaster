@@ -445,8 +445,8 @@ test('all six spell aura schemas accept the rank option and summaries expose it'
         assert(validation.valid and validation.supported, 'rank option missing from ' .. tag)
 
         assert(
-            f.addon.conditionDefinitions[tag].print(0, condition):find('any rank', 1, true),
-            'rank semantics absent from summary'
+            not f.addon.conditionDefinitions[tag].print(0, condition):find('any rank', 1, true),
+            'any rank is implied, not spelled out'
         )
 
         condition.anyrank = 'yes'

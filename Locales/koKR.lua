@@ -4624,11 +4624,6 @@ addon.translation = {
 -- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
 -- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
 [1376] = "%s:%s의 전환 우선순위가 잘못되었습니다. 명시적으로 복구하면 0으로 초기화됩니다.",
--- babdd022 English: %s (any rank)
--- Context: Spell label with a note that any rank of the spell matches; %s is the spell name
---     (Classic ranked spells).
--- %s #1: %s #1: the spell label, its name and ID, e.g. "Rend (spell ID 772)"
-[1377] = "%s (모든 등급)",
 -- a80c618c English: Unticked, any rank of the spell matches. Ticked, only the rank you chose
 --     matches.
 [1378] = "선택하지 않으면 주문의 모든 등급이 일치합니다. 선택하면 고른 등급만 일치합니다.",
