@@ -10293,6 +10293,10 @@ T["Shows a cast bar under the preview window while your target casts or channels
 T["Gray out preview spells you cannot afford yet"] = 3619
 -- c6fa0cb3
 T["Shows a recommended spell in gray while you lack the mana, rage or other power to cast it. This only happens with Ignore Mana on, which lets the preview show a spell before you can afford it."] = 3620
+-- d0dbc072
+T["On this client the game hides this value from addons, so the game itself decides whether this step shows: in the preview window, drawn over the next recommendation, and as a glow on its own buttons. Later steps, announcements and WeakAuras never see it."] = 3621
+-- 5de3e91d
+T["The preview window is off (Preview Spells is 0), so this step can only show as a glow on its own buttons."] = 3622
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

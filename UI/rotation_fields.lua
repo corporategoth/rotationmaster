@@ -897,6 +897,23 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
             choice('gate_value', L['Percent'], percents, gate.value, function(value)
                 set('value', value)
             end)
+
+            -- Where the client hides the value, the step is display only: say so, and where it can show.
+            if addon.Platform and addon.Platform:GetCombatDataPolicy() == 'restricted' then
+                local text = L['On this client the game hides this value from addons, so the game itself decides whether this step shows: in the preview window, drawn over the next recommendation, and as a glow on its own buttons. Later steps, announcements and WeakAuras never see it.']
+
+                if (addon.db.profile.preview_spells or 0) == 0 then
+                    text = text
+                        .. ' '
+                        .. L['The preview window is off (Preview Spells is 0), so this step can only show as a glow on its own buttons.']
+                end
+
+                local note = label(text)
+                note:SetWidth(valueX + valueWidth)
+                note:SetTextColor(1, .82, 0)
+                note:SetHeight(note:GetStringHeight())
+                y = y + note:GetHeight() + 4
+            end
         end
     end
 

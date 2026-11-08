@@ -527,6 +527,7 @@ function addon:CreateNativePreviewWindow()
                         and icons[1] == icon
                         and icon.texture == texture
                         and not icon.sample
+                        and not icon.gated
                         and icon.spellId == spellId
                         and icon.itemId == nil
                         and itemId == nil
