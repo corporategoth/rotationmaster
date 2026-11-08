@@ -231,11 +231,6 @@ function addon:BuildGeneralSettings(p)
         previewChanged()
     end)
 
-    p:Check('preview_title', L['Show a title above the preview'], profile.preview_title ~= false, function(v)
-        profile.preview_title = v
-        previewChanged()
-    end)
-
     local previewY = p.y
     local third = p.width / 3
 
@@ -345,9 +340,24 @@ function addon:BuildGeneralSettings(p)
     locked:GetFontString():SetWidth(third - 30)
     p.y = previewY + 30
 
-    -- The preview can judge readiness by its own three options (Core/action_policy.lua, both engines in main.lua); off,
-    -- it follows the ones above. The three are disabled while it is off.
-    p:Check(
+    -- The title and the preview's own readiness options share a row. The preview can judge readiness by its own three
+    -- options (Core/action_policy.lua, both engines in main.lua); off, it follows the ones above. The three are disabled
+    -- while it is off.
+    local pairY = p.y
+
+    local title = p:Check(
+        'preview_title',
+        L['Show a title above the preview'],
+        profile.preview_title ~= false,
+        function(v)
+            profile.preview_title = v
+            previewChanged()
+        end
+    )
+
+    p.y = pairY
+
+    local readiness = p:Check(
         'preview_readiness',
         L['Preview uses its own readiness options'],
         profile.preview_readiness == true,
@@ -356,6 +366,17 @@ function addon:BuildGeneralSettings(p)
             p:Draw()
         end
     )
+
+    local half = p.width / 2
+
+    for i, control in ipairs({ title, readiness }) do
+        control:ClearAllPoints()
+        control:SetPoint('TOPLEFT', (i - 1) * half, -pairY)
+        control:SetWidth(half - 8)
+        control:GetFontString():SetWidth(half - 30)
+    end
+
+    p.y = pairY + 30
 
     local previewReadinessY = p.y
 
