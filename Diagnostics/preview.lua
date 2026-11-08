@@ -162,7 +162,8 @@ function addon:PreviewTrace(info)
         beyond == nil and beyondWhy and (' (' .. tostring(beyondWhy) .. ')')
             or beyondHow and (' via ' .. tostring(beyondHow))
             or '',
-        type(movement) == 'table' and show(movement.speed) or ('unreadable (' .. tostring(movementWhy) .. ')')
+        type(movement) == 'table' and (show(movement.speed) .. (movement.estimated and ' (from move events)' or ''))
+            or ('unreadable (' .. tostring(movementWhy) .. ')')
     )
 
     local text = string.format(
