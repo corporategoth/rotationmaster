@@ -282,31 +282,55 @@ local function lookupPlayerBySpell(value, filter, mode)
         ids = addon.SpellCatalog:GetAllSpellIds(value.spell) or ids
     end
 
+    -- Answers for an aura found: "found", or nil when its fields (needed for the mode) are hidden.
+    -- @param aura table  The aura record.
+    -- @param id number  The spell id it was asked for.
+    -- @return string|nil  "found" or nil.
+    -- @return table|nil  The aura when found.
+    local function accept(aura, id)
+        local hidden = aura.unavailable
+        local ownerOnly = hidden and hidden.sourceUnit and next(hidden, next(hidden)) == nil
+
+        -- A hidden owner is not a hidden aura: for presence, a spell the player knows and finds on themselves in combat is
+        -- taken as their own (only a second caster of the same spell could make it someone else's).
+        if
+            hidden
+            and not (mode == "present"
+                and (not value.ownbuff or ownerOnly and (playerKnows(value.spell) or playerKnows(id))))
+        then
+            return
+        end
+        if not hidden and value.ownbuff and aura.sourceUnit ~= "player" then
+            return
+        end
+
+        return "found", aura
+    end
+
     for _, id in ipairs(ids) do
         local aura, reason = platform:GetPlayerAuraBySpellID(id)
 
         if reason then
             return
         end
-
         if aura then
-            local hidden = aura.unavailable
-            local ownerOnly = hidden and hidden.sourceUnit and next(hidden, next(hidden)) == nil
+            return accept(aura, id)
+        end
+    end
 
-            -- A hidden owner is not a hidden aura: for presence, a spell the player knows and finds on themselves in combat is
-            -- taken as their own (only a second caster of the same spell could make it someone else's).
-            if
-                hidden
-                and not (mode == "present"
-                    and (not value.ownbuff or ownerOnly and (playerKnows(value.spell) or playerKnows(id))))
-            then
-                return
-            end
-            if not hidden and value.ownbuff and aura.sourceUnit ~= "player" then
-                return
-            end
+    -- No aura carries any of the spell's IDs, but a buff can carry another ID than the spell that casts it (a shield's
+    -- proc spell, say), so it is also asked for by name before the answer is "none"; a refusal there leaves the walk to say so.
+    local info = type(platform.GetSpellInfo) == "function" and platform:GetSpellInfo(value.spell)
+    local name = info and info.name
 
-            return "found", aura
+    if type(name) == "string" and name ~= "" and type(platform.GetAuraBySpellName) == "function" then
+        local aura, reason = platform:GetAuraBySpellName("player", name, "HELPFUL")
+
+        if reason and reason ~= "missing-api" then
+            return
+        end
+        if aura then
+            return accept(aura, value.spell)
         end
     end
 
