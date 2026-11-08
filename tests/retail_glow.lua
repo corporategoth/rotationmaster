@@ -85,6 +85,37 @@ test('diagnostic sends the saved report to the real copy window', function()
     assert(dialog.edit:GetText() == table.concat(lines, '\n'))
     f.addon:ShowGlowDiagnostic()
     assert(dialog.edit:GetText() == table.concat(lines, '\n'))
+    -- A real EditBox cuts its text at a few hundred characters unless the limit is lifted, which left long reports empty.
+    assert(dialog.edit.maxLetters == 0 and dialog.edit.maxBytes == 0, 'the report box must have no length limit')
+end)
+
+test('a long report is shown a page at a time so a page that does not show can be found', function()
+    local F = dofile('tests/fixtures/addon.lua')
+    local f = F.new(1, 12, 'SHAMAN')
+    dofile('tests/fixtures/native_ui.lua')(f.env)
+    f.load('UI/condition_text.lua')
+    local lines = {}
+
+    for n = 1, 600 do
+        lines[n] = string.format('line %03d %s', n, ('x'):rep(60))
+    end
+
+    local text = table.concat(lines, '\n')
+    local dialog = f.addon:ShowConditionText(text, 'Report')
+    assert(#dialog.pages > 3 and dialog.page == 1 and dialog.next:IsShown(), 'a long report is paged')
+    local rebuilt = {}
+
+    for page = 1, #dialog.pages do
+        dialog.next.scripts.OnClick(dialog.next)
+        assert(#dialog.pages[page] < 6000 and dialog.page == math.min(page + 1, #dialog.pages))
+        rebuilt[#rebuilt + 1] = dialog.pages[page]
+    end
+
+    assert(table.concat(rebuilt, '\n') == text, 'no line is lost or repeated between pages')
+    local short = f.addon:ShowConditionText('one short report', 'Report')
+    assert(#short.pages == 1 and not short.next:IsShown() and short.edit:GetText() == 'one short report')
+    local plain = f.addon:ShowConditionText(text)
+    assert(#plain.pages == 1, 'a condition expression is never paged')
 end)
 
 -- Diagnostic ------------------------------------------------------------------

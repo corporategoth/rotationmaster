@@ -457,6 +457,50 @@ local function conditionStatus(self, step)
     return show(result.status) .. (result.reason and (' (' .. show(result.reason) .. ')') or '')
 end
 
+-- Lists how each part of a step's conditions reads now, so a Stop that matched or paused says which part did.
+-- @param self table  The addon.
+-- @param step table  The step.
+-- @return string|nil  "TYPE unit spell: status (reason)" for each leaf condition, joined by "; "; nil when none can be read.
+local function leafDetail(self, step)
+    if type(self.evaluateConditionResult) ~= 'function' then
+        return nil
+    end
+
+    local out = {}
+
+    -- Walks a condition tree and reads each leaf on its own (the engine reads them the same way).
+    -- @param cond any  A condition, a list of conditions, or an AND, OR or NOT group.
+    local function walk(cond)
+        if type(cond) ~= 'table' or #out >= 10 then
+            return
+        end
+
+        if cond.type == 'AND' or cond.type == 'OR' then
+            for _, child in ipairs(cond.value or {}) do
+                walk(child)
+            end
+        elseif cond.type == 'NOT' then
+            walk(cond.value)
+        elseif cond.type then
+            local ok, result = pcall(self.evaluateConditionResult, self, cond, { stepId = step.id })
+
+            local text = ok
+                and type(result) == 'table'
+                and (show(result.status) .. (result.reason and (' (' .. show(result.reason) .. ')') or ''))
+                or ('error: ' .. show(result))
+
+            out[#out + 1] = string.format('%s %s %s: %s', show(cond.type), show(cond.unit), show(cond.spell), text)
+        else
+            for _, child in ipairs(cond) do
+                walk(child)
+            end
+        end
+    end
+
+    walk(step.conditions)
+    return #out > 0 and table.concat(out, '; ') or nil
+end
+
 -- Works out one step's outcome as the engine would see it now.
 -- @param self table  The addon.
 -- @param report table  The report object; lines are added to it when verbose.
@@ -503,7 +547,17 @@ local function walkStep(self, report, row, now, verbose)
         end
 
         if status:match('^match') or status:match('^unavailable') then
-            return 'stop', nil, 'a stop step matched'
+            local detail = leafDetail(self, step)
+
+            if verbose and detail then
+                report.add('    parts: %s', detail)
+            end
+
+            return 'stop',
+                nil,
+                (status:match('^match') and 'a stop step matched'
+                    or 'a stop step could not be read, which pauses the rotation')
+                    .. (detail and (': ' .. detail) or '')
         end
 
         return 'notmatched'
@@ -1068,6 +1122,11 @@ function addon:BuildGlowDiagnostic()
         end
     end
 
+    if self.Platform and self.Platform.lastAuraError then
+        section(report, 'Aura reads')
+        report.add('The last aura read the game refused said: %s', show(self.Platform.lastAuraError))
+    end
+
     section(report, 'Verdict')
     local stop
 
@@ -1214,11 +1273,15 @@ local function watchLine(self)
         ),
     }
 
+    if self.Platform and self.Platform.lastAuraError then
+        parts[#parts + 1] = 'auraError=' .. show(self.Platform.lastAuraError)
+    end
+
     local rows = rotationRows(self)
     local sink = newReport()
 
     for n, row in ipairs(rows or {}) do
-        if n > 4 then
+        if n > 14 then
             break
         end
 
@@ -1230,13 +1293,17 @@ local function watchLine(self)
             verdict,
             verdict == 'selected' and ('=' .. show(spell)) or (reason and ('(' .. reason .. ')') or '')
         )
+
+        if verdict == 'selected' or verdict == 'stop' then
+            break
+        end
     end
 
     return table.concat(parts, ' ')
 end
 
--- Handler of /rm debug glow [seconds]: builds and saves the report, prints where it stops, and opens it in the copyable
--- window.
+-- Handler of /rm debug glow [seconds]: builds and saves the report and opens it in the copyable window; nothing but a short
+-- note goes to chat. With seconds the window opens when the watch ends.
 -- @param seconds number|string|nil  With a value of 1 to MAX_WATCH it instead keeps appending a line per second to the
 --   saved report and leaves the window to "/rm debug glow show".
 -- @return string[]  The report lines.
@@ -1278,9 +1345,6 @@ function addon:RunGlowDiagnostic(seconds)
         self:print(L['Glow diagnostic saved.'])
     end
 
-    if stop then
-        self:print(L['Glow stops at: %s'], stop)
-    end
     if self.ShowConditionText and not (seconds and seconds >= 1) then
         self:ShowConditionText(table.concat(lines, '\n'), L['Glow diagnostic'])
     end
@@ -1309,7 +1373,8 @@ end
 --
 -- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua); /rm debug talents reports the
 -- trait talent reads (Diagnostics/talents.lua); /rm debug timeline probes Blizzard's encounter timeline
--- (Diagnostics/timeline.lua); /rm debug marks reports the raid mark table (Diagnostics/raid_marks.lua).
+-- (Diagnostics/timeline.lua); /rm debug marks reports the raid mark table (Diagnostics/raid_marks.lua); /rm debug spells
+-- lists the spell IDs of the shipped premades this client does not know (Diagnostics/premade_spells.lua).
 function addon:HandleDebugCommand(args)
     local what, rest = (args or ''):match('^%s*(%S*)%s*(.-)%s*$')
 
@@ -1335,6 +1400,18 @@ function addon:HandleDebugCommand(args)
     end
     if what == 'secrets' and self.RunSecretsDiagnostic then
         return self:RunSecretsDiagnostic(rest)
+    end
+
+    if what == 'spells' and self.RunPremadeSpellDiagnostic then
+        if rest == 'show' then
+            return self:ShowPremadeSpellDiagnostic()
+        end
+
+        return self:RunPremadeSpellDiagnostic()
+    end
+
+    if what == 'preview' and self.RunPreviewDiagnostic then
+        return self:RunPreviewDiagnostic(rest)
     end
 
     self:print(

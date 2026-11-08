@@ -495,7 +495,7 @@ function addon:CreateRotationCard(parent)
             or step.type == 'stop' and L['Stop']
             or step.type == 'assisted' and L["Blizzard's suggestion"]
             or step.type == 'mark' and addon:DescribeMarkStep(step)
-            or (step.type == 'spell' or step.type == 'pet' or step.type == 'any') and addon:SpellLabel(step.action)
+            or (step.type == 'spell' or step.type == 'pet' or step.type == 'any') and addon:StepSpellLabel(step)
             or L['Item']
 
         self.defaultTitle = branch and model.compact and addon:DescribeCardCondition(step.conditions or {}, self.spec)

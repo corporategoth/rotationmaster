@@ -893,7 +893,7 @@ function addon:CreateRotationCanvas(parent, owner)
                 or step.type == 'stop' and L['Stop']
                 or step.type == 'assisted' and L["Blizzard's suggestion"]
                 or step.type == 'mark' and addon:DescribeMarkStep(step)
-                or addon:SpellLabel(step.action))
+                or addon:StepSpellLabel(step))
 
         if self.drag.tail then
             title = L['Move this and following entries'] .. ': ' .. title

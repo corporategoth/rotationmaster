@@ -164,14 +164,12 @@ test('Enhancement while leveling: Earth Shock on cooldown, melee, Lightning Bolt
     assert(first(f, s, ENH) == nil)
 end)
 
-test('Enhancement with the full kit: Stormstrike, Maelstrom Bolt, Stormstrike Earth Shock', function()
+test('Enhancement with the full kit: Stormstrike, then Earth Shock; Forever has no Maelstrom Weapon', function()
     local f, s = shaman(40, leveling, deep)
     assert(first(f, s, ENH) == 17364)
     cd(s, 17364)
-    s.buffs = { { id = 408505, stacks = 4 } }
-    assert(first(f, s, ENH) == 8042)
-    s.buffs[1].stacks = 5
-    assert(first(f, s, ENH) == 403, 'five Maelstrom stacks')
+    s.buffs = { { id = 408505, stacks = 5 } }
+    assert(first(f, s, ENH) == 8042, 'a Maelstrom Weapon aura, were there one, changes nothing')
     s.buffs = {}
     s.debuffs = { { id = 17364 } }
     assert(first(f, s, ENH) == 8042)
@@ -188,6 +186,21 @@ test('Enhancement with the full kit: Stormstrike, Maelstrom Bolt, Stormstrike Ea
     s.debuffs = { { id = 8050 } }
     assert(first(f, s, ENH) == 8042)
 end)
+
+test(
+    'out of melee range and standing still, Lightning Bolt comes before Earth Shock; in melee or moving it is Earth Shock',
+    function()
+        local f, s = shaman(40, leveling, deep)
+        cd(s, 17364)
+        s.range[6603] = false
+        assert(first(f, s, ENH) == 403, 'at range, standing: Lightning Bolt')
+        s.moving = true
+        assert(first(f, s, ENH) == 8042, 'moving: the instant Earth Shock')
+        s.moving = false
+        s.range[6603] = true
+        assert(first(f, s, ENH) == 8042, 'in melee: Earth Shock')
+    end
+)
 
 test('single target vs packs: Fire Nova at a Fire totem and Flame Shock on three engaged enemies', function()
     local f, s = shaman(40, leveling, deep)

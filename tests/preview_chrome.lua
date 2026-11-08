@@ -96,6 +96,26 @@ local function menuStubs(f)
     return m
 end
 
+test('a caption sits above the icons, reserves no height, and the profile can switch it off', function()
+    local _, a = fixture()
+    local w = a:CreateNativePreviewWindow()
+    w:AddRecommendation(403)
+    assert(w.caption and w.caption:GetText() == 'Rotation Preview' and w.caption:IsShown())
+    local points = w.caption.points and w.caption.points[1]
+
+    assert(
+        not points or points[1] == 'BOTTOM' and points[3] == 'TOP',
+        'it is anchored above the frame, outside its height'
+    )
+
+    a.db.profile.preview_title = false
+    w:Configure()
+    assert(not w.caption:IsShown(), 'switched off')
+    a.db.profile.preview_title = nil
+    w:Configure()
+    assert(w.caption:IsShown(), 'on unless the profile says false')
+end)
+
 test('the window has no title bar, title text or close button and reserves no title height', function()
     local _, a = fixture()
     local w = a:CreateNativePreviewWindow()

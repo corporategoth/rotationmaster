@@ -4468,11 +4468,6 @@ T["Higher numbers are tried first; your rotations and Built Ins compete on prior
 -- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
 -- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
 T["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = 1376
--- babdd022
--- Context: Spell label with a note that any rank of the spell matches; %s is the spell name
---     (Classic ranked spells).
--- %s #1: %s #1: the spell label, its name and ID, e.g. "Rend (spell ID 772)"
-T["%s (any rank)"] = 1377
 -- a80c618c
 T["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."] = 1378
 -- 264ad9c0
@@ -6029,10 +6024,6 @@ T["Engraved Rune"] = 1892
 -- ea43639d
 -- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 T["ranks in %s"] = 1893
--- 1dd73b64
--- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
---     from.
-T["Show talent tree"] = 1894
 -- 3e590ed8
 -- Context: Heading label in the talent window and a source name in the talent condition editor for
 --     the hero talent trees.
@@ -6043,20 +6034,11 @@ T["The talent tree cannot be shown during combat."] = 1896
 T["Finish or discard the changes in your own talent window first."] = 1897
 -- da703663
 T["The talent tree cannot be shown right now. Use the Talent list instead."] = 1898
--- 80ea0eae
-T["Click a talent to choose it for this condition."] = 1899
--- 6f1df5fc
--- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
-T["Selected: %s"] = 1900
 -- 7a5e089f
 -- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
 T["Ranks: %d"] = 1901
 -- 26722619
 T["Choose one of the talents on this node."] = 1902
--- d9f6a964
-T["Click to choose this talent."] = 1903
--- ccb6e92e
-T["Click to clear this talent."] = 1904
 -- 8a667e66
 T["Close the build shown in your own talent window first."] = 1905
 -- 1f397413
@@ -8856,11 +8838,11 @@ T["Pick one of your known runes by equipment slot. The rune is saved by the firs
 T["Enter a spell the rune teaches, or the rune's own ID (its skill line ability ID) for a rune that teaches no spell. Entering one clears the other."] = 3043
 -- 868afb4d
 T["Engraving exists only on Season of Discovery realms. Elsewhere, and until your runes have loaded after logging in, this condition is unavailable rather than false, including under NOT. The Phase 7 shoulder runes are not engravings and are not seen. This is not the Death Knight Rune condition."] = 3044
--- 2cfaca8e
+-- 95d95ff8
 -- %s #1: %s #1: why the talents cannot be listed, a short code (shown as-is), e.g. "not-ready"
-T["Your talents cannot be listed right now (%s). A node ID entered below is kept and evaluated."] = 3045
--- 0d2b4c68
-T["Talents can be listed only for your own class. A node ID entered below is kept and evaluated."] = 3046
+T["Your talents cannot be listed right now (%s)."] = 3045
+-- 520dc742
+T["Talents can be listed only for your own class."] = 3046
 -- 7417e36a
 -- Context: Group heading in the talent dropdown: talents shared by all specializations of the
 --     class.
@@ -8890,13 +8872,6 @@ T["%s (choice)"] = 3053
 -- e8871b70
 -- Context: Fallback group heading in the talent dropdown when a talent group has no name.
 T["Talents"] = 3054
--- d6f5d4a1
--- Context: Label of the edit box in the talent condition: the numeric ID of the talent node.
-T["Talent Node ID"] = 3055
--- 3e359295
--- Context: Label of the edit box in the talent condition: the numeric ID of the entry chosen at a
---     choice node.
-T["Choice Entry ID"] = 3056
 -- 986b4c09
 -- Context: Fallback name for a talent whose name is not known; %s is the node ID, e.g. 'talent node
 --     12345'.
@@ -8905,14 +8880,12 @@ T["talent node %s"] = 3057
 -- 905d8751
 -- %s #1: %s #1: the name of the talent, e.g. "Arcane Power", or "talent node 82000"
 T["the number of ranks in %s"] = 3058
--- ddb10d64
-T["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked from the list also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."] = 3059
--- dc69c172
-T["Talents of another specialization cannot be loaded during combat. A node ID entered below is kept and evaluated."] = 3060
--- 19d60de6
-T["Opens the talent tree of the rotation's specialization. Click a talent to choose it for this condition."] = 3061
--- f14a6d20
-T["Show talent tree draws the talent tree of the specialization shown, with every talent open to choose. Click a talent to choose it, or click the chosen one again to clear it; the Talent list follows. It cannot open during combat."] = 3062
+-- 19823fd4
+T["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or click the talent's icon to choose it from the talent tree. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked this way also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."] = 3059
+-- c714c222
+T["Talents of another specialization cannot be loaded during combat."] = 3060
+-- 5ad8690c
+T["Click the talent's icon to open the talent tree, with every talent open to choose. Left-click a talent to add a rank and right-click to remove one, choose how the rank is compared, and press Accept; the lists follow. Choosing a different talent sets the previous one back to nothing. It cannot open during combat."] = 3062
 -- 252b33d6
 T["Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees."] = 3063
 -- bd69e217
@@ -9389,9 +9362,6 @@ T["Glow diagnostic saved."] = 3226
 T["Glow diagnostic saved. Watching for %d seconds."] = 3227
 -- 820421f2
 T["Glow watch finished. Run /rm debug glow show to view it."] = 3228
--- 6eb70331
--- %s #1: %s #1: where the glow stops, a developer sentence that stays in English, e.g. "the glow was never requested for Fireball"
-T["Glow stops at: %s"] = 3229
 -- d918e458
 T["No glow diagnostic is saved yet. Run /rm debug glow."] = 3230
 -- 5e41a846
@@ -10043,122 +10013,230 @@ T["These conditions cannot work on this client. They are kept as imported and th
 T["This import cannot be shown in full (%s)."] = 3468
 -- e981ddae
 T["Warning"] = 3469
--- 21458732
-T["The game hides this in combat, during boss encounters, in Mythic+ and in PvP matches."] = 3470
--- fbee2ed7
-T["The game hides this in combat."] = 3471
--- e29f6a9e
-T["The game hides this for units that are not you, your pet or in your group."] = 3472
--- a6e4e3af
-T["The game hides this for anyone but you and your pet."] = 3473
--- 17d9390b
-T["The game hides this in dungeons and raids."] = 3474
--- b2ffba0d
-T["The game always hides this for the chosen spell."] = 3475
--- 205d3409
-T["While hidden, the condition is unavailable: a Branch or Stop waits and an action is skipped."] = 3476
--- 5807f6aa
-T["Matches when the selected unit is a boss: the game marks it as a boss, it is a World Boss, or it is an elite whose level shows as a skull. For \"a boss fight is in progress\", use Boss Encounter."] = 3477
--- 41861209
-T["Is Elite"] = 3478
--- d6a0f84f
-T["{unit} {{!is elite|is not elite}}"] = 3479
--- ee223e20
-T["Matches when the selected unit is elite or better: Elite, Rare Elite or World Boss. Unit Classification matches one classification exactly."] = 3480
--- 81a052dc
-T["Casting or Channeling"] = 3481
--- e42399ee
-T["{unit} {{!are casting or channeling|are not casting or channeling}}"] = 3482
--- f5e18b19
-T["{unit} {{!is casting or channeling|is not casting or channeling}}"] = 3483
--- 6533d631
-T["Matches when the selected unit is casting or channeling any spell. It does not look at which spell, so it still works when the game hides the spell from addons."] = 3484
--- 8e63c18d
-T["Is a Boss"] = 3485
--- 6a8f952c
-T["{unit} {{!is a boss|is not a boss}}"] = 3486
--- e6e573dc
-T["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Where the client hides the speed (Retail and Forever in combat), the record comes from PLAYER_STARTED_MOVING and PLAYER_STOPPED_MOVING with estimated = true: 0 when stopped, the last readable moving speed when moving. Missing, failed or malformed observations, and a hidden speed before any movement event or readable speed, return nil with a reason."] = 3487
--- 4f0715cc
-T["Usable now"] = 3488
--- 0d5ead16
-T["Enough resources"] = 3489
--- 4b58dec0
-T["Usable now matches when the game says you can cast the spell now, apart from its cooldown: resources, stance or form, and a spell's own requirements, such as a target at low health or a recent dodge, are all part of the answer. Enough resources matches when only the cost is covered. Both still read in combat on clients that hide your power and your target's health from addons, so Usable now on a spell that needs a low-health target tells you whether the target is low enough."] = 3490
--- c674e289
-T["Spell Usable"] = 3491
--- 9b59d885
-T["you {{!have|do not have}} the resources for %s"] = 3492
--- 1f816df2
-T["%s {{!is|is not}} usable now"] = 3493
--- d18461b3
-T["{unit} {{!are a boss|are not a boss}}"] = 3494
--- e16d17d5
-T["{unit} {{!are elite|are not elite}}"] = 3495
--- 4e2c25be
-T["Preview uses its own readiness options"] = 3496
--- a1295dfe
-T["Give the preview window its own Ignore Mana, Ignore Range and Ignore Moving. The bar highlight keeps the options under Recommendations, and the preview shows the first steps that are ready under its own, so it can, for example, show a spell that is out of range while the bar highlights the next one you can use. Off, the preview follows the same options as the bar highlight."] = 3497
--- 3cc80b28
-T["Ignore Moving"] = 3498
--- f3a9c70c
-T["Advise a spell with a cast time even while you are moving. Without this, such a spell is skipped while you move, because it cannot be cast on the move; an instant spell, or one a proc has made instant, is still advised. Retail and Forever hide your speed in combat, so moving is then taken from the game's start and stop moving events."] = 3499
--- 12f1ff04
-T["Ignore moving"] = 3500
--- 09ac991a
-T["Preview: ignore mana"] = 3501
--- b6e79743
-T["Preview: ignore range"] = 3502
--- 50bc516c
-T["Preview: ignore moving"] = 3503
+-- a58da793
+T["Metrics"] = 3471
+-- 7d510fae
+T["Track how closely I follow the advice"] = 3472
+-- 12ccb9c7
+T["Track damage and healing per fight"] = 3473
+-- 95e66e46
+T["Metrics report"] = 3474
+-- 3b5e938d
+T["Export for the website"] = 3475
+-- a42bb91e
+T["Metrics export"] = 3478
+-- 03823b68
+T["Rotation metrics"] = 3480
+-- f0ad8ea7
+T["No metrics have been recorded yet."] = 3481
+-- 3440f7f0
+T["Metrics cleared."] = 3482
+-- 62016fff
+T["%d fights, %d seconds, %d casts"] = 3483
+-- fc6ca8ad
+T["Average time to act on a recommendation: %s seconds"] = 3485
+-- 7a3edc19
+T["Damage per second: %d, healing per second: %d"] = 3486
+-- a84f13b5
+T["Low adherence"] = 3489
+-- 49e9ada4
+T["Medium adherence"] = 3490
+-- 49239376
+T["High adherence"] = 3491
+-- b69e157b
+T["While the rotation is on and you are in combat, record which spell was recommended when you pressed a spell, how long after the recommendation appeared you pressed it, and what you cast instead when you did not follow it. Only totals are kept, per rotation, in your saved variables; nothing is sent anywhere. Open Metrics report to see them as graphs, or export them for the website."] = 3492
+-- 7566cb83
+T["Record the damage and healing you do in each fight so the metrics can compare fights where you followed the advice closely with fights where you did not. This reads the combat log, which Retail and Forever hide from addons, so it records nothing on those clients."] = 3493
+-- 3358a032
+T["Predict upcoming recommendations from the expected state"] = 3495
+-- 999811c8
+T["Fade predictions that are less certain"] = 3496
+-- 94270307
+T["Forget what the forecast has learned"] = 3497
+-- 2dd9064e
+T["Track how accurate the predictions were"] = 3498
+-- 4e461a5e
+T["Forecast learning cleared."] = 3499
+-- 6941525e
+T["Prediction %d recommendations ahead: right %s%% of %d, said it was %s%% sure"] = 3500
+-- d3939aef
+T["Predict the next few recommendations by walking the rotation again as if each earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast time passed, and, for spells the addon has watched leave an aura or do damage or healing, that effect applied. It needs Preview Spells above one and learns from your casts while this is on. Retail and Forever hide most of the numbers it needs, so there it predicts less."] = 3501
+-- 0cf3ef81
+T["Fade the icons of predicted recommendations that the addon is less sure of. The first recommendation is read from the game as it is now and never fades."] = 3502
+-- 3ad1d37e
+T["Compare each forecast with what was highlighted when the time came: the second recommendation against the next highlight, the third against the one after, and so on. The totals appear in Metrics report and the exports, and the forecast's confidence is adjusted by how often it was right."] = 3503
+-- 689efd69
+T["Delete what the forecast has learned about your spells (the auras they leave, the damage and healing they do). It starts learning again if the forecast is on."] = 3504
+-- 89713b9c
+T["Accept"] = 3505
+-- f7a2f54e
+T["Left-click a talent to choose it, right-click to clear it."] = 3507
+-- b7df392f
+T["Left-click a talent to add a rank, right-click to remove one."] = 3508
+-- 16d3cbc4
+T["Click to choose the talent from the talent tree."] = 3509
+-- b2b12a58
+T["Rotation Preview"] = 3510
+-- 8383d645
+T["Show a title above the preview"] = 3511
+-- aab20fee
+T["Show \"Rotation Preview\" above the preview window so it is clear what it is. Turn it off to show only the icons."] = 3512
+-- 4dd4ee2d
+T["Followed the advice"] = 3513
+-- a87ae136
+T["Where your casts went"] = 3514
+-- a6afe29c
+T["Followed"] = 3515
+-- 24d8f84a
+T["Out of order"] = 3516
+-- b32205ae
+T["Outside the rotation"] = 3517
+-- 4454602c
+T["No advice"] = 3518
+-- b4252965
+T["Time to act on advice"] = 3519
+-- 50308d02
+T["Damage and healing per second"] = 3520
+-- 7de48ac3
+T["Most common deviations"] = 3521
+-- 8ae08371
+T["Forecast accuracy"] = 3522
+-- 683943ea
+T["Prediction %d: right %d%% of the time, said %d%% sure"] = 3523
+-- 214bf2db
+T["Last fight"] = 3524
+-- d354f304
+T["This instance"] = 3525
+-- f39529f9
+T["Last %d minutes"] = 3527
+-- 9755c8d7
+T["All time"] = 3528
+-- ce06bb9e
+T["Nothing was recorded for this period."] = 3529
+-- cb34af04
+T["Add instructions for a language model"] = 3530
+-- 9573bb88
+T["Metrics for a language model"] = 3531
+-- fff6ef8a
+T["See how closely you follow the advice and how much it matters."] = 3532
+-- 8ebc213e
+T["Choose what to record, then see how closely you followed the advice, how long you took to act on it and what you cast instead, for the last fight, this instance, a period you set, or everything. Export the numbers for the website, with or without instructions for a language model. Reset deletes everything recorded."] = 3533
 -- 3d41d29f
-T["Recent Kill"] = 3504
+T["Recent Kill"] = 3534
 -- 8505c344
-T["you or your group {{!killed|did not kill}} something in the last %s seconds"] = 3505
+T["you or your group {{!killed|did not kill}} something in the last %s seconds"] = 3535
 -- 56b6a414
-T["Matches when you or a member of your group killed something within the chosen number of seconds, from the game's kill event, which still fires when the combat log is closed to addons. Useful for abilities that a kill makes available."] = 3506
+T["Matches when you or a member of your group killed something within the chosen number of seconds, from the game's kill event, which still fires when the combat log is closed to addons. Useful for abilities that a kill makes available."] = 3536
 -- 42dd3e08
-T["Enemies Targeting You"] = 3507
+T["Enemies Targeting You"] = 3537
 -- dec102d9
-T["Number of enemies with you as their target"] = 3508
+T["Number of enemies with you as their target"] = 3538
 -- 00285078
-T["Counts the enemies with a nameplate whose target is you, for example to switch to an area or defensive priority when several are on you. Nameplates must be shown. Retail and Forever hide target comparisons in dungeons and raids, where the count is unavailable."] = 3509
+T["Counts the enemies with a nameplate whose target is you, for example to switch to an area or defensive priority when several are on you. Nameplates must be shown. Retail and Forever hide target comparisons in dungeons and raids, where the count is unavailable."] = 3539
+-- 4f0715cc
+T["Usable now"] = 3540
+-- 0d5ead16
+T["Enough resources"] = 3541
+-- 4b58dec0
+T["Usable now matches when the game says you can cast the spell now, apart from its cooldown: resources, stance or form, and a spell's own requirements, such as a target at low health or a recent dodge, are all part of the answer. Enough resources matches when only the cost is covered. Both still read in combat on clients that hide your power and your target's health from addons, so Usable now on a spell that needs a low-health target tells you whether the target is low enough."] = 3542
+-- c674e289
+T["Spell Usable"] = 3543
+-- 9b59d885
+T["you {{!have|do not have}} the resources for %s"] = 3544
+-- 1f816df2
+T["%s {{!is|is not}} usable now"] = 3545
 -- 45ddcd22
-T["Compares the seconds until your next melee swing with the chosen number, using the game's own swing timer, which includes haste and still reads in combat. While no swing is under way it reads 0. Only clients with that timer (Forever) offer it; elsewhere use Weapon Swing Time Remaining."] = 3510
+T["Compares the seconds until your next melee swing with the chosen number, using the game's own swing timer, which includes haste and still reads in combat. While no swing is under way it reads 0. Only clients with that timer (Forever) offer it; elsewhere use Weapon Swing Time Remaining."] = 3546
 -- d9cbd3be
-T["Time Until Next Swing"] = 3511
+T["Time Until Next Swing"] = 3547
 -- 072692ed
-T["Time until your next off-hand swing"] = 3512
+T["Time until your next off-hand swing"] = 3548
 -- c0bd3d44
-T["Time until your next main-hand swing"] = 3513
--- 459e6841
-T["Remember hidden buffs and cooldowns"] = 3514
--- 09eb1a1c
-T["Retail and Forever hide your buffs and cooldowns from addons in combat, and conditions that need them are then unavailable. With this on, your own buffs and your spell cooldowns answer from what was last read, restarted when you cast the spell: a buff keeps its last remaining time and stacks, a cooldown its last length. This can be wrong when something else changes them unseen, such as a dispel or a cooldown reset, so it is off by default. Blizzard's Cooldown Manager is asked first where it tracks the buff."] = 3515
--- 775eccf2
-T["Shown by the game when"] = 3516
--- de4f4d0f
-T["Only advise this step while a health or power percent is below or above a threshold. Where the game hides that value from addons (Retail and Forever), the game itself decides at draw time, so the step can only appear in the preview window, drawn over the next recommendation."] = 3517
--- 6532aeb7
-T["is below"] = 3518
--- 3098f5fd
-T["is above"] = 3519
--- 71fafb74
-T["%d%%"] = 3520
--- 716d633b
-T["Percent"] = 3521
--- 09d551ff
-T["Show target health under the preview"] = 3522
--- bea87231
-T["Shows your target's health as a thin bar under the preview window. The game draws it from the real health even where it hides health from addons (Retail and Forever in combat), so it is shown but never used to choose a step."] = 3523
--- 49c2091d
-T["Secret value counts cleared."] = 3524
--- 627deef8
-T["Secret value probe"] = 3525
+T["Time until your next main-hand swing"] = 3549
+-- d18461b3
+T["{unit} {{!are a boss|are not a boss}}"] = 3550
+-- 6a8f952c
+T["{unit} {{!is a boss|is not a boss}}"] = 3551
+-- 5807f6aa
+T["Matches when the selected unit is a boss: the game marks it as a boss, it is a World Boss, or it is an elite whose level shows as a skull. For \"a boss fight is in progress\", use Boss Encounter."] = 3552
+-- 41861209
+T["Is Elite"] = 3553
+-- e16d17d5
+T["{unit} {{!are elite|are not elite}}"] = 3554
+-- d6a0f84f
+T["{unit} {{!is elite|is not elite}}"] = 3555
+-- ee223e20
+T["Matches when the selected unit is elite or better: Elite, Rare Elite or World Boss. Unit Classification matches one classification exactly."] = 3556
+-- 81a052dc
+T["Casting or Channeling"] = 3557
+-- e42399ee
+T["{unit} {{!are casting or channeling|are not casting or channeling}}"] = 3558
+-- f5e18b19
+T["{unit} {{!is casting or channeling|is not casting or channeling}}"] = 3559
+-- 6533d631
+T["Matches when the selected unit is casting or channeling any spell. It does not look at which spell, so it still works when the game hides the spell from addons."] = 3560
+-- 8e63c18d
+T["Is a Boss"] = 3561
+-- 205d3409
+T["While hidden, the condition is unavailable: a Branch or Stop waits and an action is skipped."] = 3562
+-- 21458732
+T["The game hides this in combat, during boss encounters, in Mythic+ and in PvP matches."] = 3563
+-- fbee2ed7
+T["The game hides this in combat."] = 3564
+-- e29f6a9e
+T["The game hides this for units that are not you, your pet or in your group."] = 3565
+-- a6e4e3af
+T["The game hides this for anyone but you and your pet."] = 3566
+-- 17d9390b
+T["The game hides this in dungeons and raids."] = 3567
+-- b2ffba0d
+T["The game always hides this for the chosen spell."] = 3568
 -- aaf11c64
-T["Blizzard's Cooldown Manager, or the last readable value when Remember hidden buffs and cooldowns is on, can still answer for your own buffs and cooldowns."] = 3526
+T["Blizzard's Cooldown Manager, or the last readable value when Remember hidden buffs and cooldowns is on, can still answer for your own buffs and cooldowns."] = 3569
 -- 8211fded
-T["Your own totems are still followed from the game's totem events once their duration has been seen."] = 3527
+T["Your own totems are still followed from the game's totem events once their duration has been seen."] = 3570
+-- 49c2091d
+T["Secret value counts cleared."] = 3571
+-- 627deef8
+T["Secret value probe"] = 3572
+-- 3cc80b28
+T["Ignore Moving"] = 3573
+-- f3a9c70c
+T["Advise a spell with a cast time even while you are moving. Without this, such a spell is skipped while you move, because it cannot be cast on the move; an instant spell, or one a proc has made instant, is still advised. Retail and Forever hide your speed in combat, so moving is then taken from the game's start and stop moving events."] = 3574
+-- 459e6841
+T["Remember hidden buffs and cooldowns"] = 3575
+-- 09eb1a1c
+T["Retail and Forever hide your buffs and cooldowns from addons in combat, and conditions that need them are then unavailable. With this on, your own buffs and your spell cooldowns answer from what was last read, restarted when you cast the spell: a buff keeps its last remaining time and stacks, a cooldown its last length. This can be wrong when something else changes them unseen, such as a dispel or a cooldown reset, so it is off by default. Blizzard's Cooldown Manager is asked first where it tracks the buff."] = 3576
+-- 4e2c25be
+T["Preview uses its own readiness options"] = 3577
+-- a1295dfe
+T["Give the preview window its own Ignore Mana, Ignore Range and Ignore Moving. The bar highlight keeps the options under Recommendations, and the preview shows the first steps that are ready under its own, so it can, for example, show a spell that is out of range while the bar highlights the next one you can use. Off, the preview follows the same options as the bar highlight."] = 3578
+-- 09d551ff
+T["Show target health under the preview"] = 3579
+-- bea87231
+T["Shows your target's health as a thin bar under the preview window. The game draws it from the real health even where it hides health from addons (Retail and Forever in combat), so it is shown but never used to choose a step."] = 3580
+-- 12f1ff04
+T["Ignore moving"] = 3581
+-- 09ac991a
+T["Preview: ignore mana"] = 3582
+-- b6e79743
+T["Preview: ignore range"] = 3583
+-- 50bc516c
+T["Preview: ignore moving"] = 3584
+-- 775eccf2
+T["Shown by the game when"] = 3585
+-- de4f4d0f
+T["Only advise this step while a health or power percent is below or above a threshold. Where the game hides that value from addons (Retail and Forever), the game itself decides at draw time, so the step can only appear in the preview window, drawn over the next recommendation."] = 3586
+-- 6532aeb7
+T["is below"] = 3587
+-- 3098f5fd
+T["is above"] = 3588
+-- 71fafb74
+T["%d%%"] = 3589
+-- 716d633b
+T["Percent"] = 3590
+-- e6e573dc
+T["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Where the client hides the speed (Retail and Forever in combat), the record comes from PLAYER_STARTED_MOVING and PLAYER_STOPPED_MOVING with estimated = true: 0 when stopped, the last readable moving speed when moving. Missing, failed or malformed observations, and a hidden speed before any movement event or readable speed, return nil with a reason."] = 3591
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

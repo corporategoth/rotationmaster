@@ -1047,6 +1047,21 @@ function addon:init()
     -- character and its pickers lacked the tree conditions and auto-repeat.
     self.db.RegisterCallback(self, 'OnNewProfile', 'InitializeTalentTreeConditions')
     self.db.RegisterCallback(self, 'OnProfileReset', 'InitializeTalentTreeConditions')
+
+    -- Collection follows the new profile's metrics switches (Platform/metrics_events.lua).
+    local metricsOwner = {}
+
+    for _, event in ipairs({ 'OnProfileChanged', 'OnProfileCopied', 'OnProfileReset' }) do
+        self.db.RegisterCallback(metricsOwner, event, function()
+            if addon.ApplyMetricsSettings then
+                addon:ApplyMetricsSettings()
+            end
+            if addon.ApplyForecastSettings then
+                addon:ApplyForecastSettings()
+            end
+        end)
+    end
+
     self:InstallUnitStateConditions(self.db)
 
     if self.InstallBossModConditions then

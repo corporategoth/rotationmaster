@@ -287,6 +287,10 @@ return function(env)
             self.maxLetters = value
         end
 
+        function frame:SetMaxBytes(value)
+            self.maxBytes = value
+        end
+
         function frame:GetMaxLetters()
             return self.maxLetters or 0
         end

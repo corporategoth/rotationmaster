@@ -483,7 +483,7 @@ end
 
 -- Full help for one settings page: an intro, the shared Apply / Discard note, the page's authored option entries and
 -- the window controls.
--- @param topic string  'General', 'Conditions', 'Effects', 'ItemSets', 'Announces', 'Profiles', 'About', 'Rotations',
+-- @param topic string  'General', 'Metrics', 'Conditions', 'Effects', 'ItemSets', 'Announces', 'Profiles', 'About', 'Rotations',
 --   'Integrations' or 'Functions'.
 -- @return table[]  A list of sections shaped { title, text } (or authored option entries).
 function addon:WorkbenchPageHelp(topic)
@@ -525,6 +525,7 @@ function addon:WorkbenchPageHelp(topic)
     end
 
     local description = {
+        Metrics = L['Choose what to record, then see how closely you followed the advice, how long you took to act on it and what you cast instead, for the last fight, this instance, a period you set, or everything. Export the numbers for the website, with or without instructions for a language model. Reset deletes everything recorded.'],
         General = L['Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving.'],
         Conditions = L['Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Discard abandons edits to a saved entry. Custom conditions can be edited, duplicated or deleted.'],
         Effects = L['Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Discard abandons edits to a saved entry. Import stages a validated replacement.'],
@@ -547,6 +548,12 @@ function addon:WorkbenchPageHelp(topic)
 
     if topic == 'General' and self.GetGeneralOptionHelp then
         for _, entry in ipairs(self:GetGeneralOptionHelp()) do
+            result[#result + 1] = entry
+        end
+    end
+
+    if topic == 'Metrics' and self.GetMetricsOptionHelp then
+        for _, entry in ipairs(self:GetMetricsOptionHelp()) do
             result[#result + 1] = entry
         end
     end

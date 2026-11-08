@@ -14,6 +14,28 @@ local color = color
 local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
+-- Returns the authored help for the Metrics page's options.
+-- @return table[]  The entries, each {id=string, title=string, text=string}.
+function addon:GetMetricsOptionHelp()
+    return {
+        {
+            id = "metrics_adherence",
+            title = L["Track how closely I follow the advice"],
+            text = L["While the rotation is on and you are in combat, record which spell was recommended when you pressed a spell, how long after the recommendation appeared you pressed it, and what you cast instead when you did not follow it. Only totals are kept, per rotation, in your saved variables; nothing is sent anywhere. Open Metrics report to see them as graphs, or export them for the website."],
+        },
+        {
+            id = "metrics_effectiveness",
+            title = L["Track damage and healing per fight"],
+            text = L["Record the damage and healing you do in each fight so the metrics can compare fights where you followed the advice closely with fights where you did not. This reads the combat log, which Retail and Forever hide from addons, so it records nothing on those clients."],
+        },
+        {
+            id = "metrics_prediction",
+            title = L["Track how accurate the predictions were"],
+            text = L["Compare each forecast with what was highlighted when the time came: the second recommendation against the next highlight, the third against the one after, and so on. The totals appear in Metrics report and the exports, and the forecast's confidence is adjusted by how often it was right."],
+        },
+    }
+end
+
 -- Returns the General page help entries in page order, with optional entries included only when their feature is
 -- present on this client.
 -- @return table[]  The entries, each {id=string, title=string, text=string}.
@@ -111,6 +133,11 @@ function addon:GetGeneralOptionHelp()
             text = L["Adjust the preview background opacity without fading its icons. At zero only the icons remain, the hidden background does not intercept blank-space clicks and the resize grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity in General to resize it."],
         },
         {
+            id = "preview_title",
+            title = L["Show a title above the preview"],
+            text = L["Show \"Rotation Preview\" above the preview window so it is clear what it is. Turn it off to show only the icons."],
+        },
+        {
             id = "preview_locked",
             title = L["Lock position and size"],
             text = L["Unlocked, drag the preview by any icon or its background to move it, and resize it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved or resized and its background lets clicks through. Right-click an icon (or the background while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take effect immediately and are saved without Apply. Other pending General edits remain unchanged."],
@@ -144,6 +171,21 @@ function addon:GetGeneralOptionHelp()
             id = "preview_sample",
             title = L["Preview"],
             text = L["Click Preview to toggle temporary sample icons when no real recommendations are available. Real recommendations replace the samples. This does not change Preview Spells, cast spells, or save the sample state."],
+        },
+        {
+            id = "forecast",
+            title = L["Predict upcoming recommendations from the expected state"],
+            text = L["Predict the next few recommendations by walking the rotation again as if each earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast time passed, and, for spells the addon has watched leave an aura or do damage or healing, that effect applied. It needs Preview Spells above one and learns from your casts while this is on. Retail and Forever hide most of the numbers it needs, so there it predicts less."],
+        },
+        {
+            id = "forecast_confidence",
+            title = L["Fade predictions that are less certain"],
+            text = L["Fade the icons of predicted recommendations that the addon is less sure of. The first recommendation is read from the game as it is now and never fades."],
+        },
+        {
+            id = "forecast_clear",
+            title = L["Forget what the forecast has learned"],
+            text = L["Delete what the forecast has learned about your spells (the auras they leave, the damage and healing they do). It starts learning again if the forecast is on."],
         },
         {
             id = "preview",

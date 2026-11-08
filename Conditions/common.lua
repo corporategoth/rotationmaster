@@ -289,8 +289,7 @@ end
 -- @return table|nil  The checkbox, or nil on clients without spell ranks (the stored value still applies there).
 --
 -- The checkbox reads "Use this exact spell rank" like every other rank option, so it is the inverse of the stored
--- `anyrank`: unticked (anyrank=true) matches every rank, ticked (anyrank unset, the meaning of every saved condition)
--- matches only the chosen ID.
+-- `anyrank`: unticked (anyrank unset, the default) matches every rank, ticked (anyrank=false) matches only the chosen ID.
 function addon:Widget_AuraRankWidget(value, update)
     if not self:ClientHasSpellRanks() then
         return nil
@@ -299,12 +298,17 @@ function addon:Widget_AuraRankWidget(value, update)
     local check = self:CreateConditionCheckBox()
     check:SetLabel(L["Use this exact spell rank"])
     check:SetWidth(170)
-    check:SetValue(value.anyrank ~= true)
+    check:SetValue(value.anyrank == false)
     check:SetDisabled(value.disabled)
     check.button.tooltip = RANK_TIP
 
     check:SetCallback('OnValueChanged', function(_, _, exact)
-        value.anyrank = (not exact) and true or nil
+        if exact then
+            value.anyrank = false
+        else
+            value.anyrank = nil
+        end
+
         update()
     end)
 

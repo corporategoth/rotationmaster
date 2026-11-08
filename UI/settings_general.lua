@@ -231,6 +231,11 @@ function addon:BuildGeneralSettings(p)
         previewChanged()
     end)
 
+    p:Check('preview_title', L['Show a title above the preview'], profile.preview_title ~= false, function(v)
+        profile.preview_title = v
+        previewChanged()
+    end)
+
     local previewY = p.y
     local third = p.width / 3
 
@@ -515,6 +520,33 @@ function addon:BuildGeneralSettings(p)
     else
         sample:Disable()
     end
+
+    -- The forecast fills the preview with predictions, so its switches are part of the preview.
+    p:Check(
+        'forecast',
+        L['Predict upcoming recommendations from the expected state'],
+        profile.forecast == true,
+        function(v)
+            profile.forecast = v
+
+            p:RunSettingsEffect('forecast', function()
+                self:ApplyForecastSettings()
+            end)
+        end
+    )
+
+    p:Check(
+        'forecast_confidence',
+        L['Fade predictions that are less certain'],
+        profile.forecast_confidence ~= false,
+        function(v)
+            profile.forecast_confidence = v
+        end
+    )
+
+    p:Button('forecast_clear', L['Forget what the forecast has learned'], function()
+        self:ClearForecast()
+    end)
 
     -- Talent groups need your own names (Primary, Secondary, ...) on every client that keys rotations by talent group:
     -- Era, TBC, Wrath, Cataclysm and Forever. Retail and Mists name real specializations, so the option is gone.

@@ -2155,6 +2155,64 @@ local function FetchTotemTimers()
     end
 end
 
+-- SmartTotem: indexes the totem buttons of its Main Bar and the flyouts that hang off them, and its named utility buttons, by
+-- the spell each is armed to cast (type "spell" with a `spell1` attribute on the bar, `spell` in the flyouts).
+local function FetchSmartTotem()
+    -- Indexes one SmartTotem button by the spell it is armed to cast.
+    -- @param button table  The button frame.
+    local function index(button)
+        if type(button) ~= 'table' or type(button.GetAttribute) ~= 'function' then
+            return
+        end
+
+        local spellid
+
+        for _, attribute in ipairs({ 'spell1', '*spell1', 'spell', '*spell' }) do
+            local name = button:GetAttribute(attribute)
+
+            if name and name ~= '' then
+                spellid = spellMetadataID(name)
+
+                if spellid then
+                    break
+                end
+            end
+        end
+
+        if spellid then
+            AddButton(spellid, button)
+        end
+    end
+
+    -- Indexes the buttons under a frame, and under their children down to a depth.
+    -- @param frame table  The frame whose children are scanned.
+    -- @param depth number  How many further levels of children to scan.
+    local function walk(frame, depth)
+        if type(frame) ~= 'table' or type(frame.GetChildren) ~= 'function' then
+            return
+        end
+
+        for _, child in ipairs({ frame:GetChildren() }) do
+            index(child)
+
+            if depth > 0 then
+                walk(child, depth - 1)
+            end
+        end
+    end
+
+    walk(_G.SmartTotemV2Bar, 2)
+
+    for _, name in ipairs({
+        'SmartTotemV2ManaTideButton',
+        'SmartTotemV2TwistButton',
+        'SmartTotemSelfBuffLS',
+        'SmartTotemV2WaterShieldButton',
+    }) do
+        index(_G[name])
+    end
+end
+
 -- LUI: indexes its bottom, right and left action bars.
 local function FetchLUI()
     local luiBars = {
@@ -2619,6 +2677,9 @@ function addon:Fetch()
     end
     if IsAddOnLoaded('TotemTimers') then
         FetchTotemTimers()
+    end
+    if IsAddOnLoaded('SmartTotem') then
+        FetchSmartTotem()
     end
 
     FetchProviders()

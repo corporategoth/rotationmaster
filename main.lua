@@ -481,6 +481,11 @@ local defaults = {
         loglevel = 2,
         detailed_profiling = false,
         disable_autoswitch = false,
+        metrics_adherence = false,
+        metrics_effectiveness = false,
+        metrics_prediction = false,
+        forecast = false,
+        forecast_confidence = true,
         live_config_update = 2,
         spell_history = 60,
         combat_history = 10,
@@ -503,6 +508,7 @@ local defaults = {
         preview_vertical = false,
         preview_locked = false,
         preview_opacity = 1,
+        preview_title = true,
         preview_icon_size = 64,
         preview_window = {
             point = "CENTER",
@@ -1908,6 +1914,13 @@ function addon:enable()
     -- END EQUIPMENT ENABLE COMMIT
     if activeChangeCurrent(self, change) then
         self:StartAutoSwitchTimer()
+
+        if self.ApplyMetricsSettings then
+            self:ApplyMetricsSettings()
+        end
+        if self.ApplyForecastSettings then
+            self:ApplyForecastSettings()
+        end
     end
 end
 
@@ -1921,6 +1934,14 @@ function addon:disable()
     end
 
     self:StopAutoSwitchTimer()
+
+    if self.ApplyMetricsSettings then
+        self:ApplyMetricsSettings(true)
+    end
+    if self.ApplyForecastSettings then
+        self:ApplyForecastSettings(true)
+    end
+
     local change = beginActive(self)
 
     if not activeChangeCurrent(self, change) then
@@ -3264,6 +3285,7 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
         gatedGate = {},
         gatedAfter = {},
         gatedEntries = {},
+        recConf = {},
         obsSpell = {},
         obsEnabled = {},
         obsItem = {},
@@ -3437,12 +3459,18 @@ local function leanRecommend(plan, spellid, cond, index, itemId, role)
     plan.recommended = n
     plan.recSpell[n], plan.recCond[n], plan.recIndex[n], plan.recItem[n] = spellid, cond, index, itemId
     plan.recRole[n] = role or false
+    plan.recConf[n] = nil
 
     if role ~= 'preview' and not plan.glowIndex then
         plan.glowIndex = n
     end
+
     if role ~= 'glow' then
         plan.previewCount = plan.previewCount + 1
+
+        if plan.previewCount == 1 then
+            plan.forecastSeed = spellid
+        end
     end
 end
 
@@ -3517,17 +3545,23 @@ local function leanWalk(plan, list)
                     if enabled and not plan.glowIndex then
                         leanRecommend(plan, spellid, step, entry.ordinal, itemId, 'glow')
                     end
-                    if previewEnabled and plan.previewCount < plan.profile.preview_spells then
+
+                    -- With the forecast on, the preview stops at its first step and the rest are predicted.
+                    local previewLimit = plan.forecastAhead and 1 or plan.profile.preview_spells
+
+                    if previewEnabled and plan.previewCount < previewLimit then
                         leanRecommend(plan, previewSpell, step, entry.ordinal, previewItem, 'preview')
                     end
 
-                    if plan.glowIndex and plan.previewCount >= plan.profile.preview_spells then
+                    if plan.glowIndex and plan.previewCount >= previewLimit then
                         return "selected"
                     end
                 elseif enabled then
                     leanRecommend(plan, spellid, step, entry.ordinal, itemId)
 
-                    if not plan.nativePreview or plan.recommended >= plan.profile.preview_spells then
+                    if
+                        not plan.nativePreview or plan.forecastAhead or plan.recommended >= plan.profile.preview_spells
+                    then
                         return "selected"
                     end
                 end
@@ -3630,7 +3664,7 @@ local function leanPublish(self, plan)
                 gated = gated + 1
             end
 
-            previewWindow:AddRecommendation(spellid, itemId)
+            previewWindow:AddRecommendation(spellid, itemId, plan.recConf[n])
             shown = shown + 1
         end
 
@@ -3943,7 +3977,7 @@ local function evaluateLean(self)
     plan.decisionSink = runtimeDecisionSink
     local previewWindow = plan.window
     plan.nativePreview = previewWindow and type(previewWindow.AddRecommendation) == "function"
-    plan.recommended, plan.suppressAttack, plan.previewCount, plan.glowIndex = 0, false, 0, nil
+    plan.recommended, plan.suppressAttack, plan.previewCount, plan.glowIndex, plan.forecastSeed = 0, false, 0, nil, nil
     plan.gatedCount = 0
     plan.previewReady = nil
 
@@ -3956,8 +3990,40 @@ local function evaluateLean(self)
         end
     end
 
+    plan.forecastAhead = plan.nativePreview
+        and (plan.profile.preview_spells or 0) > 1
+        and self.Forecast ~= nil
+        and self.IsForecastOn ~= nil
+        and self:IsForecastOn()
+
     self.evaluationProfile:child("rotation"):start()
     local ended = leanWalk(plan, plan.steps)
+    local traceReal, traceKind, traceCasting = plan.recommended, nil, nil
+
+    if plan.forecastAhead and plan.previewCount == 1 then
+        traceKind = 'run'
+
+        for _, slot in ipairs(self.Forecast:Run(plan.rot, plan.forecastSeed, plan.profile.preview_spells - 1)) do
+            leanRecommend(plan, slot.spell, slot.cond, slot.index, slot.item, 'preview')
+            plan.recConf[plan.recommended] = slot.confidence
+        end
+    elseif plan.recommended == 0 and plan.nativePreview and self.Forecast ~= nil then
+        -- Casting: the rotation stops advising during a cast, so the preview shows what follows the spell being cast.
+        local casting = self.Forecast:CastingSpell()
+        traceCasting = casting
+
+        if casting then
+            traceKind = 'run (casting)'
+
+            for _, slot in ipairs(self.Forecast:Run(plan.rot, casting, math.max(
+                1,
+                plan.profile.preview_spells or 1
+            ))) do
+                leanRecommend(plan, slot.spell, slot.cond, slot.index, slot.item)
+                plan.recConf[plan.recommended] = slot.confidence
+            end
+        end
+    end
 
     if ended == "unavailable" then
         plan.suppressAttack = true
@@ -3965,7 +4031,46 @@ local function evaluateLean(self)
         plan.suppressAttack = false
     end
 
-    if not plan.glowIndex and not plan.suppressAttack then
+    plan.waiting = false
+
+    if
+        plan.previewCount == 0
+        and ended == nil
+        and plan.nativePreview
+        and self.Forecast ~= nil
+        and self.IsForecastOn ~= nil
+        and self:IsForecastOn()
+        and not self.Forecast:CastingSpell()
+    then
+        -- Nothing is ready (everything is on cooldown): the preview shows what comes up next, without lighting a button.
+        traceKind = 'wait'
+
+        for _, slot in ipairs(self.Forecast:Wait(plan.rot, math.max(1, plan.profile.preview_spells or 1))) do
+            leanRecommend(plan, slot.spell, slot.cond, slot.index, slot.item, 'preview')
+            plan.recConf[plan.recommended] = slot.confidence
+            plan.waiting = true
+        end
+    end
+
+    if self.PreviewTrace then
+        local slots = {}
+
+        for n = traceReal + 1, plan.recommended do
+            slots[#slots + 1] = { spell = plan.recSpell[n] }
+        end
+
+        self:PreviewTrace({
+            engine = 'lean',
+            rot = plan.rot,
+            ended = ended,
+            real = traceReal,
+            casting = traceCasting,
+            forecast = traceKind,
+            slots = slots,
+        })
+    end
+
+    if not plan.glowIndex and not plan.waiting and not plan.suppressAttack then
         local attack = self:ResolveImplicitAttack(plan.actionReady)
 
         if attack then
@@ -4274,6 +4379,8 @@ function addon:EvaluateNextActionInternal()
         self.evaluationProfile:child("rotation"):start()
         -- preview counts the preview's recommendations; glowed says the bar glow has its spell.
         local preview, suppressAttack, glowed = 0, false, false
+        -- True when the recommendations are only upcoming ones (nothing is ready): shown in the preview, nothing lit.
+        local waiting = false
         local weakAuras = _G.WeakAuras
         ---@type RMRecommendationPreview
         local previewWindow = self.nextWindow
@@ -4336,13 +4443,16 @@ function addon:EvaluateNextActionInternal()
         -- @param index number  The step's ordinal.
         -- @param itemId number|nil  The item id.
         -- @param role string|nil  'glow' for the bar glow only, 'preview' for the preview only (separate preview
-        --   readiness); nil for both.
+        --   readiness, and predicted slots); nil for both.
+        -- @param confidence number|nil  How sure a predicted recommendation is (the forecast); nil when read now.
+        -- @param upcoming boolean|nil  True for a slot that cannot be cast yet (nothing is ready): shown, never lit.
         --
         -- The first one for the glow becomes the current spell (glow, WeakAuras and ROTATIONMASTER_SPELL_UPDATE); every
         -- one for the preview goes to the preview window, if any.
-        local function recommend(spellid, cond, index, itemId, role)
-            local glows = role ~= 'preview' and not glowed
+        local function recommend(spellid, cond, index, itemId, role, confidence, upcoming)
+            local glows = role ~= 'preview' and not upcoming and not glowed
             local shows = role ~= 'glow'
+            waiting = upcoming == true
 
             if glows then
                 glowed = true
@@ -4403,7 +4513,7 @@ function addon:EvaluateNextActionInternal()
                 end
 
                 if shows and nativePreview then
-                    previewWindow:AddRecommendation(spellid, itemId)
+                    previewWindow:AddRecommendation(spellid, itemId, confidence)
                 end
             end)
         end
@@ -4439,6 +4549,15 @@ function addon:EvaluateNextActionInternal()
 
             return false
         end
+
+        -- With the forecast on, the walk stops at the first recommendation and the rest are predicted from the state after it.
+        local ahead = nativePreview
+            and (self.db.profile.preview_spells or 0) > 1
+            and self.Forecast ~= nil
+            and self.IsForecastOn ~= nil
+            and self:IsForecastOn()
+
+        local forecastFirst
 
         local sequence = evaluateSequence(
             self,
@@ -4479,17 +4598,29 @@ function addon:EvaluateNextActionInternal()
                     if enabled and not glowed then
                         recommend(spellid, cond, index, itemId, 'glow')
                     end
-                    if previewEnabled and preview < self.db.profile.preview_spells then
+
+                    -- With the forecast on, the preview stops at its first step and the rest are predicted.
+                    local previewLimit = ahead and 1 or self.db.profile.preview_spells
+
+                    if previewEnabled and preview < previewLimit then
                         recommend(previewSpell, cond, index, previewItem, 'preview')
+
+                        if ahead and forecastFirst == nil then
+                            forecastFirst = previewSpell
+                        end
                     end
 
-                    return not (glowed and preview >= self.db.profile.preview_spells)
+                    return not (glowed and preview >= previewLimit)
                 end
 
                 if enabled then
                     recommend(spellid, cond, index, itemId)
 
-                    if not nativePreview or preview >= self.db.profile.preview_spells then
+                    if ahead and forecastFirst == nil then
+                        forecastFirst = spellid
+                    end
+
+                    if not nativePreview or ahead or preview >= self.db.profile.preview_spells then
                         return false
                     end
                 end
@@ -4504,9 +4635,65 @@ function addon:EvaluateNextActionInternal()
             return
         end
 
+        local traceReal, traceKind, traceCasting, traceSlots = preview, nil, nil, {}
+
+        if ahead and forecastFirst ~= nil then
+            traceKind = 'run'
+
+            for _, slot in ipairs(self.Forecast:Run(rot, forecastFirst, self.db.profile.preview_spells - 1)) do
+                recommend(slot.spell, slot.cond, slot.index, slot.item, 'preview', slot.confidence)
+                traceSlots[#traceSlots + 1] = { spell = slot.spell, at = slot.at }
+            end
+        elseif nativePreview and preview == 0 and self.Forecast ~= nil then
+            -- Casting: the rotation stops advising during a cast, so the preview shows what follows the spell being cast.
+            local casting = self.Forecast:CastingSpell()
+            traceCasting = casting
+
+            if casting then
+                traceKind = 'run (casting)'
+
+                for _, slot in ipairs(self.Forecast:Run(rot, casting, math.max(
+                    1,
+                    self.db.profile.preview_spells or 1
+                ))) do
+                    recommend(slot.spell, slot.cond, slot.index, slot.item, nil, slot.confidence)
+                    traceSlots[#traceSlots + 1] = { spell = slot.spell, at = slot.at }
+                end
+            end
+        end
+
         suppressAttack = sequence.suppressAttack
 
-        if not glowed and not suppressAttack then
+        if
+            preview == 0
+            and sequence.status == 'complete'
+            and nativePreview
+            and self.Forecast ~= nil
+            and self.IsForecastOn ~= nil
+            and self:IsForecastOn()
+            and not self.Forecast:CastingSpell()
+        then
+            traceKind = 'wait'
+
+            for _, slot in ipairs(self.Forecast:Wait(rot, math.max(1, self.db.profile.preview_spells or 1))) do
+                recommend(slot.spell, slot.cond, slot.index, slot.item, 'preview', slot.confidence, true)
+                traceSlots[#traceSlots + 1] = { spell = slot.spell, at = slot.at }
+            end
+        end
+
+        if self.PreviewTrace then
+            self:PreviewTrace({
+                engine = 'standard',
+                rot = rot,
+                ended = sequence.status,
+                real = traceReal,
+                casting = traceCasting,
+                forecast = traceKind,
+                slots = traceSlots,
+            })
+        end
+
+        if not glowed and not waiting and not suppressAttack then
             local attack = self:ResolveImplicitAttack(actionReady)
 
             if attack then

@@ -127,6 +127,7 @@ Core/build_context.lua
 Core/presentation.lua
 Core/custom_condition_owner.lua
 Core/action_policy.lua
+Core/forecast.lua
 Core/spell_catalog.lua
 Core/spell_search.lua
 Core/reference_catalog.lua
@@ -136,7 +137,10 @@ Core/announcements.lua
 Core/macro_announcements.lua
 Analytics/replay.lua
 Analytics/capture.lua
+Analytics/metrics.lua
 Platform/analytics_casts.lua
+Platform/metrics_events.lua
+Platform/forecast_events.lua
 Core/profile_data.lua
 Core/collection_data.lua
 Core/custom_condition_data.lua
@@ -192,6 +196,8 @@ Diagnostics/talents.lua
 Diagnostics/timeline.lua
 Diagnostics/raid_marks.lua
 Diagnostics/secrets.lua
+Diagnostics/premade_spells.lua
+Diagnostics/preview.lua
 Core/unit_state_conditions.lua
 Core/assisted_highlight.lua
 Core/tooltips.lua
@@ -217,9 +223,11 @@ UI/help.lua
 UI/spell_search.lua
 UI/spell_icon.lua
 UI/talent_popup.lua
+UI/talent_popup_classic.lua
 UI/errors.lua
 UI/cpu_profile.lua
 UI/analytics_capture.lua
+UI/metrics_report.lua
 UI/settings_launcher.lua
 UI/settings_setup.lua
 UI/settings_roster_order.lua

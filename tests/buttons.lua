@@ -281,6 +281,43 @@ test('modern-only spell and optional totem-button metadata never call removed gl
     assert(addon:FindSpell({ 133 }) == 133)
 end)
 
+test('SmartTotem bar buttons and the flyout buttons under them are indexed by the totem they cast', function()
+    local env, addon, _, loaded = fixture({ type = 'action' }, { GetPagedID = function() return 73 end })
+    env.ActionButton1 = nil
+    loaded.SmartTotem = true
+    env.GetSpellInfo = nil
+
+    env.C_Spell = {
+        GetSpellInfo = function(id)
+            return { name = 'Totem ' .. tostring(id), spellID = tonumber(id) }
+        end,
+    }
+
+    local function button(attribute, spell, children)
+        return {
+            GetAttribute = function(_, key)
+                if key == attribute then
+                    return spell
+                end
+            end,
+            GetChildren = function()
+                return unpack(children or {})
+            end,
+        }
+    end
+
+    local flyout = button(nil, nil, { button('spell', 8190) })
+    env.SmartTotemV2Bar = button(nil, nil, { button('spell1', 2894, { flyout }), button('*spell1', 8227) })
+    env.SmartTotemV2ManaTideButton = button('spell', 16190)
+    env.SmartTotemSelfBuffLS = button('spell', 324)
+    env.SmartTotemV2WaterShieldButton = button('spell1', 52127)
+    addon:Fetch()
+    assert(addon:FindSpell({ 2894 }) == 2894, 'the armed Main Bar totem')
+    assert(addon:FindSpell({ 8190 }) == 8190, 'a flyout button, two frames down')
+    assert(addon:FindSpell({ 8227 }) == 8227 and addon:FindSpell({ 16190 }) == 16190)
+    assert(addon:FindSpell({ 324 }) == 324 and addon:FindSpell({ 52127 }) == 52127, 'the shield watch buttons')
+end)
+
 test('modern-only item and macro-item buttons map the canonical use spell', function()
     for _, kind in ipairs({ 'item', 'macro' }) do
         local env, addon = fixture({ type = kind, [kind] = kind == 'item' and 5512 or 1 }, {})

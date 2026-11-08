@@ -896,7 +896,7 @@ end)
 -- Global keys have no transfer schema. These are the ones the code writes that the AceDB defaults leave out because the
 -- absence means something (diagnosticCacheBypass is read as `~= false`, evaluator nil is the lean engine), with a value as
 -- the code stores it. talent_popup_provider is the documented hand-set knob in UI/talent_popup.lua.
-local globalChoices={workbenchSidebarWidth=320,diagnosticCacheBypass=false,evaluator='standard',talent_popup_provider='blizzard'}
+local globalChoices={workbenchSidebarWidth=320,diagnosticCacheBypass=false,evaluator='standard',talent_popup_provider='blizzard',metrics={version=1,rotations={},order={}},forecast={version=1,spells={}}}
 test('every global key shipped code writes is known to boot validation and survives /rm repair',function()
     local _,probe=bootWithMessages()
     local written=writtenKeys('global')

@@ -267,6 +267,29 @@ test('readiness distinguishes active cooldowns from the GCD and preserves unavai
     assert(p:IsSpellReady(8042, 100) == true, 'ready spells do not require a GCD observation')
 end)
 
+test(
+    'when the global cooldown cannot be read a short cooldown on a spell with none of its own is the global cooldown',
+    function()
+        local records = { [403] = { startTime = 99.5, duration = 1.47, isEnabled = true, modRate = 1 } }
+        local base = 0
+
+        local p = fixture({
+            WOW_PROJECT_ID = 5,
+            WOW_PROJECT_BURNING_CRUSADE_CLASSIC = 5,
+            GetSpellBaseCooldown = function() return base, 1500 end,
+            C_Spell = { GetSpellCooldown = function(id) return records[id] end },
+        })
+
+        assert(p:IsSpellReady(403, 100) == true, 'the next action may show during the global cooldown')
+        base = 6000
+        local ready = p:IsSpellReady(403, 100)
+        assert(ready == nil, 'a spell with its own cooldown is not assumed ready')
+        records[403] = { startTime = 98, duration = 6, isEnabled = true, modRate = 1 }
+        base = 0
+        assert(p:IsSpellReady(403, 100) == nil, 'a long cooldown is never taken for the global cooldown')
+    end
+)
+
 test('charge records and legacy tuples normalize full inactive and active recharge state', function()
     local original = {
         currentCharges = 1,

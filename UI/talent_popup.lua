@@ -3,7 +3,7 @@
 -- Talent tree popup: the window the TALENT condition opens so a talent can be chosen by clicking it, with the two
 -- providers that fill it (Blizzard's own talent window in view mode, and RM's drawn tree). It owns one shared window
 -- (addon.talentTreeWindow) and the session state of the Blizzard provider; it never changes the player's talents and
--- never writes the condition, it only reports the clicked selection through the request's onSelect callback.
+-- never writes the condition: the choice (talent, comparison, rank) is reported through the request's onAccept callback.
 -- Loaded from RotationMaster.toc after UI/spell_icon.lua and before UI/errors.lua; Conditions/talent.lua is the caller.
 -- Every game value read here is gated by platform:CanReadValue, and nothing is shown or driven during combat.
 
@@ -11,7 +11,7 @@ local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local platform = addon.Platform
 
--- "Show talent tree": the talent tree of a class and specialization, shown for
+-- The talent tree of a class and specialization, shown (from the talent icon) for
 -- the TALENT condition so a talent is chosen by clicking it. Two providers
 -- (Platform/talent_tree.lua) serve Retail and Forever; docs/talent-selector.md
 -- has the research behind them.
@@ -29,6 +29,10 @@ local platform = addon.Platform
 
 local SELECTION, SUBTREE_SELECTION = 2, 3  -- Enum.TraitNodeType
 local QUESTION = 'Interface\\Icons\\INV_Misc_QuestionMark'
+
+-- The comparisons offered under the tree, in the order they are shown, and how wide each one's button is.
+local OPERATORS = { 'LESSTHAN', 'LESSTHANOREQUALS', 'EQUALS', 'GREATERTHANOREQUALS', 'GREATERTHAN' }
+local BUTTON_WIDTH = 150
 
 -- ============================================================================
 -- Helpers
@@ -99,7 +103,7 @@ end
 -- The control window
 -- ============================================================================
 
-local endSession
+local endSession, reload, refreshBar
 
 -- Returns the one shared window, creating it on first use. Hiding it ends the session (endSession).
 -- @return table  The window record.
@@ -116,6 +120,7 @@ local function getWindow()
         heroButtons = {},
         slots = {},
         lines = {},
+        heads = {},
         paneLabels = {},
         serial = 0,
     }
@@ -153,6 +158,45 @@ local function getWindow()
     d.background:Hide()
     d.content = CreateFrame('Frame', nil, d.canvas)
     d.canvas:Hide()
+
+    -- The bar under the tree: how the chosen talent is compared (the five operators, spelled out), what the condition will
+    -- say, the notice about a changed choice, and Accept and Cancel.
+    d.operatorButtons = {}
+
+    for index, operator in ipairs(OPERATORS) do
+        local button = addon:CreateWorkbenchButton(frame, addon.operators[operator], BUTTON_WIDTH)
+
+        addon:SetUIScript(button, 'OnClick', function()
+            if d.pick then
+                d.pick.operator = operator
+                refreshBar(d)
+            end
+        end)
+
+        d.operatorButtons[operator] = button
+    end
+
+    d.summary = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    d.summary:SetPoint('BOTTOMLEFT', frame, 'BOTTOMLEFT', 12, 23)
+    d.summary:SetJustifyH('LEFT')
+    d.summary:SetWordWrap(false)
+    d.notice = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
+    d.notice:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -12, 23)
+    d.notice:SetJustifyH('RIGHT')
+    d.notice:SetWordWrap(false)
+    d.cancel = addon:CreateWorkbenchButton(frame, L['Cancel'], 90)
+    d.cancel:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -8, 38)
+
+    addon:SetUIScript(d.cancel, 'OnClick', function()
+        frame:Hide()
+    end)
+
+    d.accept = addon:CreateWorkbenchButton(frame, L['Accept'], 90)
+    d.accept:SetPoint('RIGHT', d.cancel, 'LEFT', -6, 0)
+
+    addon:SetUIScript(d.accept, 'OnClick', function()
+        d.OnAccept()
+    end)
 
     addon:SetUIScript(frame, 'OnHide', function()
         endSession(d)
@@ -212,11 +256,43 @@ local function layout(d)
         width = math.max(640, math.min(1240, ((UIParent:GetWidth() or 1280) - 40) / scale))
     end
 
-    local y = -36
+    -- The bar under the tree: the five comparisons in one row, or in two when the window is narrow, then two lines of
+    -- text with Accept and Cancel beside them.
+    if d.mode ~= 'drawn' and handle and handle.canvasSize then
+        width = math.max(790, handle.canvasSize.width + 40)
+    end
+
+    -- Accept and Cancel sit at the right of the bottom row of comparisons, which needs a window wide enough for all five
+    -- comparisons and both of them in one row.
+    local columns = width >= 5 * (BUTTON_WIDTH + 4) + 16 + 190 and 5 or 3
+    local rows = math.ceil(#OPERATORS / columns)
+    local barHeight = 40 + 22 * rows
+
+    for index, operator in ipairs(OPERATORS) do
+        local button = d.operatorButtons[operator]
+        button:ClearAllPoints()
+
+        button:SetPoint(
+            'BOTTOMLEFT',
+            frame,
+            'BOTTOMLEFT',
+            8 + ((index - 1) % columns) * (BUTTON_WIDTH + 4),
+            38 + (rows - math.ceil(index / columns)) * 22
+        )
+    end
+
+    d.cancel:ClearAllPoints()
+    d.cancel:SetPoint('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -8, 38)
+    d.summary:SetWidth(math.max(100, width / 2 - 20))
+    d.notice:SetWidth(math.max(100, width / 2 - 20))
+    local barWanted = d.mode ~= nil and (d.mode == 'drawn' or handle ~= nil and handle.canvasSize ~= nil)
+    local statusShown = d.failure ~= nil or handle ~= nil and not barWanted
+    local y = -26
     local specs = d.request and d.request.specs
     local showSpecs = specs and #specs > 1
     d.specLabel:ClearAllPoints()
     d.specLabel:SetPoint('TOPLEFT', 12, y - 4)
+    d.specLabel:SetText(d.request and d.request.specLabel or L['Specialization'])
     visible(d.specLabel, showSpecs)
     local x = 124
 
@@ -274,23 +350,41 @@ local function layout(d)
     end
 
     d.status:ClearAllPoints()
-    d.status:SetPoint('TOPLEFT', 12, y)
+    d.status:SetPoint('TOPLEFT', 12, y - 2)
     d.status:SetWidth(width - 24)
     d.status:SetHeight(30)
-    y = y - 34
+    visible(d.status, statusShown)
+
+    if statusShown then
+        y = y - 34
+    end
 
     if d.mode == 'drawn' then
         local height = math.max(420, math.min(820, ((UIParent:GetHeight() or 800) - 80) / scale))
-        d.canvasWidth, d.canvasHeight = width - 16, height + y - 26
+        d.canvasWidth, d.canvasHeight = width - 16, height + y - barHeight - 2
         d.canvas:ClearAllPoints()
         d.canvas:SetPoint('TOPLEFT', frame, 'TOPLEFT', 8, y)
         d.canvas:SetSize(d.canvasWidth, d.canvasHeight)
         d.canvas:Show()
         frame:SetSize(width, height)
+    elseif handle and handle.canvasSize then
+        width = math.max(790, handle.canvasSize.width + 40)
+        d.canvasWidth, d.canvasHeight = handle.canvasSize.width, handle.canvasSize.height
+        d.canvas:ClearAllPoints()
+        d.canvas:SetPoint('TOP', frame, 'TOP', 0, y)
+        d.canvas:SetSize(d.canvasWidth, d.canvasHeight)
+        d.content:ClearAllPoints()
+        d.content:SetScale(1)
+        d.content:SetAllPoints(d.canvas)
+        d.canvas:Show()
+        frame:SetSize(width, -y + d.canvasHeight + barHeight + 2)
     else
         d.canvas:Hide()
         frame:SetSize(width, -y + 26)
     end
+
+    d.barShown = barWanted
+    refreshBar(d)
 end
 
 -- Writes the status line: the failure reason, or the click hint with the current selection's name, or nothing.
@@ -300,18 +394,83 @@ local function showStatus(d)
 
     if d.failure then
         text = reasonText(d.failure)
-    elseif d.handle then
-        text = L['Click a talent to choose it for this condition.']
-        local name = d.request and d.request.selectionName
-
-        if name then
-            text = text .. '\n' .. string.format(L['Selected: %s'], name)
-        end
+    elseif d.handle and not d.barShown then
+        text = d.request
+            and d.request.ranked == false
+            and L['Left-click a talent to choose it, right-click to clear it.']
+            or L['Left-click a talent to add a rank, right-click to remove one.']
     else
         text = ''
     end
 
     d.status:SetText(text)
+end
+
+-- Brings the bar under the tree up to date: which comparison is chosen and offered, what the condition will say, the
+-- hint, and whether Accept can be pressed.
+-- @param d table  The window record.
+function refreshBar(d)
+    local request, pick = d.request, d.pick
+    local ranked = request == nil or request.ranked ~= false
+
+    -- Nothing is below rank zero or above a talent's last rank, so those two comparisons are off there.
+    -- @param operator string  The comparison.
+    -- @return boolean  True when the comparison can be chosen for the chosen talent at its current rank.
+    local function offered(operator)
+        if not pick or not pick.selection then
+            return true
+        end
+
+        return not (operator == 'LESSTHAN' and (pick.rank or 0) <= 0)
+            and not (operator == 'GREATERTHAN' and pick.max ~= nil and (pick.rank or 0) >= pick.max)
+    end
+
+    if pick and not offered(pick.operator) then
+        pick.operator = 'EQUALS'
+    end
+
+    for operator, button in pairs(d.operatorButtons) do
+        visible(button, d.barShown and ranked)
+        button:SetSelected(pick ~= nil and pick.operator == operator)
+
+        if offered(operator) then
+            button:Enable()
+        else
+            button:Disable()
+        end
+    end
+
+    visible(d.summary, d.barShown)
+    visible(d.notice, d.barShown)
+    visible(d.accept, d.barShown)
+    visible(d.cancel, d.barShown)
+
+    if not d.barShown then
+        return
+    end
+
+    local text = ''
+
+    if pick and pick.selection then
+        text = pick.name or ''
+
+        if ranked then
+            text = string.format('%s %s %d', text, addon.operators[pick.operator] or '', pick.rank or 0)
+        end
+    end
+
+    d.summary:SetText(text)
+
+    d.notice:SetText(
+        ranked and L['Left-click a talent to add a rank, right-click to remove one.']
+            or L['Left-click a talent to choose it, right-click to clear it.']
+    )
+
+    if pick and pick.selection then
+        d.accept:Enable()
+    else
+        d.accept:Disable()
+    end
 end
 
 -- Builds the context a provider receives (Platform/talent_tree.lua). It is bound to the session's serial, so a click or
@@ -320,13 +479,57 @@ end
 -- @return table  The context { spec, hero, selection, specs, window, onSelect, onClose }.
 local function context(d)
     local request, serial = d.request, d.serial
-    local ctx = { spec = d.spec, hero = d.hero, selection = request.selection, specs = request.specs, window = d }
+    local pick = d.pick or {}
 
-    -- A talent was chosen (or `false` to clear it). Only the first choice of a session counts; the callback and the
-    -- window close are deferred out of the click.
-    -- @param selection table|boolean  The chosen { node, entry, spell, name, icon }, or false to clear.
+    local ctx = {
+        spec = d.spec,
+        hero = d.hero,
+        selection = pick.selection,
+        rank = pick.rank,
+        ranked = request.ranked ~= false,
+        specs = request.specs,
+        group = request.group,
+        window = d,
+    }
+
+    -- A talent was clicked: a left click adds a rank (choosing the talent first when another one was chosen, which
+    -- sets the old one back to nothing), a right click takes a rank away. The choice is only kept in the window; Accept
+    -- writes it to the condition.
+    -- @param talent table  The clicked { key = { the fields that name it }, name, icon, maxRanks }.
+    -- @param delta number  1 for a left click, -1 for a right click.
+    -- @param selected boolean|nil  Whether the clicked talent is the chosen one.
+    function ctx.onClick(talent, delta, selected)
+        if d.serial ~= serial or not d.frame:IsShown() or type(talent) ~= 'table' then
+            return
+        end
+
+        local ranked = request.ranked ~= false
+        local maximum = ranked and math.max(1, tonumber(talent.maxRanks) or 1) or 1
+        local chosen = d.pick
+
+        if selected and chosen.selection then
+            if ranked then
+                chosen.rank = math.max(0, math.min(maximum, (chosen.rank or 0) + delta))
+            elseif delta < 0 then
+                chosen.selection, chosen.name, chosen.icon = nil, nil, nil
+            end
+
+            chosen.max = maximum
+        elseif delta > 0 then
+            chosen.selection, chosen.name, chosen.icon = talent.key, talent.name, talent.icon
+            chosen.rank, chosen.max = 1, maximum
+        else
+            return
+        end
+
+        reload(d)
+    end
+
+    -- Blizzard's own window (the opt-in provider) has no bar for a comparison and a rank, so a click there reports the
+    -- talent at once, leaves the comparison as it is, and closes the window. Only the first pick of a session counts.
+    -- @param selection table|boolean  The chosen { node, entry, spell, name, icon }; false (a clear) is ignored.
     function ctx.onSelect(selection)
-        if d.serial ~= serial or not d.frame:IsShown() or d.chosen then
+        if d.serial ~= serial or not d.frame:IsShown() or d.chosen or type(selection) ~= 'table' then
             return
         end
 
@@ -338,10 +541,12 @@ local function context(d)
                 return
             end
 
-            local callback = request.onSelect
-
-            if callback then
-                callback(selection)
+            if request.onAccept then
+                request.onAccept({
+                    selection = { node = selection.node, entry = selection.entry, spell = selection.spell },
+                    name = selection.name,
+                    icon = selection.icon,
+                })
             end
             if d.serial == serial then
                 d.frame:Hide()
@@ -362,7 +567,7 @@ end
 -- Asks the active provider to redraw for the current spec and hero tree, records why it could not (d.failure), and
 -- refreshes the strip and the status line.
 -- @param d table  The window record.
-local function reload(d)
+function reload(d)
     if not d.handle then
         return
     end
@@ -390,6 +595,7 @@ function endSession(d)
     d.serial = d.serial + 1
     d.chosen = nil
     d.mode = nil
+    d.pick, d.barShown = nil, false
 
     if handle then
         pcall(handle.Close, handle)
@@ -458,6 +664,45 @@ function addon:OpenTalentTree(request)
     d.serial = d.serial + 1
     d.chosen = nil
 
+    -- What the player is working on in the window; the condition is only written when Accept is pressed.
+    d.pick = {
+        selection = request.selection,
+        name = request.selectionName,
+        rank = request.selection and tonumber(request.rank) or 1,
+        max = tonumber(request.selectionMax),
+        operator = addon.operators[request.operator] and request.operator or 'EQUALS',
+    }
+
+    -- Writes the choice to the requester and closes the window (the click is finished first).
+    function d.OnAccept()
+        local current, serial = d.pick, d.serial
+
+        if not d.request or not current or not current.selection then
+            return
+        end
+
+        local result = {
+            selection = current.selection,
+            name = current.name,
+            icon = current.icon,
+            rank = current.rank,
+            operator = current.operator,
+        }
+
+        after(function()
+            if d.serial ~= serial then
+                return
+            end
+
+            if request.onAccept then
+                request.onAccept(result)
+            end
+            if d.serial == serial then
+                d.frame:Hide()
+            end
+        end)
+    end
+
     -- Handles a specialization button click: switches the tree, telling the requester so its own spec field follows.
     -- @param spec number  The specialization id.
     function d.OnSpec(spec)
@@ -485,7 +730,7 @@ function addon:OpenTalentTree(request)
         reload(d)
     end
 
-    d.chrome:SetContext(L['Talent Tree'], L['Talent'], request.name or '')
+    d.chrome:SetContext(L['Talent Tree'], select(1, UnitClass('player')) or L['Talent'], request.name or '')
     d.frame:Show()
     self:OpenPopup(d, request.owner)
     start(d)
@@ -515,6 +760,7 @@ function addon:RefreshTalentTree(owner, selection, name)
     end
 
     d.request.selection, d.request.selectionName = selection, name
+    d.pick.selection, d.pick.name = selection, name
     reload(d)
 end
 
@@ -1022,10 +1268,11 @@ platform:RegisterTalentTreeProvider('blizzard', blizzard)
 -- Blizzard's talent look from Blizzard's own art (the talents-node-* atlases and the
 -- spec backgrounds), drawn without Blizzard's talent frame: the tree is read from
 -- the trait API as it stands, so every talent shows as a choice that can be
--- clicked (the green "selectable" frame), nothing is greyed for locked rows, and
--- the player's own purchased talents are not shown at all. Where the client lacks
+-- clicked (a plain frame, yellow for the chosen talent), nothing is greyed for
+-- locked rows, and the player's own purchased talents are not shown at all. Where the client lacks
 -- an atlas or a mask the plain textures below are used instead.
 local NODE, HALF, GAP = 34, 24, 4
+local ARROW_LINE, ARROW_HEAD = 'talents-arrow-line-gray', 'talents-arrow-head-gray'
 local PANE_GAP = 1500  -- tenths of a pixel: the empty strip between the class and specialization trees
 
 -- Tells whether the client has an atlas of that name (the art differs by client version).
@@ -1085,7 +1332,13 @@ local function paintSlot(slot)
     local selected = slot.selected
 
     if slot.fancy then
-        setAtlas(slot.art, 'talents-node-' .. slot.shape .. (selected and '-yellow' or '-green'))
+        -- Only the chosen talent has a frame: Blizzard's single gold one. The rest are bare icons.
+        if selected then
+            setAtlas(slot.art, 'talents-node-' .. slot.shape .. '-yellow')
+            slot.art:Show()
+        else
+            slot.art:Hide()
+        end
 
         if slot.hovered then
             slot.hover:Show()
@@ -1093,11 +1346,7 @@ local function paintSlot(slot)
             slot.hover:Hide()
         end
 
-        if selected then
-            setEdges(slot, 1, .82, 0, 1)
-        else
-            setEdges(slot, 0, 0, 0, 0)
-        end
+        setEdges(slot, 0, 0, 0, 0)
     else
         if selected then
             setEdges(slot, 1, .82, 0, 1)
@@ -1108,7 +1357,7 @@ local function paintSlot(slot)
         end
     end
 
-    if selected then
+    if selected and not slot.fancy then
         slot.glow:Show()
     else
         slot.glow:Hide()
@@ -1122,7 +1371,8 @@ end
 -- @return table  The slot.
 local function newSlot(d, index)
     local slot = CreateFrame('Button', nil, d.content)
-    slot:RegisterForClicks('LeftButtonUp')
+    slot:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
+    slot.rmOwnsRightClick = true
     slot.glow = slot:CreateTexture(nil, 'BACKGROUND')
     slot.glow:SetPoint('TOPLEFT', slot, 'TOPLEFT', -7, 7)
     slot.glow:SetPoint('BOTTOMRIGHT', slot, 'BOTTOMRIGHT', 7, -7)
@@ -1131,7 +1381,7 @@ local function newSlot(d, index)
     slot.icon:SetPoint('CENTER')
     slot.art = slot:CreateTexture(nil, 'ARTWORK', nil, 3)
     slot.art:SetPoint('CENTER')
-    slot.hover = slot:CreateTexture(nil, 'OVERLAY')
+    slot.hover = slot:CreateTexture(nil, 'BACKGROUND')
     slot.hover:SetPoint('CENTER')
     slot.hover:Hide()
 
@@ -1160,8 +1410,15 @@ local function newSlot(d, index)
         slot.edges[#slot.edges + 1] = art
     end
 
-    slot.rank = slot:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-    slot.rank:SetPoint('BOTTOMRIGHT', 3, -3)
+    -- A large outlined number over the bottom right corner of the icon, readable on any frame.
+    slot.rank = slot:CreateFontString(
+        nil,
+        'OVERLAY',
+        rawget(_G, 'SystemFont16_Shadow_ThickOutline') and 'SystemFont16_Shadow_ThickOutline' or 'NumberFontNormalLarge'
+    )
+
+    slot.rank:SetPoint('BOTTOMRIGHT', slot.icon, 'BOTTOMRIGHT', 1, -1)
+    slot.rank:SetTextColor(1, 1, 1)
 
     -- Shows the talent's tooltip (spell, ranks, choice note) and a click hint, and paints the hovered look.
     -- @param self table  The slot.
@@ -1188,7 +1445,10 @@ local function newSlot(d, index)
             end
 
             GameTooltip:AddLine(
-                self.selected and L['Click to clear this talent.'] or L['Click to choose this talent.'],
+                self.ctx
+                    and self.ctx.ranked == false
+                    and L['Left-click a talent to choose it, right-click to clear it.']
+                    or L['Left-click a talent to add a rank, right-click to remove one.'],
                 .5,
                 .8,
                 .5
@@ -1207,27 +1467,22 @@ local function newSlot(d, index)
         end
     end)
 
-    -- Chooses the talent through the context (clicking the chosen talent again clears the choice).
+    -- Reports the click through the context: a left click adds a rank (choosing the talent first), a right click removes one.
     -- @param self table  The slot.
-    addon:SetUIScript(slot, 'OnClick', function(self)
+    -- @param button string  The mouse button.
+    addon:SetUIScript(slot, 'OnClick', function(self, button)
         local data = self.data
 
         if not data or not self.ctx then
             return
         end
 
-        -- Clicking the chosen talent again clears the choice.
-        if self.selected then
-            self.ctx.onSelect(false)
-        else
-            self.ctx.onSelect({
-                node = data.node,
-                entry = data.entry,
-                spell = data.spell,
-                name = data.name,
-                icon = data.icon,
-            })
-        end
+        self.ctx.onClick({
+            key = { node = data.node, entry = data.entry, spell = data.spell },
+            name = data.name,
+            icon = data.icon,
+            maxRanks = data.maxRanks,
+        }, button == 'RightButton' and -1 or 1, self.selected)
     end)
 
     d.slots[index] = slot
@@ -1241,7 +1496,7 @@ end
 local function styleSlot(slot, size, shape)
     slot:SetSize(size, size)
 
-    local fancy = atlasExists('talents-node-' .. shape .. '-green')
+    local fancy = atlasExists('talents-node-' .. shape .. '-gray')
         and atlasExists('talents-node-' .. shape .. '-yellow')
         and atlasExists('talents-node-' .. shape .. '-greenglow')
 
@@ -1249,7 +1504,7 @@ local function styleSlot(slot, size, shape)
     local icon = fancy and size * .86 or size - 4
     slot.icon:SetSize(icon, icon)
     slot.art:SetSize(size * 1.3, size * 1.3)
-    slot.hover:SetSize(size * 1.3, size * 1.3)
+    slot.hover:SetSize(size * 1.9, size * 1.9)
 
     if fancy then
         slot.art:Show()
@@ -1364,6 +1619,54 @@ local function panes(nodes, hero)
     return result
 end
 
+-- Names Forever's classic trees: one pane for each node group of the class tree, centered on its nodes.
+-- @param nodes table[]  The shown nodes (each lists its groups).
+-- @param groups table[]  The trees { groupID, name } in display order.
+-- @return table[]  The panes, each { name, x, index } with the horizontal center of the pane for its title and its place.
+local function groupPanes(nodes, groups)
+    local result = {}
+
+    for index, group in ipairs(groups) do
+        local low, high
+
+        for _, node in ipairs(nodes) do
+            for _, id in ipairs(node.groups or {}) do
+                if id == group.groupID then
+                    low, high = math.min(low or node.x, node.x), math.max(high or node.x, node.x)
+                    break
+                end
+            end
+        end
+
+        if low then
+            result[#result + 1] = { name = group.name, x = (low + high) / 2, index = index }
+        end
+    end
+
+    return result
+end
+
+-- Blizzard's talent art helper, with the load-on-demand talent UI loaded the first time it is missing: the backdrops come
+-- from it, and it is not there until the player has opened their own talent window.
+-- @return table|nil  ClassTalentUtil, when the client has it.
+local function talentUtil()
+    local util = rawget(_G, 'ClassTalentUtil')
+
+    if (type(util) ~= 'table' or type(util.GetVisualsForSpecID) ~= 'function') and not addon.talentUtilTried then
+        addon.talentUtilTried = true
+        local loader = C_AddOns and C_AddOns.LoadAddOn or LoadAddOn
+
+        if type(loader) == 'function' then
+            pcall(loader, 'Blizzard_PlayerSpells')
+            pcall(loader, 'Blizzard_ClassTalentUI')
+        end
+
+        util = rawget(_G, 'ClassTalentUtil')
+    end
+
+    return type(util) == 'table' and util or nil
+end
+
 -- Draws the tree for the context's spec and the chosen hero tree into the canvas, scaled to fit: pooled talent slots,
 -- pane titles and the faint requirement lines.
 -- @param d table  The window record.
@@ -1424,7 +1727,83 @@ local function draw(d, ctx)
 
     local margin, top = NODE + 8, NODE + 30
     local width, height = (maxX - minX) / 10 + margin * 2, (maxY - minY) / 10 + margin + top
-    local scale = math.max(.35, math.min(1.25, (d.canvasWidth or width) / width, (d.canvasHeight or height) / height))
+
+    -- Forever's trees each take an equal pane of the canvas, as the backdrop's three panels do, with the tree centered in
+    -- its own pane: every node is placed by its offset from the center of its tree.
+    local paneCount, paneCenters, widest = 0, nil, 0
+
+    if view.groups and #view.groups > 0 then
+        local place, low, high = {}, {}, {}
+
+        for index, group in ipairs(view.groups) do
+            place[group.groupID] = index
+        end
+
+        for _, node in ipairs(shownNodes) do
+            node.pane = nil
+
+            for _, id in ipairs(node.groups or {}) do
+                local index = place[id]
+
+                if index then
+                    node.pane = index
+
+                    low[index], high[index] = math.min(low[index] or node.x, node.x), math.max(
+                        high[index] or node.x,
+                        node.x
+                    )
+
+                    break
+                end
+            end
+        end
+
+        paneCenters = {}
+
+        for index in pairs(low) do
+            paneCenters[index] = (low[index] + high[index]) / 2
+            widest = math.max(widest, (high[index] - low[index]) / 10)
+        end
+
+        if next(paneCenters) then
+            paneCount = #view.groups
+
+            -- A talent that names no tree goes with the nearest one.
+            for _, node in ipairs(shownNodes) do
+                if not node.pane then
+                    local nearest
+
+                    for index, center in pairs(paneCenters) do
+                        if not nearest or math.abs(node.x - center) < math.abs(node.x - paneCenters[nearest]) then
+                            nearest = index
+                        end
+                    end
+
+                    node.pane = nearest
+                end
+            end
+        else
+            paneCenters = nil
+        end
+    end
+
+    local scale
+
+    if paneCenters then
+        local canvasWidth = d.canvasWidth or width
+
+        scale = math.max(.35, math.min(
+            1.25,
+            (d.canvasHeight or height) / height,
+            canvasWidth / paneCount / (widest + margin * 2)
+        ))
+
+        width = canvasWidth / scale
+    else
+        scale = math.max(.35, math.min(1.25, (d.canvasWidth or width) / width, (d.canvasHeight or height) / height))
+    end
+
+    local paneWidth = paneCenters and width / paneCount or 0
     d.content:SetScale(scale)
     d.content:SetSize(width, height)
     d.content:ClearAllPoints()
@@ -1433,15 +1812,15 @@ local function draw(d, ctx)
         'TOPLEFT',
         d.canvas,
         'TOPLEFT',
-        math.max(0, ((d.canvasWidth or width) - width * scale) / 2) / scale,
+        paneCenters and 0 or math.max(0, ((d.canvasWidth or width) - width * scale) / 2) / scale,
         -math.max(0, ((d.canvasHeight or height) - height * scale) / 2) / scale
     )
 
     -- The spec's own backdrop, when Blizzard's talent art is loaded.
     local backdrop
-    local util = rawget(_G, 'ClassTalentUtil')
+    local util = talentUtil()
 
-    if type(util) == 'table' and type(util.GetVisualsForSpecID) == 'function' and traitID(view.spec) then
+    if util and type(util.GetVisualsForSpecID) == 'function' and traitID(view.spec) then
         local ok, visuals = pcall(util.GetVisualsForSpecID, view.spec)
 
         backdrop = ok and type(visuals) == 'table' and type(visuals.background) == 'string' and visuals.background
@@ -1459,6 +1838,11 @@ local function draw(d, ctx)
 
     for _, node in ipairs(shownNodes) do
         local cx, cy = (node.x - minX) / 10 + margin, (node.y - minY) / 10 + top
+
+        if paneCenters then
+            cx = paneWidth * (node.pane - .5) + (node.x - paneCenters[node.pane]) / 10
+        end
+
         drawnAt[node.id] = { cx, cy }
         local choice = node.kind == SELECTION and #node.entries > 1
 
@@ -1483,8 +1867,14 @@ local function draw(d, ctx)
             }
 
             slot.ctx = ctx
-            slot.rank:SetText(node.maxRanks > 1 and tostring(node.maxRanks) or '')
             slot.selected = selection ~= nil and selection.node == node.id and (not choice or selection.entry == entry)
+
+            if ctx.ranked == false then
+                slot.rank:SetText('')
+            else
+                slot.rank:SetText(tostring(slot.selected and ctx.rank or 0))
+            end
+
             slot.hovered = nil
             paintSlot(slot)
             slot:Show()
@@ -1518,17 +1908,28 @@ local function draw(d, ctx)
 
     local titles = 0
 
-    for _, pane in ipairs(panes(shownNodes, hero)) do
+    for _, pane in ipairs(
+        view.groups and #view.groups > 0 and groupPanes(shownNodes, view.groups) or panes(shownNodes, hero)
+    ) do
         titles = titles + 1
         local text = label(d, titles)
 
-        local name = pane.kind == 'class' and className
+        local name = pane.name
+            or pane.kind == 'class' and className
             or pane.kind == 'spec' and specName
             or pane.kind == 'hero' and heroName
             or nil
 
         text:ClearAllPoints()
-        text:SetPoint('TOP', d.content, 'TOPLEFT', (pane.x - minX) / 10 + margin, -8)
+
+        text:SetPoint(
+            'TOP',
+            d.content,
+            'TOPLEFT',
+            paneCenters and paneWidth * (pane.index - .5) or (pane.x - minX) / 10 + margin,
+            -8
+        )
+
         text:SetText(name or '')
         text:Show()
     end
@@ -1537,8 +1938,10 @@ local function draw(d, ctx)
         d.paneLabels[index]:Hide()
     end
 
-    -- Faint lines between talents that lead to one another (what each one requires).
+    -- The lines between talents that lead to one another (what each one requires): Blizzard's gray arrows, a line with a
+    -- head at the talent it leads to, or plain faint lines where the client lacks that art.
     local lines = 0
+    local arrows = atlasExists(ARROW_LINE) and atlasExists(ARROW_HEAD) and type(d.content.CreateLine) == 'function'
 
     if d.content.CreateLine then
         for _, node in ipairs(shownNodes) do
@@ -1551,14 +1954,47 @@ local function draw(d, ctx)
 
                     if not line then
                         line = d.content:CreateLine(nil, 'BACKGROUND')
-                        line:SetThickness(3)
                         d.lines[lines] = line
                     end
 
-                    line:SetColorTexture(.55, .58, .62, .55)
+                    -- The line stops at the edge of the talent it leads to, where the head sits pointing at it.
+                    local endX, endY = to[1], -to[2]
+                    local angle
+
+                    if arrows then
+                        angle = math.atan2(to[2] - from[2], from[1] - to[1])
+                        endX = endX + math.cos(angle) * NODE * .55
+                        endY = endY + math.sin(angle) * NODE * .55
+                    end
+
+                    if arrows and pcall(line.SetAtlas, line, ARROW_LINE, false) then
+                        line:SetThickness(6)
+                    else
+                        line:SetThickness(3)
+                        line:SetColorTexture(.55, .58, .62, .55)
+                    end
+
                     line:SetStartPoint('TOPLEFT', d.content, from[1], -from[2])
-                    line:SetEndPoint('TOPLEFT', d.content, to[1], -to[2])
+                    line:SetEndPoint('TOPLEFT', d.content, endX, endY)
                     line:Show()
+
+                    local head = d.heads[lines]
+
+                    if arrows and not head then
+                        head = d.content:CreateTexture(nil, 'ARTWORK', nil, 2)
+                        d.heads[lines] = head
+                    end
+
+                    if head then
+                        if arrows and pcall(head.SetAtlas, head, ARROW_HEAD, true) then
+                            head:ClearAllPoints()
+                            head:SetPoint('CENTER', d.content, 'TOPLEFT', endX, endY)
+                            head:SetRotation(angle - math.pi / 2)
+                            head:Show()
+                        else
+                            head:Hide()
+                        end
+                    end
                 end
             end
         end
@@ -1566,6 +2002,10 @@ local function draw(d, ctx)
 
     for index = lines + 1, #d.lines do
         d.lines[index]:Hide()
+    end
+
+    for index = lines + 1, #d.heads do
+        d.heads[index]:Hide()
     end
 
     return view, hero
@@ -1618,6 +2058,10 @@ function drawn.open(ctx)
 
         for _, line in ipairs(d.lines) do
             line:Hide()
+        end
+
+        for _, head in ipairs(d.heads) do
+            head:Hide()
         end
 
         for _, text in ipairs(d.paneLabels) do

@@ -67,7 +67,7 @@ local function context(p, store, id)
         return setmetatable(result, { __index = profile })
     end
 
-    if p.settingsKey == 'Integrations' then
+    if p.settingsKey == 'Integrations' or p.settingsKey == 'Metrics' then
         return profile
     end
     if p.settingsKey == 'Effects' then

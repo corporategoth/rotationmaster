@@ -93,7 +93,7 @@ local function pendingFields(widget, commit)
 end
 
 -- Card title for a condition node: the group operator, "Always", or the condition's description, with the spell name
--- appended when the node has a spell. An unregistered type reads as "Unknown condition".
+-- appended when the node has a spell (and its rank only when the condition asks for that exact rank). An unregistered type reads as "Unknown condition".
 -- @param node table  A condition node ({ type, spell, ... }).
 -- @return string  The localized title.
 local function caption(node)
@@ -122,8 +122,9 @@ local function caption(node)
 
         if info then
             text = text .. ": " .. info.name
+            local exact = node.anyrank == false or node.ranked == true
 
-            if info.subtext and info.subtext ~= "" then
+            if exact and info.subtext and info.subtext ~= "" then
                 text = text .. " (" .. info.subtext .. ")"
             end
         end

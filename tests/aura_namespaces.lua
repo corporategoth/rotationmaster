@@ -67,13 +67,13 @@ end)
 test('baseline aura summaries preserve positive negative rank caster and existing grammar wording',function()
     local _,a=fixture(true);local copies=clones(a)
     local baseline={
-        BUFF={'you have your own Shield (any rank)','you do not have your own Shield (any rank)'},
-        BUFF_REMAIN={'you have your own Shield (any rank) where the remaining time is less than 4 seconds','you do not have your own Shield (any rank) where the remaining time is less than 4 seconds'},
-        BUFF_STACKS={'the number of stacks of your own Shield (any rank) on you is less than 4','the number of stacks of your own Shield (any rank) on you is not less than 4'},
+        BUFF={'you have your own Shield','you do not have your own Shield'},
+        BUFF_REMAIN={'you have your own Shield where the remaining time is less than 4 seconds','you do not have your own Shield where the remaining time is less than 4 seconds'},
+        BUFF_STACKS={'the number of stacks of your own Shield on you is less than 4','the number of stacks of your own Shield on you is not less than 4'},
         STEALABLE={'you have a stealable buff','you do not have a stealable buff'},
-        DEBUFF={'you have your own Curse (any rank)','you do not have your own Curse (any rank)'},
-        DEBUFF_REMAIN={'you have your own Curse (any rank) where the remaining time is less than 4 seconds','you do not have your own Curse (any rank) where the remaining time is less than 4 seconds'},
-        DEBUFF_STACKS={'the number of stacks of your own Curse (any rank) on you is less than 4','the number of stacks of your own Curse (any rank) on you is not less than 4'},
+        DEBUFF={'you have your own Curse','you do not have your own Curse'},
+        DEBUFF_REMAIN={'you have your own Curse where the remaining time is less than 4 seconds','you do not have your own Curse where the remaining time is less than 4 seconds'},
+        DEBUFF_STACKS={'the number of stacks of your own Curse on you is less than 4','the number of stacks of your own Curse on you is not less than 4'},
         DISPELLABLE={'you have a debuff you applied of type Magic that is dispellable','you do not have a debuff you applied of type Magic that is dispellable'},
     }
     for _,tag in ipairs(tags) do local node=value(tag);assert(a.conditionDefinitions[tag].print(0,node)==baseline[tag][1] and copies[tag].print(0,node,true)==baseline[tag][2],tag..' baseline wording changed') end

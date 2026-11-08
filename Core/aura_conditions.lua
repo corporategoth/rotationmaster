@@ -71,6 +71,18 @@ end
 -- Matching
 -- ============================================================================
 
+-- Tells whether a condition matches its spell at any rank. Any rank is the default on a client with spell ranks; only a
+-- condition saved with anyrank = false asks for the exact rank, and anyrank = true is honored on every client.
+-- @param value table  The condition value.
+-- @return boolean  True when a different rank of the spell matches too.
+local function anyRank(value)
+    if value.anyrank ~= nil then
+        return value.anyrank == true
+    end
+
+    return type(addon.ClientHasSpellRanks) == "function" and addon:ClientHasSpellRanks() == true
+end
+
 -- Tests one aura against the condition.
 -- @param aura table  The aura record to test.
 -- @param value table  The condition value (spell, anyrank, debufftype, ownbuff, owndebuff).
@@ -116,7 +128,7 @@ local function matchesAura(aura, value, mode, identity)
 
         matches = spell == value.spell
 
-        if not matches and field == 'spellID' and value.anyrank == true then
+        if not matches and field == 'spellID' and anyRank(value) then
             if not identity.resolved then
                 identity.resolved = true
 
@@ -223,7 +235,7 @@ local function lookupByName(value, filter, mode)
     if aura.unavailable then
         return
     end
-    if type(spell) == "number" and value.anyrank ~= true and aura.spellID ~= spell then
+    if type(spell) == "number" and not anyRank(value) and aura.spellID ~= spell then
         return
     end
     if own and aura.sourceUnit ~= "player" then
@@ -231,6 +243,74 @@ local function lookupByName(value, filter, mode)
     end
 
     return "found", aura
+end
+
+-- Tells whether the player has learned a spell.
+-- @param spell number  The spell id.
+-- @return boolean  True when the spell is known to the player.
+local function playerKnows(spell)
+    return type(platform.IsSpellKnown) == "function" and platform:IsSpellKnown(spell) == true
+end
+
+-- Answers a condition on the player's own buff by spell ID, for a restricted client where the walk of the player's auras
+-- is refused in combat.
+-- @param value table  The condition value (unit, spell, anyrank, ownbuff).
+-- @param filter string  The aura filter; only "HELPFUL" is answered here.
+-- @param mode string  The evaluation mode; 'present', 'remaining' and 'stacks'.
+-- @return string|nil  "none" (the player has none of the spell's ranks) or "found"; nil when the walk must decide.
+-- @return table|nil  The aura when the first return is "found"; nil otherwise.
+--
+-- Every known rank is asked for when any rank matches. A refusal, or an aura whose fields cannot be read, leaves the
+-- walk to say so.
+local function lookupPlayerBySpell(value, filter, mode)
+    if platform.secretsUnrestricted or type(platform.GetPlayerAuraBySpellID) ~= "function" then
+        return
+    end
+    if value.unit ~= "player" or filter ~= "HELPFUL" or type(value.spell) ~= "number" then
+        return
+    end
+    if not (C_UnitAuras and type(C_UnitAuras.GetPlayerAuraBySpellID) == "function") then
+        return
+    end
+    if mode ~= "present" and mode ~= "remaining" and mode ~= "stacks" then
+        return
+    end
+
+    local ids = { value.spell }
+
+    if anyRank(value) and addon.SpellCatalog and type(addon.SpellCatalog.GetAllSpellIds) == "function" then
+        ids = addon.SpellCatalog:GetAllSpellIds(value.spell) or ids
+    end
+
+    for _, id in ipairs(ids) do
+        local aura, reason = platform:GetPlayerAuraBySpellID(id)
+
+        if reason then
+            return
+        end
+
+        if aura then
+            local hidden = aura.unavailable
+            local ownerOnly = hidden and hidden.sourceUnit and next(hidden, next(hidden)) == nil
+
+            -- A hidden owner is not a hidden aura: for presence, a spell the player knows and finds on themselves in combat is
+            -- taken as their own (only a second caster of the same spell could make it someone else's).
+            if
+                hidden
+                and not (mode == "present"
+                    and (not value.ownbuff or ownerOnly and (playerKnows(value.spell) or playerKnows(id))))
+            then
+                return
+            end
+            if not hidden and value.ownbuff and aura.sourceUnit ~= "player" then
+                return
+            end
+
+            return "found", aura
+        end
+    end
+
+    return "none"
 end
 
 -- ============================================================================
@@ -310,6 +390,10 @@ local function evaluateAura(self, value, cache, start, filter, mode)
     end
 
     local direct, found = lookupByName(value, filter, mode)
+
+    if direct == nil then
+        direct, found = lookupPlayerBySpell(value, filter, mode)
+    end
 
     if direct == "none" then
         return false

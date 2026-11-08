@@ -7,6 +7,41 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Shows or hides a region.
+-- @param region table  The region.
+-- @param flag any  Truthy shows it.
+local function visible(region, flag)
+    if flag then
+        region:Show()
+    else
+        region:Hide()
+    end
+end
+
+-- A report longer than this many characters is shown a page at a time: one text box holding all of a long report can show
+-- nothing at all, and a page that does not show also says which part to look at.
+local PAGE_CHARACTERS = 5000
+
+-- Splits a report into pages at line breaks.
+-- @param text string  The report.
+-- @return string[]  The pages, each at most PAGE_CHARACTERS long unless one line is longer.
+local function paginate(text)
+    local pages, current, size = {}, {}, 0
+
+    for line in (text .. '\n'):gmatch('(.-)\n') do
+        if size > 0 and size + #line + 1 > PAGE_CHARACTERS then
+            pages[#pages + 1] = table.concat(current, '\n')
+            current, size = {}, 0
+        end
+
+        current[#current + 1] = line
+        size = size + #line + 1
+    end
+
+    pages[#pages + 1] = table.concat(current, '\n')
+    return pages
+end
+
 -- Shows a full condition expression or a copyable report in the read-only text window.
 -- @param value string  The text to show; anything else is ignored.
 -- @param heading string|nil  The window heading; nil uses the default condition title. A heading switches the button to
@@ -40,6 +75,15 @@ function addon:ShowConditionText(value, heading)
         local edit = CreateFrame('EditBox', nil, scroll)
         dialog.edit = edit
         edit:SetMultiLine(true)
+
+        -- A report is long: the box's default limit would cut it at a few hundred characters.
+        if edit.SetMaxLetters then
+            edit:SetMaxLetters(0)
+        end
+        if edit.SetMaxBytes then
+            edit:SetMaxBytes(0)
+        end
+
         edit:SetAutoFocus(false)
         edit:SetFontObject('GameFontHighlightSmall')
         edit:SetPoint('TOPLEFT')
@@ -48,10 +92,18 @@ function addon:ShowConditionText(value, heading)
         scroll:SetScrollChild(edit)
         local setting = false
 
-        -- Grows the edit box to fit its text so the scroll frame, not the box, provides scrolling. Falls back to an
-        -- 80-column estimate on clients whose EditBox lacks GetNumLines.
+        -- Grows the edit box to fit its text so the scroll frame, not the box, provides scrolling. The game's own line
+        -- count is not up to date until the box has been drawn once, so the height is never less than an estimate of the
+        -- wrapped lines (about 95 characters to a line); a box left too short shows nothing of a page.
         local function resize()
-            local lines = edit.GetNumLines and edit:GetNumLines() or math.ceil(#(edit:GetText() or '') / 80)
+            local text = edit:GetText() or ''
+            local estimate = 0
+
+            for line in (text .. '\n'):gmatch('(.-)\n') do
+                estimate = estimate + math.max(1, math.ceil(#line / 95))
+            end
+
+            local lines = math.max(estimate, edit.GetNumLines and edit:GetNumLines() or 0)
             edit:SetHeight(math.max(24, lines * 14 + 16))
             scroll:UpdateScrollChildRect()
         end
@@ -78,6 +130,44 @@ function addon:ShowConditionText(value, heading)
         dialog.copy = addon:CreateWorkbenchButton(frame, L['Copy full condition'], 150)
         dialog.copy:SetPoint('BOTTOMLEFT', 12, 26)
         addon:SetUIScript(dialog.copy, 'OnClick', copy)
+
+        -- Page controls, shown only for a report that needed more than one page.
+        dialog.prev = addon:CreateWorkbenchButton(frame, '<', 28)
+        dialog.prev:SetPoint('LEFT', dialog.copy, 'RIGHT', 8, 0)
+        dialog.next = addon:CreateWorkbenchButton(frame, '>', 28)
+        dialog.next:SetPoint('LEFT', dialog.prev, 'RIGHT', 4, 0)
+        dialog.pageLabel = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+        dialog.pageLabel:SetPoint('LEFT', dialog.next, 'RIGHT', 8, 0)
+
+        -- Shows one page of the report.
+        -- @param page number  The page number, 1 to the number of pages.
+        function dialog:ShowPage(page)
+            page = math.max(1, math.min(#self.pages, page))
+            self.page = page
+            -- An empty line is held open by a space, so no page is only blank lines to the text box.
+            self.text = self.pages[page]:gsub('\n\n', '\n \n'):gsub('\n\n', '\n \n')
+            setting = true
+            edit:SetText(self.text)
+            setting = false
+            resize()
+            copy()
+
+            -- Measured again once the box has been drawn.
+            if C_Timer and type(C_Timer.After) == 'function' then
+                C_Timer.After(0, resize)
+            end
+
+            self.pageLabel:SetText(string.format('%d / %d', page, #self.pages))
+        end
+
+        addon:SetUIScript(dialog.prev, 'OnClick', function()
+            dialog:ShowPage(dialog.page - 1)
+        end)
+
+        addon:SetUIScript(dialog.next, 'OnClick', function()
+            dialog:ShowPage(dialog.page + 1)
+        end)
+
         dialog.close = addon:CreateWorkbenchIconButton(frame, 'close', L['Close'])
         dialog.close:SetPoint('TOPRIGHT', -6, -6)
 
@@ -105,13 +195,14 @@ function addon:ShowConditionText(value, heading)
 
         -- Replaces the stored text and selects it for copying; the programmatic SetText is guarded by the setting flag.
         -- @param text string  The text to show.
-        function dialog:SetText(text)
-            self.text = text
-            setting = true
-            edit:SetText(text)
-            setting = false
-            resize()
-            copy()
+        -- @param paged boolean|nil  True for a report: one that is long is shown a page at a time.
+        function dialog:SetText(text, paged)
+            self.pages = paged and #text > PAGE_CHARACTERS and paginate(text) or { text }
+            local several = #self.pages > 1
+            visible(self.prev, several)
+            visible(self.next, several)
+            visible(self.pageLabel, several)
+            self:ShowPage(1)
         end
 
         addon.HideOnEscape(dialog)
@@ -121,6 +212,6 @@ function addon:ShowConditionText(value, heading)
     dialog.copy:SetText(heading and L['Copy report'] or L['Copy full condition'])
     dialog:Show()
     addon:OpenPopup(dialog)
-    dialog:SetText(value)
+    dialog:SetText(value, heading ~= nil)
     return dialog
 end

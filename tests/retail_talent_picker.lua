@@ -609,13 +609,8 @@ test(
         trees:Fire('OnValueChanged', 2)
         picker:Fire('OnValueChanged', assert(entryNamed(picker, 'Frostfire Bolt')))
         assert(value.node == 2411 and value.spell == 431044 and value.entry == nil)
-        -- A hand-typed node no longer goes with the spell of the picked talent.
-        local nodeBox = assert(child(parent, 'Talent Node ID'))
-        nodeBox:Fire('OnEnterPressed', '2202')
-        assert(value.node == 2202 and value.spell == nil)
-        local entryBox = assert(child(parent, 'Choice Entry ID'))
-        entryBox:Fire('OnEnterPressed', '77')
-        assert(value.entry == 77 and value.spell == nil)
+        -- The talent is chosen from the lists or the tree; there are no boxes for a node or an entry ID.
+        assert(child(parent, 'Talent Node ID') == nil and child(parent, 'Choice Entry ID') == nil)
     end
 )
 
@@ -649,7 +644,7 @@ test(
     end
 )
 
-test('the picker says why the talents cannot be listed, with the reason, and keeps node IDs usable', function()
+test('the picker says why the talents cannot be listed, with the reason', function()
     local state = { spec = FIRE, combat = true }
     local f, a = client(state)
     local value = {}
@@ -657,10 +652,7 @@ test('the picker says why the talents cannot be listed, with the reason, and kee
     assert(F.text(parent):find('during combat', 1, true), F.text(parent))
     local picker = child(parent, 'Talent')
     picker.configure()
-    assert(picker.disabled == true)
-    local nodeBox = assert(child(parent, 'Talent Node ID'))
-    nodeBox:Fire('OnEnterPressed', '2301')
-    assert(value.node == 2301 and a.definitions.TALENT.valid(0, value))
+    assert(picker.disabled == true and value.node == nil)
     state.combat = false
     f = client({ spec = FIRE, errors = { GetTreeNodes = true } })
     parent = editor(f, {}, FIRE)
@@ -678,7 +670,7 @@ test('the picker says why the talents cannot be listed, with the reason, and kee
     )
 end)
 
-test('a rotation for another class gets no list of your talents, only the node IDs', function()
+test('a rotation for another class gets no list of your talents', function()
     local f, a = client({ spec = FIRE })
     a.activeRotationEditor = { workspace = { RotationClass = function() return 'WARRIOR' end } }
     local value = {}
@@ -686,10 +678,7 @@ test('a rotation for another class gets no list of your talents, only the node I
     assert(F.text(parent):find('only for your own class', 1, true), F.text(parent))
     local picker = child(parent, 'Talent')
     picker.configure()
-    assert(picker.disabled == true and #picker.order == 0)
-    local nodeBox = assert(child(parent, 'Talent Node ID'))
-    nodeBox:Fire('OnEnterPressed', '2301')
-    assert(value.node == 2301 and a.definitions.TALENT.valid(0, value))
+    assert(picker.disabled == true and #picker.order == 0 and value.node == nil)
     a.activeRotationEditor = { workspace = { RotationClass = function() return 'MAGE' end } }
     picker = child(editor(f, {}, FIRE), 'Talent')
     picker.configure()
@@ -929,27 +918,32 @@ test('another specialization is never read while the talent window shows someone
     assert(p:GetTraitTalents(ARCANE) and state.calls.InitializeViewLoadout == 2, 'the lists need no Blizzard window')
 end)
 
-test('the tree button is off while the lists could not be filled, and on once they can', function()
+test('the icon opens nothing while the lists could not be filled, and the tree once they can', function()
+    local opened = 0
     local f, a = client({ spec = FIRE, errors = { GetTreeNodes = true } })
-    local e = f.env
-    a.OpenTalentTree = function() end
+
+    a.OpenTalentTree = function()
+        opened = opened + 1
+    end
+
     a.Platform.HasTalentTreeProvider = function() return true end
     local parent = editor(f, {}, FIRE)
-    local box = assert(block(parent))
-    local button = box.children[#box.children]
-
-    assert(
-        button.type == 'RM-ConditionButton' and button.disabled == true,
-        'the tree button is on although nothing is listed'
-    )
+    local icon = assert(block(parent)).children[1]
+    assert(icon.type == 'RM-ConditionIcon')
+    icon:Fire('OnClick')
+    assert(opened == 0, 'the tree opened although nothing is listed')
 
     f, a = client({ spec = FIRE })
-    a.OpenTalentTree = function() end
+
+    a.OpenTalentTree = function()
+        opened = opened + 1
+    end
+
     a.Platform.HasTalentTreeProvider = function() return true end
     parent = editor(f, {}, FIRE)
-    box = assert(block(parent))
-    button = box.children[#box.children]
-    assert(button.type == 'RM-ConditionButton' and not button.disabled and button:GetUserData('side') == true)
+    icon = assert(block(parent)).children[1]
+    icon:Fire('OnClick')
+    assert(opened == 1, 'a click on the icon opens the tree')
 end)
 
 test('Forever and the classic clients keep their pickers: one tree per class, no specialization list', function()

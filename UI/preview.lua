@@ -82,7 +82,7 @@ end
 ---@field PauseLayout fun(self: RMRecommendationPreview)
 ---@field ResumeLayout fun(self: RMRecommendationPreview)
 ---@field DoLayout fun(self: RMRecommendationPreview)
----@field AddRecommendation fun(self: RMRecommendationPreview, spellId: number, itemId?: number)
+---@field AddRecommendation fun(self: RMRecommendationPreview, spellId: number, itemId?: number, confidence?: number)
 function addon:CreateNativePreviewWindow()
     local window = self.nativePreviewWindow
 
@@ -95,6 +95,10 @@ function addon:CreateNativePreviewWindow()
         frame:EnableMouse(false)
         window = { frame = frame, icons = {}, count = 0, nativePreview = true }
         self.nativePreviewWindow = window
+        -- A caption above the icons (not a title bar: it reserves no height and the window has no header).
+        window.caption = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
+        window.caption:SetPoint('BOTTOM', frame, 'TOP', 0, 3)
+        window.caption:SetText(L['Rotation Preview'])
         window.body = frame:CreateTexture(nil, 'BACKGROUND')
         window.body:SetAllPoints(frame)
         window.body:SetColorTexture(.055, .065, .075, 1)
@@ -338,6 +342,13 @@ function addon:CreateNativePreviewWindow()
             self.locked = profile.preview_locked == true
             self.opacity = clamp(profile.preview_opacity, 0, 1, 1)
             self.body:SetAlpha(self.opacity)
+
+            if profile.preview_title == false then
+                self.caption:Hide()
+            else
+                self.caption:Show()
+            end
+
             -- Locked or fully transparent, the background never intercepts
             -- the mouse; only the icons keep their own tooltips and clicks.
             self.frame:EnableMouse(not self.locked and self.opacity > 0)
@@ -390,7 +401,9 @@ function addon:CreateNativePreviewWindow()
         -- for each result; ignored when the window is stale or full. The first icon also reports delivery to analytics.
         -- @param spellId number  The spell ID.
         -- @param itemId number|nil  The item ID, when the recommendation is an item.
-        function window:AddRecommendation(spellId, itemId)
+        -- @param confidence number|nil  How sure a predicted recommendation is, 0 to 1; nil for one read from the game as
+        --   it is now. The icon fades with it unless profile.forecast_confidence is off.
+        function window:AddRecommendation(spellId, itemId, confidence)
             if not self:Valid() or self.count >= self.slots then
                 return
             end
@@ -448,6 +461,16 @@ function addon:CreateNativePreviewWindow()
                     GameTooltip:Hide()
                 end
             end)
+
+            local alpha = 1
+
+            if type(confidence) == 'number' and self.profile.forecast_confidence ~= false then
+                alpha = 0.4 + 0.6 * math.max(0, math.min(1, confidence))
+            end
+
+            if icon:GetAlpha() ~= alpha then
+                icon:SetAlpha(alpha)
+            end
 
             icon:Show()
             self:DoLayout()

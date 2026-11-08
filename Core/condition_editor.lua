@@ -85,25 +85,12 @@ end
 
 -- Returns the value a newly chosen condition type starts with.
 -- @param tag string  The condition tag.
--- @return table  { type = tag }, plus `anyrank = true` for aura conditions on clients that have spell ranks.
+-- @return table  { type = tag }.
 --
--- Aura conditions start with every rank matching (`anyrank`) on clients that have spell ranks, so "Use this exact spell
--- rank" starts unticked like the other rank options. Saved conditions without the field keep matching the exact ID.
+-- Every rank option starts unticked: a condition matches any rank of its spell until the author ticks "Use this exact
+-- spell rank" (stored as anyrank = false on an aura condition), so nothing is added here.
 function addon:NewConditionValue(tag)
-    local value = { type = tag }
-    local definition = self.conditionDefinitions and self.conditionDefinitions[tag]
-
-    if
-        type(definition) == "table"
-        and type(definition.fields) == "table"
-        and definition.fields.anyrank == "boolean"
-        and type(self.ClientHasSpellRanks) == "function"
-        and self:ClientHasSpellRanks()
-    then
-        value.anyrank = true
-    end
-
-    return value
+    return { type = tag }
 end
 
 -- ============================================================================

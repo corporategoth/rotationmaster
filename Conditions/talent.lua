@@ -161,11 +161,13 @@ end
 -- @param parent table  The editor group the icon is added to.
 -- @param value table  The saved condition fields.
 -- @param spec any  The rotation's specialization.
+-- @param open function|nil  Opens the talent tree; given when the client can show one, and then a click on the icon opens it.
 -- @return table  The icon widget, so the pickers can swap the image when the choice changes.
 --
 -- The icon is the question mark until a talent is chosen.
-local function icon(parent, value, spec)
+local function icon(parent, value, spec, open)
     local widget=addon:CreateConditionIcon();widget:SetWidth(64);widget:SetImageSize(60,60)
+    if open then widget:SetCallback("OnClick",open) end
     local current=info(value,spec);widget:SetImage(current and current.icon or PLACEHOLDER)
     widget:SetCallback("OnEnter",function()
         local observed=info(value,spec)
@@ -173,6 +175,12 @@ local function icon(parent, value, spec)
             GameTooltip:SetOwner(widget.frame,"ANCHOR_BOTTOMRIGHT",3)
             if observed.spellID then GameTooltip:SetHyperlink("spell:"..observed.spellID)
             else GameTooltip:SetText(observed.name) end
+            if open then GameTooltip:AddLine(L["Click to choose the talent from the talent tree."],.5,.8,.5) end
+            GameTooltip:Show()
+        elseif open then
+            GameTooltip:SetOwner(widget.frame,"ANCHOR_BOTTOMRIGHT",3)
+            GameTooltip:SetText(L["Click to choose the talent from the talent tree."])
+            GameTooltip:Show()
         end
     end)
     widget:SetCallback("OnLeave",function() if GameTooltip:IsOwned(widget.frame) then GameTooltip:Hide() end end)
@@ -189,41 +197,146 @@ end
 --
 -- Changing the tree clears the talent, and a reference saved in another layout is replaced only once a tree is picked.
 local function treeWidget(parent, spec, value, update)
-    local trees,treeOrder={},{}
+    local trees, treeOrder = {}, {}
     -- Names, never positions: the game's for the player's class, the shipped
     -- table's for another class's rotation or before the game has the data.
-    local listed=addon.TalentTrees.Choices(addon.TalentTrees.ContextClass(),group(spec))
-    if listed then trees,treeOrder=listed.choices,listed.order end
-    local talents,talentOrder={},{}
-    local talentIcon,talentPicker,treePicker
+    local listed = addon.TalentTrees.Choices(addon.TalentTrees.ContextClass(), group(spec))
+
+    if listed then
+        trees, treeOrder = listed.choices, listed.order
+    end
+
+    local talents, talentOrder = {}, {}
+    local talentIcon, talentPicker, treePicker
+
+    -- Refills the talent list for the chosen tree (empty for another class's tree, which the game cannot read).
     local function choices()
-        talents,talentOrder={},{}
+        talents, talentOrder = {}, {}
+
         if value.tree and ownTrees() then
-            for index=1,platform:GetTreeTalentCount(value.tree) or 0 do
-                local talent=platform:GetTreeTalentInfo(value.tree,index,group(spec))
-                if talent then talents[index]={text=talent.name,icon=talent.icon};talentOrder[#talentOrder+1]=index end
+            for index = 1, platform:GetTreeTalentCount(value.tree) or 0 do
+                local talent = platform:GetTreeTalentInfo(value.tree, index, group(spec))
+
+                if talent then
+                    talents[index] = { text = talent.name, icon = talent.icon }
+                    talentOrder[#talentOrder + 1] = index
+                end
             end
         end
     end
+
     choices()
-    local box=block(parent)
-    talentIcon=icon(box,value,spec)
-    treePicker=dropdown(box,L["Talent Tree"],function(selected)
-        if selected==value.tree then return end
-        local wasTree=value.layout=="tree" or value.layout==nil and value.tree~=nil
-        value.tree,value.talent,value.layout=selected,nil,"tree"
-        if not wasTree then value.value,value.operator=nil,nil end
-        choices();talentPicker:SetList(talents,talentOrder);talentPicker:SetValue(nil)
-        talentPicker:SetDisabled(#talentOrder==0);talentIcon:SetImage(PLACEHOLDER);update()
+    local box = block(parent)
+    local operators
+
+    -- Opens the talent tree when the client can show one (your own class only; the game answers for no other). The tree
+    -- writes the talent, how its ranks are compared and the number only when the player accepts.
+    local treeOwner, shown = {}, nil
+    local canShow = ownTrees() and platform.HasTalentTreeProvider and addon.OpenTalentTree and platform:HasTalentTreeProvider()
+
+    local function openTree()
+        if value.disabled then
+            return
+        end
+
+        local current = info(value, spec)
+        local specs = {}
+
+        for index = 1, platform:GetTalentTreeCount() or 0 do
+            specs[index] = {
+                id = index,
+                name = trees[index] and (type(trees[index]) == "table" and trees[index].text or trees[index])
+                    or tostring(index),
+            }
+        end
+
+        shown = shown or value.tree or 1
+        local saved = value.tree and value.talent and (value.layout == nil or value.layout == "tree")
+
+        addon:OpenTalentTree({
+            owner = treeOwner,
+            spec = shown,
+            specs = specs,
+            group = group(spec),
+            specLabel = L["Talent Tree"],
+            ranked = true,
+            selection = saved and { tree = value.tree, talent = value.talent } or nil,
+            selectionName = current and current.name,
+            selectionMax = current and current.maxRank,
+            rank = saved and value.value or nil,
+            operator = saved and value.operator or nil,
+            -- Writes the talent, comparison and rank the player accepted and follows them in the lists.
+            -- @param result table  The accepted { selection = { tree, talent }, icon, rank, operator }.
+            onAccept = function(result)
+                value.tree, value.talent, value.layout = result.selection.tree, result.selection.talent, "tree"
+                value.operator, value.value = result.operator, result.rank
+                choices()
+                treePicker:SetValue(value.tree)
+                talentPicker:SetList(talents, talentOrder)
+                talentPicker:SetValue(value.talent)
+                talentPicker:SetDisabled(#talentOrder == 0)
+                talentIcon:SetImage(result.icon or PLACEHOLDER)
+
+                if operators and operators.Refresh then
+                    operators.Refresh()
+                end
+
+                update()
+            end,
+            onSpec = function(chosen)
+                shown = chosen
+            end,
+        })
+    end
+
+    talentIcon = icon(box, value, spec, canShow and openTree or nil)
+    if canShow then
+        talentIcon:SetCallback("OnRelease", function()
+            addon:CloseTalentTree(treeOwner)
+        end)
+    end
+
+    treePicker = dropdown(box, L["Talent Tree"], function(selected)
+        if selected == value.tree then
+            return
+        end
+
+        local wasTree = value.layout == "tree" or value.layout == nil and value.tree ~= nil
+        value.tree, value.talent, value.layout = selected, nil, "tree"
+
+        if not wasTree then
+            value.value, value.operator = nil, nil
+        end
+
+        choices()
+        talentPicker:SetList(talents, talentOrder)
+        talentPicker:SetValue(nil)
+        talentPicker:SetDisabled(#talentOrder == 0)
+        talentIcon:SetImage(PLACEHOLDER)
+        update()
     end)
-    treePicker.configure=function() treePicker:SetList(trees,treeOrder);treePicker:SetValue(value.tree) end
-    talentPicker=dropdown(box,L["Talent"],function(selected)
-        value.talent,value.layout=selected,"tree"
-        local talent=info(value,spec);talentIcon:SetImage(talent and talent.icon or PLACEHOLDER);update()
+
+    treePicker.configure = function()
+        treePicker:SetList(trees, treeOrder)
+        treePicker:SetValue(value.tree)
+    end
+
+    talentPicker = dropdown(box, L["Talent"], function(selected)
+        value.talent, value.layout = selected, "tree"
+        local talent = info(value, spec)
+        talentIcon:SetImage(talent and talent.icon or PLACEHOLDER)
+        update()
     end)
-    talentPicker:SetDisabled(#talentOrder==0)
-    talentPicker.configure=function() talentPicker:SetList(talents,talentOrder);talentPicker:SetValue(value.talent) end
-    parent:AddChild(addon:Widget_OperatorWidget(value,L["Points"],update))
+
+    talentPicker:SetDisabled(#talentOrder == 0)
+
+    talentPicker.configure = function()
+        talentPicker:SetList(talents, talentOrder)
+        talentPicker:SetValue(value.talent)
+    end
+
+    operators = addon:Widget_OperatorWidget(value, L["Points"], update)
+    parent:AddChild(operators)
 end
 
 -- Mists of Pandaria: six tiers, one of three talents in each. The tier is the
@@ -241,39 +354,118 @@ local GRID_TIER_LEVELS = { 15, 30, 45, 60, 75, 90 }
 -- Choosing a talent saves slot (tier - 1) * 3 + column in `value` and clears the tree fields, because a grid reference
 -- has no operator.
 local function gridWidget(parent, spec, value, update)
-    local tiers,tierOrder={},{}
-    for tier,level in ipairs(GRID_TIER_LEVELS) do tiers[tier]=string.format(L["Tier %d (level %d)"],tier,level);tierOrder[tier]=tier end
-    local chosen=value.layout=="grid" and integer(value.value,1,18) and value.value or nil
-    local shownTier=chosen and math.ceil(chosen/3) or 1
-    local choices,order={},{}
+    local tiers, tierOrder = {}, {}
+
+    for tier, level in ipairs(GRID_TIER_LEVELS) do
+        tiers[tier] = string.format(L["Tier %d (level %d)"], tier, level)
+        tierOrder[tier] = tier
+    end
+
+    local chosen = value.layout == "grid" and integer(value.value, 1, 18) and value.value or nil
+    local shownTier = chosen and math.ceil(chosen / 3) or 1
+    local choices, order = {}, {}
+
+    -- Refills the talent list with the shown tier's three talents.
     local function load()
-        choices,order={},{}
-        for column=1,3 do
-            local talent=platform:GetGridTalentInfo((shownTier-1)*3+column,group(spec))
-            if talent then choices[column]={text=talent.name,icon=talent.icon};order[#order+1]=column end
+        choices, order = {}, {}
+
+        for column = 1, 3 do
+            local talent = platform:GetGridTalentInfo((shownTier - 1) * 3 + column, group(spec))
+
+            if talent then
+                choices[column] = { text = talent.name, icon = talent.icon }
+                order[#order + 1] = column
+            end
         end
     end
+
     load()
-    if value.layout~="grid" and (value.tree~=nil or value.value~=nil) then
-        text(parent,L["This reference belongs to another talent layout. Selecting a talent explicitly replaces it; viewing does not convert it."])
+
+    if value.layout ~= "grid" and (value.tree ~= nil or value.value ~= nil) then
+        text(
+            parent,
+            L["This reference belongs to another talent layout. Selecting a talent explicitly replaces it; viewing does not convert it."]
+        )
     end
-    local box=block(parent)
-    local talentIcon=icon(box,value,spec)
-    local tierPicker,picker
-    tierPicker=dropdown(box,L["Tier"],function(selected)
-        if selected==shownTier then return end
-        shownTier=selected;load();picker:SetList(choices,order)
-        picker:SetValue(chosen and math.ceil(chosen/3)==shownTier and (chosen-1)%3+1 or nil);picker:SetDisabled(#order==0)
+
+    local box = block(parent)
+    local tierPicker, picker
+    local treeOwner = {}
+    local canShow = platform.HasTalentTreeProvider and addon.OpenTalentTree and platform:HasTalentTreeProvider()
+    local talentIcon
+
+    -- Opens the talent tree when the client can show one: Blizzard's own rows, with every talent open to choose. The
+    -- chosen talent is written only when the player accepts.
+    local function openTree()
+        if value.disabled then
+            return
+        end
+
+        local current = info(value, spec)
+
+        addon:OpenTalentTree({
+            owner = treeOwner,
+            group = group(spec),
+            ranked = false,
+            selection = chosen and { slot = chosen } or nil,
+            selectionName = current and current.name,
+            -- Writes the slot the player accepted and follows it in the lists.
+            -- @param result table  The accepted { selection = { slot }, icon }.
+            onAccept = function(result)
+                chosen = result.selection.slot
+                value.layout, value.value = "grid", chosen
+                value.tree, value.talent, value.operator = nil, nil, nil
+                shownTier = math.ceil(chosen / 3)
+                load()
+                tierPicker:SetValue(shownTier)
+                picker:SetList(choices, order)
+                picker:SetValue((chosen - 1) % 3 + 1)
+                picker:SetDisabled(#order == 0)
+                talentIcon:SetImage(result.icon or PLACEHOLDER)
+                update()
+            end,
+        })
+    end
+
+    talentIcon = icon(box, value, spec, canShow and openTree or nil)
+    if canShow then
+        talentIcon:SetCallback("OnRelease", function()
+            addon:CloseTalentTree(treeOwner)
+        end)
+    end
+
+    tierPicker = dropdown(box, L["Tier"], function(selected)
+        if selected == shownTier then
+            return
+        end
+
+        shownTier = selected
+        load()
+        picker:SetList(choices, order)
+        picker:SetValue(chosen and math.ceil(chosen / 3) == shownTier and (chosen - 1) % 3 + 1 or nil)
+        picker:SetDisabled(#order == 0)
     end)
-    tierPicker.configure=function() tierPicker:SetList(tiers,tierOrder);tierPicker:SetValue(shownTier) end
-    picker=dropdown(box,L["Talent"],function(selected)
-        chosen=(shownTier-1)*3+selected
-        value.layout,value.value="grid",chosen
-        value.tree,value.talent,value.operator=nil,nil,nil
-        local talent=info(value,spec);talentIcon:SetImage(talent and talent.icon or PLACEHOLDER);update()
+
+    tierPicker.configure = function()
+        tierPicker:SetList(tiers, tierOrder)
+        tierPicker:SetValue(shownTier)
+    end
+
+    picker = dropdown(box, L["Talent"], function(selected)
+        chosen = (shownTier - 1) * 3 + selected
+        value.layout, value.value = "grid", chosen
+        value.tree, value.talent, value.operator = nil, nil, nil
+        local talent = info(value, spec)
+        talentIcon:SetImage(talent and talent.icon or PLACEHOLDER)
+        update()
     end)
-    picker:SetDisabled(#order==0)
-    picker.configure=function() picker:SetList(choices,order);picker:SetValue(chosen and math.ceil(chosen/3)==shownTier and (chosen-1)%3+1 or nil) end
+
+    picker:SetDisabled(#order == 0)
+
+    picker.configure = function()
+        picker:SetList(choices, order)
+        picker:SetValue(chosen and math.ceil(chosen / 3) == shownTier and (chosen - 1) % 3 + 1 or nil)
+    end
 end
 
 -- Lists the specializations of the player's class (Retail), for the list of talents to show.
@@ -327,7 +519,7 @@ local function traitsWidget(parent, spec, value, update)
     local groupNames,groupOrder={},{}
     -- The talent list contains only the selected class, specialization or hero tree.
     local list,order,positions={},{},{}
-    local talentIcon,talentPicker,groupPicker,nodeBox,entryBox,operators,specPicker,treeButton
+    local talentIcon,talentPicker,groupPicker,operators,specPicker
     local treeOwner={}
     local function rebuild()
         list,order,positions={},{},{}
@@ -352,10 +544,10 @@ local function traitsWidget(parent, spec, value, update)
         local listed,reason
         if own then listed,reason=platform:GetTraitTalents(shown) end
         groups=listed or {}
-        if not own then note:SetText(L["Talents can be listed only for your own class. A node ID entered below is kept and evaluated."])
+        if not own then note:SetText(L["Talents can be listed only for your own class."])
         elseif listed then note:SetText("")
-        elseif reason=="in-combat" then note:SetText(L["Talents of another specialization cannot be loaded during combat. A node ID entered below is kept and evaluated."])
-        else note:SetText(string.format(L["Your talents cannot be listed right now (%s). A node ID entered below is kept and evaluated."],tostring(reason))) end
+        elseif reason=="in-combat" then note:SetText(L["Talents of another specialization cannot be loaded during combat."])
+        else note:SetText(string.format(L["Your talents cannot be listed right now (%s)."],tostring(reason))) end
         selectedGroup,selectedTalent=nil,nil
         local matchedGroup,matchedTalent
         if traitShape(value) then
@@ -374,14 +566,16 @@ local function traitsWidget(parent, spec, value, update)
     local function show()
         if groupPicker then groupPicker:SetList(groupNames,groupOrder);groupPicker:SetValue(selectedGroup);groupPicker:SetDisabled(#groupOrder<2) end
         talentPicker:SetList(list,order);talentPicker:SetValue(selectedTalent);talentPicker:SetDisabled(#order==0)
-        if treeButton then treeButton:SetDisabled(value.disabled==true or #groups==0) end
     end
     local function adopt()
         if not traitShape(value) then value.operator,value.value="GREATERTHANOREQUALS",1 end
         value.layout,value.tree,value.talent="traits",nil,nil
         if operators and operators.Refresh then operators.Refresh() end
     end
-    talentIcon=icon(box,value,spec)
+    local canShow=platform.HasTalentTreeProvider and addon.OpenTalentTree and platform:HasTalentTreeProvider()
+    local openTree
+    talentIcon=icon(box,value,spec,canShow and function() openTree() end or nil)
+    if canShow then talentIcon:SetCallback("OnRelease",function() addon:CloseTalentTree(treeOwner) end) end
     if specs then
         local specNames,specOrder={},{}
         for index,choice in ipairs(specs) do
@@ -412,7 +606,6 @@ local function traitsWidget(parent, spec, value, update)
     local function apply(talent)
         adopt()
         value.node,value.entry,value.spell=talent.node,talent.entry,talent.spellID
-        nodeBox:SetText(tostring(talent.node));entryBox:SetText(talent.entry and tostring(talent.entry) or "")
         talentIcon:SetImage(talent.icon or PLACEHOLDER);update()
     end
     talentPicker=dropdown(box,L["Talent"],function(selected)
@@ -422,73 +615,38 @@ local function traitsWidget(parent, spec, value, update)
         selectedTalent=selected;apply(talent);refreshTree()
     end)
     talentPicker.configure=show
-    -- A button for the drawn tree sits beside the talent list when the client
-    -- can show one. It reads the same tree the lists do, so it is off while the
-    -- lists could not be filled.
-    if platform.HasTalentTreeProvider and addon.OpenTalentTree and platform:HasTalentTreeProvider() then
-        treeButton=addon:CreateConditionButton();treeButton:SetText(L["Show talent tree"]);treeButton:SetAutoWidth(true)
-        treeButton:SetUserData("side",true)
-        treeButton.frame.tooltip=L["Opens the talent tree of the rotation's specialization. Click a talent to choose it for this condition."]
-        treeButton:SetDisabled(value.disabled==true or #groups==0)
-        treeButton:SetCallback("OnClick",function()
-            local current=info(value,spec)
-            addon:OpenTalentTree({owner=treeOwner,spec=shown,selection=currentSelection(),selectionName=current and current.name,
-                specs=specs,
-                onSelect=function(selection)
-                    -- Clicking the chosen talent again clears the choice.
-                    if not selection then
-                        value.node,value.entry,value.spell=nil,nil,nil
-                        selectedTalent=nil
-                        nodeBox:SetText("");entryBox:SetText("")
-                        talentIcon:SetImage(PLACEHOLDER);update();show()
-                        return
+    -- The talent's icon opens the talent tree when the client can show one. It reads the same tree the lists do, so it
+    -- does nothing while the lists could not be filled. The tree writes the talent, how its rank is compared and the
+    -- rank only when the player accepts.
+    function openTree()
+        if value.disabled==true or #groups==0 then return end
+        local current=info(value,spec)
+        local saved=currentSelection()
+        addon:OpenTalentTree({owner=treeOwner,spec=shown,selection=saved,selectionName=current and current.name,
+            specs=specs,ranked=true,selectionMax=current and current.maxRanks,rank=saved and value.value or nil,operator=saved and value.operator or nil,
+            onAccept=function(result)
+                local selection=result.selection
+                local found,foundGroup,foundTalent
+                for groupIndex,candidate in ipairs(groups) do
+                    for talentIndex,talent in ipairs(candidate.talents) do
+                        if talent.node==selection.node and talent.entry==selection.entry then foundGroup,foundTalent,found=groupIndex,talentIndex,talent end
                     end
-                    local found,foundGroup,foundTalent
-                    for groupIndex,candidate in ipairs(groups) do
-                        for talentIndex,talent in ipairs(candidate.talents) do
-                            if talent.node==selection.node and talent.entry==selection.entry then foundGroup,foundTalent,found=groupIndex,talentIndex,talent end
-                        end
-                    end
-                    if found then selectedGroup=foundGroup end
-                    rebuild()
-                    selectedTalent=found and flatIndex(foundGroup,foundTalent) or nil
-                    apply({node=selection.node,entry=selection.entry,spellID=selection.spell,icon=found and found.icon or selection.icon})
-                    show()
-                end,
-                -- The tree and the lists show the same specialization.
-                onSpec=function(chosen)
-                    if chosen==shown then return end
-                    shown=chosen;reload();show()
-                    if specPicker then specPicker:SetValue(shown) end
-                end})
-        end)
-        treeButton:SetCallback("OnRelease",function() addon:CloseTalentTree(treeOwner) end)
-        box:AddChild(treeButton)
+                end
+                if found then selectedGroup=foundGroup end
+                rebuild()
+                selectedTalent=found and flatIndex(foundGroup,foundTalent) or nil
+                apply({node=selection.node,entry=selection.entry,spellID=selection.spell,icon=found and found.icon or result.icon})
+                if result.operator then value.operator,value.value=result.operator,result.rank end
+                if operators and operators.Refresh then operators.Refresh() end
+                update();show()
+            end,
+            -- The tree and the lists show the same specialization.
+            onSpec=function(chosen)
+                if chosen==shown then return end
+                shown=chosen;reload();show()
+                if specPicker then specPicker:SetValue(shown) end
+            end})
     end
-    local function identifier(entered)
-        local number=tonumber(entered)
-        if number and number>0 and number<2147483648 and number%1==0 then return number end
-    end
-    nodeBox=addon:CreateConditionEditBox();nodeBox:SetLabel(L["Talent Node ID"])
-    if traitShape(value) and value.node~=nil then nodeBox:SetText(tostring(value.node)) end
-    nodeBox:SetCallback("OnEnterPressed",function(_,_,entered)
-        local number=identifier(entered)
-        if not number then nodeBox:SetText(traitShape(value) and value.node and tostring(value.node) or "");return end
-        -- A node typed by hand no longer goes with the spell of the talent picked before.
-        adopt();value.node,value.spell=number,nil;selectedTalent=nil;talentPicker:SetValue(nil)
-        local current=info(value,spec);talentIcon:SetImage(current and current.icon or PLACEHOLDER);update();refreshTree()
-    end)
-    parent:AddChild(nodeBox)
-    entryBox=addon:CreateConditionEditBox();entryBox:SetLabel(L["Choice Entry ID"])
-    if traitShape(value) and value.entry~=nil then entryBox:SetText(tostring(value.entry)) end
-    entryBox:SetCallback("OnEnterPressed",function(_,_,entered)
-        local number=identifier(entered)
-        if entered~="" and entered~=nil and not number then entryBox:SetText(value.entry and tostring(value.entry) or "");return end
-        if not traitShape(value) then return end
-        value.entry,value.spell=number,nil;selectedTalent=nil;talentPicker:SetValue(nil)
-        local current=info(value,spec);talentIcon:SetImage(current and current.icon or PLACEHOLDER);update();refreshTree()
-    end)
-    parent:AddChild(entryBox)
     operators=addon:Widget_OperatorWidget(value,L["Rank"],update);parent:AddChild(operators)
     show()
 end
@@ -604,10 +762,10 @@ addon:RegisterCondition("TALENT", {
     help = function(frame)
         frame:AddChild(addon.help_funcs.CreateText(L["Classic conditions compare points spent in a tree talent. Mists selections use six tiers with three choices. Historical references from another talent system remain unavailable and are never automatically converted."]))
         frame:AddChild(addon.help_funcs.Gap())
-        frame:AddChild(addon.help_funcs.CreateText(L["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked from the list also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."]))
+        frame:AddChild(addon.help_funcs.CreateText(L["Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or click the talent's icon to choose it from the talent tree. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked this way also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."]))
         if platform.HasTalentTreeProvider and platform:HasTalentTreeProvider() then
             frame:AddChild(addon.help_funcs.Gap())
-            frame:AddChild(addon.help_funcs.CreateText(L["Show talent tree draws the talent tree of the specialization shown, with every talent open to choose. Click a talent to choose it, or click the chosen one again to clear it; the Talent list follows. It cannot open during combat."]))
+            frame:AddChild(addon.help_funcs.CreateText(L["Click the talent's icon to open the talent tree, with every talent open to choose. Left-click a talent to add a rank and right-click to remove one, choose how the rank is compared, and press Accept; the lists follow. Choosing a different talent sets the previous one back to nothing. It cannot open during combat."]))
         end
     end,
 })

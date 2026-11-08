@@ -10,13 +10,29 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 -- Returns display text for a spell given by ID or name: its hyperlink, else its name, else a placeholder.
 -- @param spell number|string|nil  The spell ID or name.
+-- @param anyRank boolean|nil  True when any rank of the spell matches: the link then shows the spell's name without the
+--   rank of the ID that happens to be stored ("Lightning Bolt", not "Lightning Bolt (Rank 1)").
 -- @return string  The hyperlink, name or placeholder; never nil (an unresolvable numeric ID reads as "Unknown spell
 --   (id)").
-function addon:SpellLabel(spell)
+function addon:SpellLabel(spell, anyRank)
     if self.Platform then
         local link = self.Platform:GetSpellLink(spell)
 
         if link then
+            if anyRank and type(spell) == 'number' then
+                local info = self.Platform:GetSpellInfo(spell)
+
+                if info and type(info.name) == 'string' and info.name ~= '' then
+                    return (link:gsub(
+                        '%b[]',
+                        function()
+                            return '[' .. info.name .. ']'
+                        end,
+                        1
+                    ))
+                end
+            end
+
             return link
         end
 
@@ -37,36 +53,34 @@ function addon:SpellLabel(spell)
     return L["<spell>"]
 end
 
--- Returns the label for an aura condition's spell; an ID matched at any rank is suffixed so the choice is visible.
+-- Returns the label of a step's spell: the hyperlink, with the rank left out when the step matches any rank (the default
+-- on a client with spell ranks; only "Use this exact spell rank" names one).
+-- @param step table  A spell, pet or any step.
+-- @return string  The label.
+function addon:StepSpellLabel(step)
+    local anyRank = step.ranked ~= true and type(self.ClientHasSpellRanks) == 'function' and self:ClientHasSpellRanks()
+    return self:SpellLabel(step.action, anyRank)
+end
+
+-- Returns the label for an aura condition's spell: the spell without a rank when any rank matches (the default on a client
+-- with spell ranks, so nothing needs saying), and the spell as the game links it, rank and all, for an exact rank.
 -- @param value table  The condition value (spell, anyrank).
--- @return string  The spell label, with " (any rank)" appended for a numeric spell with anyrank set.
+-- @return string  The spell label.
 function addon:AuraSpellLabel(value)
-    local label = self:SpellLabel(value.spell)
+    local anyRank = value.anyrank
+        or value.anyrank == nil and type(self.ClientHasSpellRanks) == 'function' and self:ClientHasSpellRanks()
 
-    if type(value.spell) == 'number' and value.anyrank == true then
-        return string.format(L['%s (any rank)'], label)
-    end
-
-    return label
+    return self:SpellLabel(value.spell, type(value.spell) == 'number' and anyRank or false)
 end
 
 -- Returns the label for a cast/channel condition's spell.
 -- @param value table  The condition value (spell, ranked).
--- @return string  The spell label; a ranked pick by ID appends the rank in gray.
+-- @return string  The spell label without a rank, or for an exact rank (`ranked`) the spell with its rank.
 --
 -- A cast/channel spell picked by ID matches any rank unless `ranked`.
 function addon:CastSpellLabel(value)
-    local label = self:SpellLabel(value.spell)
-
-    if type(value.spell) == 'number' and value.ranked == true and self.SpellCatalog then
-        local rank = self.SpellCatalog:SpellRank(value.spell)
-
-        if type(rank) == 'string' and rank ~= '' then
-            return label .. '|cFF888888 (' .. rank .. ')|r'
-        end
-    end
-
-    return label
+    local exact = value.ranked == true
+    return self:SpellLabel(value.spell, type(value.spell) == 'number' and not exact)
 end
 
 -- Reports whether a hyperlink is a spell link.
