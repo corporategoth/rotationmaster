@@ -52,6 +52,26 @@ test('movement observes exact player tuple preserving zero fractions and fresh c
     assert(s.calls == 8)
 end)
 
+test('the start and stop moving events give the movement state, and a readable record sets it', function()
+    local f, p = fixture()
+    assert(p:GetTrackedPlayerMovement() == nil, 'nothing is known before anything is observed')
+    assert(p:GetTrackedPlayerMovement({ speed = 7 }) == true and p:GetTrackedPlayerMovement({ speed = 0 }) == false)
+    local frames = f.env.__frames or {}
+    local sent = false
+
+    for _, frame in ipairs(frames) do
+        if frame.scripts and frame.scripts.OnEvent and frame.events and frame.events.PLAYER_STARTED_MOVING then
+            frame.scripts.OnEvent(frame, 'PLAYER_STARTED_MOVING')
+            assert(p:GetTrackedPlayerMovement() == true)
+            frame.scripts.OnEvent(frame, 'PLAYER_STOPPED_MOVING')
+            assert(p:GetTrackedPlayerMovement() == false)
+            sent = true
+        end
+    end
+
+    assert(sent or next(frames) == nil, 'the events are listened for when frames can be made')
+end)
+
 test('unsupported and restricted policies cannot query speed', function()
     for _, project in ipairs({ 999 }) do
         local _, p, s = fixture(project)

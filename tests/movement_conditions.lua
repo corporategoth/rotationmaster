@@ -3,7 +3,7 @@
 local F = dofile('tests/fixtures/addon.lua')
 local test, finish = F.suite()
 local originalBody = '\n        return (Functions.cache.getCached(cache, GetUnitSpeed, "player") ~= 0)\n    '
-local repairedBody = '\n        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetPlayerMovementObservation,addon.Platform)\n        if not record then return nil,reason end\n        return record.speed~=0\n    '
+local repairedBody = '\n        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetPlayerMovementObservation,addon.Platform)\n        local tracked=addon.Platform.GetTrackedPlayerMovement and addon.Platform:GetTrackedPlayerMovement(record)\n        -- A hidden speed (combat on a restricted client) is answered from the game\'s start and stop moving events.\n        if not record then\n            if reason==\'restricted-value\' and tracked~=nil then return tracked end\n            return nil,reason\n        end\n        return record.speed~=0\n    '
 
 local function fixture(project)
     local f = F.new(project)
@@ -84,6 +84,24 @@ local function unknown(a, tag)
         end).status == 'unavailable'
     )
 end
+
+test('a hidden speed is answered from the last start or stop event instead of being unavailable', function()
+    local f, a, s = fixture()
+    local secret = {}
+    f.env.canaccessvalue = function(v) return not rawequal(v, secret) end
+    local moving = { type = 'MOVING' }
+    assert(a:evaluateCondition(moving) == false, 'standing while the speed is readable is observed')
+    s.speed = secret
+    a.Platform:GetTrackedPlayerMovement({ speed = 7 })
+    local result = a:evaluateConditionResult(moving)
+    assert(result.status == 'match', 'the events say it is moving')
+    a.Platform:GetTrackedPlayerMovement({ speed = 0 })
+
+    assert(
+        a:evaluateConditionResult({ type = 'NOT', value = moving }).status == 'match',
+        'standing, so not moving holds'
+    )
+end)
 
 local function clone(a)
     local source = assert(a:GetBuiltinConditionSource('MOVING'))

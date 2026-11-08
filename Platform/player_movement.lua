@@ -25,6 +25,36 @@ function platform:GetPlayerMovementObservation()
     return {speed=speed}
 end
 
+-- Whether the player is moving, as the game's start and stop events last said. Combat hides the player's speed on a
+-- restricted client, but not these events, so a rotation can still tell standing from moving.
+local tracked
+
+-- Tells whether the player is moving, from what was last observed.
+-- @param record table|nil  A readable GetPlayerMovementObservation record, when the caller has one: it sets the state.
+-- @return boolean|nil  True when moving, false when standing; nil when nothing has been observed yet.
+function platform:GetTrackedPlayerMovement(record)
+    if type(record) == 'table' and type(record.speed) == 'number' then
+        tracked = record.speed ~= 0
+    end
+
+    return tracked
+end
+
+if type(CreateFrame) == 'function' then
+    local ok, frame = pcall(CreateFrame, 'Frame')
+
+    if ok and frame and type(frame.RegisterEvent) == 'function' then
+        local registered = pcall(frame.RegisterEvent, frame, 'PLAYER_STARTED_MOVING')
+        registered = pcall(frame.RegisterEvent, frame, 'PLAYER_STOPPED_MOVING') or registered
+
+        if registered then
+            frame:SetScript('OnEvent', function(_, event)
+                tracked = event == 'PLAYER_STARTED_MOVING'
+            end)
+        end
+    end
+end
+
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)

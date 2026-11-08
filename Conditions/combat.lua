@@ -539,7 +539,12 @@ addon:RegisterCondition("MOVING", runtimeCondition('MOVING', {
     -- Reads the player's movement speed once per poll through the evaluation cache.
     evaluate = function(_, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetPlayerMovementObservation,addon.Platform)
-        if not record then return nil,reason end
+        local tracked=addon.Platform.GetTrackedPlayerMovement and addon.Platform:GetTrackedPlayerMovement(record)
+        -- A hidden speed (combat on a restricted client) is answered from the game's start and stop moving events.
+        if not record then
+            if reason=='restricted-value' and tracked~=nil then return tracked end
+            return nil,reason
+        end
         return record.speed~=0
     end,
     -- Builds the readable rule summary for the MOVING condition.
