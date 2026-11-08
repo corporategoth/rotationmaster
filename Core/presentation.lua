@@ -39,11 +39,15 @@ end
 
 -- Returns the label for an aura condition's spell; an ID matched at any rank is suffixed so the choice is visible.
 -- @param value table  The condition value (spell, anyrank).
--- @return string  The spell label, with " (any rank)" appended for a numeric spell with anyrank set.
+-- @return string  The spell label, with " (any rank)" appended for a numeric spell that matches at any rank: anyrank
+--   true, or unset on a client with spell ranks (the default). anyrank false asks for the exact rank.
 function addon:AuraSpellLabel(value)
     local label = self:SpellLabel(value.spell)
 
-    if type(value.spell) == 'number' and value.anyrank == true then
+    local anyRank = value.anyrank
+        or value.anyrank == nil and type(self.ClientHasSpellRanks) == 'function' and self:ClientHasSpellRanks()
+
+    if type(value.spell) == 'number' and anyRank then
         return string.format(L['%s (any rank)'], label)
     end
 

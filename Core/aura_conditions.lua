@@ -71,6 +71,18 @@ end
 -- Matching
 -- ============================================================================
 
+-- Tells whether a condition matches its spell at any rank. Any rank is the default on a client with spell ranks; only a
+-- condition saved with anyrank = false asks for the exact rank, and anyrank = true is honored on every client.
+-- @param value table  The condition value.
+-- @return boolean  True when a different rank of the spell matches too.
+local function anyRank(value)
+    if value.anyrank ~= nil then
+        return value.anyrank == true
+    end
+
+    return type(addon.ClientHasSpellRanks) == "function" and addon:ClientHasSpellRanks() == true
+end
+
 -- Tests one aura against the condition.
 -- @param aura table  The aura record to test.
 -- @param value table  The condition value (spell, anyrank, debufftype, ownbuff, owndebuff).
@@ -116,7 +128,7 @@ local function matchesAura(aura, value, mode, identity)
 
         matches = spell == value.spell
 
-        if not matches and field == 'spellID' and value.anyrank == true then
+        if not matches and field == 'spellID' and anyRank(value) then
             if not identity.resolved then
                 identity.resolved = true
 
@@ -223,7 +235,7 @@ local function lookupByName(value, filter, mode)
     if aura.unavailable then
         return
     end
-    if type(spell) == "number" and value.anyrank ~= true and aura.spellID ~= spell then
+    if type(spell) == "number" and not anyRank(value) and aura.spellID ~= spell then
         return
     end
     if own and aura.sourceUnit ~= "player" then

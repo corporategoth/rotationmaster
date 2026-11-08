@@ -330,7 +330,7 @@ test('numeric aura families opt into readable localized names while exact IDs st
         },
     })
 
-    assert(not f.addon:evaluateCondition(value('BUFF', { spell = 324 })))
+    assert(not f.addon:evaluateCondition(value('BUFF', { spell = 324, anyrank = false })), 'exact stays exact')
 
     for _, tag in ipairs({ 'BUFF', 'BUFF_REMAIN', 'BUFF_STACKS' }) do
         reads = 0

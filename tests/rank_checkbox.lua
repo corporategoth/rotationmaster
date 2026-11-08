@@ -108,7 +108,7 @@ test('every condition rank widget exists only on clients with spell ranks', func
     end
 end)
 
-test('the aura checkbox is the inverse of anyrank and starts unticked for a new condition', function()
+test('the aura checkbox ticks only an exact rank; every other condition matches any rank', function()
     local f, a = fixture(2)
     local value = {}
     local updates = 0
@@ -117,11 +117,11 @@ test('the aura checkbox is the inverse of anyrank and starts unticked for a new 
         updates = updates + 1
     end)
 
-    assert(box:GetValue() == true, 'a saved condition without anyrank keeps the exact ID, so it shows ticked')
-    box:Fire('OnValueChanged', false)
-    assert(value.anyrank == true and updates == 1, 'unticking must store anyrank=true')
+    assert(box:GetValue() == false, 'a condition without anyrank matches any rank, so it shows unticked')
     box:Fire('OnValueChanged', true)
-    assert(value.anyrank == nil and updates == 2, 'ticking must clear anyrank')
+    assert(value.anyrank == false and updates == 1, 'ticking must store anyrank=false')
+    box:Fire('OnValueChanged', false)
+    assert(value.anyrank == nil and updates == 2, 'unticking must clear anyrank')
     local saved = { spell = 10, anyrank = true }
     local other = a:Widget_AuraRankWidget(saved, function() end)
     assert(other:GetValue() == false, 'anyrank=true shows unticked')
@@ -188,7 +188,7 @@ test('rank checkbox tooltips never leak to the next user of a pooled checkbox', 
     assert(again == box and again.button.tooltip == nil)
 end)
 
-test('only aura condition types start with every rank matching, and only where ranks exist', function()
+test('a new condition of any type starts with no rank field, which means any rank', function()
     for _, c in ipairs(CLIENTS) do
         local f, a = fixture(c[2])
 
@@ -206,7 +206,7 @@ test('only aura condition types start with every rank matching, and only where r
         for _, tag in ipairs({ 'BUFF', 'DEBUFF_STACKS' }) do
             local value = a:NewConditionValue(tag)
             assert(value.type == tag)
-            assert((value.anyrank == true) == c[3] and (c[3] or value.anyrank == nil), c[1] .. ' ' .. tag .. ' default')
+            assert(value.anyrank == nil, c[1] .. ' ' .. tag .. ' starts with no rank field: any rank is the default')
         end
 
         for _, tag in ipairs({ 'STEALABLE', 'CASTING_SPELL', 'NOT_REGISTERED' }) do
@@ -220,15 +220,15 @@ test('only aura condition types start with every rank matching, and only where r
     end
 end)
 
-test('the description of a new aura condition says any rank, a saved one stays exact', function()
+test('the description of an aura condition says any rank unless it asks for the exact rank', function()
     local f, a = fixture(2)
     f.load('Core/presentation.lua')
     local label = a.AuraSpellLabel
 
     if label then
-        local fresh = label(a, { spell = 10, anyrank = true })
-        local saved = label(a, { spell = 10 })
-        assert(fresh:find('any rank', 1, true) and not saved:find('any rank', 1, true))
+        local fresh = label(a, { spell = 10 })
+        local exact = label(a, { spell = 10, anyrank = false })
+        assert(fresh:find('any rank', 1, true) and not exact:find('any rank', 1, true))
     end
 end)
 
