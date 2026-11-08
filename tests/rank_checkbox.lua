@@ -232,6 +232,21 @@ test('the description of an aura condition says any rank unless it asks for the 
     end
 end)
 
+test('a step that matches any rank shows the spell without the rank of the stored ID', function()
+    local f, a = fixture(2)
+    f.load('Core/presentation.lua')
+    local link = '|cff71d5ff|Hspell:403:0|h[Lightning Bolt (Rank 1)]|h|r'
+
+    a.Platform.GetSpellLink = function() return link end
+    a.Platform.GetSpellInfo = function() return { name = 'Lightning Bolt' } end
+    local any = a:StepSpellLabel({ type = 'spell', action = 403, ranked = false })
+    assert(any:find('[Lightning Bolt]', 1, true) and not any:find('Rank 1', 1, true), any)
+    assert(any:find('Hspell:403:0', 1, true), 'it is still the spell link')
+    local exact = a:StepSpellLabel({ type = 'spell', action = 403, ranked = true })
+    assert(exact:find('Rank 1', 1, true), 'an exact rank names its rank')
+    assert(a:SpellLabel(403):find('Rank 1', 1, true), 'a plain label is unchanged')
+end)
+
 -- The announcement editor.
 local function announcementFixture(project)
     local f = F.new(project)

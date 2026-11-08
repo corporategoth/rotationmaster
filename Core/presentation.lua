@@ -10,13 +10,29 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 -- Returns display text for a spell given by ID or name: its hyperlink, else its name, else a placeholder.
 -- @param spell number|string|nil  The spell ID or name.
+-- @param anyRank boolean|nil  True when any rank of the spell matches: the link then shows the spell's name without the
+--   rank of the ID that happens to be stored ("Lightning Bolt", not "Lightning Bolt (Rank 1)").
 -- @return string  The hyperlink, name or placeholder; never nil (an unresolvable numeric ID reads as "Unknown spell
 --   (id)").
-function addon:SpellLabel(spell)
+function addon:SpellLabel(spell, anyRank)
     if self.Platform then
         local link = self.Platform:GetSpellLink(spell)
 
         if link then
+            if anyRank and type(spell) == 'number' then
+                local info = self.Platform:GetSpellInfo(spell)
+
+                if info and type(info.name) == 'string' and info.name ~= '' then
+                    return (link:gsub(
+                        '%b[]',
+                        function()
+                            return '[' .. info.name .. ']'
+                        end,
+                        1
+                    ))
+                end
+            end
+
             return link
         end
 
@@ -35,6 +51,15 @@ function addon:SpellLabel(spell)
     end
 
     return L["<spell>"]
+end
+
+-- Returns the label of a step's spell: the hyperlink, with the rank left out when the step matches any rank (the default
+-- on a client with spell ranks; only "Use this exact spell rank" names one).
+-- @param step table  A spell, pet or any step.
+-- @return string  The label.
+function addon:StepSpellLabel(step)
+    local anyRank = step.ranked ~= true and type(self.ClientHasSpellRanks) == 'function' and self:ClientHasSpellRanks()
+    return self:SpellLabel(step.action, anyRank)
 end
 
 -- Returns the label for an aura condition's spell; an ID matched at any rank is suffixed so the choice is visible.

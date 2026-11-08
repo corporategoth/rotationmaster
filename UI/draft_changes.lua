@@ -216,7 +216,7 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
         end
 
         if step.type == 'spell' or step.type == 'pet' or step.type == 'any' then
-            return self:PlainWorkbenchName(self:SpellLabel(step.action))
+            return self:PlainWorkbenchName(self:StepSpellLabel(step))
         end
 
         if step.type == 'item' then

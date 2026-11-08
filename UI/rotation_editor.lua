@@ -892,7 +892,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
                 if name:find('%S') then
                     title = name
                 elseif step.type == 'spell' or step.type == 'pet' or step.type == 'any' then
-                    title = addon:SpellLabel(step.action)
+                    title = addon:StepSpellLabel(step)
                 elseif step.type == 'stop' then
                     title = L['Stop']
                 elseif step.type == 'assisted' then
