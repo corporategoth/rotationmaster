@@ -267,6 +267,35 @@ test(
     end
 )
 
+test('a cast already under way counts from now, and a later slot is never surer than an earlier one', function()
+    local f, a = client()
+    f.world.cast[A] = 3
+    local steps = { { spell = B, action = true } }
+    local full = a.Forecast:Run(steps, A, 1)
+    local partway = a.Forecast:Run(steps, A, 1, 1)
+    assert(full[1].delay == 3 and partway[1].delay == 1, 'the cast has one second left: ' .. tostring(partway[1].delay))
+    local slots = a.Forecast:Run(steps, A, 4)
+    assert(#slots == 4)
+
+    for index = 2, #slots do
+        assert(slots[index].confidence <= slots[index - 1].confidence)
+    end
+end)
+
+test('the pass is judged by the preview readiness options', function()
+    local f, a = client()
+    local outputs = {}
+    local original = a.NewActionReadiness
+
+    function a:NewActionReadiness(now, output)
+        outputs[#outputs + 1] = output
+        return original(self, now, output)
+    end
+
+    a.Forecast:Run({ { spell = B, action = true } }, A, 1)
+    assert(#outputs > 0 and outputs[1] == 'preview', tostring(outputs[1]))
+end)
+
 test('cast time longer than the global cooldown sets the step, and costs a little confidence', function()
     local f, a = client()
     f.world.cast[A] = 3

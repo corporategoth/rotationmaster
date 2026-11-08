@@ -714,6 +714,7 @@ end
 
 -- Tells which spell the player is casting or channeling right now.
 -- @return number|nil  The spell id; nil when the player is not casting, or the id cannot be read.
+-- @return number|nil  The seconds the cast has left, when the game lets them be read.
 --
 -- While a spell is being cast the preview shows what follows it (Run with this spell as the first), so the bar is never
 -- empty during a cast.
@@ -726,7 +727,7 @@ function forecast:CastingSpell()
         local record = platform:GetUnitCastObservation('player', kind)
 
         if record and record.active and type(record.spellID) == 'number' then
-            return record.spellID
+            return record.spellID, number(record.remainingSeconds)
         end
     end
 end
@@ -734,20 +735,20 @@ end
 local WAIT_STEP, WAIT_MAX, WAIT_REUSE = 1, 10, 0.5
 local lastWait = { at = -1 }
 
--- Finds the next step that can be cast in the projected state, moving the projected time forward a second at a time while
+-- Finds the next step that can be cast in the projected state, judged by the preview's own readiness options, moving the projected time forward a second at a time while
 -- nothing is ready (everything is cooling down), for at most WAIT_MAX seconds.
 -- @param rot table  The rotation body.
 -- @return table|nil  The step as pickStep returns it; nil when nothing becomes ready in time.
 -- @return number  How many seconds the projected time was moved.
 local function nextStep(rot)
-    local pick = pickStep(rot, {}, addon:NewActionReadiness(state.now))
+    local pick = pickStep(rot, {}, addon:NewActionReadiness(state.now, 'preview'))
     local start = state.t
 
     -- Only a pass that ran to its end found nothing ready; a Stop step, or a pass that could not read, is not waited out.
     while not pick and forecast.passEnded == 'complete' and state.t - start < WAIT_MAX do
         state.t = state.t + WAIT_STEP
         retime()
-        pick = pickStep(rot, {}, addon:NewActionReadiness(state.now))
+        pick = pickStep(rot, {}, addon:NewActionReadiness(state.now, 'preview'))
     end
 
     return pick, state.t - start
@@ -758,7 +759,8 @@ end
 -- half a second, since the rotation is asked many times a second and its answer changes slowly.
 -- @param rot table  The rotation body being advised from.
 -- @param count number  How many slots to predict, 1 to 5.
--- @return table  A list of { spell, cond, index, item, confidence, at } (at: seconds from now); empty when nothing becomes
+-- @return table  A list of { spell, cond, index, item, confidence, at, delay } (at: seconds from now when the player can act
+--   again; delay: seconds from now it would be cast); empty when nothing becomes
 --   ready within WAIT_MAX seconds, or on failure.
 function forecast:Wait(rot, count)
     local out = {}
@@ -770,6 +772,11 @@ function forecast:Wait(rot, count)
     local clock = GetTime()
 
     if lastWait.rot == rot and lastWait.count == count and clock - lastWait.at < WAIT_REUSE then
+        -- The kept answer is aged: each slot is that much nearer.
+        for _, slot in ipairs(lastWait.out) do
+            slot.delay = math.max(0, slot.base - (clock - lastWait.at))
+        end
+
         return lastWait.out
     end
 
@@ -778,8 +785,6 @@ function forecast:Wait(rot, count)
         install()
         local confidence = state.confidence
 
-        local first
-
         for slot = 1, math.min(5, count) do
             local pick, waited = nextStep(rot)
 
@@ -787,7 +792,6 @@ function forecast:Wait(rot, count)
                 break
             end
 
-            first = first or state.t
             local cast = state.t
             confidence = confidence * STEP_CONFIDENCE * apply(pick.spell) * WAIT_DECAY ^ waited
 
@@ -798,7 +802,8 @@ function forecast:Wait(rot, count)
                 item = pick.item,
                 confidence = math.max(0.05, math.min(1, confidence)),
                 at = state.t,
-                delay = slot > 1 and cast - first or nil,
+                delay = cast,
+                base = cast,
             }
         end
     end)
@@ -820,9 +825,10 @@ end
 -- @param rot table  The rotation body being advised from.
 -- @param first number  The first recommendation's spell (the one about to be cast).
 -- @param count number  How many more to predict, 1 to 4.
+-- @param remaining number|nil  Seconds a cast of `first` already under way has left; its time is then counted from now.
 -- @return table  A list of { spell, cond, index, item, confidence, at } for the predicted slots (shorter than count when
 --   a pass finds nothing); empty on failure.
-function forecast:Run(rot, first, count)
+function forecast:Run(rot, first, count, remaining)
     local out = {}
 
     if type(rot) ~= 'table' or type(first) ~= 'number' or type(count) ~= 'number' or count < 1 or state then
@@ -832,8 +838,16 @@ function forecast:Run(rot, first, count)
     local ok, err = pcall(function()
         state = newState(GetTime())
         install()
+
+        if remaining and remaining >= 0 then
+            -- A cast under way ends `remaining` from now, whatever its full length: it started that long before.
+            state.t = remaining - stepLength(first)
+        end
+
         local confidence = state.confidence * apply(first)
         local previous = first
+        local ceiling = 1
+        forecast.lastWaited = 0
 
         for slot = 1, math.min(4, count) do
             local pick, waited = nextStep(rot)
@@ -843,6 +857,7 @@ function forecast:Run(rot, first, count)
             end
 
             confidence = confidence * STEP_CONFIDENCE * WAIT_DECAY ^ waited
+            forecast.lastWaited = forecast.lastWaited + waited
 
             if pick.spell == previous then
                 confidence = confidence * REPEAT_PENALTY
@@ -853,6 +868,10 @@ function forecast:Run(rot, first, count)
             confidence = confidence * factor
             local measured = addon.Metrics and addon.Metrics.PredictionRate and addon.Metrics:PredictionRate(slot + 1)
             local shown = measured and (confidence + measured) / 2 or confidence
+
+            -- A later step only comes true if the earlier ones did, so it is never surer than they were.
+            shown = math.min(shown, ceiling)
+            ceiling = shown
 
             out[#out + 1] = {
                 spell = pick.spell,
