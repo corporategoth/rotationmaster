@@ -12075,4 +12075,14 @@ addon.translation = {
 [3613] = "分钟",
 -- 3eeb06f4 English: Last %d %s
 [3614] = "最近 %d %s",
+-- da7a4b58 English: Show how sure each prediction is
+[3615] = "显示每个预测的把握程度",
+-- e26e4f27 English: Show, at the foot of each predicted icon, how sure the addon is of that
+--     prediction, as a percentage.
+[3616] = "在每个预测图标的下方，以百分比显示插件对该预测的把握程度。",
+-- 3ac35345 English: Show the seconds until each prediction is cast
+[3617] = "显示每个预测还需多少秒施放",
+-- 155a0c53 English: Show, over each predicted icon, how many seconds it would be cast after the
+--     first recommendation, or from now when nothing is ready yet.
+[3618] = "在每个预测图标上方显示它将在第一条建议之后多少秒施放；若尚无可用技能，则从现在起计算。",
 }

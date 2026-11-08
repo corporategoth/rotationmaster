@@ -183,6 +183,16 @@ function addon:GetGeneralOptionHelp()
             text = L["Fade the icons of predicted recommendations that the addon is less sure of. The first recommendation is read from the game as it is now and never fades."],
         },
         {
+            id = "forecast_percent",
+            title = L["Show how sure each prediction is"],
+            text = L["Show, at the foot of each predicted icon, how sure the addon is of that prediction, as a percentage."],
+        },
+        {
+            id = "forecast_delay",
+            title = L["Show the seconds until each prediction is cast"],
+            text = L["Show, over each predicted icon, how many seconds it would be cast after the first recommendation, or from now when nothing is ready yet."],
+        },
+        {
             id = "forecast_clear",
             title = L["Forget what the forecast has learned"],
             text = L["Delete what the forecast has learned about your spells (the auras they leave, the damage and healing they do). It starts learning again if the forecast is on."],

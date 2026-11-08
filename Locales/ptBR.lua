@@ -12075,4 +12075,14 @@ addon.translation = {
 [3613] = "minutos",
 -- 3eeb06f4 English: Last %d %s
 [3614] = "Últimos %d %s",
+-- da7a4b58 English: Show how sure each prediction is
+[3615] = "Mostrar a certeza de cada previsão",
+-- e26e4f27 English: Show, at the foot of each predicted icon, how sure the addon is of that
+--     prediction, as a percentage.
+[3616] = "Mostra, na parte de baixo de cada ícone previsto, o quanto o addon tem certeza dessa previsão, em porcentagem.",
+-- 3ac35345 English: Show the seconds until each prediction is cast
+[3617] = "Mostrar os segundos até cada previsão ser lançada",
+-- 155a0c53 English: Show, over each predicted icon, how many seconds it would be cast after the
+--     first recommendation, or from now when nothing is ready yet.
+[3618] = "Mostra, sobre cada ícone previsto, quantos segundos depois da primeira recomendação ele seria lançado, ou a partir de agora quando nada está pronto ainda.",
 }

@@ -474,8 +474,8 @@ function addon:CreateNativePreviewWindow()
             end
 
             if icon.overlay then
-                local showConfidence = type(confidence) == 'number' and self.profile.forecast_confidence ~= false
-                local timed = type(delay) == 'number' and delay >= 0.05
+                local showConfidence = type(confidence) == 'number' and self.profile.forecast_percent ~= false
+                local timed = type(delay) == 'number' and delay >= 0.05 and self.profile.forecast_delay ~= false
 
                 icon.delayText:SetText(timed and string.format('+%.1fs', delay) or '')
 

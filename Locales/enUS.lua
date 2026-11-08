@@ -10281,6 +10281,14 @@ T["Minutes"] = 3612
 T["minutes"] = 3613
 -- 3eeb06f4
 T["Last %d %s"] = 3614
+-- da7a4b58
+T["Show how sure each prediction is"] = 3615
+-- e26e4f27
+T["Show, at the foot of each predicted icon, how sure the addon is of that prediction, as a percentage."] = 3616
+-- 3ac35345
+T["Show the seconds until each prediction is cast"] = 3617
+-- 155a0c53
+T["Show, over each predicted icon, how many seconds it would be cast after the first recommendation, or from now when nothing is ready yet."] = 3618
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

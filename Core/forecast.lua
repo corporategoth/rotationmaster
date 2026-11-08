@@ -25,6 +25,21 @@ local WAIT_DECAY = 0.97
 -- The projection in force while a pass runs, and the originals it replaced.
 local state, originals = nil, {}
 
+-- When the player last cast each spell, and any spell, on the game's clock (fed by main.lua's cast handlers): what a
+-- cooldown whose times are hidden (a restricted client in combat) is worked out from.
+local lastCast, lastAny = {}, nil
+
+-- Notes a spell the player has just cast.
+-- @param spell number|nil  The spell id; nil when it cannot be read.
+-- @param at number  The time of the cast.
+function forecast:NoteCast(spell, at)
+    lastAny = at
+
+    if type(spell) == 'number' then
+        lastCast[spell] = at
+    end
+end
+
 -- Returns the saved per-spell facts the forecast has learned, creating the table.
 -- @return table|nil  { version, spells = { [id] = { damage, heal, applies = { unit, aura, duration } } } }.
 local function store()
@@ -172,6 +187,15 @@ end
 
 local wrappers = {}
 
+-- Notes that something becomes ready that long after the projected time, so a pass that finds nothing can move straight to
+-- the soonest of them.
+-- @param seconds number  Seconds after the projected time.
+local function wake(seconds)
+    if state and (state.wake == nil or seconds < state.wake) then
+        state.wake = seconds
+    end
+end
+
 -- Reads a spell's cooldown as it will be at the projected time.
 -- @param self table  The platform.
 -- @param spell number|string  The spell.
@@ -226,9 +250,35 @@ function wrappers.IsSpellReady(self, spell, now)
         -- is estimated from the spell's own cooldown, or the global cooldown for a spell with none.
         local ready, reason = originals.IsSpellReady(self, spell, now)
 
-        if ready == false and state.t > 0 and type(spell) == 'number' then
+        if ready == false and type(spell) == 'number' then
             local base = baseCooldown(spell)
-            return state.t >= (base > 0 and base or state.gcd or BASE_GCD)
+            local gcd = state.gcd or BASE_GCD
+            local remaining
+
+            if base > 0 and lastCast[spell] then
+                remaining = base - (state.now - lastCast[spell])
+            elseif base == 0 and lastAny then
+                remaining = gcd - (state.now - lastAny)
+            end
+
+            if remaining and remaining > 0 then
+                if remaining > state.t then
+                    wake(remaining - state.t)
+                end
+
+                return state.t >= remaining
+            end
+
+            if state.t > 0 then
+                -- Not known when it was cast: it is taken as cast just now.
+                local need = base > 0 and base or gcd
+
+                if need > state.t then
+                    wake(need - state.t)
+                end
+
+                return state.t >= need
+            end
         end
 
         return ready, reason
@@ -238,7 +288,13 @@ function wrappers.IsSpellReady(self, spell, now)
         return false
     end
 
-    return duration == 0 or start + duration <= now + MIN_STEP
+    local left = start + duration - now
+
+    if left > MIN_STEP then
+        wake(left)
+    end
+
+    return duration == 0 or left <= MIN_STEP
 end
 
 -- Reads what a unit is casting: the player is no longer casting by the time the projected spells are cast.
@@ -766,13 +822,17 @@ local lastWait = { at = -1 }
 -- @return table|nil  The step as pickStep returns it; nil when nothing becomes ready in time.
 -- @return number  How many seconds the projected time was moved.
 local function nextStep(rot)
+    state.wake = nil
     local pick = pickStep(rot, {}, addon:NewActionReadiness(state.now, 'preview'))
     local start = state.t
 
     -- Only a pass that ran to its end found nothing ready; a Stop step, or a pass that could not read, is not waited out.
+    -- Time moves to the soonest moment something becomes ready, or a second on when no cooldown says.
     while not pick and forecast.passEnded == 'complete' and state.t - start < WAIT_MAX do
-        state.t = state.t + WAIT_STEP
+        local step = state.wake and math.max(MIN_STEP, state.wake + 0.01) or WAIT_STEP
+        state.t = state.t + math.min(step, WAIT_MAX - (state.t - start) + MIN_STEP)
         retime()
+        state.wake = nil
         pick = pickStep(rot, {}, addon:NewActionReadiness(state.now, 'preview'))
     end
 
@@ -804,8 +864,12 @@ function forecast:Wait(rot, count, stationary)
         and clock - lastWait.at < WAIT_REUSE
     then
         -- The kept answer is aged: each slot is that much nearer.
+        -- Only the wait for the first slot shrinks with time; the casts after it keep their length.
+        local first = lastWait.out[1]
+        local aged = first and math.min(clock - lastWait.at, first.base) or 0
+
         for _, slot in ipairs(lastWait.out) do
-            slot.delay = math.max(0, slot.base - (clock - lastWait.at))
+            slot.delay = math.max(0, slot.base - aged)
         end
 
         return lastWait.out

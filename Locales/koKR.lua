@@ -12075,4 +12075,14 @@ addon.translation = {
 [3613] = "분",
 -- 3eeb06f4 English: Last %d %s
 [3614] = "최근 %d%s",
+-- da7a4b58 English: Show how sure each prediction is
+[3615] = "각 예측의 확신도 표시",
+-- e26e4f27 English: Show, at the foot of each predicted icon, how sure the addon is of that
+--     prediction, as a percentage.
+[3616] = "예측된 각 아이콘 아래쪽에 애드온이 해당 예측을 얼마나 확신하는지 백분율로 표시합니다.",
+-- 3ac35345 English: Show the seconds until each prediction is cast
+[3617] = "각 예측이 시전되기까지의 초 표시",
+-- 155a0c53 English: Show, over each predicted icon, how many seconds it would be cast after the
+--     first recommendation, or from now when nothing is ready yet.
+[3618] = "예측된 각 아이콘 위에 첫 번째 권장 사항 이후 몇 초 뒤에 시전되는지, 또는 아직 준비된 것이 없으면 지금부터 몇 초 뒤인지 표시합니다.",
 }

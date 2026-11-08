@@ -237,6 +237,8 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             metrics_prediction = L['Track how accurate the predictions were'],
             forecast = L['Predict upcoming recommendations from the expected state'],
             forecast_confidence = L['Fade predictions that are less certain'],
+            forecast_percent = L['Show how sure each prediction is'],
+            forecast_delay = L['Show the seconds until each prediction is cast'],
             live_config_update = L['Live Status Update Frequency (seconds)'],
             spell_history = L['Spell History Memory (seconds)'],
             combat_history = L['Combat History Memory (seconds)'],
