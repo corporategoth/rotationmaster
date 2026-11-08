@@ -10335,6 +10335,8 @@ T["Show, at the foot of each predicted icon, how sure the addon is of that predi
 T["Show the seconds until each prediction is cast"] = 3640
 -- 155a0c53
 T["Show, over each predicted icon, how many seconds it would be cast after the first recommendation, or from now when nothing is ready yet."] = 3641
+-- d5ca0bbe
+T["{unit} {{!are|are not}} {kind}"] = 3642
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

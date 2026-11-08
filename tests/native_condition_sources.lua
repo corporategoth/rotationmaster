@@ -136,8 +136,8 @@ local function fixture(branch)
 
     for _, path in ipairs({
         'Platform/spells.lua', 'Platform/talents.lua', 'Platform/inventory.lua', 'Platform/range.lua',
-        'Core/conditions.lua', 'Core/item_sets.lua', 'Core/itemset_services.lua', 'UI/condition_entrypoints.lua',
-        'Core/custom_authoring.lua', 'Core/function_data.lua'
+        'Platform/macro_conditions.lua', 'Core/conditions.lua', 'Core/item_sets.lua', 'Core/itemset_services.lua',
+        'UI/condition_entrypoints.lua', 'Core/custom_authoring.lua', 'Core/function_data.lua'
     }) do
         f.load(path)
     end
@@ -268,6 +268,10 @@ local function sample(a, tag, definition)
         v.direction = 'sun'
     elseif tag == 'MARKED' then
         v.mark = 'skull'
+    elseif tag == 'UNIT_KIND' then
+        v.kind = 'questboss'
+    elseif tag == 'MACRO_CONDITION' then
+        v.value = '[combat,harm]'
     end
 
     return v
@@ -400,7 +404,7 @@ test('every actual branch source compiles current duplicates without an Ace bind
         count = count + 1
     end
 
-    assert(count == 152, 'current source inventory unexpectedly narrowed: ' .. count)
+    assert(count == 154, 'current source inventory unexpectedly narrowed: ' .. count)
 end)
 
 test(
@@ -457,7 +461,7 @@ test(
             count = count + 1
         end
 
-        assert(count == 152 and rendered > 1000, 'native render inventory narrowed')
+        assert(count == 154 and rendered > 1000, 'native render inventory narrowed')
     end
 )
 

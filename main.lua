@@ -3321,6 +3321,8 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
         end
     end
 
+    local foldedBefore = leanStats.folded + leanStats.handedOff
+
     local plan = {
         rot = rot,
         views = views,
@@ -3364,6 +3366,11 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
             local conditions, gate = compileCooldown(cond.conditions)
             plan.cooldowns[#plan.cooldowns + 1] = { id = id, step = cond, conditions = conditions, gate = gate }
         end
+    end
+
+    -- A plan that folded conditions (Core/condition_folding.lua) is dropped when the build context moves.
+    if leanStats.folded + leanStats.handedOff > foldedBefore and self.GetBuildContextRevision then
+        plan.buildRevision = self:GetBuildContextRevision()
     end
 
     -- Tells whether the plan is still current.
@@ -4028,6 +4035,9 @@ local function evaluateLean(self)
     elseif plan.generation ~= readExecutionGeneration() then
         stale = 'generation'
     elseif plan.epoch ~= leanContextEpoch then
+        stale = 'context'
+    elseif plan.buildRevision and plan.buildRevision ~= self:GetBuildContextRevision() then
+        -- Folded talent and specialization answers follow the build context.
         stale = 'context'
     elseif GetTime() >= plan.expires then
         stale = 'age'

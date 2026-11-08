@@ -207,10 +207,13 @@ addon:RegisterCondition('UNIT_KIND', {
     -- @param value table  The saved condition fields.
     -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
     print = function(_, value)
-        return addon.Functions.presentation.phrase(L['{unit} {{!is|is not}} {kind}'], {
-            unit = addon.units[value.unit] or L['<unit>'],
-            kind = addon.unitKinds[value.kind] or L['<kind>'],
-        })
+        return addon.Functions.presentation.phrase(
+            value.unit == 'player' and L['{unit} {{!are|are not}} {kind}'] or L['{unit} {{!is|is not}} {kind}'],
+            {
+                unit = addon.units[value.unit] or L['<unit>'],
+                kind = addon.unitKinds[value.kind] or L['<kind>'],
+            }
+        )
     end,
     -- Builds the unit selector and the kind dropdown.
     -- @param parent table  The editor group the controls are added to.

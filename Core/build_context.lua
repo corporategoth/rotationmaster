@@ -756,6 +756,13 @@ local function refresh(only)
     return snapshot
 end
 
+-- Returns the revision of the build context, advanced whenever a section is marked for rebuilding (game events and
+-- InvalidateBuildContext); a lean plan with folded conditions is rebuilt when it moves.
+-- @return number  The revision.
+function addon:GetBuildContextRevision()
+    return revision
+end
+
 -- Returns the shared normalized snapshot of the player's build.
 -- @return table  The snapshot (equipment, sets, weapons, talents, season, rulesets, runes, pending ...). It is replaced
 --   section by section on change; callers must treat it as read-only.
