@@ -11,7 +11,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- Returns display text for a spell given by ID or name: its hyperlink, else its name, else a placeholder.
 -- @param spell number|string|nil  The spell ID or name.
 -- @param anyRank boolean|nil  True when any rank of the spell matches: the link then shows the spell's name without the
---   rank of the ID that happens to be stored ("Lightning Bolt", not "Lightning Bolt (Rank 1)").
+--   rank of the ID that happens to be stored ("Lightning Bolt", not "Lightning Bolt (Rank 1)"). False for an exact rank:
+--   when there is no link, the name is followed by the rank in gray.
 -- @return string  The hyperlink, name or placeholder; never nil (an unresolvable numeric ID reads as "Unknown spell
 --   (id)").
 function addon:SpellLabel(spell, anyRank)
@@ -39,6 +40,15 @@ function addon:SpellLabel(spell, anyRank)
         local info = self.Platform:GetSpellInfo(spell)
 
         if info then
+            -- Without a link an exact rank (anyRank false) would read as any rank, so the rank is named in gray.
+            if anyRank == false and type(spell) == 'number' and self.SpellCatalog then
+                local rank = self.SpellCatalog:SpellRank(spell)
+
+                if type(rank) == 'string' and rank ~= '' then
+                    return info.name .. '|cFF888888 (' .. rank .. ')|r'
+                end
+            end
+
             return info.name
         end
     end
