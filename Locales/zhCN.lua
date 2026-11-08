@@ -11855,8 +11855,6 @@ addon.translation = {
 [3524] = "上一场战斗",
 -- d354f304 English: This instance
 [3525] = "本副本",
--- f39529f9 English: Last %d minutes
-[3527] = "最近 %d 分钟",
 -- 9755c8d7 English: All time
 [3528] = "全部时间",
 -- ce06bb9e English: Nothing was recorded for this period.
@@ -12031,4 +12029,50 @@ addon.translation = {
 --     last readable moving speed when moving. Missing, failed or malformed observations, and a
 --     hidden speed before any movement event or readable speed, return nil with a reason.
 [3591] = "在受支持且可读的客户端上观察玩家当前的移动速度。仅对 player 查询 GetUnitSpeed，不检测其他单位，也不重定向载具归属。零表示静止；正的有限小数速度仍然有效。在客户端隐藏速度的情况下（Retail 和 Forever 战斗中），记录来自 PLAYER_STARTED_MOVING 和 PLAYER_STOPPED_MOVING，且 estimated = true：静止时为 0，移动时为最后一次可读的移动速度。缺失、失败或格式错误的观察，以及在任何移动事件或可读速度出现之前的隐藏速度，会返回 nil 和原因。",
+-- 7dd2745b English: The period before
+[3592] = "之前的时段",
+-- 6543ac36 English: The previous fight
+[3593] = "上一场战斗",
+-- 6da6530a English: This session
+[3594] = "本次会话",
+-- 67e1bca0 English: Nothing
+[3595] = "无",
+-- bcf12e37 English: Another instance
+[3596] = "其他副本",
+-- d9e626c6 English: Another rotation
+[3597] = "其他循环",
+-- bd384050 English: Compare with: %s
+[3598] = "对比：%s",
+-- fdb6c20a English: Time to act (seconds)
+[3599] = "反应时间（秒）",
+-- a0f5e662 English: Damage per second
+[3600] = "每秒伤害",
+-- 67a48694 English: Healing per second
+[3601] = "每秒治疗",
+-- d9319db3 English: %s: nothing was recorded.
+[3602] = "%s：没有记录。",
+-- a2a90f9b English: %s (%d fights, %d casts)
+[3603] = "%s（%d 场战斗，%d 次施法）",
+-- 6ba2a0e0 English: Shown
+[3604] = "当前",
+-- 17c858fc English: Compared
+[3605] = "对比对象",
+-- c0bf75bd English: Change
+[3606] = "变化",
+-- 7efd4d5d English: Green is better, red is worse.
+[3607] = "绿色更好，红色更差。",
+-- 21e84929 English: Hours
+[3608] = "小时",
+-- 404314b1 English: hours
+[3609] = "小时",
+-- e08c0aa8 English: Days
+[3610] = "天",
+-- ab51004e English: days
+[3611] = "天",
+-- 4f846a84 English: Minutes
+[3612] = "分钟",
+-- 90e63d85 English: minutes
+[3613] = "分钟",
+-- 3eeb06f4 English: Last %d %s
+[3614] = "最近 %d %s",
 }

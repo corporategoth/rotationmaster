@@ -46,10 +46,12 @@ is dropped), 64 advised spells each, 40 fights each. Nothing identifies a charac
 
 Metrics is a top-level tab, between General and Conditions. It holds the three recording switches (adherence, damage and healing, prediction accuracy) and the report, drawn in the pane with a scroll bar for the page; nothing opens a separate window except the export's text.
 
-* **Metrics report** covers a period you choose with the buttons under the tabs: **Last fight**, **This instance** (the instance or,
-  in the open world, the zone you are in now), a **timed** period (its button reads "Last N minutes" and a slider
-  under the buttons sets N from 1 to 180) and **All time**. **Reset** deletes everything recorded (the button reads Confirm for four
-  seconds after the first press, and the second press does it). The periods are made of the last 80 fights, each kept in full with its time, its
+* **Metrics report** covers a period you choose with a row of buttons across the top of the pane: **Last fight**, **This session**
+  (the fights since the addon loaded: logging in or reloading the interface), **This instance** (the instance or, in the open
+  world, the zone you are in now), a **timed** period and **All time**. **Reset** sits in the same row (the button reads Confirm
+  for four seconds after the first press, and the second press does it). The timed period's button reads "Last N minutes, hours
+  or days": a slider sets N and three buttons set the unit (minutes up to 180, hours up to 72, days up to 30). The periods are
+  made of the last 300 fights, each kept in full with its time, its
   place (the key of the instance or zone, from `GetInstanceInfo` or `GetRealZoneText`) and, where the client announces it, the
   encounter (`ENCOUNTER_START`). Forecast accuracy is only kept for all time. It opens on the last fight.
   A window of graphs with a tab for each rotation (up to five, most fights first): a gauge for how closely the
@@ -57,6 +59,14 @@ Metrics is a top-level tab, between General and Conditions. It holds the three r
   outside the rotation, no advice), a chart of how long it took to act on the advice, damage per second by how closely the advice
   was followed, the most common deviations (what was cast instead, with spell icons) and, when tracked, how often each forecast was
   right against how sure it said it was. Drawn from pooled textures, so reopening it allocates nothing new.
+* **Compare with** (a button under the period buttons that steps through the choices) sets the rotation shown beside something
+  else: nothing, the previous fight (for Last fight), the period before (for a timed period, the same length just before it),
+  this session, this instance, another instance (a second button chooses which of the instances fought in), a timed period of its
+  own (with its own slider and units), all time, or another rotation over the same period (a second button chooses which). The
+  comparison table lists how closely the advice was followed, the time to act, damage and healing per second and the share of
+  casts outside the rotation or out of order, each as shown, compared and change; a change under two percent is gray, an
+  improvement green, a worsening red. The controls fill the pane's width and the page is redrawn when the pane is resized; they
+  wrap onto more rows when the pane is too narrow for the least width of a button.
 * **Export for the website**, under the graphs, exports the period shown and opens the selectable text window (Ctrl-A, Ctrl-C). With
   **Add instructions for a language model** ticked, plain-English instructions that define each field and ask where the player
   deviates, whether the deviations look deliberate, and where the rotation should change come first, and the same JSON follows. The JSON with `format="rm-metrics"` and `version=1`: per rotation `id`, `name`, `fights`, `seconds`, `casts`,

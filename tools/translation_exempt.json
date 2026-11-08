@@ -32,6 +32,8 @@
   "Rotation Master",
   "Shockadin",
   "SimulationCraft",
+  "simulator",
+  "Simulator",
   "SoD",
   "Titan Panel",
   "TotemTimers",
@@ -42,8 +44,6 @@
   "WoWAce",
   "Wowhead",
   "WoWInterface",
-  "simulator",
-  "Simulator",
   "WowUp Hub",
   "Zockify"
  ],
@@ -164,6 +164,7 @@
    "Mage",
    "Maximum",
    "Minimum",
+   "Minutes",
    "Mode",
    "Nature",
    "Navigation",
@@ -200,6 +201,7 @@
    "active",
    "direct",
    "exact",
+   "minutes",
    "rune %s",
    "type %s"
   ],

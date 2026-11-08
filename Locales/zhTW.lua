@@ -11855,8 +11855,6 @@ addon.translation = {
 [3524] = "上一場戰鬥",
 -- d354f304 English: This instance
 [3525] = "本副本",
--- f39529f9 English: Last %d minutes
-[3527] = "最近 %d 分鐘",
 -- 9755c8d7 English: All time
 [3528] = "全部時間",
 -- ce06bb9e English: Nothing was recorded for this period.
@@ -12031,4 +12029,50 @@ addon.translation = {
 --     last readable moving speed when moving. Missing, failed or malformed observations, and a
 --     hidden speed before any movement event or readable speed, return nil with a reason.
 [3591] = "在受支援且可讀取的客戶端上觀察玩家目前的移動速度。僅對 player 查詢 GetUnitSpeed，不檢測其他單位，也不重新導向載具歸屬。零表示靜止；正的有限小數速度仍然有效。在客戶端隱藏速度的情況下（Retail 與 Forever 戰鬥中），記錄來自 PLAYER_STARTED_MOVING 和 PLAYER_STOPPED_MOVING，且 estimated = true：靜止時為 0，移動時為最後一次可讀取的移動速度。缺少、失敗或格式錯誤的觀察，以及在任何移動事件或可讀取速度出現之前的隱藏速度，會回傳 nil 與原因。",
+-- 7dd2745b English: The period before
+[3592] = "之前的時段",
+-- 6543ac36 English: The previous fight
+[3593] = "上一場戰鬥",
+-- 6da6530a English: This session
+[3594] = "本次連線",
+-- 67e1bca0 English: Nothing
+[3595] = "無",
+-- bcf12e37 English: Another instance
+[3596] = "其他副本",
+-- d9e626c6 English: Another rotation
+[3597] = "其他循環",
+-- bd384050 English: Compare with: %s
+[3598] = "比較：%s",
+-- fdb6c20a English: Time to act (seconds)
+[3599] = "反應時間（秒）",
+-- a0f5e662 English: Damage per second
+[3600] = "每秒傷害",
+-- 67a48694 English: Healing per second
+[3601] = "每秒治療",
+-- d9319db3 English: %s: nothing was recorded.
+[3602] = "%s：沒有記錄。",
+-- a2a90f9b English: %s (%d fights, %d casts)
+[3603] = "%s（%d 場戰鬥，%d 次施法）",
+-- 6ba2a0e0 English: Shown
+[3604] = "目前",
+-- 17c858fc English: Compared
+[3605] = "比較對象",
+-- c0bf75bd English: Change
+[3606] = "變化",
+-- 7efd4d5d English: Green is better, red is worse.
+[3607] = "綠色較好，紅色較差。",
+-- 21e84929 English: Hours
+[3608] = "小時",
+-- 404314b1 English: hours
+[3609] = "小時",
+-- e08c0aa8 English: Days
+[3610] = "天",
+-- ab51004e English: days
+[3611] = "天",
+-- 4f846a84 English: Minutes
+[3612] = "分鐘",
+-- 90e63d85 English: minutes
+[3613] = "分鐘",
+-- 3eeb06f4 English: Last %d %s
+[3614] = "最近 %d %s",
 }

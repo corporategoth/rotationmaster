@@ -11855,8 +11855,6 @@ addon.translation = {
 [3524] = "Последний бой",
 -- d354f304 English: This instance
 [3525] = "Это подземелье",
--- f39529f9 English: Last %d minutes
-[3527] = "Последние %d мин.",
 -- 9755c8d7 English: All time
 [3528] = "За всё время",
 -- ce06bb9e English: Nothing was recorded for this period.
@@ -12031,4 +12029,50 @@ addon.translation = {
 --     last readable moving speed when moving. Missing, failed or malformed observations, and a
 --     hidden speed before any movement event or readable speed, return nil with a reason.
 [3591] = "Наблюдает текущую скорость передвижения игрока на поддерживаемых клиентах с читаемыми данными. Запрашивает GetUnitSpeed только для player, не проверяя другой юнит и не перенаправляя владение транспортом. Ноль означает неподвижность; положительные конечные дробные скорости допустимы. Там, где клиент скрывает скорость (Retail и Forever в бою), запись берётся из PLAYER_STARTED_MOVING и PLAYER_STOPPED_MOVING с estimated = true: 0 при остановке, последняя читаемая скорость при движении. Отсутствующие, неудачные или некорректные наблюдения, а также скрытая скорость до первого события движения или читаемой скорости возвращают nil с причиной.",
+-- 7dd2745b English: The period before
+[3592] = "Предыдущий период",
+-- 6543ac36 English: The previous fight
+[3593] = "Предыдущий бой",
+-- 6da6530a English: This session
+[3594] = "Этот сеанс",
+-- 67e1bca0 English: Nothing
+[3595] = "Ничего",
+-- bcf12e37 English: Another instance
+[3596] = "Другое подземелье",
+-- d9e626c6 English: Another rotation
+[3597] = "Другая ротация",
+-- bd384050 English: Compare with: %s
+[3598] = "Сравнить с: %s",
+-- fdb6c20a English: Time to act (seconds)
+[3599] = "Время реакции (секунды)",
+-- a0f5e662 English: Damage per second
+[3600] = "Урон в секунду",
+-- 67a48694 English: Healing per second
+[3601] = "Исцеление в секунду",
+-- d9319db3 English: %s: nothing was recorded.
+[3602] = "%s: ничего не записано.",
+-- a2a90f9b English: %s (%d fights, %d casts)
+[3603] = "%s (боёв: %d, применений: %d)",
+-- 6ba2a0e0 English: Shown
+[3604] = "Показано",
+-- 17c858fc English: Compared
+[3605] = "Для сравнения",
+-- c0bf75bd English: Change
+[3606] = "Изменение",
+-- 7efd4d5d English: Green is better, red is worse.
+[3607] = "Зелёный — лучше, красный — хуже.",
+-- 21e84929 English: Hours
+[3608] = "Часы",
+-- 404314b1 English: hours
+[3609] = "часов",
+-- e08c0aa8 English: Days
+[3610] = "Дни",
+-- ab51004e English: days
+[3611] = "дней",
+-- 4f846a84 English: Minutes
+[3612] = "Минуты",
+-- 90e63d85 English: minutes
+[3613] = "минут",
+-- 3eeb06f4 English: Last %d %s
+[3614] = "Последние %d %s",
 }

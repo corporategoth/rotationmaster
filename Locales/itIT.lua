@@ -11855,8 +11855,6 @@ addon.translation = {
 [3524] = "Ultimo combattimento",
 -- d354f304 English: This instance
 [3525] = "Questa istanza",
--- f39529f9 English: Last %d minutes
-[3527] = "Ultimi %d minuti",
 -- 9755c8d7 English: All time
 [3528] = "Sempre",
 -- ce06bb9e English: Nothing was recorded for this period.
@@ -12031,4 +12029,50 @@ addon.translation = {
 --     last readable moving speed when moving. Missing, failed or malformed observations, and a
 --     hidden speed before any movement event or readable speed, return nil with a reason.
 [3591] = "Osserva la velocità di movimento attuale del giocatore sui client supportati e leggibili. Interroga GetUnitSpeed solo per player, senza controllare un'altra unità né reindirizzare la proprietà del veicolo. Zero significa fermo; le velocità frazionarie positive e finite restano valide. Dove il client nasconde la velocità (Retail e Forever in combattimento), il record deriva da PLAYER_STARTED_MOVING e PLAYER_STOPPED_MOVING con estimated = true: 0 da fermo, in movimento l'ultima velocità leggibile. Osservazioni mancanti, fallite o malformate, e una velocità nascosta prima di qualsiasi evento di movimento o velocità leggibile, restituiscono nil con un motivo.",
+-- 7dd2745b English: The period before
+[3592] = "Il periodo precedente",
+-- 6543ac36 English: The previous fight
+[3593] = "Il combattimento precedente",
+-- 6da6530a English: This session
+[3594] = "Questa sessione",
+-- 67e1bca0 English: Nothing
+[3595] = "Niente",
+-- bcf12e37 English: Another instance
+[3596] = "Altra istanza",
+-- d9e626c6 English: Another rotation
+[3597] = "Altra rotazione",
+-- bd384050 English: Compare with: %s
+[3598] = "Confronta con: %s",
+-- fdb6c20a English: Time to act (seconds)
+[3599] = "Tempo di reazione (secondi)",
+-- a0f5e662 English: Damage per second
+[3600] = "Danni al secondo",
+-- 67a48694 English: Healing per second
+[3601] = "Guarigioni al secondo",
+-- d9319db3 English: %s: nothing was recorded.
+[3602] = "%s: nulla è stato registrato.",
+-- a2a90f9b English: %s (%d fights, %d casts)
+[3603] = "%s (%d combattimenti, %d lanci)",
+-- 6ba2a0e0 English: Shown
+[3604] = "Mostrato",
+-- 17c858fc English: Compared
+[3605] = "Confrontato",
+-- c0bf75bd English: Change
+[3606] = "Variazione",
+-- 7efd4d5d English: Green is better, red is worse.
+[3607] = "Il verde è meglio, il rosso è peggio.",
+-- 21e84929 English: Hours
+[3608] = "Ore",
+-- 404314b1 English: hours
+[3609] = "ore",
+-- e08c0aa8 English: Days
+[3610] = "Giorni",
+-- ab51004e English: days
+[3611] = "giorni",
+-- 4f846a84 English: Minutes
+[3612] = "Minuti",
+-- 90e63d85 English: minutes
+[3613] = "minuti",
+-- 3eeb06f4 English: Last %d %s
+[3614] = "Ultimi %d %s",
 }

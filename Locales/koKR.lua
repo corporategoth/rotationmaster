@@ -11855,8 +11855,6 @@ addon.translation = {
 [3524] = "마지막 전투",
 -- d354f304 English: This instance
 [3525] = "이 인스턴스",
--- f39529f9 English: Last %d minutes
-[3527] = "최근 %d분",
 -- 9755c8d7 English: All time
 [3528] = "전체 기간",
 -- ce06bb9e English: Nothing was recorded for this period.
@@ -12031,4 +12029,50 @@ addon.translation = {
 --     last readable moving speed when moving. Missing, failed or malformed observations, and a
 --     hidden speed before any movement event or readable speed, return nil with a reason.
 [3591] = "지원되는 읽기 가능한 클라이언트에서 플레이어의 현재 이동 속도를 관찰합니다. player에 대해서만 GetUnitSpeed를 조회하며 다른 유닛을 검사하거나 탈것 소유권을 바꾸지 않습니다. 0은 정지를 뜻하며 양의 유한한 소수 속도도 유효합니다. 클라이언트가 속도를 숨기는 경우(전투 중 Retail 및 Forever) 기록은 PLAYER_STARTED_MOVING과 PLAYER_STOPPED_MOVING에서 오며 estimated = true입니다. 정지 시 0, 이동 중에는 마지막으로 읽은 이동 속도입니다. 없거나 실패했거나 잘못된 관찰, 그리고 이동 이벤트나 읽을 수 있는 속도가 아직 없을 때의 숨겨진 속도는 이유와 함께 nil을 반환합니다.",
+-- 7dd2745b English: The period before
+[3592] = "이전 기간",
+-- 6543ac36 English: The previous fight
+[3593] = "이전 전투",
+-- 6da6530a English: This session
+[3594] = "이번 세션",
+-- 67e1bca0 English: Nothing
+[3595] = "없음",
+-- bcf12e37 English: Another instance
+[3596] = "다른 인스턴스",
+-- d9e626c6 English: Another rotation
+[3597] = "다른 로테이션",
+-- bd384050 English: Compare with: %s
+[3598] = "비교 대상: %s",
+-- fdb6c20a English: Time to act (seconds)
+[3599] = "반응 시간(초)",
+-- a0f5e662 English: Damage per second
+[3600] = "초당 피해량",
+-- 67a48694 English: Healing per second
+[3601] = "초당 치유량",
+-- d9319db3 English: %s: nothing was recorded.
+[3602] = "%s: 기록된 내용이 없습니다.",
+-- a2a90f9b English: %s (%d fights, %d casts)
+[3603] = "%s (전투 %d회, 시전 %d회)",
+-- 6ba2a0e0 English: Shown
+[3604] = "현재",
+-- 17c858fc English: Compared
+[3605] = "비교 대상",
+-- c0bf75bd English: Change
+[3606] = "변화",
+-- 7efd4d5d English: Green is better, red is worse.
+[3607] = "녹색은 더 좋고, 빨간색은 더 나쁩니다.",
+-- 21e84929 English: Hours
+[3608] = "시간",
+-- 404314b1 English: hours
+[3609] = "시간",
+-- e08c0aa8 English: Days
+[3610] = "일",
+-- ab51004e English: days
+[3611] = "일",
+-- 4f846a84 English: Minutes
+[3612] = "분",
+-- 90e63d85 English: minutes
+[3613] = "분",
+-- 3eeb06f4 English: Last %d %s
+[3614] = "최근 %d%s",
 }
