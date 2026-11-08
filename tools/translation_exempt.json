@@ -32,8 +32,8 @@
   "Rotation Master",
   "Shockadin",
   "SimulationCraft",
-  "simulator",
   "Simulator",
+  "simulator",
   "SoD",
   "Titan Panel",
   "TotemTimers",
@@ -199,6 +199,7 @@
    "Zone",
    "absent",
    "active",
+   "boss %d",
    "direct",
    "exact",
    "minutes",
@@ -225,6 +226,7 @@
    "Slot %d",
    "Stop",
    "Texture",
+   "boss %d",
    "in %s"
   ],
   "ptBR": [

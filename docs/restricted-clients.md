@@ -226,6 +226,7 @@ Combat, ranged slot, Season of Discovery runes) are listed in
 | `MANA` | `UnitPower(unit, Mana)` | A unless Mana is flagged never secret (`secret-power`) | A unless flagged | `SecretWhenUnitPowerRestricted` | unsupported; if supported, unavailable |
 | `MANAPCT` | `UnitPower`, `UnitPowerMax` (Mana) | A unless flagged (`secret-power`) | A unless flagged | `SecretWhenUnitPowerRestricted`, `SecretWhenUnitPowerMaxRestricted` | unsupported; if supported, unavailable |
 | `UNIT_EXISTS` | `UnitExists` or group-unit resolution | N (marked-unit selectors disabled) | N (marked-unit selectors disabled) | unit presence | unavailable when the selected unit cannot be resolved |
+| `UNIT_KIND` | `UnitIsQuestBoss`, `UnitIsLieutenant`, `UnitIsMinion`, `UnitIsTrivial` (whichever this client has) | N | N | no annotation | n/a |
 | `RAID_ROLE` | `IsInRaid`, `UnitIsGroupLeader`, `UnitIsGroupAssistant` | N | N | group-role APIs | false outside a raid; unavailable when the role cannot be read |
 | `MARKED` | `UnitExists`, `GetRaidTargetIndex(unit)` | A (`unsupported-client`) | A (`unsupported-client`) | Retail in-game test returned a secret marker | unavailable on these clients, also under NOT |
 | `MARK_COUNT` | marker table and reachable unit observations | A (`unsupported-client`) | A (`unsupported-client`) | same marker restriction as MARKED | unavailable on these clients |

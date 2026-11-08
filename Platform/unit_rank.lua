@@ -81,3 +81,54 @@ function platform:GetUnitRankObservation(unit)
 
     return { classification = classification, elite = elite, boss = boss }
 end
+
+-- The client API that answers each unit kind (UNIT_KIND).
+local kindReaders = {
+    questboss = function() return UnitIsQuestBoss end,
+    lieutenant = function() return UnitIsLieutenant end,
+    minion = function() return UnitIsMinion end,
+    trivial = function() return UnitIsTrivial end,
+}
+
+-- Reads whether a unit is of a kind: a quest boss, a lieutenant, a minion or trivial.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param kind string  A key of addon.unitKinds.
+-- @return boolean|nil  Whether the unit is of that kind; false when the unit does not exist; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil ('missing-api' where the client lacks the kind).
+function platform:GetUnitKindObservation(unit, kind)
+    if not self:CanReadValue(unit) then
+        return nil, 'restricted-value'
+    end
+    if type(unit) ~= 'string' or unit == '' then
+        return nil, 'invalid-unit'
+    end
+
+    local reader = kindReaders[kind] and kindReaders[kind]()
+
+    if type(reader) ~= 'function' or type(UnitExists) ~= 'function' then
+        return nil, 'missing-api'
+    end
+
+    local existsOk, exists = pcall(UnitExists, unit)
+
+    if not existsOk then
+        return nil, 'api-error'
+    end
+    if not self:CanReadValue(exists) then
+        return nil, 'restricted-value'
+    end
+    if not exists then
+        return false
+    end
+
+    local ok, answer = pcall(reader, unit)
+
+    if not ok then
+        return nil, 'api-error'
+    end
+    if not self:CanReadValue(answer) then
+        return nil, 'restricted-value'
+    end
+
+    return answer == true or answer == 1
+end

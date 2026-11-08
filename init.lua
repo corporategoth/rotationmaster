@@ -238,11 +238,11 @@ local default_condition_groups = {
         id = "b8136123-2bda-4230-a77a-89ea2aed3a1a",
         name = L["Character"],
         conditions = {
-            "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION", "BOSS", "ELITE", "LEVEL", "TALENT", "SPECIALIZATION",
-            "ROLE", "GROUP", "RAID_ROLE", "UNIT_EXISTS", "FORM", "PET", "PET_NAME", "HEALTH", "HEALTHPCT", "TT_HEALTH",
-            "TT_HEALTHPCT", "MANA", "MANAPCT", "POWER", "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN", "TOTEM",
-            "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN", "STAT", "ECS_STAT", "ECS_STAT_PCT", "HERO_TALENT",
-            "GROUP_COUNT", "PET_HAPPINESS", "STAGGER", "ECLIPSE"
+            "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION", "BOSS", "ELITE", "UNIT_KIND", "LEVEL", "TALENT",
+            "SPECIALIZATION", "ROLE", "GROUP", "RAID_ROLE", "UNIT_EXISTS", "FORM", "PET", "PET_NAME", "HEALTH",
+            "HEALTHPCT", "TT_HEALTH", "TT_HEALTHPCT", "MANA", "MANAPCT", "POWER", "POWERPCT", "POINT", "RUNE",
+            "RUNE_COOLDOWN", "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN", "STAT", "ECS_STAT",
+            "ECS_STAT_PCT", "HERO_TALENT", "GROUP_COUNT", "PET_HAPPINESS", "STAGGER", "ECLIPSE"
         },
     },
     {

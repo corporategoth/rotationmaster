@@ -13,6 +13,7 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Borrow related artwork until dedicated icons are available.
 addon.Artwork.condition['BOSS'] = addon.Artwork.condition['BOSS'] or addon.Artwork.condition['CLASSIFICATION']
 addon.Artwork.condition['ELITE'] = addon.Artwork.condition['ELITE'] or addon.Artwork.condition['CLASSIFICATION']
+addon.Artwork.condition['UNIT_KIND'] = addon.Artwork.condition['UNIT_KIND'] or addon.Artwork.condition['CLASSIFICATION']
 addon.Artwork.condition['CASTING_ANY'] = addon.Artwork.condition['CASTING_ANY'] or addon.Artwork.condition['CASTING']
 
 -- Canonical helper leaves these callbacks call; the table below names the Built In helper behind each one.
@@ -172,6 +173,82 @@ addon:RegisterCondition('ELITE', {
     end,
 })
 
+-- UNIT_KIND: true when the unit is of the chosen kind (addon.unitKinds): a quest boss, a lieutenant, a minion or trivial.
+-- Unavailable where the client has no answer for that kind. Stores unit and kind.
+addon:RegisterCondition('UNIT_KIND', {
+    description = L['Unit Kind'],
+    icon = addon.Artwork.condition['UNIT_KIND'],
+    fields = { unit = 'string', kind = 'string' },
+    requiredFields = { 'unit', 'kind' },
+    -- Checks that the saved unit is selectable (not you or your pet) and the kind is known.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    valid = function(_, value)
+        return validOther(_, value) and value.kind ~= nil and Functions.values.isin(addon.unitKinds, value.kind)
+    end,
+    -- Decides whether the unit is of the chosen kind; a unit that does not exist is false.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    evaluate = function(value, cache)
+        return Functions.cache.getCached(
+            cache,
+            addon.Platform.GetUnitKindObservation,
+            addon.Platform,
+            value.unit,
+            value.kind
+        )
+    end,
+    -- Builds the readable rule summary for the UNIT_KIND condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    print = function(_, value)
+        return addon.Functions.presentation.phrase(L['{unit} {{!is|is not}} {kind}'], {
+            unit = addon.units[value.unit] or L['<unit>'],
+            kind = addon.unitKinds[value.kind] or L['<kind>'],
+        })
+    end,
+    -- Builds the unit selector and the kind dropdown.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit them in place.
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData('top')
+        otherUnitWidget(parent, spec, value)
+
+        local kind = addon:CreateConditionDropdown()
+        kind:SetLabel(L['Unit Kind'])
+
+        kind:SetCallback('OnValueChanged', function(_, _, v)
+            value.kind = v
+            top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'), spec))
+        end)
+
+        kind.configure = function()
+            kind:SetList(addon.unitKinds, { 'questboss', 'lieutenant', 'minion', 'trivial' })
+
+            if value.kind ~= nil then
+                kind:SetValue(value.kind)
+            end
+        end
+
+        parent:AddChild(kind)
+    end,
+    -- Builds the help page for the UNIT_KIND condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+
+        frame:AddChild(addon.help_funcs.CreateText(
+            L['Matches when the selected unit is of the chosen kind, as the game marks it: a quest boss, a lieutenant, a minion, or trivial (a gray-level unit that gives no experience or reward). A kind this client does not mark is unavailable.']
+        ))
+    end,
+})
+
 -- CASTING_ANY: true when the unit is casting or channeling any spell. Which spell does not matter, so a cast the game
 -- hides still counts. Unavailable only when neither the cast nor the channel can be read and neither is active.
 -- Stores one field, unit.
@@ -256,6 +333,8 @@ addon:RegisterCondition('CASTING_ANY', {
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
+        if name=="otherUnitWidget" then return otherUnitWidget end
+        if name=="validOther" then return validOther end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("Conditions/unit_rank.lua", sourceGetter)

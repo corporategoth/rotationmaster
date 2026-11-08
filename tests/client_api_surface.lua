@@ -59,6 +59,16 @@ local GUARDED = {
         { 'Platform/unit_rank.lua', 'Diagnostics/secrets.lua' },
         clients = { mists = true, tbc = true, era = true },
     },
+    UnitIsQuestBoss = {
+        'Retail and Forever only; read behind type(reader) == "function", and UNIT_KIND is unavailable for that kind elsewhere.',
+        { 'Platform/unit_rank.lua' },
+        clients = { mists = true, tbc = true, era = true },
+    },
+    UnitIsLieutenant = {
+        'Retail and Forever only; read behind type(reader) == "function", and UNIT_KIND is unavailable for that kind elsewhere.',
+        { 'Platform/unit_rank.lua' },
+        clients = { mists = true, tbc = true, era = true },
+    },
     C_SwingTimer = {
         'Forever only; read behind type(C_SwingTimer) == "table", and NEXT_SWING is unsupported where it is missing.',
         { 'Platform/swing_timer.lua' },

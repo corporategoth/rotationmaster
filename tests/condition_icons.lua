@@ -41,6 +41,7 @@ local borrowed = {
     RAID_ROLE = 'GROUP',
     BOSS = 'CLASSIFICATION',
     ELITE = 'CLASSIFICATION',
+    UNIT_KIND = 'CLASSIFICATION',
     CASTING_ANY = 'CASTING',
     SPELL_USABLE = 'SPELL_AVAIL',
     ENEMIES_TARGETING = 'THREAT_COUNT',
@@ -104,7 +105,7 @@ test('all reviewed Built In declarations use bundled original semantic icons', f
         count = count + 1
     end
 
-    assert(count == 152, 'reviewed icon inventory changed: ' .. count)
+    assert(count == 153, 'reviewed icon inventory changed: ' .. count)
 end)
 
 test('category defaults follow stable identity while saved custom choices remain exact', function()

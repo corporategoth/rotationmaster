@@ -121,6 +121,15 @@ if hasFocus then
     addon.units["focustarget"] = L["your focus target's target"]
 end
 
+-- Boss units (boss1 to boss5) exist where the client draws boss frames.
+local hasBossUnits = type(MAX_BOSS_FRAMES) == "number" and MAX_BOSS_FRAMES > 0
+
+if hasBossUnits then
+    for index = 1, 5 do
+        addon.units["boss" .. index] = string.format(L["boss %d"], index)
+    end
+end
+
 -- Group unit types have no token of their own: Core/group_unit_resolution.lua
 -- swaps in the real token of whoever holds the assignment when a condition is
 -- evaluated. Every kind is recognized (a saved one stays recognized on a client
@@ -154,6 +163,14 @@ if platform and platform.GetGroupUnitSupport then
     end
 end
 
+-- Unit kinds the UNIT_KIND condition matches, with the client API that answers each.
+addon.unitKinds = {
+    questboss = L["a quest boss"],
+    lieutenant = L["a lieutenant"],
+    minion = L["a minion"],
+    trivial = L["trivial (gray, no reward)"],
+}
+
 addon.unitsPossessive = {
     player = L["your"],
     pet = L["your pet's"],
@@ -167,6 +184,12 @@ addon.unitsPossessive = {
 if hasFocus then
     addon.unitsPossessive["focus"] = L["your focus target's"]
     addon.unitsPossessive["focustarget"] = L["your focus target's target's"]
+end
+
+if hasBossUnits then
+    for index = 1, 5 do
+        addon.unitsPossessive["boss" .. index] = string.format(L["boss %d's"], index)
+    end
 end
 
 for kind in pairs(groupUnitOffered) do

@@ -663,6 +663,7 @@ local requirements = {
     RECENT_KILL = { POLICY },
     NEXT_SWING = { POLICY, { 'C_SwingTimer.IsTargetWithinSwingRange', 'C_SwingTimer.EnableRangeCheck' } },
     ELITE = { POLICY, UNIT, { 'UnitClassification' } },
+    UNIT_KIND = { POLICY, UNIT, { 'UnitIsTrivial', 'UnitIsQuestBoss', 'UnitIsLieutenant', 'UnitIsMinion' } },
     CLASS_GROUP = { FAMILY, UNIT, { 'IsInGroup' }, { 'IsInRaid' }, { 'UnitClass' } },
     GROUP = { FAMILY, { 'IsInGroup' }, { 'IsInRaid' } },
     ROLE = { POLICY, UNIT },

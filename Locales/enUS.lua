@@ -10297,6 +10297,26 @@ T["Shows a recommended spell in gray while you lack the mana, rage or other powe
 T["On this client the game hides this value from addons, so the game itself decides whether this step shows: in the preview window, drawn over the next recommendation, and as a glow on its own buttons. Later steps, announcements and WeakAuras never see it."] = 3621
 -- 5de3e91d
 T["The preview window is off (Preview Spells is 0), so this step can only show as a glow on its own buttons."] = 3622
+-- c4f7bfa2
+T["Unit Kind"] = 3623
+-- f6168bd4
+T["{unit} {{!is|is not}} {kind}"] = 3624
+-- 846646ae
+T["<kind>"] = 3625
+-- 91619fa0
+T["Matches when the selected unit is of the chosen kind, as the game marks it: a quest boss, a lieutenant, a minion, or trivial (a gray-level unit that gives no experience or reward). A kind this client does not mark is unavailable."] = 3626
+-- 7f41e201
+T["boss %d"] = 3627
+-- 969fe9b7
+T["a quest boss"] = 3628
+-- b7c2bb1c
+T["a lieutenant"] = 3629
+-- cf163ac8
+T["a minion"] = 3630
+-- 27cb45b2
+T["trivial (gray, no reward)"] = 3631
+-- 69ae0bd2
+T["boss %d's"] = 3632
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text
