@@ -511,9 +511,15 @@ test(
     function()
         local f = fixture(true, 18)
         f.load('Platform/spells.lua')
-        f.env.C_Spell = { GetSpellInfo = function(id) return { name = 'Lightning Shield', spellID = id } end }
+
+        f.env.C_Spell = {
+            GetSpellInfo = function(id)
+                return { name = id == 324 and 'Lightning Shield' or 'Ghost Wolf', spellID = id }
+            end,
+        }
+
         f.addon.Platform.secretsUnrestricted = false
-        local hidden, up = true, false
+        local hidden, up = false, true
         f.env.C_Secrets = { ShouldAurasBeSecret = function() return hidden end }
 
         f.env.C_UnitAuras = {
@@ -527,10 +533,20 @@ test(
 
         local shield = { type = 'BUFF', unit = 'player', spell = 324 }
         local not_ = { type = 'NOT', value = shield }
+        local wolf = { type = 'BUFF', unit = 'player', spell = 2645 }
+        assert(f.addon:evaluateConditionResult(shield).status == 'match', 'up before combat')
+        local r = f.addon:evaluateConditionResult(wolf)
+        assert(r.status == 'no-match', tostring(r.status) .. tostring(r.reason))
+        hidden, up = true, false
 
         assert(
             f.addon:evaluateConditionResult(shield).status == 'unavailable',
-            'nothing found while hidden proves nothing'
+            'a buff that was up and is not found while hidden proves nothing'
+        )
+
+        assert(
+            f.addon:evaluateConditionResult(wolf).status == 'no-match',
+            'a buff that was not up stays absent, so a Stop on it is not held up'
         )
 
         assert(
