@@ -11844,8 +11844,6 @@ addon.translation = {
 [3504] = "清除預測對你的法術已學到的內容（它們留下的光環、造成的傷害與治療）。若預測處於開啟狀態，會重新開始學習。",
 -- 89713b9c English: Accept
 [3505] = "接受",
--- 4a39e2b0 English: Selected talent changed from %s to %s.
-[3506] = "所選天賦已從 %s 更改為 %s。",
 -- f7a2f54e English: Left-click a talent to choose it, right-click to clear it.
 [3507] = "左鍵點擊天賦即可選擇，右鍵點擊即可清除。",
 -- b7df392f English: Left-click a talent to add a rank, right-click to remove one.

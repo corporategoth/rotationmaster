@@ -63,7 +63,7 @@ local identities = {
         treeName = '7472cbbc',
         treePicker = '6ac3f081',
         treeShape = 'f0ba2bf9',
-        treeWidget = '8f3962a3',
+        treeWidget = '6b23115d',
     },
     ['Conditions/weapon.lua'] = {
         enchantObservation = '5abf63f3',

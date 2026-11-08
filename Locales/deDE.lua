@@ -11844,8 +11844,6 @@ addon.translation = {
 [3504] = "Löscht, was die Prognose über Ihre Zauber gelernt hat (hinterlassene Auren, verursachter Schaden und Heilung). Sie beginnt erneut zu lernen, wenn die Prognose aktiv ist.",
 -- 89713b9c English: Accept
 [3505] = "Übernehmen",
--- 4a39e2b0 English: Selected talent changed from %s to %s.
-[3506] = "Gewähltes Talent von %s zu %s geändert.",
 -- f7a2f54e English: Left-click a talent to choose it, right-click to clear it.
 [3507] = "Linksklick auf ein Talent wählt es aus, Rechtsklick löscht die Auswahl.",
 -- b7df392f English: Left-click a talent to add a rank, right-click to remove one.

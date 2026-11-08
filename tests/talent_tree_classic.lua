@@ -479,12 +479,11 @@ test('left-click adds a rank, choosing the talent first; right-click removes one
 
     click(buttons[2])
     assert(window.pick.selection.talent == 2 and window.pick.rank == 1 and window.pick.name == 'Concussion')
-    assert(window.noticeText == 'Selected talent changed from Elemental Focus to Concussion.')
     assert(buttons[2].chosen:IsShown() and not buttons[4].chosen:IsShown(), 'the earlier talent is cleared')
 
     click(buttons[2])
     click(buttons[2])
-    assert(window.pick.rank == 3 and window.noticeText == nil)
+    assert(window.pick.rank == 3)
     click(buttons[2], 'RightButton')
     assert(window.pick.rank == 2)
 
@@ -502,6 +501,29 @@ test('left-click adds a rank, choosing the talent first; right-click removes one
     click(buttons[1], 'RightButton')
     assert(window.pick.selection.talent == 2, 'a right click on another talent does nothing')
 
+    -- Nothing is below rank zero or above a talent's last rank: those comparisons are off there.
+    local buttons_ = window.operatorButtons
+    assert(window.pick.rank == 5 and not buttons_.GREATERTHAN:IsEnabled() and buttons_.LESSTHAN:IsEnabled())
+    window.pick.operator = 'GREATERTHAN'
+    click(buttons[2], 'RightButton')
+    assert(window.pick.rank == 4 and buttons_.GREATERTHAN:IsEnabled() and window.pick.operator == 'GREATERTHAN')
+
+    for _ = 1, 4 do
+        click(buttons[2], 'RightButton')
+    end
+
+    assert(window.pick.rank == 0 and not buttons_.LESSTHAN:IsEnabled() and buttons_.GREATERTHAN:IsEnabled())
+    window.pick.operator = 'LESSTHAN'
+    click(buttons[2])
+
+    for _ = 1, 9 do
+        click(buttons[2])
+    end
+
+    assert(window.pick.rank == 5 and window.pick.operator == 'LESSTHAN' and buttons_.LESSTHAN:IsEnabled())
+    window.pick.operator = 'GREATERTHAN'
+    click(buttons[2])
+    assert(window.pick.operator == 'EQUALS', 'a comparison that is off at this rank falls back to equals')
     window.pick.operator = 'EQUALS'
     assert(#picks == 0, 'nothing is written until Accept')
     window.OnAccept()
@@ -578,9 +600,7 @@ test('on Mists, Blizzard\'s rows are laid out, every talent is selectable and a 
 
     buttons[5].scripts.OnClick(buttons[5], 'LeftButton')
 
-    assert(
-        window.pick.selection.slot == 5 and window.noticeText == 'Selected talent changed from Talent 4 to Talent 5.'
-    )
+    assert(window.pick.selection.slot == 5)
 
     window.OnAccept()
     assert(#picks == 1 and picks[1].selection.slot == 5 and picks[1].name == 'Talent 5' and picks[1].icon == 5005)

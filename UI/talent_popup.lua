@@ -406,16 +406,38 @@ local function showStatus(d)
     d.status:SetText(text)
 end
 
--- Brings the bar under the tree up to date: which comparison is chosen, what the condition will say, the notice about a
--- changed choice, and whether Accept can be pressed.
+-- Brings the bar under the tree up to date: which comparison is chosen and offered, what the condition will say, the
+-- hint, and whether Accept can be pressed.
 -- @param d table  The window record.
 function refreshBar(d)
     local request, pick = d.request, d.pick
     local ranked = request == nil or request.ranked ~= false
 
+    -- Nothing is below rank zero or above a talent's last rank, so those two comparisons are off there.
+    -- @param operator string  The comparison.
+    -- @return boolean  True when the comparison can be chosen for the chosen talent at its current rank.
+    local function offered(operator)
+        if not pick or not pick.selection then
+            return true
+        end
+
+        return not (operator == 'LESSTHAN' and (pick.rank or 0) <= 0)
+            and not (operator == 'GREATERTHAN' and pick.max ~= nil and (pick.rank or 0) >= pick.max)
+    end
+
+    if pick and not offered(pick.operator) then
+        pick.operator = 'EQUALS'
+    end
+
     for operator, button in pairs(d.operatorButtons) do
         visible(button, d.barShown and ranked)
         button:SetSelected(pick ~= nil and pick.operator == operator)
+
+        if offered(operator) then
+            button:Enable()
+        else
+            button:Disable()
+        end
     end
 
     visible(d.summary, d.barShown)
@@ -440,9 +462,8 @@ function refreshBar(d)
     d.summary:SetText(text)
 
     d.notice:SetText(
-        d.noticeText
-            or (ranked and L['Left-click a talent to add a rank, right-click to remove one.']
-                or L['Left-click a talent to choose it, right-click to clear it.'])
+        ranked and L['Left-click a talent to add a rank, right-click to remove one.']
+            or L['Left-click a talent to choose it, right-click to clear it.']
     )
 
     if pick and pick.selection then
@@ -493,19 +514,10 @@ local function context(d)
                 chosen.selection, chosen.name, chosen.icon = nil, nil, nil
             end
 
-            d.noticeText = nil
+            chosen.max = maximum
         elseif delta > 0 then
-            local previous = chosen.selection and (chosen.name or '?')
-
             chosen.selection, chosen.name, chosen.icon = talent.key, talent.name, talent.icon
-            chosen.rank = 1
-
-            d.noticeText = previous and string.format(
-                L['Selected talent changed from %s to %s.'],
-                previous,
-                talent.name or '?'
-            )
-                or nil
+            chosen.rank, chosen.max = 1, maximum
         else
             return
         end
@@ -583,7 +595,7 @@ function endSession(d)
     d.serial = d.serial + 1
     d.chosen = nil
     d.mode = nil
-    d.pick, d.noticeText, d.barShown = nil, nil, false
+    d.pick, d.barShown = nil, false
 
     if handle then
         pcall(handle.Close, handle)
@@ -651,13 +663,13 @@ function addon:OpenTalentTree(request)
     d.hero = request.hero
     d.serial = d.serial + 1
     d.chosen = nil
-    d.noticeText = nil
 
     -- What the player is working on in the window; the condition is only written when Accept is pressed.
     d.pick = {
         selection = request.selection,
         name = request.selectionName,
         rank = request.selection and tonumber(request.rank) or 1,
+        max = tonumber(request.selectionMax),
         operator = addon.operators[request.operator] and request.operator or 'EQUALS',
     }
 
@@ -718,7 +730,7 @@ function addon:OpenTalentTree(request)
         reload(d)
     end
 
-    d.chrome:SetContext(L['Talent Tree'], L['Talent'], request.name or '')
+    d.chrome:SetContext(L['Talent Tree'], select(1, UnitClass('player')) or L['Talent'], request.name or '')
     d.frame:Show()
     self:OpenPopup(d, request.owner)
     start(d)
@@ -1492,7 +1504,7 @@ local function styleSlot(slot, size, shape)
     local icon = fancy and size * .86 or size - 4
     slot.icon:SetSize(icon, icon)
     slot.art:SetSize(size * 1.3, size * 1.3)
-    slot.hover:SetSize(size * 1.3, size * 1.3)
+    slot.hover:SetSize(size * 1.9, size * 1.9)
 
     if fancy then
         slot.art:Show()

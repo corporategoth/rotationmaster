@@ -11844,8 +11844,6 @@ addon.translation = {
 [3504] = "Удаляет то, чему прогноз научился о Ваших заклинаниях (накладываемые эффекты, наносимый урон и исцеление). Если прогноз включён, обучение начнётся заново.",
 -- 89713b9c English: Accept
 [3505] = "Принять",
--- 4a39e2b0 English: Selected talent changed from %s to %s.
-[3506] = "Выбранный талант изменён с %s на %s.",
 -- f7a2f54e English: Left-click a talent to choose it, right-click to clear it.
 [3507] = "Левая кнопка мыши на таланте выбирает его, правая — снимает выбор.",
 -- b7df392f English: Left-click a talent to add a rank, right-click to remove one.

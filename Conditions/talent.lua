@@ -262,6 +262,7 @@ local function treeWidget(parent, spec, value, update)
             ranked = true,
             selection = saved and { tree = value.tree, talent = value.talent } or nil,
             selectionName = current and current.name,
+            selectionMax = current and current.maxRank,
             rank = saved and value.value or nil,
             operator = saved and value.operator or nil,
             -- Writes the talent, comparison and rank the player accepted and follows them in the lists.
@@ -622,7 +623,7 @@ local function traitsWidget(parent, spec, value, update)
         local current=info(value,spec)
         local saved=currentSelection()
         addon:OpenTalentTree({owner=treeOwner,spec=shown,selection=saved,selectionName=current and current.name,
-            specs=specs,ranked=true,rank=saved and value.value or nil,operator=saved and value.operator or nil,
+            specs=specs,ranked=true,selectionMax=current and current.maxRanks,rank=saved and value.value or nil,operator=saved and value.operator or nil,
             onAccept=function(result)
                 local selection=result.selection
                 local found,foundGroup,foundTalent

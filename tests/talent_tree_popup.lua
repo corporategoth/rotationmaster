@@ -1130,7 +1130,8 @@ test(
         )
 
         assert(slotFor(2203).rank.text == '0' and slotFor(2202).rank.text == '1')
-        assert(d.notice:GetText() == 'Selected talent changed from Phoenix Flames to Combustion.', d.notice:GetText())
+        assert(d.notice:GetText():find('Left-click a talent', 1, true), 'the hint stays; no notice of the change')
+
         assert(value.node == 2203, 'nothing is written before Accept')
 
         d.operatorButtons.EQUALS.scripts.OnClick(d.operatorButtons.EQUALS)

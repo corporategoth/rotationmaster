@@ -11844,8 +11844,6 @@ addon.translation = {
 [3504] = "예측이 주문에 대해 학습한 내용(남기는 오라, 주는 피해와 치유)을 삭제합니다. 예측이 켜져 있으면 다시 학습을 시작합니다.",
 -- 89713b9c English: Accept
 [3505] = "수락",
--- 4a39e2b0 English: Selected talent changed from %s to %s.
-[3506] = "선택한 특성이 %s에서 %s(으)로 바뀌었습니다.",
 -- f7a2f54e English: Left-click a talent to choose it, right-click to clear it.
 [3507] = "특성을 왼쪽 클릭하면 선택하고, 오른쪽 클릭하면 해제합니다.",
 -- b7df392f English: Left-click a talent to add a rank, right-click to remove one.

@@ -11844,8 +11844,6 @@ addon.translation = {
 [3504] = "Supprime ce que la prévision a appris sur vos sorts (les auras qu'ils laissent, les dégâts et les soins qu'ils produisent). Elle recommence à apprendre si la prévision est activée.",
 -- 89713b9c English: Accept
 [3505] = "Accepter",
--- 4a39e2b0 English: Selected talent changed from %s to %s.
-[3506] = "Le talent choisi est passé de %s à %s.",
 -- f7a2f54e English: Left-click a talent to choose it, right-click to clear it.
 [3507] = "Clic gauche sur un talent pour le choisir, clic droit pour l'effacer.",
 -- b7df392f English: Left-click a talent to add a rank, right-click to remove one.

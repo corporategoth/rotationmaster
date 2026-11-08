@@ -11844,8 +11844,6 @@ addon.translation = {
 [3504] = "Apaga o que a previsão aprendeu sobre seus feitiços (as auras que deixam, o dano e a cura que causam). Ela volta a aprender se a previsão estiver ativa.",
 -- 89713b9c English: Accept
 [3505] = "Aceitar",
--- 4a39e2b0 English: Selected talent changed from %s to %s.
-[3506] = "O talento escolhido mudou de %s para %s.",
 -- f7a2f54e English: Left-click a talent to choose it, right-click to clear it.
 [3507] = "Clique com o botão esquerdo em um talento para escolhê-lo e com o direito para limpar.",
 -- b7df392f English: Left-click a talent to add a rank, right-click to remove one.

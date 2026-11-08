@@ -10093,8 +10093,6 @@ T["Compare each forecast with what was highlighted when the time came: the secon
 T["Delete what the forecast has learned about your spells (the auras they leave, the damage and healing they do). It starts learning again if the forecast is on."] = 3504
 -- 89713b9c
 T["Accept"] = 3505
--- 4a39e2b0
-T["Selected talent changed from %s to %s."] = 3506
 -- f7a2f54e
 T["Left-click a talent to choose it, right-click to clear it."] = 3507
 -- b7df392f
