@@ -95,6 +95,10 @@ function addon:CreateNativePreviewWindow()
         frame:EnableMouse(false)
         window = { frame = frame, icons = {}, count = 0, nativePreview = true }
         self.nativePreviewWindow = window
+        -- A caption above the icons (not a title bar: it reserves no height and the window has no header).
+        window.caption = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
+        window.caption:SetPoint('BOTTOM', frame, 'TOP', 0, 3)
+        window.caption:SetText(L['Rotation Preview'])
         window.body = frame:CreateTexture(nil, 'BACKGROUND')
         window.body:SetAllPoints(frame)
         window.body:SetColorTexture(.055, .065, .075, 1)
@@ -312,6 +316,13 @@ function addon:CreateNativePreviewWindow()
             self.locked = profile.preview_locked == true
             self.opacity = clamp(profile.preview_opacity, 0, 1, 1)
             self.body:SetAlpha(self.opacity)
+
+            if profile.preview_title == false then
+                self.caption:Hide()
+            else
+                self.caption:Show()
+            end
+
             -- Locked or fully transparent, the background never intercepts
             -- the mouse; only the icons keep their own tooltips and clicks.
             self.frame:EnableMouse(not self.locked and self.opacity > 0)

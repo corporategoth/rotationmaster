@@ -214,6 +214,11 @@ function addon:BuildGeneralSettings(p)
         previewChanged()
     end)
 
+    p:Check('preview_title', L['Show a title above the preview'], profile.preview_title ~= false, function(v)
+        profile.preview_title = v
+        previewChanged()
+    end)
+
     local previewY = p.y
     local third = p.width / 3
 

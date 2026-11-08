@@ -9,6 +9,7 @@ local test, finish = F.suite()
 local function client(rows, known)
     local f = F.new(18, 12, 'SHAMAN')
     local a = f.addon
+    f.env.RotationMasterDB = {}
     a.db = { global = {}, profile = {} }
     a.currentSpec = 0
     a.GetBuiltinStates = function() return rows end
@@ -25,7 +26,7 @@ local function client(rows, known)
 
     f.load('Diagnostics/glow.lua')
     f.load('Diagnostics/premade_spells.lua')
-    return a, printed, shown
+    return a, printed, shown, f
 end
 
 local rows = {
@@ -57,7 +58,7 @@ local rows = {
 }
 
 test('it lists the spell IDs the client does not know, once each with where they are named', function()
-    local a, printed, shown = client(rows, { [8232] = true, [403] = true })
+    local a, printed, shown, f = client(rows, { [8232] = true, [403] = true })
     local lines, unknown = a:BuildPremadeSpellDiagnostic()
     local text = table.concat(lines, '\n')
     assert(unknown == 2, text)
@@ -68,7 +69,7 @@ test('it lists the spell IDs the client does not know, once each with where they
     assert(not text:find(': 1 ', 1, true), 'a totem slot is not read as a spell')
     a:RunPremadeSpellDiagnostic()
     assert(#shown == 1 and shown[1]:find('408505', 1, true), 'the report opens in the copyable window')
-    assert(a.db.global.diagnostics.spells.lines[1]:find('Premade spell IDs', 1, true), 'and is saved')
+    assert(f.env.RotationMasterDB.diagnostics.spells.lines[1]:find('Premade spell IDs', 1, true), 'and is saved')
     assert(#printed == 1 and printed[1]:find('1 premade(s) checked', 1, true), 'chat gets only the total')
 end)
 

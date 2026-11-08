@@ -11847,4 +11847,11 @@ addon.translation = {
 [3508] = "특성을 왼쪽 클릭하면 등급이 1 오르고, 오른쪽 클릭하면 1 내려갑니다.",
 -- 16d3cbc4 English: Click to choose the talent from the talent tree.
 [3509] = "클릭하여 특성 트리에서 특성을 고릅니다.",
+-- b2b12a58 English: Rotation Preview
+[3510] = "로테이션 미리보기",
+-- 8383d645 English: Show a title above the preview
+[3511] = "미리보기 위에 제목 표시",
+-- aab20fee English: Show "Rotation Preview" above the preview window so it is clear what it is.
+--     Turn it off to show only the icons.
+[3512] = "미리보기 창 위에 \"로테이션 미리보기\"를 표시해 무엇인지 알 수 있게 합니다. 끄면 아이콘만 표시됩니다.",
 }

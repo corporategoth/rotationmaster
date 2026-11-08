@@ -11847,4 +11847,11 @@ addon.translation = {
 [3508] = "左键点击天赋增加一级，右键点击减少一级。",
 -- 16d3cbc4 English: Click to choose the talent from the talent tree.
 [3509] = "点击以在天赋树中选择天赋。",
+-- b2b12a58 English: Rotation Preview
+[3510] = "循环预览",
+-- 8383d645 English: Show a title above the preview
+[3511] = "在预览上方显示标题",
+-- aab20fee English: Show "Rotation Preview" above the preview window so it is clear what it is.
+--     Turn it off to show only the icons.
+[3512] = "在预览窗口上方显示“循环预览”，让人一目了然。关闭后只显示图标。",
 }

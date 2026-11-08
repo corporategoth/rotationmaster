@@ -72,6 +72,7 @@ local scalar = {
     preview_vertical = 'boolean',
     preview_locked = 'boolean',
     preview_opacity = 'number',
+    preview_title = 'boolean',
     preview_icon_size = 'number',
     tooltips = 'boolean',
     tooltip_itemsets = 'boolean',

@@ -11847,4 +11847,11 @@ addon.translation = {
 [3508] = "Linksklick auf ein Talent fügt einen Rang hinzu, Rechtsklick entfernt einen.",
 -- 16d3cbc4 English: Click to choose the talent from the talent tree.
 [3509] = "Klicken, um das Talent im Talentbaum auszuwählen.",
+-- b2b12a58 English: Rotation Preview
+[3510] = "Rotationsvorschau",
+-- 8383d645 English: Show a title above the preview
+[3511] = "Titel über der Vorschau anzeigen",
+-- aab20fee English: Show "Rotation Preview" above the preview window so it is clear what it is.
+--     Turn it off to show only the icons.
+[3512] = "Zeigt „Rotationsvorschau“ über dem Vorschaufenster an, damit klar ist, was es ist. Ausschalten, um nur die Symbole zu zeigen.",
 }

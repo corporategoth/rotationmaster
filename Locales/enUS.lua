@@ -10096,6 +10096,12 @@ T["Left-click a talent to choose it, right-click to clear it."] = 3507
 T["Left-click a talent to add a rank, right-click to remove one."] = 3508
 -- 16d3cbc4
 T["Click to choose the talent from the talent tree."] = 3509
+-- b2b12a58
+T["Rotation Preview"] = 3510
+-- 8383d645
+T["Show a title above the preview"] = 3511
+-- aab20fee
+T["Show \"Rotation Preview\" above the preview window so it is clear what it is. Turn it off to show only the icons."] = 3512
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

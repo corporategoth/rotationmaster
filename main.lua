@@ -501,6 +501,7 @@ local defaults = {
         preview_vertical = false,
         preview_locked = false,
         preview_opacity = 1,
+        preview_title = true,
         preview_icon_size = 64,
         preview_window = {
             point = "CENTER",

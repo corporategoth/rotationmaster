@@ -248,7 +248,7 @@ end)
 test('General help localizes whole field explanations in the visible control order',function()
     local f,parent=fixture();local a=f.addon
     local controls={'enable','disable_buttons','minimap','poll','idle_poll','autoswitch_poll','live_config_update','rotation_view',
-        'spell_history','combat_history','damage_history','preview_spells','preview_opacity','preview_locked','preview_vertical','preview_reset',
+        'spell_history','combat_history','damage_history','preview_spells','preview_opacity','preview_title','preview_locked','preview_vertical','preview_reset',
         'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling','cpu_capture','cpu_report'}
     for _,row in ipairs(a:GetGeneralOptionHelp()) do if row.id then f.translations[row.text]='Translated field '..row.id end end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)

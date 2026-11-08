@@ -131,15 +131,30 @@ function addon:BuildPremadeSpellDiagnostic()
     return lines, unknown
 end
 
+-- Returns the saved list of reports (RotationMasterDB.diagnostics), creating it, the place the glow report is kept too.
+-- @return table|nil  The diagnostics table; nil when the saved variables are not loaded.
+local function store()
+    local saved = rawget(_G, addon.savedVariableName or 'RotationMasterDB')
+
+    if type(saved) ~= 'table' then
+        return nil
+    end
+
+    if type(saved.diagnostics) ~= 'table' then
+        saved.diagnostics = {}
+    end
+
+    return saved.diagnostics
+end
+
 -- Saves the report (in RotationMasterDB.diagnostics.spells) and opens it in the copyable window; chat gets only the total.
 -- @return number  How many spell IDs the client did not know.
 function addon:RunPremadeSpellDiagnostic()
     local lines, unknown = self:BuildPremadeSpellDiagnostic()
-    local global = self.db and self.db.global
+    local diagnostics = store()
 
-    if global then
-        global.diagnostics = global.diagnostics or {}
-        global.diagnostics.spells = { lines = lines, at = type(time) == 'function' and time() or 0 }
+    if diagnostics then
+        diagnostics.spells = { lines = lines, at = type(time) == 'function' and time() or 0 }
     end
 
     self:ShowPremadeSpellDiagnostic(lines)
@@ -150,7 +165,8 @@ end
 -- Opens the saved report (or the lines given) in the copyable window.
 -- @param lines string[]|nil  The lines to show; nil shows the last saved report.
 function addon:ShowPremadeSpellDiagnostic(lines)
-    local saved = self.db and self.db.global and self.db.global.diagnostics and self.db.global.diagnostics.spells
+    local diagnostics = store()
+    local saved = diagnostics and diagnostics.spells
 
     lines = lines or saved and saved.lines
 

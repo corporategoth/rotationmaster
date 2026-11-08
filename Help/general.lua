@@ -131,6 +131,11 @@ function addon:GetGeneralOptionHelp()
             text = L["Adjust the preview background opacity without fading its icons. At zero only the icons remain, the hidden background does not intercept blank-space clicks and the resize grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity in General to resize it."],
         },
         {
+            id = "preview_title",
+            title = L["Show a title above the preview"],
+            text = L["Show \"Rotation Preview\" above the preview window so it is clear what it is. Turn it off to show only the icons."],
+        },
+        {
             id = "preview_locked",
             title = L["Lock position and size"],
             text = L["Unlocked, drag the preview by any icon or its background to move it, and resize it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved or resized and its background lets clicks through. Right-click an icon (or the background while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take effect immediately and are saved without Apply. Other pending General edits remain unchanged."],

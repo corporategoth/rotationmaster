@@ -11847,4 +11847,11 @@ addon.translation = {
 [3508] = "Левая кнопка мыши на таланте добавляет ранг, правая — убирает один.",
 -- 16d3cbc4 English: Click to choose the talent from the talent tree.
 [3509] = "Нажмите, чтобы выбрать талант в дереве талантов.",
+-- b2b12a58 English: Rotation Preview
+[3510] = "Предпросмотр ротации",
+-- 8383d645 English: Show a title above the preview
+[3511] = "Показывать заголовок над предпросмотром",
+-- aab20fee English: Show "Rotation Preview" above the preview window so it is clear what it is.
+--     Turn it off to show only the icons.
+[3512] = "Показывает «Предпросмотр ротации» над окном предпросмотра, чтобы было понятно, что это. Отключите, чтобы остались только значки.",
 }

@@ -11847,4 +11847,11 @@ addon.translation = {
 [3508] = "Clic sinistro su un talento per aggiungere un grado, clic destro per rimuoverne uno.",
 -- 16d3cbc4 English: Click to choose the talent from the talent tree.
 [3509] = "Fai clic per scegliere il talento dall'albero dei talenti.",
+-- b2b12a58 English: Rotation Preview
+[3510] = "Anteprima della rotazione",
+-- 8383d645 English: Show a title above the preview
+[3511] = "Mostra un titolo sopra l'anteprima",
+-- aab20fee English: Show "Rotation Preview" above the preview window so it is clear what it is.
+--     Turn it off to show only the icons.
+[3512] = "Mostra «Anteprima della rotazione» sopra la finestra di anteprima per renderne chiaro lo scopo. Disattivalo per mostrare solo le icone.",
 }
