@@ -49,6 +49,13 @@ after three matching sightings or five empty looks, after which the spell is not
 healing it does to the player (a running average, from the combat log; not on Retail and Forever). Nothing is registered with the
 switch off, and General > Forecast has a button to forget it all.
 
+Until a spell's aura has been seen (a new install, or an aura a restricted client hides), the pass reads it from the rotation: a
+step that casts a spell only while that spell's own buff or debuff is missing or running out (a `BUFF`, `DEBUFF`, `BUFF_REMAIN`
+or `DEBUFF_REMAIN` test naming the spell, or a spell of the same name, on the step's conditions) is the upkeep step for it, so
+casting it is projected to apply that aura, on the unit the test names, for 30 seconds, at a 5% cost to the confidence. A spell
+that has been watched leaving no aura is not inferred, and what has been seen always wins over the inference. Without this, an
+upkeep step such as Rend or Battle Shout would be predicted again straight after its own cast.
+
 ## Confidence
 
 Slot confidence starts at 1 and each predicted step multiplies it by 0.9, by 0.9 again when it repeats the previous spell, by 0.95

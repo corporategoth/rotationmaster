@@ -311,6 +311,50 @@ test('a pull in the projection puts the player in combat, so the out-of-combat S
     assert(#a.Forecast:Run({ { spell = B, action = true } }, C, 2) == 0, 'a helpful first spell starts no combat')
 end)
 
+test(
+    'an upkeep step is taken to apply its own debuff before anything has been learned, so it is not predicted again',
+    function()
+        local f, a, platform = client()
+        local missing = { type = 'NOT', value = { type = 'DEBUFF', unit = 'target', spell = A } }
+
+        -- The stub condition reads the projected aura list, as the real DEBUFF condition does.
+        function a:evaluateConditionWithCache(condition)
+            if condition == missing then
+                for index = 1, 40 do
+                    local aura = platform:GetAuraByIndex('target', index, 'HARMFUL')
+
+                    if not aura then
+                        break
+                    end
+
+                    if aura.spellID == A then
+                        return { status = 'no-match' }
+                    end
+                end
+            end
+
+            return { status = 'match' }
+        end
+
+        local rot = {
+            { spell = A, action = true, conditions = missing },
+            { spell = B, action = true, conditions = {} },
+        }
+
+        local slots = a.Forecast:Run(rot, A, 3)
+        assert(#slots == 3, #slots)
+
+        for index, slot in ipairs(slots) do
+            assert(slot.spell == B, 'slot ' .. index .. ' repeated the upkeep spell: ' .. tostring(slot.spell))
+        end
+
+        -- Once the spell has been watched leaving nothing, the rotation's hint is not used.
+        a.Forecast:Known(A, true).none = 5
+        slots = a.Forecast:Run(rot, A, 1)
+        assert(slots[1].spell == A, 'a spell known to leave no aura is predicted again')
+    end
+)
+
 test('a projection of standing still reads no movement, and the real reader is back after', function()
     local f, a, platform = client()
     platform.GetPlayerMovementObservation = function() return { speed = 7 } end

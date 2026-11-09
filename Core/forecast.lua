@@ -691,6 +691,98 @@ local function startsCombat(spell)
     return ok and platform:CanReadValue(harmful) and (harmful == true or harmful == 1)
 end
 
+-- The aura kinds a condition can test, and whether each reads the unit's harmful or helpful auras.
+local AURA_CONDITIONS = { BUFF = true, BUFF_REMAIN = true, DEBUFF = true, DEBUFF_REMAIN = true }
+-- How long an aura is taken to last when only the rotation says a spell applies it (a refresh threshold is no duration).
+local INFERRED_DURATION, INFERRED_PENALTY = 30, 0.95
+
+-- Finds the aura tests in a condition tree.
+-- @param node any  A condition (leaf, AND, OR or NOT) or a list.
+-- @param into table  The list to append { type, unit, spell } leaves to.
+local function auraTests(node, into)
+    if type(node) ~= 'table' then
+        return
+    end
+
+    if AURA_CONDITIONS[node.type] and node.spell ~= nil then
+        into[#into + 1] = node
+    end
+
+    if type(node.value) == 'table' then
+        auraTests(node.value, into)
+    end
+
+    for _, child in ipairs(node) do
+        auraTests(child, into)
+    end
+end
+
+-- Tells whether a spell id or name in an aura test is the spell being cast (its aura carries the spell's own name).
+-- @param aura number|string  The aura the condition names.
+-- @param spell number  The spell cast.
+-- @return boolean  True when they are the same spell or share a name.
+local function sameName(aura, spell)
+    if aura == spell then
+        return true
+    end
+
+    local cast = platform:GetSpellInfo(spell)
+    local named = type(aura) == 'number' and platform:GetSpellInfo(aura) or nil
+    local want = type(aura) == 'string' and aura or named and named.name
+
+    return type(want) == 'string' and cast ~= nil and cast.name == want
+end
+
+-- Works out, from the rotation itself, what aura a spell leaves when nothing has been seen of it yet: a step that casts a
+-- spell only while its own buff or debuff is missing (or running out) is the upkeep step for that aura, so casting it is
+-- taken to apply it. The tested unit tells where the aura lands. Nothing is learned from this and it is a guess, which
+-- costs a little confidence.
+-- @param spell number  The spell cast.
+-- @return table|nil  { unit, aura, duration, inferred = true } or nil.
+local function inferApplies(spell)
+    local found
+
+    -- Walks a list of steps, into branches too, stopping at the first upkeep step for the spell.
+    -- @param list table|nil  The steps.
+    local function walk(list)
+        for _, step in ipairs(list or {}) do
+            if found then
+                return
+            end
+
+            if step.type == 'branch' then
+                walk(step.onTrue or step.ontrue)
+                walk(step.onFalse or step.onfalse)
+            elseif step.action ~= nil and not step.disabled and step.conditions ~= nil then
+                local ok, ids = pcall(addon.GetSpellIds, addon, step)
+                local mine = false
+
+                for _, id in ipairs(ok and ids or {}) do
+                    mine = mine or id == spell
+                end
+
+                if mine then
+                    local tests = {}
+                    auraTests(step.conditions, tests)
+
+                    for _, test in ipairs(tests) do
+                        if sameName(test.spell, spell) then
+                            local aura = type(test.spell) == 'number' and test.spell or spell
+                            local unit = type(test.unit) == 'string' and test.unit or 'player'
+
+                            found = { unit = unit, aura = aura, duration = INFERRED_DURATION, inferred = true }
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    walk(state and state.rot and state.rot.rotation or state and state.rot)
+    return found
+end
+
 -- Applies a spell cast at the projected time to the state: its cooldown, cost, charges, auras and health effects, and
 -- moves the projected time to when the player can act again.
 -- @param spell number  The spell id.
@@ -733,6 +825,17 @@ local function apply(spell)
     end
 
     local known = forecast:Known(spell)
+    local applies = known and known.applies and known.applies.aura and known.applies or nil
+
+    -- Nothing seen of this spell yet (a new install, or an aura the game hides): the rotation's own upkeep step says what it
+    -- applies, unless it has been watched leaving nothing.
+    if not applies and not (known and (known.none or 0) >= 5) then
+        applies = inferApplies(spell)
+
+        if applies then
+            factor = factor * INFERRED_PENALTY
+        end
+    end
 
     if known then
         if known.damage then
@@ -741,31 +844,30 @@ local function apply(spell)
         if known.heal then
             state.heal = state.heal + known.heal
         end
+    end
 
-        if known.applies and known.applies.aura then
-            local applies = known.applies
-            local name = platform:GetSpellInfo(applies.aura)
-            local duration = applies.duration or 0
+    if applies then
+        local name = platform:GetSpellInfo(applies.aura)
+        local duration = applies.duration or 0
 
-            -- The expiry is filled in once the projected time has moved on (below), because it is written relative to it.
-            local record = {
-                name = name and name.name or tostring(applies.aura),
-                spellId = applies.aura,
-                spellID = applies.aura,
-                applications = 1,
-                duration = duration,
-                expirationTime = 0,
-                sourceUnit = 'player',
-            }
+        -- The expiry is filled in once the projected time has moved on (below), because it is written relative to it.
+        local record = {
+            name = name and name.name or tostring(applies.aura),
+            spellId = applies.aura,
+            spellID = applies.aura,
+            applications = 1,
+            duration = duration,
+            expirationTime = 0,
+            sourceUnit = 'player',
+        }
 
-            state.applied[#state.applied + 1] = {
-                unit = applies.unit,
-                harmful = applies.unit ~= 'player',
-                aura = applies.aura,
-                record = record,
-                at = state.t,
-            }
-        end
+        state.applied[#state.applied + 1] = {
+            unit = applies.unit,
+            harmful = applies.unit ~= 'player',
+            aura = applies.aura,
+            record = record,
+            at = state.t,
+        }
     end
 
     if info and (number(info.castTime) or 0) > 0 then
@@ -919,6 +1021,7 @@ function forecast:Wait(rot, count, stationary)
 
     local ok, err = pcall(function()
         state = newState(clock)
+        state.rot = rot
         state.stationary = stationary == true
         install()
         local confidence = state.confidence
@@ -976,6 +1079,7 @@ function forecast:Run(rot, first, count, remaining)
 
     local ok, err = pcall(function()
         state = newState(GetTime())
+        state.rot = rot
         install()
 
         if remaining and remaining >= 0 then
