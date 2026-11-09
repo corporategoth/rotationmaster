@@ -59,6 +59,21 @@ local GUARDED = {
         { 'Platform/unit_rank.lua', 'Diagnostics/secrets.lua' },
         clients = { mists = true, tbc = true, era = true },
     },
+    ['C_UnitAuras.AddAuraSound'] = {
+        'Retail and Forever only; Core/aura_sounds.lua registers nothing unless AddAuraSound, RemoveAuraSound and the trigger enum all exist.',
+        { 'Core/aura_sounds.lua' },
+        clients = { mists = true, tbc = true, era = true },
+    },
+    ['C_UnitAuras.RemoveAuraSound'] = {
+        'Retail and Forever only; read behind the same type checks as AddAuraSound.',
+        { 'Core/aura_sounds.lua' },
+        clients = { mists = true, tbc = true, era = true },
+    },
+    ['Enum.UnitAuraSoundTrigger'] = {
+        'Retail and Forever only; a missing enum leaves the aura sounds unregistered.',
+        { 'Core/aura_sounds.lua' },
+        clients = { mists = true, tbc = true, era = true },
+    },
     UnitIsQuestBoss = {
         'Retail and Forever only; read behind type(reader) == "function", and UNIT_KIND is unavailable for that kind elsewhere.',
         { 'Platform/unit_rank.lua' },
