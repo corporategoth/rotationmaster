@@ -33,6 +33,7 @@ when that is in the past.
 | `GetSpellCooldown`, `IsSpellReady` | shifted as above; a predicted spell with a base cooldown (`GetSpellBaseCooldown`) is on it from its cast. A hidden (secret) time is passed through unshifted. |
 | `GetSpellCharges` | uses of the spell so far taken off the current charges |
 | `IsSpellUsable`, `GetUnitPowerObservation` | the player's power with predicted costs (`C_Spell.GetSpellPowerCost`) spent and regeneration added (mana from `GetManaRegen`, energy 10 per second); a spell short of power now is usable when regeneration covers it, and the reverse |
+| `GetUnitFlagObservation` | the player is in combat once a predicted spell that starts it has been cast (one the game calls harmful, or one known to do damage), so a rotation's out-of-combat branch (a pull such as Charge, then Stop) does not end every later slot |
 | `GetAuraByIndex` | the real list aged to the projected time, then the auras the predicted spells are known to apply, written as the unit's own auras |
 | `GetUnitHealthObservation` | the target's health less the damage the predicted spells are known to do; the player's plus the healing they do to the player |
 

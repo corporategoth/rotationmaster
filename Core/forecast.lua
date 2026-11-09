@@ -323,6 +323,23 @@ function wrappers.GetPlayerMovementObservation(self)
     return originals.GetPlayerMovementObservation(self)
 end
 
+-- Answers that the player is in combat once a predicted spell has been cast that starts it (a pull such as Charge), so the
+-- rotation's out-of-combat branch, which usually ends in a Stop, does not end every slot after the pull.
+-- @param self table  The platform.
+-- @param unit string  The unit token.
+-- @param kind string  "combat", "enemy" or "pvp".
+-- @return boolean|nil  The flag, as the real reader returns it.
+-- @return string|nil  The reason code when the first return is nil.
+function wrappers.GetUnitFlagObservation(self, unit, kind)
+    local value, why = originals.GetUnitFlagObservation(self, unit, kind)
+
+    if state and state.pulled and unit == 'player' and kind == 'combat' and value == false then
+        return true
+    end
+
+    return value, why
+end
+
 -- Reads a spell's charges with the predicted uses taken off.
 -- @param self table  The platform.
 -- @param spell number|string  The spell.
@@ -653,6 +670,27 @@ local function retime()
     end
 end
 
+-- Tells whether casting a spell would start combat with the target: the game calls it harmful, or it is known to do damage.
+-- @param spell number  The spell id.
+-- @return boolean  True when it would; false when it would not or the game cannot say.
+local function startsCombat(spell)
+    local known = forecast:Known(spell)
+
+    if known and known.damage then
+        return true
+    end
+
+    local fn = C_Spell and C_Spell.IsSpellHarmful or IsHarmfulSpell
+
+    if type(fn) ~= 'function' then
+        return false
+    end
+
+    local ok, harmful = pcall(fn, spell)
+
+    return ok and platform:CanReadValue(harmful) and (harmful == true or harmful == 1)
+end
+
 -- Applies a spell cast at the projected time to the state: its cooldown, cost, charges, auras and health effects, and
 -- moves the projected time to when the player can act again.
 -- @param spell number  The spell id.
@@ -681,6 +719,10 @@ local function apply(spell)
     end
 
     state.uses[spell] = (state.uses[spell] or 0) + 1
+
+    if not state.pulled and startsCombat(spell) then
+        state.pulled = true
+    end
 
     for _, entry in ipairs(costs(spell)) do
         state.spent[entry.type] = (state.spent[entry.type] or 0) + entry.cost

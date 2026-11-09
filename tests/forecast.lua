@@ -282,6 +282,35 @@ test('a cast already under way counts from now, and a later slot is never surer 
     end
 end)
 
+test('a pull in the projection puts the player in combat, so the out-of-combat Stop does not end every slot', function()
+    local f, a, platform = client()
+    local seen = {}
+
+    f.world.base[A] = { 10000, 1500 }
+    platform.GetUnitFlagObservation = function() return false end
+    a.env = a.env or f.env
+    f.env.C_Spell.IsSpellHarmful = function(spell) return spell == A end
+
+    function a:EvaluateRotationSequence(body, evaluate, visit)
+        seen[#seen + 1] = platform:GetUnitFlagObservation('player', 'combat')
+
+        if seen[#seen] == false then
+            return { status = 'stopped' }
+        end
+
+        visit(body[1], 1)
+        return { status = 'selected' }
+    end
+
+    local slots = a.Forecast:Run({ { spell = B, action = true } }, A, 2)
+    assert(#slots == 2 and seen[1] == true, 'combat after a harmful first spell')
+    assert(platform:GetUnitFlagObservation('player', 'combat') == false, 'the real reader is back')
+    assert(platform:GetUnitFlagObservation('target', 'combat') == false)
+
+    seen, f.env.C_Spell.IsSpellHarmful = {}, function() return false end
+    assert(#a.Forecast:Run({ { spell = B, action = true } }, C, 2) == 0, 'a helpful first spell starts no combat')
+end)
+
 test('a projection of standing still reads no movement, and the real reader is back after', function()
     local f, a, platform = client()
     platform.GetPlayerMovementObservation = function() return { speed = 7 } end
