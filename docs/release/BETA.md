@@ -2,7 +2,8 @@
 
 Thank you for testing. Rotation Master 2.0 is a large rewrite of the 1.x addon, released first as a **beta** (version names
 like `2.0.0-beta.1`). It works offline-tested against models of every supported game client, but most of it has never run in
-a real client. Your reports are what turn it into a release.
+a real client. Your reports are what turn it into a release. 2.0.0 is now released; later betas (`2.1.0-beta.1` and on) use
+this same guide, and their release notes say what is new.
 
 **Read the three boxes before you install.**
 
@@ -127,8 +128,10 @@ These are the features most likely to misbehave. If you can exercise one, please
 2. **Tooltips** that add item-set and rotation lines: untested in and out of combat on Retail and Forever, with other
    tooltip addons, and for doubled lines on the Classic clients. If you see "blocked action" errors naming Rotation Master,
    turn tooltips off (Settings) and report it.
-3. **Retail and Forever restricted data**: only health, the global cooldown and cast IDs have been probed. A condition that
-   shows "unavailable" in combat when it should work is a useful report.
+3. **Retail and Forever restricted data**: only health, the global cooldown and cast IDs have been probed. The in-combat
+   fallbacks (movement and swing events, the Cooldown Manager, remembered values, totem events, the spell range bracket) are
+   modeled from other addons' probes. A condition that shows "unavailable" in combat when it should work is a useful report;
+   paste `/rm debug secrets` taken in combat with it.
 4. **Assisted Combat and button glow** on Retail: glow animations have been iterated, not proven everywhere.
 5. **Classic Era / SoD, Wrath, Titan, Cataclysm, Mists, Forever**: no in-game acceptance of startup or rotations yet.
 6. **The packaged layout**: 17 add-ons moved out of one folder. Only symlinked installs have been run, never the zip.
@@ -139,6 +142,10 @@ These are the features most likely to misbehave. If you can exercise one, please
     Retail returned a secret marker and rejected direct marking as protected. Mark-dependent features and Set Mark are
     disabled on Retail and Forever. See `docs/raid-marks.md` for the test checklist.
 11. **German layout**: the specialization picker and rotation list have only been checked with estimated font widths.
+12. **What the game decides for RM** (Retail, Forever): steps "Shown by the game when", gated glows, threshold cooldowns
+    handed to the game, and announcement sounds the game plays when your buff drops have never run in a real client.
+    Cooldowns left out in combat should show nothing in combat and return when it ends.
+13. **Forecast and Metrics**: the predicted later preview slots and the Metrics reports are tested with models only.
 
 ## Thanks
 
