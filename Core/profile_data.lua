@@ -38,6 +38,7 @@ local scalar = {
     questie_enabled = 'boolean',
     encounter_provider = 'string',
     preview_masque = 'boolean',
+    preview_background = 'boolean',
     version = 'number',
     enable = 'boolean',
     poll = 'number',
@@ -384,7 +385,7 @@ function addon:ValidateProfileTransfer(value)
                     end
                 end
             end
-        elseif key == 'color' then
+        elseif key == 'color' or key == 'preview_color' then
             if not fields(item, { r = 'number', g = 'number', b = 'number', a = 'number' }) then
                 return false
             end

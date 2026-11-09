@@ -173,6 +173,7 @@ Never hand-edit these; `python3 tools/check --static` fails when one is stale.
 | `Data/text_bundle_index.lua` | `tools/locales.py index` (hashes of every bundle key) |
 | `docs/translators/glossary.md` | `tools/translation_glossary.py --write` |
 | `Assets/Controls/*.tga` | `tools/generate_control_icons.py` (needs rsvg-convert and ImageMagick) |
+| `Assets/Preview/*.tga` | `Assets/Preview/build.py` from `Assets/Preview/source/*.png` (see `docs/architecture/preview-window.md`) |
 
 ## Tests
 

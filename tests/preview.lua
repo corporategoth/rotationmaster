@@ -9,6 +9,8 @@ local function fixture()
     local a = f.addon
     a.db.profile.preview_spells = 3
     a.db.profile.preview_opacity = 1
+    -- These suites pin the layout of the plain box; the art has its own border (tests/preview_art.lua).
+    a.db.profile.preview_background = false
     a.Platform.GetSpellInfo = function(_, id) return { name = 'Spell ' .. id, iconID = id + 10 } end
 
     f.env.C_Item = {

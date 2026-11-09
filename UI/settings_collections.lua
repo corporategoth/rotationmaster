@@ -222,8 +222,8 @@ function addon:OpenNativeSettings(parent, key, cached)
                 'spell_history', 'combat_history', 'damage_history', 'disable_buttons', 'assisted_highlight',
                 'tooltips', 'tooltip_itemsets', 'tooltip_rotations', 'tooltip_conditions', 'tooltip_disabled_rotations',
                 'tooltip_exclude_disabled_conditions', 'tooltip_limit', 'rotation_view', 'preview_spells',
-                'preview_vertical', 'preview_locked', 'preview_opacity', 'preview_title', 'preview_icon_size',
-                'preview_window', 'minimap'
+                'preview_vertical', 'preview_locked', 'preview_opacity', 'preview_background', 'preview_color',
+                'preview_title', 'preview_icon_size', 'preview_window', 'minimap'
             },
             char = { 'specs' },
         },

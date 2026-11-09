@@ -10341,6 +10341,14 @@ T["Forever and TBC. Other editions are unverified."] = 3645
 T["Forever only. A full UI suite; RM reads the bars of its Action Bars module."] = 3646
 -- d4308367
 T["Official project page. Publisher lists Forever. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 3647
+-- db773bc8
+T["Draw the preview background art"] = 3648
+-- 2639e726
+T["Preview window color"] = 3649
+-- 6cdcb778
+T["Draw the themed background art behind the preview icons while the opacity is above zero. It stretches to fit one to five icons at any size, in a row or a column. Turn it off to use a plain box in the color chosen below it."] = 3650
+-- 24b23387
+T["Choose the color of the plain preview box. It is used when the background art is off and the opacity is above zero; its alpha channel multiplies the window opacity. The background art keeps its own colors."] = 3651
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

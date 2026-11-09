@@ -75,7 +75,7 @@ LOADABLE_SUFFIXES = CODE_SUFFIXES + ('.toc',) + ASSET_SUFFIXES
 NOTICE_FILE = re.compile(r'(?:.*[-_])?(?:licen[cs]e|copying)(?:\.(?:txt|md))?|ofl\.txt|third_party_notices\.md', re.I)
 # Folders whose textures code finds by a bare name (UI/controls.lua ControlTexture, UI/icon_picker.lua), so a name
 # in a quoted string is what uses one.
-NAMED_TEXTURE_FOLDERS = ('Assets/Controls', 'Assets/Conditions')
+NAMED_TEXTURE_FOLDERS = ('Assets/Controls', 'Assets/Conditions', 'Assets/Preview')
 TOC_SUFFIXES = ['', '-Mainline', '_Mainline', '-Classic', '_Classic', '-Vanilla', '_Vanilla', '-BCC', '_BCC', '-TBC',
                 '_TBC', '-Wrath', '_Wrath', '-WOTLKC', '_WOTLKC', '-Cata', '_Cata', '-Mists', '_Mists', '-Camelot', '_Camelot']
 TEXT_PATTERNS = ('*.lua', '*.md', '*.toc', '*.txt', '*.xml')

@@ -133,6 +133,16 @@ function addon:GetGeneralOptionHelp()
             text = L["Adjust the preview background opacity without fading its icons. At zero only the icons remain, the hidden background does not intercept blank-space clicks and the resize grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity in General to resize it."],
         },
         {
+            id = "preview_background",
+            title = L["Draw the preview background art"],
+            text = L["Draw the themed background art behind the preview icons while the opacity is above zero. It stretches to fit one to five icons at any size, in a row or a column. Turn it off to use a plain box in the color chosen below it."],
+        },
+        {
+            id = "preview_color",
+            title = L["Preview window color"],
+            text = L["Choose the color of the plain preview box. It is used when the background art is off and the opacity is above zero; its alpha channel multiplies the window opacity. The background art keeps its own colors."],
+        },
+        {
             id = "preview_title",
             title = L["Show a title above the preview"],
             text = L["Show \"Rotation Preview\" above the preview window so it is clear what it is. Turn it off to show only the icons."],

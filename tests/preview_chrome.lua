@@ -14,6 +14,8 @@ local function fixture(options)
     local a = f.addon
     a.db.profile.preview_spells = options.spells or 2
     a.db.profile.preview_opacity = 1
+    -- These suites pin the layout of the plain box; the art has its own border (tests/preview_art.lua).
+    a.db.profile.preview_background = false
 
     for key, value in pairs(options.profile or {}) do
         a.db.profile[key] = value

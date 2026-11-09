@@ -232,6 +232,16 @@ function addon:BuildGeneralSettings(p)
         previewChanged()
     end)
 
+    p:Check('preview_background', L['Draw the preview background art'], profile.preview_background ~= false, function(v)
+        profile.preview_background = v
+        previewChanged()
+    end)
+
+    p:Color('preview_color', L['Preview window color'], profile.preview_color, function(v)
+        profile.preview_color = v
+        previewChanged()
+    end)
+
     local previewY = p.y
     local third = p.width / 3
 
