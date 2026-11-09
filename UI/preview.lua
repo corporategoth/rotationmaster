@@ -30,59 +30,34 @@ local sampleProfile
 -- Most gated steps stacked in one preview slot; the game shows the first whose gate is open.
 local MAX_GATE_STACK = 4
 
--- The background art (Assets/Preview/): only the border around the icons shows, since they cover everything inside it. Each
--- theme (one per class, and a neutral one) is two 32 texel textures: a seamless edge tile, repeated along each side, and an
--- ornament sheet holding a corner (mirrored for the other three) and a stud drawn at every joint between two icons, so the border
--- follows the number of icons. The border is a share of the icon size, so the art scales with the window.
+-- The background image (Assets/Preview/): a painting of the player's class that fills the whole window and shows through every
+-- slot that has no icon. Each theme is two textures, a wide one (five square cells side by side, 96 texels each, 512 x 128) for a
+-- row and a tall one (the same stacked, 128 x 512) for a column. A window of n slots shows the first n cells, stretched over it, so
+-- the image follows the number of icons. Every texture is named in full here, because the release check keeps only the textures
+-- the code names.
 local ART_DIR = 'Interface\\AddOns\\' .. addon_name .. '\\Assets\\Preview\\'
--- Every texture is named here in full, because the release check keeps only the textures the code names.
-local ART_NEUTRAL = { edge = 'rotation-master-edge', ornament = 'rotation-master-ornament' }
 
 local ART_THEMES = {
-    WARRIOR = { edge = 'warrior-edge', ornament = 'warrior-ornament' },
-    PALADIN = { edge = 'paladin-edge', ornament = 'paladin-ornament' },
-    HUNTER = { edge = 'hunter-edge', ornament = 'hunter-ornament' },
-    ROGUE = { edge = 'rogue-edge', ornament = 'rogue-ornament' },
-    PRIEST = { edge = 'priest-edge', ornament = 'priest-ornament' },
-    DEATHKNIGHT = { edge = 'deathknight-edge', ornament = 'deathknight-ornament' },
-    SHAMAN = { edge = 'shaman-edge', ornament = 'shaman-ornament' },
-    MAGE = { edge = 'mage-edge', ornament = 'mage-ornament' },
-    WARLOCK = { edge = 'warlock-edge', ornament = 'warlock-ornament' },
-    MONK = { edge = 'monk-edge', ornament = 'monk-ornament' },
-    DRUID = { edge = 'druid-edge', ornament = 'druid-ornament' },
-    DEMONHUNTER = { edge = 'demonhunter-edge', ornament = 'demonhunter-ornament' },
-    EVOKER = { edge = 'evoker-edge', ornament = 'evoker-ornament' },
+    SHAMAN = { wide = 'shaman-wide', tall = 'shaman-tall' },
 }
 
-local ART_BORDER_SHARE, ART_BORDER_MIN, ART_BORDER_MAX, PLAIN_BORDER = 0.125, 6, 16, 4
+local ART_CELL, ART_CELLS, ART_SIZE, PAD = 96, 5, 512, 4
 
 -- Returns the art theme for the player's class.
--- @return table  { edge, ornament }, the two texture names; the neutral theme when the class is unknown.
+-- @return table|nil  { wide, tall }, the two texture names; nil when the class has no painting yet (the plain box is drawn).
 local function artTheme()
     if type(UnitClass) ~= 'function' then
-        return ART_NEUTRAL
+        return nil
     end
 
     local ok, _, token = pcall(UnitClass, 'player')
 
     -- The class token is not secret, but nothing from a game call is used as a table key unchecked.
     if not ok or type(token) ~= 'string' or (canaccessvalue and not canaccessvalue(token)) then
-        return ART_NEUTRAL
+        return nil
     end
 
-    return ART_THEMES[token] or ART_NEUTRAL
-end
-
--- Returns the border thickness round the icons.
--- @param size number  The icon size.
--- @param art boolean  True when the background art is drawn.
--- @return number  The border in pixels: a share of the icon size for the art, four for a plain box.
-local function borderFor(size, art)
-    if not art then
-        return PLAIN_BORDER
-    end
-
-    return math.max(ART_BORDER_MIN, math.min(ART_BORDER_MAX, math.floor(size * ART_BORDER_SHARE + 0.5)))
+    return ART_THEMES[token]
 end
 
 -- Fixed placeholder icons painted in sample mode, so a player can size and place the window without a rotation.
@@ -160,139 +135,51 @@ function addon:CreateNativePreviewWindow()
         window.body = frame:CreateTexture(nil, 'BACKGROUND')
         window.body:SetAllPoints(frame)
         window.body:SetColorTexture(.055, .065, .075, 1)
-        window.art = { corners = {}, edges = {}, studs = {} }
 
-        -- Creates the textures of the background art once: four corners, four edges and a pool of studs.
+        -- Creates the background image's texture once, over the whole window.
         function window:BuildArt()
             if self.artBuilt then
                 return
             end
 
             self.artBuilt = true
-            self.art = { corners = {}, edges = {}, studs = {} }
-
-            for index = 1, 4 do
-                self.art.corners[index] = self.frame:CreateTexture(nil, 'BACKGROUND')
-                self.art.edges[index] = self.frame:CreateTexture(nil, 'BACKGROUND')
-            end
-
-            for index = 1, 8 do
-                self.art.studs[index] = self.frame:CreateTexture(nil, 'ARTWORK')
-            end
+            self.backdrop = self.frame:CreateTexture(nil, 'BACKGROUND', nil, 1)
+            self.backdrop:SetAllPoints(self.frame)
         end
 
-        -- Loads the textures of the player's class theme.
-        function window:SetArtTheme()
-            local theme = artTheme()
-
-            if self.artTheme == theme then
-                return
-            end
-
-            self.artTheme = theme
-
-            for _, texture in ipairs(self.art.edges) do
-                texture:SetTexture(ART_DIR .. theme.edge, 'REPEAT', 'REPEAT')
-            end
-
-            for _, group in ipairs({ self.art.corners, self.art.studs }) do
-                for _, texture in ipairs(group) do
-                    texture:SetTexture(ART_DIR .. theme.ornament)
-                end
-            end
-        end
-
-        -- Places the border: corners, edges tiled one cell per border width, and a stud at every joint between icons.
-        -- @param width number  The frame width.
-        -- @param height number  The frame height.
-        -- @param edge number  The border thickness.
-        function window:LayoutArt(width, height, edge)
+        -- Loads the player's class image for the window's direction, and shows the part of it the slots cover: the first n
+        -- cells of five.
+        function window:LayoutArt()
             if not self.useArt or not self.artBuilt then
                 return
             end
 
-            local art, frame = self.art, self.frame
-            local across, down = math.max(0, width - 2 * edge) / edge, math.max(0, height - 2 * edge) / edge
+            local theme = artTheme()
 
-            -- Anchors one texture over a corner or a stretch of the frame.
-            -- @param texture table  The texture.
-            -- @param point string  The first anchor.
-            -- @param x number  Its x offset.
-            -- @param y number  Its y offset.
-            -- @param second string|nil  A second anchor that stretches the texture.
-            -- @param x2 number|nil  Its x offset.
-            -- @param y2 number|nil  Its y offset.
-            local function place(texture, point, x, y, second, x2, y2)
-                texture:ClearAllPoints()
-                texture:SetPoint(point, frame, point, x, y)
-
-                if second then
-                    texture:SetPoint(second, frame, second, x2 or 0, y2 or 0)
-                end
+            if not theme then
+                self.artName = nil
+                self.backdrop:Hide()
+                return
             end
 
-            local corners = art.corners
-            local TL, TR, BL, BR = corners[1], corners[2], corners[3], corners[4]
+            local name = ART_DIR .. (self.vertical and theme.tall or theme.wide)
 
-            for _, texture in ipairs(corners) do
-                texture:SetSize(edge, edge)
+            if self.artName ~= name then
+                self.artName = name
+                self.backdrop:SetTexture(name)
             end
 
-            place(TL, 'TOPLEFT', 0, 0)
-            TL:SetTexCoord(0, 0.5, 0, 1)
-            place(TR, 'TOPRIGHT', 0, 0)
-            TR:SetTexCoord(0.5, 0, 0, 1)
-            place(BL, 'BOTTOMLEFT', 0, 0)
-            BL:SetTexCoord(0, 0.5, 1, 0)
-            place(BR, 'BOTTOMRIGHT', 0, 0)
-            BR:SetTexCoord(0.5, 0, 1, 0)
+            -- n of the five cells (of the 512 texel image, 96 each), the whole other way.
+            local shown = math.min(ART_CELLS, math.max(1, self.slots or 1)) * ART_CELL / ART_SIZE
 
-            local top, bottom, left, right = art.edges[1], art.edges[2], art.edges[3], art.edges[4]
-
-            -- The tile's outer side is its top: the bottom edge flips it, the side edges turn it a quarter.
-            place(top, 'TOPLEFT', edge, 0, 'TOPRIGHT', -edge, 0)
-            top:SetHeight(edge)
-            top:SetTexCoord(0, across, 0, 1)
-            place(bottom, 'BOTTOMLEFT', edge, 0, 'BOTTOMRIGHT', -edge, 0)
-            bottom:SetHeight(edge)
-            bottom:SetTexCoord(0, across, 1, 0)
-            place(left, 'TOPLEFT', 0, -edge, 'BOTTOMLEFT', 0, edge)
-            left:SetWidth(edge)
-            left:SetTexCoord(0, 0, down, 0, 0, 1, down, 1)
-            place(right, 'TOPRIGHT', 0, -edge, 'BOTTOMRIGHT', 0, edge)
-            right:SetWidth(edge)
-            right:SetTexCoord(0, 1, down, 1, 0, 0, down, 0)
-
-            -- A stud on each border at every joint between two icons.
-            local joints = math.max(0, (self.slots or 1) - 1)
-            local used = 0
-
-            for joint = 1, joints do
-                local at = edge + joint * self.iconSize
-
-                for side = 1, 2 do
-                    used = used + 1
-                    local stud = art.studs[used]
-
-                    if stud then
-                        stud:SetSize(edge, edge)
-                        stud:SetTexCoord(0.5, 1, 0, 1)
-
-                        if self.vertical then
-                            place(stud, side == 1 and 'TOPLEFT' or 'TOPRIGHT', 0, -at + edge / 2)
-                        else
-                            place(stud, side == 1 and 'TOPLEFT' or 'BOTTOMLEFT', at - edge / 2, 0)
-                        end
-
-                        stud:SetAlpha(self.opacity)
-                        stud:Show()
-                    end
-                end
+            if self.vertical then
+                self.backdrop:SetTexCoord(0, 1, 0, shown)
+            else
+                self.backdrop:SetTexCoord(0, shown, 0, 1)
             end
 
-            for index = used + 1, #art.studs do
-                art.studs[index]:Hide()
-            end
+            self.backdrop:SetAlpha(self.opacity)
+            self.backdrop:Show()
         end
 
         -- No title bar or close button: the window is only its icons and their
@@ -479,7 +366,7 @@ function addon:CreateNativePreviewWindow()
 
             local n = self.slots or 1
             local size = self.iconSize
-            local pad = self.opacity > 0 and borderFor(size, self.useArt) or 0
+            local pad = self.opacity > 0 and PAD or 0
 
             local width, height =
                 (self.vertical and 1 or n) * size + 2 * pad, (self.vertical and n or 1) * size + 2 * pad
@@ -528,7 +415,7 @@ function addon:CreateNativePreviewWindow()
                 end
             end
 
-            self:LayoutArt(width, height, pad)
+            self:LayoutArt()
         end
 
         -- Re-reads the profile (slot count, icon size, orientation, lock, opacity), applies it and lays out again.
@@ -549,7 +436,7 @@ function addon:CreateNativePreviewWindow()
             self.opacity = clamp(profile.preview_opacity, 0, 1, 1)
             self.useArt = self.opacity > 0 and profile.preview_background ~= false
 
-            -- The art over a slate box, or a plain box in the chosen color; either one at the window's opacity.
+            -- The image over a slate box, or a plain box in the chosen color; either one at the window's opacity.
             local color = profile.preview_color
 
             if
@@ -566,27 +453,8 @@ function addon:CreateNativePreviewWindow()
 
             if self.useArt then
                 self:BuildArt()
-                self:SetArtTheme()
-            end
-
-            local art = self.art
-
-            for _, group in ipairs({ art.corners, art.edges }) do
-                for _, texture in ipairs(group) do
-                    texture:SetAlpha(self.opacity)
-
-                    if self.useArt then
-                        texture:Show()
-                    else
-                        texture:Hide()
-                    end
-                end
-            end
-
-            if not self.useArt then
-                for _, texture in ipairs(art.studs) do
-                    texture:Hide()
-                end
+            elseif self.backdrop then
+                self.backdrop:Hide()
             end
 
             self.body:SetAlpha(self.opacity)
@@ -635,7 +503,7 @@ function addon:CreateNativePreviewWindow()
                 return
             end
 
-            local pad = self.opacity > 0 and borderFor(self.iconSize, self.useArt) or 0
+            local pad = self.opacity > 0 and PAD or 0
             local x = (width - 2 * pad) / (self.vertical and 1 or self.slots)
             local y = (height - 2 * pad) / (self.vertical and self.slots or 1)
             local size = math.abs(x - self.iconSize) >= math.abs(y - self.iconSize) and x or y
