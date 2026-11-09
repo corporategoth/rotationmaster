@@ -31,21 +31,53 @@ local function fixture(class, profile)
     return f, a
 end
 
+-- Reads the border state the window drew.
+-- @param w table  The preview window.
+-- @return table  { rails = lit flags per drawn rail, studs = lit flags per drawn stud }.
+local function border(w)
+    local out = { rails = {}, studs = {} }
+
+    for index, rail in ipairs(w.rails) do
+        if rail:IsShown() then
+            local c = rail.texCoord
+            local lowest = #c == 8 and math.min(c[2], c[4], c[6], c[8]) or math.min(c[3], c[4])
+
+            -- The sheet's lit rail is its second row (from 0.25 down); the dim one is the first.
+            out.rails[index] = lowest >= 0.25 and 'lit' or 'dim'
+        end
+    end
+
+    for index, stud in ipairs(w.studs) do
+        if stud:IsShown() then
+            out.studs[index] = stud.texCoord[1] == 0.125 and 'lit' or 'dim'
+        end
+    end
+
+    return out
+end
+
 test(
-    'the background image follows the class and the direction, and a class without a painting gets the plain box',
+    'the painting follows the class and the direction, one texture per slot, and a class without one gets the plain box',
     function()
-        local _, a = fixture('SHAMAN')
+        local _, a = fixture('SHAMAN', { preview_spells = 3 })
         local w = a:CreateNativePreviewWindow()
         w:Configure()
-        assert(w.backdrop:GetTexture():find('shaman%-wide$'), tostring(w.backdrop:GetTexture()))
-        assert(w.backdrop:IsShown())
+
+        for index = 1, 3 do
+            assert(w.cells[index]:IsShown() and w.cells[index]:GetTexture():find('shaman%-w' .. index .. '$'), index)
+        end
+
+        for index = 4, 5 do
+            assert(not w.cells[index]:IsShown(), 'a cell for each slot and no more')
+        end
+
         a.db.profile.preview_vertical = true
         w:Configure()
-        assert(w.backdrop:GetTexture():find('shaman%-tall$'), tostring(w.backdrop:GetTexture()))
+        assert(w.cells[2]:GetTexture():find('shaman%-t2$'), tostring(w.cells[2]:GetTexture()))
 
         -- A class that has no painting yet, an unreadable class, and no UnitClass at all draw nothing over the slate.
         for _, class in ipairs({ 'MAGE', 'MYSTERY', false }) do
-            local f, other = fixture(class or nil)
+            local f, other = fixture(class or nil, { preview_icon_size = 64 })
 
             if not class then
                 f.env.UnitClass = nil
@@ -53,62 +85,150 @@ test(
 
             local window = other:CreateNativePreviewWindow()
             window:Configure()
-            assert(not window.backdrop:IsShown(), tostring(class))
-            assert(window.body:IsShown() and window.body.color[1] == 0.055, 'the slate shows')
+            assert(not window.useArt and window.body:IsShown() and window.body.color[1] == 0.055, tostring(class))
+            assert(window.frame:GetWidth() == 3 * 64 + 8, 'the plain box keeps its four')
         end
     end
 )
 
-test('a window of n slots shows the first n cells of the image, stretched over the whole window', function()
-    local _, a = fixture('SHAMAN', { preview_icon_size = 64 })
+test(
+    'each slot gets its own chapter, laid over exactly the slot, and the window is as many slots wide as it was',
+    function()
+        local _, a = fixture('SHAMAN', { preview_icon_size = 64 })
+        local w = a:CreateNativePreviewWindow()
+
+        for slots = 1, 5 do
+            a.db.profile.preview_spells = slots
+            a.db.profile.preview_vertical = false
+            w:Configure()
+
+            assert(
+                w.frame:GetWidth() == slots * 64 + 12 and w.frame:GetHeight() == 64 + 12,
+                'a border of six round the slots'
+            )
+
+            for index = 1, slots do
+                local point = w.cells[index].points[1]
+
+                assert(
+                    point[1] == 'TOPLEFT' and point[4] == 6 + (index - 1) * 64 and point[5] == -6,
+                    slots .. '/' .. index
+                )
+
+                assert(w.cells[index]:GetWidth() == 64 and w.cells[index]:GetHeight() == 64)
+            end
+
+            a.db.profile.preview_vertical = true
+            w:Configure()
+            local last = w.cells[slots].points[1]
+            assert(last[4] == 6 and last[5] == -(6 + (slots - 1) * 64), slots .. ' tall')
+        end
+    end
+)
+
+test('the border is a tenth of the icon size, between five and twelve pixels, and four for a plain box', function()
+    local _, a = fixture('SHAMAN', { preview_spells = 2 })
     local w = a:CreateNativePreviewWindow()
 
-    for slots = 1, 5 do
-        a.db.profile.preview_spells = slots
-        a.db.profile.preview_vertical = false
+    for size, pad in pairs({ [24] = 5, [48] = 5, [64] = 6, [96] = 10, [128] = 12, [160] = 12 }) do
+        a.db.profile.preview_icon_size = size
         w:Configure()
-        local c = w.backdrop.texCoord
-        assert(c[1] == 0 and c[3] == 0 and c[4] == 1, slots .. ' wide: ' .. table.concat(c, ','))
-        assert(math.abs(c[2] - slots * 96 / 512) < 1e-9, slots .. ' wide: ' .. c[2])
-
-        a.db.profile.preview_vertical = true
-        w:Configure()
-        c = w.backdrop.texCoord
-        assert(c[1] == 0 and c[2] == 1 and c[3] == 0, slots .. ' tall: ' .. table.concat(c, ','))
-        assert(math.abs(c[4] - slots * 96 / 512) < 1e-9, slots .. ' tall: ' .. c[4])
+        assert(w.frame:GetWidth() == 2 * size + 2 * pad, size .. ': ' .. tostring(w.frame:GetWidth()))
     end
 
-    assert(w.backdrop.allPoints == w.frame, 'over the whole frame')
-end)
-
-test('the background art does not change the window size: the padding is the same with it on or off', function()
-    local _, a = fixture('SHAMAN', { preview_spells = 3, preview_icon_size = 64 })
-    local w = a:CreateNativePreviewWindow()
-    w:Configure()
-    assert(w.frame:GetWidth() == 3 * 64 + 8 and w.frame:GetHeight() == 64 + 8)
+    a.db.profile.preview_icon_size = 64
     a.db.profile.preview_background = false
     w:Configure()
-    assert(w.frame:GetWidth() == 3 * 64 + 8 and w.frame:GetHeight() == 64 + 8)
+    assert(w.frame:GetWidth() == 2 * 64 + 8, 'the plain box keeps its four')
+    a.db.profile.preview_background = true
     a.db.profile.preview_opacity = 0
     w:Configure()
-    assert(w.frame:GetWidth() == 3 * 64, 'no padding when fully transparent')
+    assert(w.frame:GetWidth() == 2 * 64, 'no border when fully transparent')
 end)
 
 test(
-    'the image is at the window opacity, a plain box takes the chosen color without it, nothing is drawn at zero',
+    'the border fills up with the icons: lit rails for the slots that hold one, lit studs where both neighbours do',
+    function()
+        local _, a = fixture('SHAMAN', { preview_spells = 4, preview_icon_size = 64 })
+        local w = a:CreateNativePreviewWindow()
+        w:Configure()
+
+        -- Nothing shown: every rail and stud is dim, four slots have eight rails and three joints six studs.
+        local state = border(w)
+
+        for index = 1, 8 do
+            assert(state.rails[index] == 'dim', 'rail ' .. index)
+        end
+
+        assert(state.rails[9] == nil, 'no rails past the slots')
+
+        for index = 1, 6 do
+            assert(state.studs[index] == 'dim', 'stud ' .. index)
+        end
+
+        assert(state.studs[7] == nil)
+
+        -- Two icons shown: the first two slots' rails (both sides) are lit, and the joint between them, not the others.
+        w.count = 2
+        w:LayoutArt()
+        state = border(w)
+
+        for index = 1, 4 do
+            assert(state.rails[index] == 'lit', 'rail ' .. index)
+        end
+
+        for index = 5, 8 do
+            assert(state.rails[index] == 'dim', 'rail ' .. index)
+        end
+
+        assert(state.studs[1] == 'lit' and state.studs[2] == 'lit', 'the joint between 1 and 2')
+        assert(state.studs[3] == 'dim' and state.studs[6] == 'dim', 'the others')
+
+        w.count = 4
+        w:LayoutArt()
+        state = border(w)
+
+        for index = 1, 8 do
+            assert(state.rails[index] == 'lit')
+        end
+
+        for index = 1, 6 do
+            assert(state.studs[index] == 'lit')
+        end
+
+        -- Sample icons count as shown, and the publication batch ending redraws the border.
+        w.count, w.sampleCount = 0, 3
+        w:LayoutArt()
+        assert(border(w).rails[5] == 'lit' and border(w).rails[7] == 'dim')
+        w.sampleCount = 0
+        local drawn = 0
+        local layout = w.LayoutArt
+
+        function w:LayoutArt()
+            drawn = drawn + 1
+            return layout(self)
+        end
+
+        w:ResumeLayout()
+        assert(drawn >= 1, 'ResumeLayout redraws the border')
+    end
+)
+
+test(
+    'the art is at the window opacity, a plain box takes the chosen color without it, nothing is drawn at zero',
     function()
         local _, a = fixture('SHAMAN', { preview_opacity = 0.5 })
         local w = a:CreateNativePreviewWindow()
         w:Configure()
-        assert(w.backdrop:IsShown() and w.backdrop:GetAlpha() == 0.5)
-        assert(w.body.color[1] == 0.055, 'the image sits on the default slate, not the chosen color')
+        assert(w.cells[1]:IsShown() and w.cells[1]:GetAlpha() == 0.5 and w.rails[1]:GetAlpha() == 0.5)
+        assert(w.body.color[1] == 0.055, 'the art sits on the default slate, not the chosen color')
 
         a.db.profile.preview_background = false
         a.db.profile.preview_color = { r = 0.2, g = 0.4, b = 0.6, a = 0.5 }
         w:Configure()
         assert(w.body:IsShown() and w.body:GetAlpha() == 0.5)
         assert(w.body.color[1] == 0.2 and w.body.color[2] == 0.4 and w.body.color[3] == 0.6 and w.body.color[4] == 0.5)
-        assert(not w.backdrop:IsShown())
+        assert(not w.cells[1]:IsShown() and not w.rails[1]:IsShown() and not w.corners[1]:IsShown())
 
         -- Something that is not a color falls back to the default slate rather than failing.
         a.db.profile.preview_color = 'red'
@@ -118,7 +238,11 @@ test(
         a.db.profile.preview_background = true
         a.db.profile.preview_opacity = 0
         w:Configure()
-        assert(w.body:GetAlpha() == 0 and not w.backdrop:IsShown(), 'nothing is drawn at zero')
+
+        assert(
+            w.body:GetAlpha() == 0 and not w.cells[1]:IsShown() and not w.corners[1]:IsShown(),
+            'nothing is drawn at zero'
+        )
     end
 )
 

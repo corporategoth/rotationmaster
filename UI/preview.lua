@@ -30,21 +30,35 @@ local sampleProfile
 -- Most gated steps stacked in one preview slot; the game shows the first whose gate is open.
 local MAX_GATE_STACK = 4
 
--- The background image (Assets/Preview/): a painting of the player's class that fills the whole window and shows through every
--- slot that has no icon. Each theme is two textures, a wide one (five square cells side by side, 96 texels each, 512 x 128) for a
--- row and a tall one (the same stacked, 128 x 512) for a column. A window of n slots shows the first n cells, stretched over it, so
--- the image follows the number of icons. Every texture is named in full here, because the release check keeps only the textures
--- the code names.
+-- The background (Assets/Preview/): a painting of the player's class that fills the slots and shows through every one that has no
+-- icon, and a border that fills up as icons appear. The painting is one 256 x 256 texture per slot (shaman-w1 to w5 for a row,
+-- shaman-t1 to t5 for a column), cut from one continuous scene, so a window of n slots shows the first n chapters of a story that
+-- flows from slot to slot. The border is one 256 x 64 sheet: a dim and a lit rail along each slot, a corner, and a dim and a lit stud
+-- for the joints; the first k slots (those holding an icon) have lit rails, and a joint is lit when both its neighbours are.
+-- Every texture is named in full here, because the release check keeps only the textures the code names.
 local ART_DIR = 'Interface\\AddOns\\' .. addon_name .. '\\Assets\\Preview\\'
 
 local ART_THEMES = {
-    SHAMAN = { wide = 'shaman-wide', tall = 'shaman-tall' },
+    SHAMAN = {
+        wide = { 'shaman-w1', 'shaman-w2', 'shaman-w3', 'shaman-w4', 'shaman-w5' },
+        tall = { 'shaman-t1', 'shaman-t2', 'shaman-t3', 'shaman-t4', 'shaman-t5' },
+        border = 'shaman-border',
+    },
 }
 
-local ART_CELL, ART_CELLS, ART_SIZE, PAD = 96, 5, 512, 4
+-- Where each piece sits on the border sheet, as texture coordinates (left, right, top, bottom); the sheet is 256 x 64, in rows of 16.
+local BORDER_PIECES = {
+    dimRail = { 0, 1, 0, 0.25 },
+    litRail = { 0, 1, 0.25, 0.5 },
+    corner = { 0, 0.0625, 0.5, 0.75 },
+    dimStud = { 0.0625, 0.125, 0.5, 0.75 },
+    litStud = { 0.125, 0.1875, 0.5, 0.75 },
+}
+
+local PLAIN_PAD, BORDER_SHARE, BORDER_MIN, BORDER_MAX = 4, 0.1, 5, 12
 
 -- Returns the art theme for the player's class.
--- @return table|nil  { wide, tall }, the two texture names; nil when the class has no painting yet (the plain box is drawn).
+-- @return table|nil  { wide, tall, border } texture names; nil when the class has no painting yet (the plain box is drawn).
 local function artTheme()
     if type(UnitClass) ~= 'function' then
         return nil
@@ -58,6 +72,18 @@ local function artTheme()
     end
 
     return ART_THEMES[token]
+end
+
+-- Returns the padding round the icons.
+-- @param size number  The icon size.
+-- @param art boolean  True when the class art is drawn (its border is a share of the icon size).
+-- @return number  The padding in pixels; four for a plain box.
+local function padFor(size, art)
+    if not art then
+        return PLAIN_PAD
+    end
+
+    return math.max(BORDER_MIN, math.min(BORDER_MAX, math.floor(size * BORDER_SHARE + 0.5)))
 end
 
 -- Fixed placeholder icons painted in sample mode, so a player can size and place the window without a rotation.
@@ -136,50 +162,169 @@ function addon:CreateNativePreviewWindow()
         window.body:SetAllPoints(frame)
         window.body:SetColorTexture(.055, .065, .075, 1)
 
-        -- Creates the background image's texture once, over the whole window.
+        -- Creates the textures of the background once: a cell per slot, the border's rails, corners and studs.
         function window:BuildArt()
             if self.artBuilt then
                 return
             end
 
             self.artBuilt = true
-            self.backdrop = self.frame:CreateTexture(nil, 'BACKGROUND', nil, 1)
-            self.backdrop:SetAllPoints(self.frame)
+            self.cells, self.rails, self.corners, self.studs = {}, {}, {}, {}
+
+            for index = 1, 5 do
+                self.cells[index] = self.frame:CreateTexture(nil, 'BACKGROUND', nil, 1)
+            end
+
+            for index = 1, 10 do
+                self.rails[index] = self.frame:CreateTexture(nil, 'ARTWORK')
+            end
+
+            for index = 1, 4 do
+                self.corners[index] = self.frame:CreateTexture(nil, 'ARTWORK')
+            end
+
+            for index = 1, 8 do
+                self.studs[index] = self.frame:CreateTexture(nil, 'ARTWORK')
+            end
         end
 
-        -- Loads the player's class image for the window's direction, and shows the part of it the slots cover: the first n
-        -- cells of five.
-        function window:LayoutArt()
-            if not self.useArt or not self.artBuilt then
+        -- Hides every piece of the background art.
+        function window:HideArt()
+            if not self.artBuilt then
                 return
             end
 
-            local theme = artTheme()
+            for _, group in ipairs({ self.cells, self.rails, self.corners, self.studs }) do
+                for _, texture in ipairs(group) do
+                    texture:Hide()
+                end
+            end
+        end
+
+        -- Draws the class painting over the slots and the border round them, for the number of slots and icons now shown.
+        function window:LayoutArt()
+            local theme = self.useArt and self.artBuilt and artTheme() or nil
 
             if not theme then
-                self.artName = nil
-                self.backdrop:Hide()
+                self:HideArt()
                 return
             end
 
-            local name = ART_DIR .. (self.vertical and theme.tall or theme.wide)
+            local frame, size, pad, opacity = self.frame, self.iconSize, self.pad, self.opacity
+            local slots, vertical = math.min(5, math.max(1, self.slots or 1)), self.vertical == true
+            local active = math.min(slots, math.max(self.count or 0, self.sampleCount or 0))
+            local names = vertical and theme.tall or theme.wide
 
-            if self.artName ~= name then
-                self.artName = name
-                self.backdrop:SetTexture(name)
+            -- Puts a texture at an offset from a corner of the frame, with a size.
+            -- @param texture table  The texture.
+            -- @param point string  The corner.
+            -- @param x number  Offset from it.
+            -- @param y number  Offset from it.
+            -- @param width number  The width.
+            -- @param height number  The height.
+            local function place(texture, point, x, y, width, height)
+                texture:ClearAllPoints()
+                texture:SetPoint(point, frame, point, x, y)
+                texture:SetSize(width, height)
+                texture:SetAlpha(opacity)
+                texture:Show()
             end
 
-            -- n of the five cells (of the 512 texel image, 96 each), the whole other way.
-            local shown = math.min(ART_CELLS, math.max(1, self.slots or 1)) * ART_CELL / ART_SIZE
-
-            if self.vertical then
-                self.backdrop:SetTexCoord(0, 1, 0, shown)
-            else
-                self.backdrop:SetTexCoord(0, shown, 0, 1)
+            -- Loads the border sheet into a texture.
+            -- @param texture table  The texture.
+            local function sheet(texture)
+                texture:SetTexture(ART_DIR .. theme.border)
             end
 
-            self.backdrop:SetAlpha(self.opacity)
-            self.backdrop:Show()
+            for index, cell in ipairs(self.cells) do
+                if index <= slots then
+                    local at = pad + (index - 1) * size
+
+                    cell:SetTexture(ART_DIR .. names[index])
+                    cell:SetTexCoord(0, 1, 0, 1)
+                    place(cell, 'TOPLEFT', vertical and pad or at, vertical and -at or -pad, size, size)
+                else
+                    cell:Hide()
+                end
+            end
+
+            -- The rails: a lit one for each slot that holds an icon, a dim one for each that does not, on both long sides.
+            for index = 1, 10 do
+                local rail = self.rails[index]
+                local slot = math.ceil(index / 2)
+
+                if slot <= slots then
+                    local side = index % 2 == 1 and 1 or 2
+                    local at = pad + (slot - 1) * size
+                    sheet(rail)
+                    local piece = BORDER_PIECES[slot <= active and 'litRail' or 'dimRail']
+                    local l, r, t, b = piece[1], piece[2], piece[3], piece[4]
+
+                    -- The rail's outer side is its top: the second side flips it, and a column turns it a quarter.
+                    if vertical then
+                        if side == 1 then
+                            rail:SetTexCoord(l, t, r, t, l, b, r, b)
+                            place(rail, 'TOPLEFT', 0, -at, pad, size)
+                        else
+                            rail:SetTexCoord(l, b, r, b, l, t, r, t)
+                            place(rail, 'TOPRIGHT', 0, -at, pad, size)
+                        end
+                    elseif side == 1 then
+                        rail:SetTexCoord(l, r, t, b)
+                        place(rail, 'TOPLEFT', at, 0, size, pad)
+                    else
+                        rail:SetTexCoord(l, r, b, t)
+                        place(rail, 'BOTTOMLEFT', at, 0, size, pad)
+                    end
+                else
+                    rail:Hide()
+                end
+            end
+
+            local corner = BORDER_PIECES.corner
+            local l, r, t, b = corner[1], corner[2], corner[3], corner[4]
+
+            local flips = {
+                { 'TOPLEFT', l, r, t, b },
+                { 'TOPRIGHT', r, l, t, b },
+                { 'BOTTOMLEFT', l, r, b, t },
+                { 'BOTTOMRIGHT', r, l, b, t },
+            }
+
+            for index, flip in ipairs(flips) do
+                local texture = self.corners[index]
+
+                sheet(texture)
+                texture:SetTexCoord(flip[2], flip[3], flip[4], flip[5])
+                place(texture, flip[1], 0, 0, pad, pad)
+            end
+
+            -- A stud at each joint between two slots, on both long sides; lit when both slots hold an icon.
+            local used = 0
+
+            for joint = 1, slots - 1 do
+                local at = pad + joint * size - pad / 2
+                local lit = joint + 1 <= active
+                local piece = BORDER_PIECES[lit and 'litStud' or 'dimStud']
+
+                for side = 1, 2 do
+                    used = used + 1
+                    local stud = self.studs[used]
+
+                    sheet(stud)
+                    stud:SetTexCoord(piece[1], piece[2], piece[3], piece[4])
+
+                    if vertical then
+                        place(stud, side == 1 and 'TOPLEFT' or 'TOPRIGHT', 0, -at, pad, pad)
+                    else
+                        place(stud, side == 1 and 'TOPLEFT' or 'BOTTOMLEFT', at, 0, pad, pad)
+                    end
+                end
+            end
+
+            for index = used + 1, #self.studs do
+                self.studs[index]:Hide()
+            end
         end
 
         -- No title bar or close button: the window is only its icons and their
@@ -366,7 +511,7 @@ function addon:CreateNativePreviewWindow()
 
             local n = self.slots or 1
             local size = self.iconSize
-            local pad = self.opacity > 0 and PAD or 0
+            local pad = self.pad or 0
 
             local width, height =
                 (self.vertical and 1 or n) * size + 2 * pad, (self.vertical and n or 1) * size + 2 * pad
@@ -434,9 +579,9 @@ function addon:CreateNativePreviewWindow()
             self.vertical = profile.preview_vertical == true
             self.locked = profile.preview_locked == true
             self.opacity = clamp(profile.preview_opacity, 0, 1, 1)
-            self.useArt = self.opacity > 0 and profile.preview_background ~= false
+            self.useArt = self.opacity > 0 and profile.preview_background ~= false and artTheme() ~= nil
 
-            -- The image over a slate box, or a plain box in the chosen color; either one at the window's opacity.
+            -- The art over a slate box, or a plain box in the chosen color; either one at the window's opacity.
             local color = profile.preview_color
 
             if
@@ -453,11 +598,10 @@ function addon:CreateNativePreviewWindow()
 
             if self.useArt then
                 self:BuildArt()
-            elseif self.backdrop then
-                self.backdrop:Hide()
             end
 
             self.body:SetAlpha(self.opacity)
+            self.pad = self.opacity > 0 and padFor(self.iconSize, self.useArt) or 0
 
             if profile.preview_title == false then
                 self.caption:Hide()
@@ -503,7 +647,7 @@ function addon:CreateNativePreviewWindow()
                 return
             end
 
-            local pad = self.opacity > 0 and PAD or 0
+            local pad = self.pad or 0
             local x = (width - 2 * pad) / (self.vertical and 1 or self.slots)
             local y = (height - 2 * pad) / (self.vertical and self.slots or 1)
             local size = math.abs(x - self.iconSize) >= math.abs(y - self.iconSize) and x or y
@@ -767,6 +911,9 @@ function addon:CreateNativePreviewWindow()
             if sampleProfile == self.profile then
                 self:PaintSamples()
             end
+
+            -- The border shows how many slots hold an icon.
+            self:LayoutArt()
         end
 
         -- Shows the frame if the window is still the live one.

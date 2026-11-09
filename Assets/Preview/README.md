@@ -1,42 +1,49 @@
-# Shaman preview background
+# Shaman preview artwork
 
-These are paintings behind the recommendation icons, not frames. Only the Shaman example is included.
+Run `python Assets/Preview/build.py` with Pillow installed. The build reads the saved generator outputs, crops without stretching, applies a uniform 0.65 exposure multiplier, resamples each complete master with Lanczos, slices it, draws the atlas, and assembles both QA sheets. It does not call the generator.
 
-## Files
+## Files and geometry
 
-- `shaman-wide.tga`, `shaman-tall.tga`: uncompressed, opaque 32-bit RGBA game textures.
-- `source/shaman-wide.png`, `source/shaman-tall.png`: lossless pixel-identical sources.
-- `source/generated/shaman-wide.png`, `source/generated/shaman-tall.png`: large selected imagegen originals. `source/generated/shaman-tall-first.png` records the rejected initial vertical composition.
-- `qa/shaman.png`: 3× game-style prefix crops, icon overlay, and column previews.
-- `qa/shaman-full.png`: the five-cell horizontal and vertical crops at 3×.
-- `build.py`: rebuilds textures and sheets with Pillow; run `python Assets/Preview/build.py` from the repository root.
+- `shaman-w1.tga` through `shaman-w5.tga`: row cells, left to right.
+- `shaman-t1.tga` through `shaman-t5.tga`: column cells, top to bottom.
+- Corresponding lossless PNGs are in `source/`. Every cell is 256 × 256, opaque RGBA; TGAs are uncompressed 32-bit.
+- `source/generated/shaman-w-master.png` is the 2110 × 422 native-pixel row crop, and `shaman-t-master.png` is the 360 × 1800 native-pixel column crop. Both contain the exposure adjustment. Original generated images and intermediate attempts are retained alongside them. The final row crop is (0, 70, 2110, 492); the column crop is (215, 0, 575, 1800), in Pillow's exclusive-right/bottom coordinates. Both are exact 5:1 or 1:5 without stretching. The whole master is resampled before slicing to preserve continuous joins.
+- `shaman-border.tga` and `source/shaman-border.png`: 256 × 64 RGBA atlas, transparent outside artwork. y=0–15 dim rail; y=16–31 lit rail; y=32–47: corner x=0–15, dim stud x=16–31, lit stud x=32–47; y=48–63 transparent. Rail ends match. The border is drawn by the build script as carved wood, dark outline, and turquoise/ember inlay.
+- `qa/shaman.png`: 64-pixel cells with 6-pixel border, at 3× nearest-neighbour zoom. It shows all empty row prefixes, two and five active icons, and three- and five-cell columns. The icons are actual PNGs from `Assets/Conditions/source/`. Rails are lit per active slot; joint studs light only when both adjoining slots are active. Corners are mirrored.
+- `qa/shaman-full.png`: both masters at native crop resolution and a 2× nearest-neighbour enlargement of the fifth row cell.
 
-## Geometry
+| Cell | Chapter |
+| --- | --- |
+| 1 | Dusk totem circle and first fire |
+| 2 | Wind and feathers over the red mesa |
+| 3 | Lightning storm over the mesa |
+| 4 | Teal river canyon and water spirits |
+| 5 | Four lit earth, fire, water and wind totems beneath stars |
 
-The wide texture is 512 × 128: five 96 × 96 cells occupy x=0–479 and the remaining 32 texels continue the picture. For n slots crop x=0 to 96n, with the entire 128-texel height, then stretch to the window. The tall texture is 128 × 512: five 96 × 96 cells occupy y=0–479, with 32 spare texels below; crop y=0 to 96n with the entire 128-texel width. The QA renderer stretches each crop to n × 64 pixels plus a total 4-pixel margin on each window dimension; icons occupy 64 × 64 pixels starting at (2,2). Both textures are opaque.
-
-## Story
-
-1. Carved wood, feathers and a small fire mark the dusk totem circle.
-2. Feathers travel in the wind across the red mesa.
-3. Storm clouds and lightning gather over the canyon.
-4. Teal water spirits move through the river canyon.
-5. Elemental totems answer beneath the stars.
-
-The source images are composed independently for their orientations. The optional count marks are not consistently represented, and the small-size vertical crop compresses detail and the final group of totems.
+Each orientation is one generated image, cropped as a whole and sliced. Cell boundaries retain the original continuous scene. Some prefix endings cut through landscape rather than resolving into a discrete foreground object; the column's transitions are more like stacked vistas than a single uninterrupted terrain. The count motifs are not consistently legible, and the outer wind figure in the row is close to the edge.
 
 ## Provenance
 
-Generated with the built-in imagegen tool. Exact horizontal prompt:
+Built-in imagegen was used with the earlier `qa/shaman-full.png` as a mood reference. Initial row prompt:
 
-> Use case: illustration-story. Create a horizontal, very wide continuous painted fantasy game background, a Shaman spirit-walk across five successive distinct chapters from left to right. One coherent panoramic landscape: (1) carved wooden totem circle and feathers, first small fire at dusk; (2) wind carries feathers across a red mesa; (3) storm clouds and restrained lightning over mesa; (4) water spirits in a river canyon with muted teal; (5) earth, fire, water and wind totems under night stars. Same landscape flows across every transition, each chapter resolves naturally at its right edge. Calm open area at the center of each of five equal sections for overlaying spell icons. Bold readable forms and fine carved wood, stone and feather detail. Rich atmospheric World of Warcraft class-hall/loading screen painting. Dark, muted candlelit tapestry: storm grey, teal, weathered wood, faint ember orange. No bright light, no bloom, no text, no faces, no frames, no borders, no panels, no repeating motifs. Edge-to-edge illustration.
+> Use case: illustration-story. Create a richly detailed, dark muted fantasy game background painting as one continuous panoramic landscape, composed for cropping the central horizontal 5:1 strip. Across that strip, left to right in five equal chapters: dusk carved wood and feather totem circle with first fire; wind and feathers over red mesa; lightning storm over mesa; teal river canyon with water spirits; finally FOUR clearly separated large lit totems representing earth, fire, water and wind together under stars. Keep the four totems entirely within the rightmost fifth of the strip. Natural rock, tree or cliff transitions at each fifth, continuous across boundaries. Full sharp painted detail throughout, no fog boxes, blur, blank centers, frames, lettering or UI. Shaman spirit walk, carved wood and stone, turquoise inlay, muted ember, storm grey, dusk to night. Dark subdued lighting. High detail. Reference the supplied shaman painting for mood, not its blurry centers.
 
-Exact selected vertical prompt:
+Initial column prompt:
 
-> Use case: illustration-story. An upright vertical fantasy Shaman spirit-walk painting for a game UI, continuous flowing landscape, absolutely no panels or horizontal dividers. Follow one winding river and path descending through ONE continuous canyon, with consistent atmospheric perspective and overlapping cliffs linking all heights of the image. Five successive moments flowing smoothly down the image: near the top a dusk totem circle and small fire with carved wood and feathers; then wind blowing feathers over red mesas; then storm clouds and distant lightning; then water spirits in a teal river; finally four elemental totems below under a starry night. Each region distinct but the same land and river connect all of them without seams or abrupt changes. Natural soft mist at transition points. Quiet center areas for spell icon overlay. Atmospheric detailed World of Warcraft class-hall painting, dark muted candlelit tapestry, storm grey, weathered wood, teal and subdued ember orange. No bright light, bloom, text, faces, borders, frames, repeated emblems or grid.
+> Use case: illustration-story. Create a richly detailed dark muted fantasy game background painting, a single continuous vertical landscape composed for cropping the central vertical 1:5 strip. Across that strip, top to bottom in five equal chapters: dusk carved wood and feather totem circle with first fire; wind and feathers over red mesa; lightning storm over mesa; teal river canyon with water spirits; finally FOUR clearly separated large lit totems representing earth, fire, water and wind together under stars. Keep all four totems entirely within the bottom fifth of the strip. Natural rock, tree or cliff transitions at each fifth, continuous across boundaries. Full sharp painted detail throughout, no fog boxes, blur, blank centers, frames, lettering or UI. Shaman spirit walk, carved wood and stone, turquoise inlay, muted ember, storm grey, dusk to night. Dark subdued lighting. High detail. Reference the supplied shaman painting for mood, not its blurry centers.
 
-Exact rejected initial vertical prompt:
+Column retry prompt:
 
-> Use case: illustration-story. Create a vertical portrait continuous painted fantasy game background, upright composition flowing DOWN through five successive distinct chapters. A Shaman spirit-walk: (1) carved wooden totem circle and feathers, first small fire at dusk; (2) wind carries feathers across a red mesa; (3) storm clouds and restrained lightning over mesa; (4) water spirits in a river canyon with muted teal; (5) earth, fire, water and wind totems under night stars. Same continuous landscape and atmosphere through transitions; each chapter resolves naturally at its lower edge. Calm open area at the center of each of five equal sections for overlaying spell icons. Bold readable forms and fine carved wood, stone and feather detail. Rich atmospheric World of Warcraft class-hall/loading screen painting. Dark muted candlelit tapestry: storm grey, teal, weathered wood, faint ember orange. No bright light, no bloom, no text, no faces, no frames, no borders, no panels, no repeating motifs. Edge-to-edge illustration.
+> Create a single continuous vertical fantasy game painting. CRITICAL COMPOSITION: the finished image will be cropped to only the CENTRAL 40% OF THE IMAGE WIDTH, full height. Put ALL important subjects in that central narrow strip and use the sides only as expendable landscape. Within the central strip arrange five equal stacked chapters, top to bottom: carved wood and feather totem circle at dusk with fire; wind and feathers over red mesa; mesa lightning storm; turquoise water spirits in a canyon; then FOUR distinct large, clearly separated slender elemental totems standing SIDE BY SIDE together in the narrow central strip, earth, fire, water and wind, under starry sky. All four totems must be fully visible inside the central 40% width. Continuous scenery flowing across chapter boundaries. No panel dividers, no fog boxes, no blurred centers, no text. Rich, sharp detailed painted wood and stone, teal, muted orange, storm grey. Dark, subdued, shaman spirit walk.
 
-Scripted edits: convert selected originals to RGB, resize to the required full texture dimensions using Lanczos, multiply each color channel by 0.58, add opaque alpha, and save PNG and uncompressed TGA. The QA sheet crops and stretches those exact pixels, with `Assets/Conditions/source/spell.png` and `totem.png` as icon stand-ins.
+Column final edit, using the retry as input:
+
+> Edit this vertical painting. Preserve the continuous landscape and mood. At the bottom, arrange FOUR distinct slender elemental totems (earth fire water wind) in a very tight group, all four complete totems, heads and bases, fitting inside the CENTER 35% of the image width and BOTTOM 20% of image height, with visible margin on both sides. All four in one row and clearly separated. Maintain stars behind them. Other chapters remain continuous and full detail. No text or panel lines.
+
+Row edits, each using the previous result as input:
+
+> Edit this panorama. Preserve the existing landscape and mood. Place the entire group of FOUR elemental totems closer together and shift it right, so all four complete totems fit inside the RIGHTMOST 18% of the image, with visible space at both sides of the group. Four clear separate figures, earth fire water wind, under stars, their heads and bases inside the central horizontal 60% of image height. Keep the rest of the landscape continuous and detailed. No text, no panel lines.
+
+> Edit this wide panorama. On its far right, make the group of four elemental totems significantly smaller and much more tightly clustered; shift the entire group to the RIGHT. The complete group including the earth figure must fit within the rightmost 15 percent of the whole image, with room at the right edge. Four separate totems earth fire water wind. Preserve the rest of the image and its landscape. No text.
+
+> Edit only the four tiny totems at the far right: make each of the four elemental totems twice as tall and the group twice as wide, while keeping all four complete figures entirely inside the rightmost fifth of the image, with margins. They are the focal point of that fifth. Earth fire water wind, clearly separated. Preserve rest of continuous landscape and stars.
