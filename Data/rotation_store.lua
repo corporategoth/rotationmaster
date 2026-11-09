@@ -1794,7 +1794,11 @@ function data.NewRotationStore(options)
         if not ready then
             return nil, reason
         end
-        if coroutine.running() ~= nil then
+
+        -- Lua 5.1 answers nil on the main thread; Lua 5.2 semantics (some LuaJIT builds) answer the main thread and true.
+        local thread, main = coroutine.running()
+
+        if thread ~= nil and not main then
             return nil, 'invalid-rotation-read-context'
         end
         if type(project) ~= 'function' then
