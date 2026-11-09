@@ -8,6 +8,8 @@ import json
 from pathlib import Path
 import platform
 import sys
+import time
+import urllib.error
 import urllib.request
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -46,6 +48,18 @@ def install_verified(target,payload,digest):
     target.chmod(0o755)
     return target
 
+def download(url,attempts=5):
+    """Fetches the checker, retrying transient failures (GitHub's release downloads answer 5xx now and then)."""
+    for attempt in range(1,attempts+1):
+        try:
+            with urllib.request.urlopen(url,timeout=45) as response: return response.read()
+        except urllib.error.HTTPError as error:
+            if error.code<500 or attempt==attempts: raise
+        except OSError:
+            if attempt==attempts: raise
+        print(f'Checker download failed (attempt {attempt} of {attempts}); retrying',file=sys.stderr)
+        time.sleep(5*attempt)
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--from-file',type=Path,help='Use an already downloaded binary, verifying the same pinned checksum.')
@@ -55,7 +69,7 @@ def main():
         if target.exists(): payload=target.read_bytes()
         elif args.from_file: payload=args.from_file.read_bytes()
         else:
-            with urllib.request.urlopen(spec['url'],timeout=45) as response: payload=response.read()
+            payload=download(spec['url'])
         print(install_verified(target,payload,spec['sha256']))
         return 0
     except (OSError,ValueError) as error:
