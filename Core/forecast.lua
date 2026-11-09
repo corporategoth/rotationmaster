@@ -143,30 +143,47 @@ local function baseCooldown(spell)
     return (cooldown or 0) / 1000, gcd == nil or gcd > 0
 end
 
+-- The last costs read for each spell while the game let them be read. In combat on a restricted client the numbers are hidden,
+-- and nothing that sets a cost can change then (gear, talents, level and the maximum mana all change out of combat), so the
+-- last readable answer is still the right one. Every readable read refreshes it, so a change is picked up the next time the
+-- game lets the cost be read.
+local costCache, warmedAt = {}, nil
+local WARM_EVERY = 5
+
 -- The power costs of a spell.
 -- @param spell number  The spell id.
--- @return table  A list of { type, cost }; empty when none or unreadable.
+-- @return table  A list of { type, cost }; empty when none or unreadable and never read.
 local function costs(spell)
     local reader = C_Spell and C_Spell.GetSpellPowerCost
 
     if type(reader) ~= 'function' then
-        return {}
+        return costCache[spell] or {}
     end
 
     local ok, list = pcall(reader, spell)
-    local out = {}
 
     if ok and type(list) == 'table' then
+        local out, hidden = {}, false
+
         for _, entry in ipairs(list) do
             local kind, cost = number(entry.type), number(entry.cost)
 
-            if kind and cost and cost > 0 then
-                out[#out + 1] = { type = kind, cost = cost }
+            if kind and cost then
+                if cost > 0 then
+                    out[#out + 1] = { type = kind, cost = cost }
+                end
+            else
+                hidden = true
             end
+        end
+
+        if not hidden then
+            costCache[spell] = out
+            return out
         end
     end
 
-    return out
+    return costCache[spell] or {}
 end
 
 -- The seconds the player is busy after pressing a spell: its cast time, or the global cooldown, whichever is longer.
@@ -441,6 +458,62 @@ function wrappers.GetUnitPowerObservation(self, unit, resource, includeMaximum)
     return out
 end
 
+-- Applies the projected points of a resource to a reading.
+-- @param kind number  The power type.
+-- @param current number  The real reading.
+-- @return number  The reading after the predicted builders and finishers.
+local function projectedPoints(kind, current)
+    local row = state.points[kind]
+
+    if not row then
+        return current
+    end
+
+    return math.max(0, (row.base or current) + row.delta)
+end
+
+-- Reads a unit's point resource (combo points, holy power, ...) with the predicted builders and finishers applied.
+-- @param self table  The platform.
+-- @param unit string  The unit token.
+-- @param powerType number  The power type.
+-- @param kind string  "current" or "maximum".
+-- @return number|nil  The quantity; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil.
+function wrappers.GetUnitPointPowerObservation(self, unit, powerType, kind)
+    local value, why = originals.GetUnitPointPowerObservation(self, unit, powerType, kind)
+    local current = number(value)
+
+    if unit ~= 'player' or kind ~= 'current' or not current or not number(powerType) then
+        return value, why
+    end
+
+    local maximum = number(originals.GetUnitPointPowerObservation(self, unit, powerType, 'maximum'))
+    local projected = projectedPoints(powerType, current)
+
+    return maximum and math.min(maximum, projected) or projected
+end
+
+-- Reads the player's combo points on the clients that count them against the target, with the predicted builders and
+-- finishers applied.
+-- @param self table  The platform.
+-- @param powerType number  The power type.
+-- @param kind string  "current" or "maximum".
+-- @return number|nil  The quantity; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil.
+function wrappers.GetPlayerComboPointObservation(self, powerType, kind)
+    local value, why = originals.GetPlayerComboPointObservation(self, powerType, kind)
+    local current = number(value)
+
+    if kind ~= 'current' or not current or not number(powerType) then
+        return value, why
+    end
+
+    local maximum = number(originals.GetPlayerComboPointObservation(self, powerType, 'maximum'))
+    local projected = projectedPoints(powerType, current)
+
+    return maximum and math.min(maximum, projected) or projected
+end
+
 -- Reads a unit's health with the damage and healing the predicted spells are known to do.
 -- @param self table  The platform.
 -- @param unit string  The unit token.
@@ -606,6 +679,45 @@ local function regeneration()
     return out
 end
 
+-- Reads the costs of the rotation's spells while the game lets them be read, so the numbers are known once they are hidden.
+-- @param rot table  The rotation body.
+--
+-- Does nothing in combat, and at most once every few seconds.
+local function warmCosts(rot)
+    if type(InCombatLockdown) == 'function' and InCombatLockdown() then
+        return
+    end
+
+    local clock = GetTime()
+
+    if warmedAt and clock - warmedAt < WARM_EVERY then
+        return
+    end
+
+    warmedAt = clock
+
+    -- Walks a list of steps, into branches too.
+    -- @param list table|nil  The steps.
+    local function walk(list)
+        for _, step in ipairs(list or {}) do
+            if step.type == 'branch' then
+                walk(step.onTrue or step.ontrue)
+                walk(step.onFalse or step.onfalse)
+            elseif step.action ~= nil and not step.disabled then
+                local ok, ids = pcall(addon.GetSpellIds, addon, step)
+
+                for _, id in ipairs(ok and ids or {}) do
+                    if type(id) == 'number' then
+                        costs(id)
+                    end
+                end
+            end
+        end
+    end
+
+    pcall(walk, rot and rot.rotation or rot)
+end
+
 -- Starts the projected state for a pass.
 -- @param now number  The real time.
 -- @return table  The state.
@@ -618,6 +730,7 @@ local function newState(now)
         spent = {},
         regen = regeneration(),
         applied = {},
+        points = {},
         auras = {},
         damage = 0,
         heal = 0,
@@ -670,27 +783,6 @@ local function retime()
     end
 end
 
--- Tells whether casting a spell would start combat with the target: the game calls it harmful, or it is known to do damage.
--- @param spell number  The spell id.
--- @return boolean  True when it would; false when it would not or the game cannot say.
-local function startsCombat(spell)
-    local known = forecast:Known(spell)
-
-    if known and known.damage then
-        return true
-    end
-
-    local fn = C_Spell and C_Spell.IsSpellHarmful or IsHarmfulSpell
-
-    if type(fn) ~= 'function' then
-        return false
-    end
-
-    local ok, harmful = pcall(fn, spell)
-
-    return ok and platform:CanReadValue(harmful) and (harmful == true or harmful == 1)
-end
-
 -- What the game's own spell tables say a cast leaves behind (Data/spell_effects_<family>.lua, written by
 -- tools/generate_spell_effects.py), parsed on first use and kept.
 local effectRows
@@ -700,10 +792,12 @@ function forecast:ResetEffects()
     effectRows = nil
 end
 
--- Lists the auras a spell is known from the game's tables to apply.
+-- Lists what a spell is known from the game's tables to leave behind.
 -- @param spell number  The spell id.
--- @return table|nil  A list of { unit ('target' or 'player'), aura, duration (seconds; 0 until removed) }; nil when the tables
---   say nothing about the spell (or this client has none).
+-- @return table|nil  { auras = list of { unit ('target' or 'player'), aura, duration (seconds; 0 until removed), stacks (the most
+--   it stacks to; nil when it does not) }, points = { [powerType] = points gained }, finisher = the point power type it spends
+--   all of, or nil, harmful = true when it is aimed at an enemy }; nil when the tables say nothing about the spell (or this
+--   client has none).
 function forecast:Effects(spell)
     if effectRows == nil then
         effectRows = {}
@@ -713,22 +807,53 @@ function forecast:Effects(spell)
 
         if type(data) == 'table' and type(data.rows) == 'string' then
             for id, list in data.rows:gmatch('(%d+)=([^;]+)') do
-                local entries = {}
+                local entry = { auras = {}, points = {} }
 
-                for unit, aura, seconds in list:gmatch('(%a):(%d+):(%d+)') do
-                    entries[#entries + 1] = {
-                        unit = unit == 't' and 'target' or 'player',
-                        aura = tonumber(aura),
-                        duration = tonumber(seconds),
-                    }
+                for kind, first, second, third in list:gmatch('(%a):(%d+):?(%d*):?(%d*)') do
+                    if kind == 'g' then
+                        entry.points[tonumber(first)] = (entry.points[tonumber(first)] or 0) + (tonumber(second) or 1)
+                    elseif kind == 'f' then
+                        entry.finisher = tonumber(first)
+                    elseif kind == 'h' then
+                        entry.harmful = true
+                    else
+                        entry.auras[#entry.auras + 1] = {
+                            unit = kind == 't' and 'target' or 'player',
+                            aura = tonumber(first),
+                            duration = tonumber(second) or 0,
+                            stacks = tonumber(third),
+                        }
+                    end
                 end
 
-                effectRows[tonumber(id)] = entries
+                effectRows[tonumber(id)] = entry
             end
         end
     end
 
     return effectRows[spell]
+end
+
+-- Reads how many applications of an aura a unit has in the projected state.
+-- @param unit string  "target" or "player".
+-- @param aura number  The aura's spell id.
+-- @return number  The count; 0 when the aura is not there.
+local function projectedStacks(unit, aura)
+    local filter = unit == 'player' and 'HELPFUL' or 'HARMFUL'
+
+    for index = 1, 64 do
+        local row = platform:GetAuraByIndex(unit, index, filter)
+
+        if not row then
+            break
+        end
+
+        if number(row.spellID) == aura then
+            return number(row.applications) or 1
+        end
+    end
+
+    return 0
 end
 
 -- The aura kinds a condition can test, and whether each reads the unit's harmful or helpful auras.
@@ -823,6 +948,22 @@ local function inferApplies(spell)
     return found
 end
 
+-- Tells whether casting a spell would start combat with the target: the game's tables aim it at an enemy, or it is known to do
+-- damage.
+-- @param spell number  The spell id.
+-- @return boolean  True when it would; false when it would not or nothing is known of the spell.
+local function startsCombat(spell)
+    local known = forecast:Known(spell)
+
+    if known and known.damage then
+        return true
+    end
+
+    local effects = forecast:Effects(spell)
+
+    return effects ~= nil and effects.harmful == true
+end
+
 -- Applies a spell cast at the projected time to the state: its cooldown, cost, charges, auras and health effects, and
 -- moves the projected time to when the player can act again.
 -- @param spell number  The spell id.
@@ -878,11 +1019,12 @@ local function apply(spell)
     -- What the cast leaves behind, from the most to the least certain source: what was seen of this spell on this client, what
     -- the game's own tables say, and (a guess, which costs a little confidence) what the rotation's upkeep step implies.
     local applied
+    local effects = forecast:Effects(spell)
 
     if known and known.applies and known.applies.aura then
         applied = { known.applies }
     elseif not (known and (known.none or 0) >= 5) then
-        applied = forecast:Effects(spell)
+        applied = effects and #effects.auras > 0 and effects.auras or nil
 
         if not applied then
             local inferred = inferApplies(spell)
@@ -897,13 +1039,26 @@ local function apply(spell)
     for _, applies in ipairs(applied or {}) do
         local name = platform:GetSpellInfo(applies.aura)
         local duration = applies.duration or 0
+        local most = applies.stacks
+
+        -- What was seen on this client does not say how far an aura stacks; the game's tables do.
+        if not most and effects then
+            for _, row in ipairs(effects.auras) do
+                if row.aura == applies.aura then
+                    most = row.stacks
+                end
+            end
+        end
+
+        -- Another application adds one stack (to the most it stacks to) and refreshes the aura.
+        local count = most and math.min(most, projectedStacks(applies.unit, applies.aura) + 1) or 1
 
         -- The expiry is filled in once the projected time has moved on (below), because it is written relative to it.
         local record = {
             name = name and name.name or tostring(applies.aura),
             spellId = applies.aura,
             spellID = applies.aura,
-            applications = 1,
+            applications = count,
             duration = duration,
             expirationTime = 0,
             sourceUnit = 'player',
@@ -916,6 +1071,20 @@ local function apply(spell)
             record = record,
             at = state.t,
         }
+    end
+
+    -- Points of a resource (combo points, holy power): a finisher spends every one there is, a builder adds its own.
+    if effects then
+        if effects.finisher then
+            state.points[effects.finisher] = { base = 0, delta = 0 }
+        end
+
+        for kind, gained in pairs(effects.points) do
+            local row = state.points[kind] or { delta = 0 }
+
+            row.delta = row.delta + gained
+            state.points[kind] = row
+        end
     end
 
     if info and (number(info.castTime) or 0) > 0 then
@@ -1067,6 +1236,8 @@ function forecast:Wait(rot, count, stationary)
         return lastWait.out
     end
 
+    warmCosts(rot)
+
     local ok, err = pcall(function()
         state = newState(clock)
         state.rot = rot
@@ -1124,6 +1295,8 @@ function forecast:Run(rot, first, count, remaining)
     if type(rot) ~= 'table' or type(first) ~= 'number' or type(count) ~= 'number' or count < 1 or state then
         return out
     end
+
+    warmCosts(rot)
 
     local ok, err = pcall(function()
         state = newState(GetTime())

@@ -288,8 +288,9 @@ test('a pull in the projection puts the player in combat, so the out-of-combat S
 
     f.world.base[A] = { 10000, 1500 }
     platform.GetUnitFlagObservation = function() return false end
-    a.env = a.env or f.env
-    f.env.C_Spell.IsSpellHarmful = function(spell) return spell == A end
+    platform.GetClientFamily = function() return 'forever' end
+    a.SpellEffectData = { forever = { rows = '100=t:900:1,h:1' } }
+    a.Forecast:ResetEffects()
 
     function a:EvaluateRotationSequence(body, evaluate, visit)
         seen[#seen + 1] = platform:GetUnitFlagObservation('player', 'combat')
@@ -307,7 +308,7 @@ test('a pull in the projection puts the player in combat, so the out-of-combat S
     assert(platform:GetUnitFlagObservation('player', 'combat') == false, 'the real reader is back')
     assert(platform:GetUnitFlagObservation('target', 'combat') == false)
 
-    seen, f.env.C_Spell.IsSpellHarmful = {}, function() return false end
+    seen = {}
     assert(#a.Forecast:Run({ { spell = B, action = true } }, C, 2) == 0, 'a helpful first spell starts no combat')
 end)
 
@@ -366,7 +367,7 @@ test(
         a.SpellEffectData = { forever = { rows = '500=t:900:12,p:901:0;600=t:900:12' } }
         a.Forecast:ResetEffects()
 
-        local list = a.Forecast:Effects(500)
+        local list = a.Forecast:Effects(500).auras
         assert(#list == 2 and list[1].unit == 'target' and list[1].aura == 900 and list[1].duration == 12)
         assert(list[2].unit == 'player' and list[2].aura == 901 and list[2].duration == 0)
         assert(a.Forecast:Effects(777) == nil)
@@ -430,9 +431,9 @@ test(
         f.load('Data/spell_effects_forever.lua')
         a.Forecast:ResetEffects()
 
-        local rend = a.Forecast:Effects(772)
+        local rend = a.Forecast:Effects(772).auras
         assert(rend and rend[1].unit == 'target' and rend[1].aura == 772 and rend[1].duration == 9)
-        local shout = a.Forecast:Effects(6673)
+        local shout = a.Forecast:Effects(6673).auras
         assert(shout and shout[1].unit == 'player' and shout[1].duration == 180)
 
         platform.GetClientFamily = function() return 'retail' end
@@ -441,6 +442,107 @@ test(
         assert(a.SpellEffectData == nil, 'the Forever table is not loaded on another client')
     end
 )
+
+test('a stacking aura gains a stack per cast up to its most, and a refresh keeps the count', function()
+    local f, a, platform = client()
+    local seen = {}
+
+    platform.GetClientFamily = function() return 'forever' end
+    a.SpellEffectData = { forever = { rows = '500=t:900:30:3' } }
+    a.Forecast:ResetEffects()
+    f.world.auras['targetHARMFUL'] = { { name = 'Debuff', id = 900, duration = 30, expires = NOW + 20 } }
+
+    function a:EvaluateRotationSequence(body, _, visit)
+        local aura = platform:GetAuraByIndex('target', 1, 'HARMFUL')
+        seen[#seen + 1] = aura and aura.applications
+        visit(body[1], 1)
+        return { status = 'selected' }
+    end
+
+    -- The stub aura reports no application count (one), so the first cast makes two; each pass reads the projected count.
+    a.Forecast:Run({ { spell = 500, action = true } }, 500, 3)
+    assert(seen[1] == 2 and seen[2] == 3 and seen[3] == 3, table.concat(seen, ','))
+end)
+
+test(
+    'builders add points and a finisher spends them all, read through both point readers, and the real ones are back',
+    function()
+        local f, a, platform = client()
+        local real = 2
+        local seen = {}
+
+        platform.GetClientFamily = function() return 'forever' end
+        a.SpellEffectData = { forever = { rows = '500=g:4:1;600=f:4' } }
+        a.Forecast:ResetEffects()
+
+        platform.GetUnitPointPowerObservation = function(_, _, _, kind)
+            return kind == 'maximum' and 5 or real
+        end
+
+        platform.GetPlayerComboPointObservation = function(_, _, kind)
+            return kind == 'maximum' and 5 or real
+        end
+
+        function a:EvaluateRotationSequence()
+            seen[#seen + 1] = {
+                platform:GetUnitPointPowerObservation('player', 4, 'current'),
+                platform:GetPlayerComboPointObservation(4, 'current'),
+            }
+
+            return { status = 'complete' }
+        end
+
+        a.Forecast:Run({ {} }, 500, 1)
+        assert(seen[1][1] == 3 and seen[1][2] == 3, 'one builder: ' .. tostring(seen[1][1]))
+        seen = {}
+        real = 5
+        a.Forecast:Run({ {} }, 500, 1)
+        assert(seen[1][1] == 5, 'capped at the most')
+        seen = {}
+        a.Forecast:Run({ {} }, 600, 1)
+        assert(seen[1][1] == 0 and seen[1][2] == 0, 'a finisher spends them all')
+        assert(platform:GetUnitPointPowerObservation('player', 4, 'current') == 5, 'the real reader is back')
+    end
+)
+
+test('a cost the game hides in combat is the last one it let be read, and a readable one replaces it', function()
+    local f, a, platform = client()
+    local secret = {}
+    local mana
+
+    f.env.GetManaRegen = function() return 0, 0 end
+
+    local realCan = platform.CanReadValue
+
+    function platform:CanReadValue(value)
+        return value ~= secret and realCan(self, value)
+    end
+
+    function a:EvaluateRotationSequence()
+        mana = platform:GetUnitPowerObservation('player', 'mana').current
+        return { status = 'complete' }
+    end
+
+    f.world.cost[A] = 10
+    a.Forecast:Run({ {} }, A, 1)
+    assert(mana == 90, 'readable: ' .. tostring(mana))
+
+    f.env.C_Spell.GetSpellPowerCost = function() return { { type = MANA, cost = secret } } end
+    a.Forecast:Run({ {} }, A, 1)
+    assert(mana == 90, 'hidden: the last readable cost still counts: ' .. tostring(mana))
+
+    -- Never read: nothing is guessed.
+    a.Forecast:Run({ {} }, B, 1)
+    assert(mana == 100, 'unknown cost: ' .. tostring(mana))
+
+    -- Gear or a talent changed the cost out of combat: the new reading replaces the old.
+    f.env.C_Spell.GetSpellPowerCost = function() return { { type = MANA, cost = 25 } } end
+    a.Forecast:Run({ {} }, A, 1)
+    assert(mana == 75, 'changed: ' .. tostring(mana))
+    f.env.C_Spell.GetSpellPowerCost = function() return { { type = MANA, cost = secret } } end
+    a.Forecast:Run({ {} }, A, 1)
+    assert(mana == 75, 'hidden again: ' .. tostring(mana))
+end)
 
 test('a projection of standing still reads no movement, and the real reader is back after', function()
     local f, a, platform = client()

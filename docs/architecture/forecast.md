@@ -33,7 +33,8 @@ when that is in the past.
 | `GetSpellCooldown`, `IsSpellReady` | shifted as above; a predicted spell with a base cooldown (`GetSpellBaseCooldown`) is on it from its cast. A hidden (secret) time is passed through unshifted. |
 | `GetSpellCharges` | uses of the spell so far taken off the current charges |
 | `IsSpellUsable`, `GetUnitPowerObservation` | the player's power with predicted costs (`C_Spell.GetSpellPowerCost`) spent and regeneration added (mana from `GetManaRegen`, energy 10 per second); a spell short of power now is usable when regeneration covers it, and the reverse |
-| `GetUnitFlagObservation` | the player is in combat once a predicted spell that starts it has been cast (one the game calls harmful, or one known to do damage), so a rotation's out-of-combat branch (a pull such as Charge, then Stop) does not end every later slot |
+| `GetUnitFlagObservation` | the player is in combat once a predicted spell that starts it has been cast (one the game's spell tables aim at an enemy, or one known to do damage; no client has an API that says whether a spell is harmful), so a rotation's out-of-combat branch (a pull such as Charge, then Stop) does not end every later slot |
+| `GetUnitPointPowerObservation`, `GetPlayerComboPointObservation` | the player's points of a resource (combo points, holy power, chi, soul shards, ...) with what the predicted spells do to them: a builder adds the points it gives, a finisher spends every point there is; never more than the maximum |
 | `GetAuraByIndex` | the real list aged to the projected time, then the auras the predicted spells are known to apply, written as the unit's own auras |
 | `GetUnitHealthObservation` | the target's health less the damage the predicted spells are known to do; the player's plus the healing they do to the player |
 
@@ -58,7 +59,9 @@ What a cast leaves is taken from, in this order:
    from the public DB2 tables (wago.tools: product `wowf` for Forever, `wow` for Retail) for the spells a class can learn plus every
    number in the family's Built In rotations; `--fetch` is the only thing that touches the network, the build and a hash of the rows
    are recorded in the file, and `tools/check --static` runs `--check` to prove nobody edited the rows. A spell that applies several
-   auras (a buff and a debuff) applies each. A spell the tables do not list (many Retail spells apply their aura through a spell the
+   auras (a buff and a debuff) applies each, and one that stacks (Sunder Armor, to five) adds a stack to the count already there, up to
+   the most it stacks to, so a condition on the number of stacks reads what it will be. The same rows say how many points of a point
+   resource a spell gives (a combo point from Sinister Strike) which spells are finishers (every point is spent) and which are aimed at an enemy (casting one starts combat, which is how a pull such as Charge puts the later slots in combat); A spell the tables do not list (many Retail spells apply their aura through a spell the
    tables here do not link) falls through to the next source. A spell watched leaving no aura is never given one;
 3. the rotation: a step that casts a spell only while that spell's own buff or debuff is missing or running out (a `BUFF`, `DEBUFF`,
    `BUFF_REMAIN` or `DEBUFF_REMAIN` test naming the spell, or a spell of the same name, on the step's conditions) is the upkeep step
@@ -68,6 +71,12 @@ What a cast leaves is taken from, in this order:
 Without these, an upkeep step such as Rend or Battle Shout would be predicted again straight after its own cast. A cast's chance of
 failing (a miss, a resist) and the chance of a proc are not modeled: the tables hold no per-cast chance to read, and
 `SpellAuraOptions.ProcChance` is the rate of a proc, not of the cast applying its own aura.
+
+Costs are read live (`C_Spell.GetSpellPowerCost`) on every pass. Where the game hides them (in combat on a restricted client) the last
+readable answer for that spell is used, because nothing that sets a cost (gear, talents, level, maximum mana, which is what a cost
+given as a percentage is a share of) can change in combat, and every readable read replaces it. The rotation's spells are read
+ahead of time, at most every five seconds and never in combat, so a spell first cast in combat already has an answer. A spell whose
+cost was never readable is not guessed at; it costs confidence like any resource the pass does not project.
 
 ## Confidence
 
