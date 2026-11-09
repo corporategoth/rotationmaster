@@ -355,6 +355,93 @@ test(
     end
 )
 
+test(
+    'the game tables say what a cast leaves, so it is not predicted again, and what was seen wins over them',
+    function()
+        local f, a, platform = client()
+        local missing = { type = 'NOT', value = { type = 'DEBUFF', unit = 'target', spell = 900 } }
+        local noBuff = { type = 'NOT', value = { type = 'BUFF', unit = 'player', spell = 901 } }
+
+        platform.GetClientFamily = function() return 'forever' end
+        a.SpellEffectData = { forever = { rows = '500=t:900:12,p:901:0;600=t:900:12' } }
+        a.Forecast:ResetEffects()
+
+        local list = a.Forecast:Effects(500)
+        assert(#list == 2 and list[1].unit == 'target' and list[1].aura == 900 and list[1].duration == 12)
+        assert(list[2].unit == 'player' and list[2].aura == 901 and list[2].duration == 0)
+        assert(a.Forecast:Effects(777) == nil)
+
+        function a:evaluateConditionWithCache(condition)
+            local unit, filter, wanted = 'target', 'HARMFUL', 900
+
+            if condition == noBuff then
+                unit, filter, wanted = 'player', 'HELPFUL', 901
+            elseif condition ~= missing then
+                return { status = 'match' }
+            end
+
+            for index = 1, 40 do
+                local aura = platform:GetAuraByIndex(unit, index, filter)
+
+                if not aura then
+                    break
+                end
+
+                if aura.spellID == wanted then
+                    return { status = 'no-match' }
+                end
+            end
+
+            return { status = 'match' }
+        end
+
+        -- 500's own debuff and buff are in place after it, so the steps that wait for them fall through to the filler.
+        local rot = {
+            { spell = 700, action = true, conditions = missing },
+            { spell = 701, action = true, conditions = noBuff },
+            { spell = B, action = true, conditions = {} },
+        }
+
+        local slots = a.Forecast:Run(rot, 500, 1)
+        assert(slots[1] and slots[1].spell == B, 'predicted ' .. tostring(slots[1] and slots[1].spell))
+
+        -- A spell the tables do not know leaves nothing, so the step for the missing debuff comes up.
+        slots = a.Forecast:Run(rot, 777, 1)
+        assert(slots[1] and slots[1].spell == 700)
+
+        -- What was seen of the spell on this client wins: it leaves a different aura, so the debuff is still missing.
+        a.Forecast:Known(500, true).applies = { unit = 'target', aura = 902, duration = 5, n = 3 }
+        slots = a.Forecast:Run(rot, 500, 1)
+        assert(slots[1] and slots[1].spell == 700, 'seen data wins over the tables')
+
+        -- And a spell watched leaving nothing is not given an aura from the tables.
+        a.Forecast:Known(600, true).none = 5
+        slots = a.Forecast:Run(rot, 600, 1)
+        assert(slots[1] and slots[1].spell == 700)
+    end
+)
+
+test(
+    'the generated Forever table reads: Rend leaves its debuff for nine seconds, Battle Shout its buff on the player',
+    function()
+        local f, a, platform = client()
+
+        platform.GetClientFamily = function() return 'forever' end
+        f.load('Data/spell_effects_forever.lua')
+        a.Forecast:ResetEffects()
+
+        local rend = a.Forecast:Effects(772)
+        assert(rend and rend[1].unit == 'target' and rend[1].aura == 772 and rend[1].duration == 9)
+        local shout = a.Forecast:Effects(6673)
+        assert(shout and shout[1].unit == 'player' and shout[1].duration == 180)
+
+        platform.GetClientFamily = function() return 'retail' end
+        a.SpellEffectData = nil
+        f.load('Data/spell_effects_forever.lua')
+        assert(a.SpellEffectData == nil, 'the Forever table is not loaded on another client')
+    end
+)
+
 test('a projection of standing still reads no movement, and the real reader is back after', function()
     local f, a, platform = client()
     platform.GetPlayerMovementObservation = function() return { speed = 7 } end

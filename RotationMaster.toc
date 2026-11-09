@@ -95,6 +95,8 @@ constants.lua
 Core/raid_mark_units.lua
 Data/artwork.lua
 Data/talent_trees.lua
+Data/spell_effects_forever.lua
+Data/spell_effects_retail.lua
 Functions/values.lua
 Functions/presentation.lua
 Functions/text.lua

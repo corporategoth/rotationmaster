@@ -691,6 +691,46 @@ local function startsCombat(spell)
     return ok and platform:CanReadValue(harmful) and (harmful == true or harmful == 1)
 end
 
+-- What the game's own spell tables say a cast leaves behind (Data/spell_effects_<family>.lua, written by
+-- tools/generate_spell_effects.py), parsed on first use and kept.
+local effectRows
+
+-- Drops the parsed spell tables, so the next read parses them again (after the data changed).
+function forecast:ResetEffects()
+    effectRows = nil
+end
+
+-- Lists the auras a spell is known from the game's tables to apply.
+-- @param spell number  The spell id.
+-- @return table|nil  A list of { unit ('target' or 'player'), aura, duration (seconds; 0 until removed) }; nil when the tables
+--   say nothing about the spell (or this client has none).
+function forecast:Effects(spell)
+    if effectRows == nil then
+        effectRows = {}
+
+        local family = type(platform.GetClientFamily) == 'function' and platform:GetClientFamily() or nil
+        local data = family and addon.SpellEffectData and addon.SpellEffectData[family]
+
+        if type(data) == 'table' and type(data.rows) == 'string' then
+            for id, list in data.rows:gmatch('(%d+)=([^;]+)') do
+                local entries = {}
+
+                for unit, aura, seconds in list:gmatch('(%a):(%d+):(%d+)') do
+                    entries[#entries + 1] = {
+                        unit = unit == 't' and 'target' or 'player',
+                        aura = tonumber(aura),
+                        duration = tonumber(seconds),
+                    }
+                end
+
+                effectRows[tonumber(id)] = entries
+            end
+        end
+    end
+
+    return effectRows[spell]
+end
+
 -- The aura kinds a condition can test, and whether each reads the unit's harmful or helpful auras.
 local AURA_CONDITIONS = { BUFF = true, BUFF_REMAIN = true, DEBUFF = true, DEBUFF_REMAIN = true }
 -- How long an aura is taken to last when only the rotation says a spell applies it (a refresh threshold is no duration).
@@ -825,17 +865,6 @@ local function apply(spell)
     end
 
     local known = forecast:Known(spell)
-    local applies = known and known.applies and known.applies.aura and known.applies or nil
-
-    -- Nothing seen of this spell yet (a new install, or an aura the game hides): the rotation's own upkeep step says what it
-    -- applies, unless it has been watched leaving nothing.
-    if not applies and not (known and (known.none or 0) >= 5) then
-        applies = inferApplies(spell)
-
-        if applies then
-            factor = factor * INFERRED_PENALTY
-        end
-    end
 
     if known then
         if known.damage then
@@ -846,7 +875,26 @@ local function apply(spell)
         end
     end
 
-    if applies then
+    -- What the cast leaves behind, from the most to the least certain source: what was seen of this spell on this client, what
+    -- the game's own tables say, and (a guess, which costs a little confidence) what the rotation's upkeep step implies.
+    local applied
+
+    if known and known.applies and known.applies.aura then
+        applied = { known.applies }
+    elseif not (known and (known.none or 0) >= 5) then
+        applied = forecast:Effects(spell)
+
+        if not applied then
+            local inferred = inferApplies(spell)
+
+            if inferred then
+                applied = { inferred }
+                factor = factor * INFERRED_PENALTY
+            end
+        end
+    end
+
+    for _, applies in ipairs(applied or {}) do
         local name = platform:GetSpellInfo(applies.aura)
         local duration = applies.duration or 0
 

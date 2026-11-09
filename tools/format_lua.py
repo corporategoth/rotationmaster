@@ -62,7 +62,7 @@ GENERATED_BEGIN = '-- BEGIN GENERATED RM SOURCE BINDINGS'
 EXEMPT_PREFIXES = ('Libs/', 'LibsAugment/', 'Locales/', 'Assets/', 'Modules/', 'tools/vendor/')
 EXEMPT_FILES = {
     # Written by a generator.
-    'Data/artwork.lua', 'Data/builtin_sources.lua', 'Data/talent_trees.lua', 'Data/text_bundle_index.lua',
+    'Data/artwork.lua', 'Data/builtin_sources.lua', 'Data/talent_trees.lua', 'Data/spell_effects_forever.lua', 'Data/spell_effects_retail.lua', 'Data/text_bundle_index.lua',
     'tests/fixtures/legacy_luaworkbench/modules.lua', 'tests/fixtures/legacy_luaworkbench/adapter.lua',
     'tests/fixtures/client_api.lua', 'tests/fixtures/client_api_era.lua', 'tests/fixtures/client_api_forever.lua',
     'tests/fixtures/client_api_mists.lua', 'tests/fixtures/client_api_retail.lua', 'tests/fixtures/client_api_tbc.lua',
