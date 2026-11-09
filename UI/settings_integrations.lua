@@ -727,7 +727,7 @@ function addon:BuildIntegrationSettings(p)
 
     group('integrations_actionbars', L['Action bars'], {
         'ElvUI', 'Bartender4', 'ButtonForge', 'LUI', 'Dominos', 'AzeriteUI', 'AzeriteUI6', 'EllesmereUIActionBars',
-        'FarmingBar', 'TotemTimers'
+        'FarmingBar', 'TotemTimers', 'SmartTotem', 'DaylightUI'
     })
 
     -- Measure shared columns once per drawing; description receives the remainder.

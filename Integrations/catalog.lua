@@ -46,6 +46,8 @@ local providers = {
     { 'EllesmereUIActionBars', 'EllesmereUI Action Bars', 'Optional action-bar mapping and glow support.' },
     { 'FarmingBar', 'FarmingBar', 'Optional action-bar mapping and glow support.' },
     { 'TotemTimers', 'TotemTimers', 'Optional action-bar mapping and glow support.' },
+    { 'SmartTotem', 'SmartTotem', 'Optional action-bar mapping and glow support.' },
+    { 'DaylightUI', 'DaylightUI', 'Optional action-bar mapping and glow support.' },
 }
 
 -- ============================================================================
@@ -80,6 +82,8 @@ local projects={
  ["BigWigs"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/big-wigs",["primary"]=true,["note"]="BigWigs (Boss Timers & Tools) for Retail, Forever, Classic and Classic progression. Its TOC also declares TBC Anniversary.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="curseforge",["label"]="CurseForge — LittleWigs",["url"]="https://www.curseforge.com/wow/addons/littlewigs",["primary"]=false,["note"]="BigWigs plugin for dungeon and delve bosses. Requires BigWigs and feeds the same bars and stages, so the BigWigs row covers it; no separate RM connection.",["families"]={"retail","era","progression","tbc"}},{["provider"]="github",["label"]="GitHub",["url"]="https://github.com/BigWigsMods/BigWigs",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info5086-BigWigsBossmods.html",["primary"]=false,["note"]="Official project page. Publisher lists Retail, Classic Era, TBC, Wrath and Cataclysm Classic. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"retail","era","tbc","progression"}},{["provider"]="wago",["label"]="Wago Addons",["url"]="https://addons.wago.io/addons/bigwigs",["primary"]=false,["note"]="Official project page. This page requires JavaScript; edition metadata was not independently readable.",["families"]={}}},
  ["Titan"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/titan-panel",["primary"]=true,["note"]="Titan Panel for Retail, Forever, Mists Classic, Classic and Classic TBC.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info8092-TitanPanel.html",["primary"]=false,["note"]="Official project page. Publisher lists Retail and Classic Era. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"retail","era"}}},
  ["WowLua"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/wowlua",["primary"]=true,["note"]="Retail, Classic Era, TBC and Mists Classic; release 1.1.7 declares interface 50500 for Mists.",["families"]={"retail","era","tbc","progression"}}},
+ ["SmartTotem"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/smarttotem",["primary"]=true,["note"]="Forever and TBC. Other editions are unverified.",["families"]={"forever","tbc"}}},
+ ["DaylightUI"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/daylightui",["primary"]=true,["note"]="Forever only. A full UI suite; RM reads the bars of its Action Bars module.",["families"]={"forever"}},{["provider"]="wago",["label"]="Wago Addons",["url"]="https://addons.wago.io/addons/daylightui",["primary"]=false,["note"]="Official project page. Publisher lists Forever. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"forever"}}},
 }
 local scopes={
  ["ExtendedCharacterStats"]={["families"]={"era","tbc","progression"},["progression"]={"wrath"},["interfaceRanges"]={}},
@@ -103,6 +107,8 @@ local scopes={
  ["BigWigs"]={["families"]={"era","tbc","progression"},["progression"]={"wrath","cata","mists"},["interfaceRanges"]={}},
  ["Titan"]={["families"]={"retail","forever","era","tbc","progression"},["progression"]={"mists"},["interfaceRanges"]={}},
  ["WowLua"]={["families"]={"retail","era","tbc","progression"},["progression"]={"wrath","mists"},["interfaceRanges"]={}},
+ ["SmartTotem"]={["families"]={"forever","tbc"},["interfaceRanges"]={}},
+ ["DaylightUI"]={["families"]={"forever"},["interfaceRanges"]={}},
 }
 -- END GENERATED INTEGRATION PROJECTS
 

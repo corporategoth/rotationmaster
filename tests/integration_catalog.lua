@@ -6,7 +6,7 @@ local test, finish = F.suite()
 local expected = {
     'ExtendedCharacterStats', 'MobInfo2', '!!!LuaWorkbench', 'WowLua', 'WeakAuras', 'ForeverAuras', 'Masque', 'Questie',
     'DBM-Core', 'BigWigs', 'Titan', 'ElvUI', 'Bartender4', 'ButtonForge', 'LUI', 'Dominos', 'AzeriteUI', 'AzeriteUI6',
-    'EllesmereUIActionBars', 'FarmingBar', 'TotemTimers'
+    'EllesmereUIActionBars', 'FarmingBar', 'TotemTimers', 'SmartTotem', 'DaylightUI'
 }
 
 local function fixture(legacy)

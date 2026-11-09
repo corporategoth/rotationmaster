@@ -10329,6 +10329,18 @@ T["Show the seconds until each prediction is cast"] = 3640
 T["Show, over each predicted icon, how many seconds it would be cast after the first recommendation, or from now when nothing is ready yet."] = 3641
 -- d5ca0bbe
 T["{unit} {{!are|are not}} {kind}"] = 3642
+-- 2b8c08e0
+-- Context: Name of the addon "SmartTotem" shown in the Integrations settings list; stays unchanged.
+T["SmartTotem"] = 3643
+-- c388867b
+-- Context: Name of the addon "DaylightUI" shown in the Integrations settings list; stays unchanged.
+T["DaylightUI"] = 3644
+-- fb213c4c
+T["Forever and TBC. Other editions are unverified."] = 3645
+-- 336d1244
+T["Forever only. A full UI suite; RM reads the bars of its Action Bars module."] = 3646
+-- d4308367
+T["Official project page. Publisher lists Forever. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 3647
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

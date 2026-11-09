@@ -2308,6 +2308,142 @@
           "https://www.curseforge.com/wow/addons/wowlua/files/7968152"
         ]
       }
+    },
+    "SmartTotem": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/smarttotem",
+          "primary": true,
+          "note": "Forever and TBC. Other editions are unverified.",
+          "families": [
+            "forever",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact SmartTotem project search on curseforge (2026-11-08)",
+          "evidence": [
+            "Project page browsed 2026-11-08: game versions 1.60.1, 2.5.6 and 2.5.5 (Forever, TBC); no source, Wago or WoWInterface link listed.",
+            "Installed TOC (SmartTotem 3.3.29, author Meego) says Interface 20506, 16001.",
+            "https://www.curseforge.com/wow/addons/smarttotem"
+          ]
+        },
+        "wowinterface": {
+          "status": "not_found",
+          "query": "https://www.wowinterface.com/downloads/search.php?search=SmartTotem",
+          "evidence": [
+            "HTTP 200 on 2026-11-08: Sorry - no matches."
+          ]
+        },
+        "wago": {
+          "status": "not_found",
+          "query": "https://addons.wago.io/addons/smarttotem",
+          "evidence": [
+            "HTTP 404 on 2026-11-08; the CurseForge page links no Wago project."
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "https://hub.wowup.io/addons/search/<forever|burningCrusade>?query=SmartTotem&limit=10",
+          "evidence": [
+            "HTTP 200 on 2026-11-08 for forever and burningCrusade: {\"addons\":[],\"count\":0}."
+          ]
+        },
+        "github": {
+          "status": "not_found",
+          "query": "https://api.github.com/search/repositories?q=SmartTotem+in:name",
+          "evidence": [
+            "2026-11-08: four repositories named smarttotem, none a WoW addon (two university kiosk projects, a PHP server, an EDDI fork); the CurseForge license is All Rights Reserved and links no source."
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "forever",
+          "tbc"
+        ],
+        "evidence": [
+          "Installed TOC Interface 20506, 16001 and CurseForge game versions 1.60.1, 2.5.6, 2.5.5 (2026-11-08).",
+          "https://www.curseforge.com/wow/addons/smarttotem"
+        ]
+      }
+    },
+    "DaylightUI": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/daylightui",
+          "primary": true,
+          "note": "Forever only. A full UI suite; RM reads the bars of its Action Bars module.",
+          "families": [
+            "forever"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/daylightui",
+          "primary": false,
+          "note": "Official project page. Publisher lists Forever. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "forever"
+          ],
+          "provider": "wago"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact DaylightUI project search on curseforge (2026-11-08)",
+          "evidence": [
+            "Project page browsed 2026-11-08: owner Dayliiiiight (DaylightUI Team), game version 1.60.1, latest main file v1.6.3-forever.",
+            "https://www.curseforge.com/wow/addons/daylightui"
+          ]
+        },
+        "wowinterface": {
+          "status": "not_found",
+          "query": "https://www.wowinterface.com/downloads/search.php?search=DaylightUI",
+          "evidence": [
+            "HTTP 200 on 2026-11-08: Sorry - no matches."
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "https://addons.wago.io/addons/daylightui",
+          "evidence": [
+            "HTTP 200 on 2026-11-08: Wago data page names DaylightUI, summary 'A full UI Suite', source_url https://github.com/dayightt/DaylightUI.",
+            "https://addons.wago.io/addons/daylightui"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "https://hub.wowup.io/addons/search/forever?query=DaylightUI&limit=10",
+          "evidence": [
+            "HTTP 200 on 2026-11-08: {\"addons\":[],\"count\":0}."
+          ]
+        },
+        "github": {
+          "status": "unverified",
+          "query": "https://github.com/dayightt/DaylightUI (Wago source_url) and https://api.github.com/search/repositories?q=DaylightUI+in:name",
+          "evidence": [
+            "2026-11-08: the repository Wago names returned HTTP 404 and the name search found no public repository; it may be private or moved."
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "forever"
+        ],
+        "evidence": [
+          "CurseForge lists game version 1.60.1 only and describes a suite built for WoW: Forever (2026-11-08).",
+          "https://www.curseforge.com/wow/addons/daylightui"
+        ]
+      }
     }
   }
 }
