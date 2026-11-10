@@ -4959,9 +4959,9 @@ addon.translation = {
 [1466] = "적용하지 않아도 즉시 미리보기 창을 화면 가운데로 되돌리고 아이콘을 64픽셀로 복원합니다. 다른 대기 중인 설정은 유지됩니다.",
 -- 10d580ca English: Lock position and size
 [1467] = "위치 및 크기 잠금",
--- 0e556ee1 English: Open General settings
+-- 17f58169 English: Open Preview settings
 -- Context: Entry in the preview window's right-click menu: opens the General settings page.
-[1468] = "일반 설정 열기",
+[1468] = "미리보기 설정 열기",
 -- f65ed2ec English: View Changes
 -- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
 --     differs between the saved and unsaved version.
@@ -8126,10 +8126,10 @@ addon.translation = {
 -- Context: Section title in the rotation editor help for the cards that combine conditions and the
 --     state they show.
 [2449] = "조건 및 상태",
--- eacf49cb English: Configure recommendation timing, automatic switching, history, preview and
---     profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show
---     numeric values, and fields validate before saving.
-[2450] = "추천 시점, 자동 전환, 기록, 미리보기, 프로필 기본 강조를 설정합니다. 이름표는 왼쪽에 있습니다. 체크박스는 옵션을 켜고 끄며, 슬라이더는 숫자 값을 보여 주고, 입력란은 저장 전에 검증됩니다.",
+-- 01b5fc07 English: Configure recommendation timing, automatic switching, history and profile
+--     highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric
+--     values, and fields validate before saving.
+[2450] = "추천 시점, 자동 전환, 기록, 프로필 기본 강조를 설정합니다. 이름표는 왼쪽에 있습니다. 체크박스는 옵션을 켜고 끄며, 슬라이더는 숫자 값을 보여 주고, 입력란은 저장 전에 검증됩니다.",
 -- 63ee762f English: Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry
 --     that card and all following siblings. A branch always carries its children. Use Up / Down on
 --     the left to move one card. Duplicate copies the card and the red trash can deletes it.
@@ -8629,21 +8629,21 @@ addon.translation = {
 --     results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing
 --     scales all icons while preserving their square shape and the window ratio.
 [2569] = "앞으로의 추천 개수를 0(숨김)에서 5 사이의 정수로 선택하세요. 미리보기 창의 유일한 스위치로, 값이 0보다 크면 표시되고 0이면 숨겨지며 창에는 닫기 버튼이 없습니다. 미리보기는 현재 우선순위 결과를 보여 줄 뿐, 앞으로의 재사용 대기시간이나 전투를 시뮬레이션하지 않습니다. 아이콘은 64픽셀로 시작하며, 크기를 조절하면 정사각형 모양과 창 비율을 유지한 채 모든 아이콘이 함께 조절됩니다.",
--- 9a03212a English: Adjust the preview background opacity without fading its icons. At zero only
+-- 49b05d75 English: Adjust the preview background opacity without fading its icons. At zero only
 --     the icons remain, the hidden background does not intercept blank-space clicks and the resize
 --     grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity
---     in General to resize it.
-[2570] = "아이콘을 흐리게 하지 않고 미리보기 배경의 불투명도를 조절합니다. 0이면 아이콘만 남습니다. 숨겨진 배경은 빈 공간의 클릭을 가로채지 않고 크기 조절 손잡이도 사용할 수 없습니다. 잠금 해제된 미리보기는 여전히 아이콘을 끌어 옮길 수 있습니다. 크기를 조절하려면 일반에서 불투명도를 되돌리세요.",
--- 7884cae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
+--     in Preview to resize it.
+[2570] = "아이콘을 흐리게 하지 않고 미리보기 배경의 불투명도를 조절합니다. 0이면 아이콘만 남습니다. 숨겨진 배경은 빈 공간의 클릭을 가로채지 않고 크기 조절 손잡이도 사용할 수 없습니다. 잠금 해제된 미리보기는 여전히 아이콘을 끌어 옮길 수 있습니다. 크기를 조절하려면 미리보기에서 불투명도를 되돌리세요.",
+-- 88479ae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
 --     it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved
 --     or resized and its background lets clicks through. Right-click an icon (or the background
 --     while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take
---     effect immediately and are saved without Apply. Other pending General edits remain unchanged.
-[2571] = "잠금 해제 상태에서는 아무 아이콘이나 배경을 끌어 미리보기를 옮기고, 마우스를 올리면 오른쪽 아래 모서리에 나타나는 손잡이로 크기를 조절합니다. 잠금 상태에서는 옮기거나 크기를 조절할 수 없고 배경이 클릭을 통과시킵니다. 아이콘(잠금 해제 상태라면 배경)을 오른쪽 클릭하면 잠금, 잠금 해제 또는 이 설정 열기 메뉴가 나타납니다. 잠금과 해제는 즉시 적용되며 적용 없이 저장됩니다. 일반의 다른 대기 중인 편집은 바뀌지 않습니다.",
--- 110dd6c2 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
---     Reset share one row below the opacity slider. Changing direction keeps icons square and
---     adjusts the window ratio.
-[2572] = "미리보기 아이콘을 가로(기본값) 또는 세로로 배치합니다. 불투명도 슬라이더 아래 한 줄에 잠금, 방향, 초기화가 있습니다. 방향을 바꿔도 아이콘은 정사각형을 유지하며 창 비율이 조정됩니다.",
+--     effect immediately and are saved without Apply. Other pending Preview edits remain unchanged.
+[2571] = "잠금 해제 상태에서는 아무 아이콘이나 배경을 끌어 미리보기를 옮기고, 마우스를 올리면 오른쪽 아래 모서리에 나타나는 손잡이로 크기를 조절합니다. 잠금 상태에서는 옮기거나 크기를 조절할 수 없고 배경이 클릭을 통과시킵니다. 아이콘(잠금 해제 상태라면 배경)을 오른쪽 클릭하면 잠금, 잠금 해제 또는 이 설정 열기 메뉴가 나타납니다. 잠금과 해제는 즉시 적용되며 적용 없이 저장됩니다. 미리보기의 다른 대기 중인 편집은 바뀌지 않습니다.",
+-- 6e8109b0 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
+--     Reset share one row below the color. Changing direction keeps icons square and adjusts the
+--     window ratio.
+[2572] = "미리보기 아이콘을 가로(기본값) 또는 세로로 배치합니다. 색상 아래 한 줄에 잠금, 방향, 초기화가 있습니다. 방향을 바꿔도 아이콘은 정사각형을 유지하며 창 비율이 조정됩니다.",
 -- 46417b1b English: This icon previews the selected profile effect, color, size, anchor and
 --     offsets. Previewing an effect does not save the draft or change the spell being recommended.
 [2573] = "이 아이콘은 선택한 프로필 효과, 색상, 크기, 기준점, 오프셋을 미리 보여 줍니다. 효과를 미리 봐도 초안이 저장되거나 추천 주문이 바뀌지 않습니다.",
@@ -8995,11 +8995,11 @@ addon.translation = {
 --     preference for the next source-editor opening; it does not switch a selected external editor.
 --     Show line numbers under the editor heading applies to every provider.
 [2657] = "문법 강조는 기본 Lua 편집기에만 적용됩니다. 적용하면 다음에 원본 편집기를 열 때 쓸 설정이 저장되며, 선택한 외부 편집기를 바꾸지는 않습니다. 편집기 제목 아래의 줄 번호 표시는 모든 제공자에 적용됩니다.",
--- eb084da9 English: Enable separately installed Masque here and Apply. General > Preview then
+-- 84e0b9c0 English: Enable separately installed Masque here and Apply. The Preview tab then
 --     provides a Skin dropdown that updates the preview immediately. Masque owns the skin
 --     selection; /masque opens its other settings. The preview window keeps its native appearance.
 --     Missing or incompatible APIs and provider errors retain the native preview.
-[2658] = "따로 설치한 Masque를 여기서 켜고 적용하세요. 그러면 일반 > 미리보기에 스킨 드롭다운이 생기며, 미리보기가 즉시 갱신됩니다. 스킨 선택은 Masque가 관리하며, /masque로 다른 설정을 엽니다. 미리보기 창 자체는 기본 모양을 유지합니다. API가 없거나 호환되지 않거나 제공자 오류가 나면 기본 미리보기를 유지합니다.",
+[2658] = "따로 설치한 Masque를 여기서 켜고 적용하세요. 그러면 미리보기 탭에 스킨 드롭다운이 생기며, 미리보기가 즉시 갱신됩니다. 스킨 선택은 Masque가 관리하며, /masque로 다른 설정을 엽니다. 미리보기 창 자체는 기본 모양을 유지합니다. API가 없거나 호환되지 않거나 제공자 오류가 나면 기본 미리보기를 유지합니다.",
 -- 34199d23 English: Enable Masque in Integrations to choose a skin. Skin changes update the open
 --     preview immediately and are saved by Masque, independently of Apply or Discard. Without
 --     enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons
@@ -9031,11 +9031,11 @@ addon.translation = {
 --     membership. A known nonmember is false; unavailable native data stays unavailable, including
 --     under NOT.
 [2663] = "선택하면 공격대 소속만 확인합니다. 선택하지 않으면 파티 또는 공격대 소속을 확인합니다. 소속이 아닌 것으로 알려지면 거짓이며, 사용할 수 없는 기본 데이터는 NOT 아래에서도 사용할 수 없음으로 남습니다.",
--- d44133b4 English: Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item
---     Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page
---     controls. Search and filters belong to the current page. Built In entries remain read-only;
---     Duplicate creates an editable copy.
-[2664] = "탭을 선택해 로테이션, 일반, 조건, 함수, 효과, 아이템 세트, 알림, 프로필, 연동을 둘러보세요. 열린 창마다 페이지 컨트롤에 대한 자체 도움말이 있습니다. 검색과 필터는 현재 페이지에 적용됩니다. 기본 제공 항목은 읽기 전용이며, 복제하면 편집 가능한 사본이 만들어집니다.",
+-- b436f664 English: Choose tabs to browse Rotations, General, Preview, Conditions, Functions,
+--     Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own
+--     Help for page controls. Search and filters belong to the current page. Built In entries
+--     remain read-only; Duplicate creates an editable copy.
+[2664] = "탭을 선택해 로테이션, 일반, 미리보기, 조건, 함수, 효과, 아이템 세트, 알림, 프로필, 연동을 둘러보세요. 열린 창마다 페이지 컨트롤에 대한 자체 도움말이 있습니다. 검색과 필터는 현재 페이지에 적용됩니다. 기본 제공 항목은 읽기 전용이며, 복제하면 편집 가능한 사본이 만들어집니다.",
 -- 28510b80 English: Scale changes the whole workbench and its child windows from 70% to 130%. Drag
 --     the top-left slider or enter an integer percentage and press Enter. Escape restores the saved
 --     scale text. Drag the title bar to move; drag the lower-right corner to resize.
@@ -12161,4 +12161,8 @@ addon.translation = {
 --     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
 --     background art keeps its own colors.
 [3651] = "단순한 미리보기 상자의 색상을 선택하세요. 배경 그림이 꺼져 있고 투명도가 0보다 클 때 사용되며, 알파 채널은 투명도와 곱해집니다. 배경 그림은 자체 색상을 유지합니다.",
+-- 75205de8 English: Forecast
+[3652] = "예측",
+-- 000e5077 English: Configure the preview window and the forecast.
+[3653] = "미리보기 창과 예측을 설정합니다.",
 }

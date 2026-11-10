@@ -69,7 +69,7 @@ local function fixture(options)
     a.db.global.diagnosticCacheBypass = options.direct == true
     f.load('Diagnostics/cache_mode.lua')
     assert(a:InitializeCacheDiagnosticMode(a.db.global))
-    local p = a:OpenNativeSettings(parent, 'General')
+    local p = a:OpenNativeSettings(parent, options.page or 'Preview')
     return f, a, p, calls
 end
 
@@ -142,7 +142,7 @@ test('the preview right-click lock keeps an open General page field and draft in
         a:RefreshPreviewWindow()
         local window = a.nextWindow
         a.GlowClear = function() end
-        p.fields.disable_buttons:Click()
+        p.fields.preview_target_health:Click()
         assert(p:IsSettingsDraftDirty())
         window:MenuEntries()[2].func()
 
@@ -183,8 +183,8 @@ end)
 
 test('immediate lock preserves unrelated invalid drafts and retires old click handlers', function()
     local _, a, p = fixture()
-    p.fields.disable_buttons:Click()
-    local draft = p:SettingsData().profile.disable_buttons
+    p.fields.preview_target_health:Click()
+    local draft = p:SettingsData().profile.preview_target_health
 
     local input = p:Edit('unrelated', 'Unrelated', '', function() return nil end, function()
         error('must not flush')
@@ -196,8 +196,8 @@ test('immediate lock preserves unrelated invalid drafts and retires old click ha
     assert(a.db.profile.preview_locked == true and p:IsSettingsDraftDirty())
 
     assert(
-        p:SettingsData().profile.disable_buttons == draft
-            and not a.db.profile.disable_buttons
+        p:SettingsData().profile.preview_target_health == draft
+            and not a.db.profile.preview_target_health
             and input:GetText() == 'invalid'
     )
 
@@ -215,27 +215,38 @@ test('immediate lock preserves unrelated invalid drafts and retires old click ha
     assert(a.db.profile.preview_locked == false)
 end)
 
-test('General separates History and Preview and only documents current preview controls', function()
-    local _, a, p = fixture()
-    assert(text(p, 'History') and text(p, 'Preview'))
-    assert(not text(p, 'History and preview'))
-    local found = {}
+test('General keeps History and the Preview tab holds the preview and forecast controls and their help', function()
+    local _, a, general = fixture({ page = 'General' })
+    assert(text(general, 'History') and not text(general, 'Preview') and not text(general, 'Forecast'))
+    assert(not general.fields.preview_spells and not general.fields.forecast and not general.fields.preview_skin)
+
+    local preview = a:OpenNativeSettings(general.frame:GetParent(), 'Preview')
+    assert(text(preview, 'Preview') and text(preview, 'Forecast') and not text(preview, 'History'))
+    assert(preview.fields.preview_spells and preview.fields.forecast and preview.fields.preview_skin)
+
+    local general_help, preview_help = {}, {}
 
     for _, row in ipairs(a:GetGeneralOptionHelp()) do
-        found[row.id] = true
+        general_help[row.id] = true
     end
 
-    assert(found.preview_skin and found.preview_sample and not found.preview_masque and not found.masque_settings)
-    assert(not p.fields.preview_masque and not p.fields.masque_settings)
+    for _, row in ipairs(a:GetPreviewOptionHelp()) do
+        preview_help[row.id] = true
+    end
+
+    assert(not general_help.preview_skin and not general_help.preview_spells and not general_help.forecast)
+    assert(preview_help.preview_skin and preview_help.preview_sample and preview_help.forecast)
+    assert(not preview_help.preview_masque and not preview_help.masque_settings)
+    assert(not preview.fields.preview_masque and not preview.fields.masque_settings)
 end)
 
 test('skin selection immediately uses provider authority and leaves unrelated General draft intact', function()
     local _, a, p, c = fixture({ enabled = true })
-    p.fields.disable_buttons:Click()
+    p.fields.preview_target_health:Click()
     assert(p:IsSettingsDraftDirty())
     choose(p, 'Test Skin')
     assert(a:GetPreviewSkin() == 'Test Skin' and c.skin == 1 and c.refresh == 0)
-    assert(a.db.profile.preview_masque and p:IsSettingsDraftDirty() and not a.db.profile.disable_buttons)
+    assert(a.db.profile.preview_masque and p:IsSettingsDraftDirty() and not a.db.profile.preview_target_health)
     p.fields.cancel:Click()
     assert(a:GetPreviewSkin() == 'Test Skin' and a.db.profile.preview_masque)
 end)
@@ -362,7 +373,7 @@ end)
 test(
     'General rows: Enable trio in thirds, captionless preview beside Effect and Magnification, pad under the swatch, Detailed Profiling after Log Level',
     function()
-        local _, _, p = fixture()
+        local _, _, p = fixture({ page = 'General' })
 
         local function at(c)
             local _, x, y = c:GetPoint()
@@ -433,7 +444,7 @@ test(
 
 -- Observations are read directly by default and the checkbox turns the cache ON (9d5c7bf7): checked means caching is requested.
 test('cache checkbox alone distinguishes active saved mode from a pending reload', function()
-    local _, a, p = fixture()
+    local _, a, p = fixture({ page = 'General' })
     local control = p.fields.cpu_cache_bypass
     assert(control)
     assert(control:GetText() == 'Enable observation cache (reload required)' and control:GetChecked())
@@ -453,7 +464,7 @@ test('cache checkbox alone distinguishes active saved mode from a pending reload
 end)
 
 test('cache save failure and released click preserve mode and caption', function()
-    local _, a, p = fixture()
+    local _, a, p = fixture({ page = 'General' })
     local control = p.fields.cpu_cache_bypass
     a.SetCacheDiagnosticMode = function() return false end
     control:Click()
@@ -473,7 +484,7 @@ end)
 test(
     'loaded direct reads show the cache unchecked and requesting caching reports pending without a second text row',
     function()
-        local _, a, p = fixture({ direct = true })
+        local _, a, p = fixture({ direct = true, page = 'General' })
         local control = p.fields.cpu_cache_bypass
         assert(not control:GetChecked() and control:GetText() == 'Enable observation cache (reload required)')
         control:Click()

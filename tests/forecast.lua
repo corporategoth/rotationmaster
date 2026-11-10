@@ -865,32 +865,32 @@ test(
     end
 )
 
-test('the chance of a miss, from the levels and the hit the player has, costs a share of the confidence', function()
+test('the chance of a miss, from the levels, costs a share of the confidence', function()
     local f, a, platform = client()
     local flags = function(_, _, kind) return kind == 'enemy' end
 
     platform.GetClientFamily = function() return 'forever' end
     platform.GetUnitFlagObservation = flags
 
+    local targetLevel = 63
+
     platform.GetUnitLevelObservation = function(_, unit)
-        return { exists = true, level = unit == 'player' and 60 or 63 }
+        return { exists = true, level = unit == 'player' and 60 or targetLevel }
     end
 
-    e = f.env
-    e.GetHitModifier = function() return 2 end
     a.SpellEffectData = { forever = { rows = '500=h:1;501=h:32' } }
     a.Forecast:ResetEffects()
 
-    -- Physical: 8% at three levels above, less 2% of hit, half of it costs confidence.
+    -- Physical: 8% at three levels above, half of it costs confidence.
     local slots = a.Forecast:Run({ { spell = B, action = true } }, 500, 1)
-    assert(math.abs(slots[1].confidence - 0.9 * (1 - 0.06 * 0.5)) < 1e-9, tostring(slots[1].confidence))
+    assert(math.abs(slots[1].confidence - 0.9 * (1 - 0.08 * 0.5)) < 1e-9, tostring(slots[1].confidence))
 
-    -- A spell: 17%, less the spell hit and the rating.
-    e.GetSpellHitModifier = function() return 6 end
-    e.GetCombatRatingBonus = function() return 4 end
-    e.CR_HIT_SPELL = 8
+    -- A spell: 17% at three levels above, and 4% at the same level.
     slots = a.Forecast:Run({ { spell = B, action = true } }, 501, 1)
-    assert(math.abs(slots[1].confidence - 0.9 * (1 - 0.07 * 0.5)) < 1e-9, tostring(slots[1].confidence))
+    assert(math.abs(slots[1].confidence - 0.9 * (1 - 0.17 * 0.5)) < 1e-9, tostring(slots[1].confidence))
+    targetLevel = 60
+    slots = a.Forecast:Run({ { spell = B, action = true } }, 501, 1)
+    assert(math.abs(slots[1].confidence - 0.9 * (1 - 0.04 * 0.5)) < 1e-9, tostring(slots[1].confidence))
 
     -- Not aimed at an enemy, or no enemy to miss, or Retail: nothing.
     assert(math.abs(a.Forecast:Run({ { spell = B, action = true } }, C, 1)[1].confidence - 0.9) < 1e-9)

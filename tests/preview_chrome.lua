@@ -257,7 +257,7 @@ test('right-click menu offers lock and settings only and never hides the window'
             and m.items[1].isTitle
             and m.items[2].text == 'Lock position and size'
             and m.items[2].checked == false
-            and m.items[3].text == 'Open General settings'
+            and m.items[3].text == 'Open Preview settings'
     )
 
     for _, item in ipairs(m.items) do
@@ -278,7 +278,7 @@ test('right-click menu offers lock and settings only and never hides the window'
     m.items[2].func()
     assert(a.db.profile.preview_locked == false and not w.locked and w.frame.mouseEnabled == true)
     m.items[3].func()
-    assert(opened == 'General' and a.nextWindow == w and w.frame:IsShown())
+    assert(opened == 'Preview' and a.nextWindow == w and w.frame:IsShown())
 end)
 
 test('visibility follows Preview Spells alone', function()

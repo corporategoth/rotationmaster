@@ -18,6 +18,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local sections = {
     { value = "Rotations", text = L["Rotations"] },
     { value = "General", text = L["General"] },
+    { value = "Preview", text = L["Preview"] },
     { value = "Metrics", text = L["Metrics"] },
     { value = "Conditions", text = L["Conditions"] },
     { value = "Functions", text = L["Functions"] },
@@ -159,6 +160,7 @@ end
 local descriptions = {
     Rotations = L["Browse, view and edit rotations."],
     General = L["Configure recommendations and display."],
+    Preview = L["Configure the preview window and the forecast."],
     Metrics = L["See how closely you follow the advice and how much it matters."],
     Conditions = L["Organize condition types and custom conditions."],
     Functions = L['Browse packaged helpers and edit reusable custom Lua functions.'],

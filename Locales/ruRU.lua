@@ -4959,9 +4959,9 @@ addon.translation = {
 [1466] = "Сразу вернуть окно предпросмотра в центр экрана и восстановить иконки 64 пикселя без нажатия «Применить». Другие ожидающие настройки сохраняются.",
 -- 10d580ca English: Lock position and size
 [1467] = "Закрепить положение и размер",
--- 0e556ee1 English: Open General settings
+-- 17f58169 English: Open Preview settings
 -- Context: Entry in the preview window's right-click menu: opens the General settings page.
-[1468] = "Открыть общие настройки",
+[1468] = "Открыть настройки предпросмотра",
 -- f65ed2ec English: View Changes
 -- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
 --     differs between the saved and unsaved version.
@@ -8126,10 +8126,10 @@ addon.translation = {
 -- Context: Section title in the rotation editor help for the cards that combine conditions and the
 --     state they show.
 [2449] = "Условия и состояние",
--- eacf49cb English: Configure recommendation timing, automatic switching, history, preview and
---     profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show
---     numeric values, and fields validate before saving.
-[2450] = "Настройте время рекомендаций, автопереключение, историю, предпросмотр и подсветку профиля по умолчанию. Подписи — слева. Флажки включают параметры, ползунки показывают числовые значения, а поля проверяются перед сохранением.",
+-- 01b5fc07 English: Configure recommendation timing, automatic switching, history and profile
+--     highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric
+--     values, and fields validate before saving.
+[2450] = "Настройте время рекомендаций, автопереключение, историю и подсветку профиля по умолчанию. Подписи — слева. Флажки включают параметры, ползунки показывают числовые значения, а поля проверяются перед сохранением.",
 -- 63ee762f English: Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry
 --     that card and all following siblings. A branch always carries its children. Use Up / Down on
 --     the left to move one card. Duplicate copies the card and the red trash can deletes it.
@@ -8629,21 +8629,21 @@ addon.translation = {
 --     results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing
 --     scales all icons while preserving their square shape and the window ratio.
 [2569] = "Выберите целое число предстоящих рекомендаций — от нуля (скрыто) до пяти. Это единственный переключатель окна предпросмотра: оно показано, пока значение больше нуля, и скрыто при нуле; кнопки закрытия у окна нет. Предпросмотр показывает текущие результаты приоритетов, а не симуляцию будущих восстановлений или боя. Иконки изначально 64 пикселя; изменение размера масштабирует все иконки, сохраняя их квадратную форму и пропорции окна.",
--- 9a03212a English: Adjust the preview background opacity without fading its icons. At zero only
+-- 49b05d75 English: Adjust the preview background opacity without fading its icons. At zero only
 --     the icons remain, the hidden background does not intercept blank-space clicks and the resize
 --     grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity
---     in General to resize it.
-[2570] = "Настраивает непрозрачность фона предпросмотра, не затемняя иконки. При нуле остаются только иконки: скрытый фон не перехватывает щелчки по пустому месту, а маркер изменения размера недоступен; открепленный предпросмотр по-прежнему можно перетаскивать за иконки. Чтобы изменить размер, верните непрозрачность в «Общих».",
--- 7884cae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
+--     in Preview to resize it.
+[2570] = "Настраивает непрозрачность фона предпросмотра, не затемняя иконки. При нуле остаются только иконки: скрытый фон не перехватывает щелчки по пустому месту, а маркер изменения размера недоступен; открепленный предпросмотр по-прежнему можно перетаскивать за иконки. Чтобы изменить размер, верните непрозрачность в «Предпросмотре».",
+-- 88479ae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
 --     it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved
 --     or resized and its background lets clicks through. Right-click an icon (or the background
 --     while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take
---     effect immediately and are saved without Apply. Other pending General edits remain unchanged.
-[2571] = "Открепленный предпросмотр можно перемещать, перетаскивая за любую иконку или фон, и менять его размер за маркер, который появляется в правом нижнем углу при наведении. Закрепленный нельзя переместить или изменить в размере, а его фон пропускает щелчки. Щелчок правой кнопкой по иконке (или по фону, если окно откреплено) открывает меню, чтобы закрепить, открепить или открыть эти настройки. Закрепление и открепление действуют сразу и сохраняются без нажатия «Применить». Другие ожидающие правки в «Общих» не меняются.",
--- 110dd6c2 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
---     Reset share one row below the opacity slider. Changing direction keeps icons square and
---     adjusts the window ratio.
-[2572] = "Расположить иконки предпросмотра по горизонтали (по умолчанию) или по вертикали. «Закрепить», «Направление» и «Сбросить» находятся в одной строке под ползунком непрозрачности. Смена направления сохраняет квадратные иконки и меняет пропорции окна.",
+--     effect immediately and are saved without Apply. Other pending Preview edits remain unchanged.
+[2571] = "Открепленный предпросмотр можно перемещать, перетаскивая за любую иконку или фон, и менять его размер за маркер, который появляется в правом нижнем углу при наведении. Закрепленный нельзя переместить или изменить в размере, а его фон пропускает щелчки. Щелчок правой кнопкой по иконке (или по фону, если окно откреплено) открывает меню, чтобы закрепить, открепить или открыть эти настройки. Закрепление и открепление действуют сразу и сохраняются без нажатия «Применить». Другие ожидающие правки в «Предпросмотре» не меняются.",
+-- 6e8109b0 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
+--     Reset share one row below the color. Changing direction keeps icons square and adjusts the
+--     window ratio.
+[2572] = "Расположить иконки предпросмотра по горизонтали (по умолчанию) или по вертикали. «Закрепить», «Направление» и «Сбросить» находятся в одной строке под цветом. Смена направления сохраняет квадратные иконки и меняет пропорции окна.",
 -- 46417b1b English: This icon previews the selected profile effect, color, size, anchor and
 --     offsets. Previewing an effect does not save the draft or change the spell being recommended.
 [2573] = "Эта иконка показывает выбранные в профиле эффект, цвет, размер, точку привязки и смещения. Предпросмотр эффекта не сохраняет черновик и не меняет рекомендуемое заклинание.",
@@ -8995,11 +8995,11 @@ addon.translation = {
 --     preference for the next source-editor opening; it does not switch a selected external editor.
 --     Show line numbers under the editor heading applies to every provider.
 [2657] = "Подсветка синтаксиса применяется только во встроенном редакторе Lua. «Применить» сохраняет эту настройку для следующего открытия редактора исходного кода; выбранный внешний редактор не переключается. «Показывать номера строк» под заголовком редактора действует для всех поставщиков.",
--- eb084da9 English: Enable separately installed Masque here and Apply. General > Preview then
+-- 84e0b9c0 English: Enable separately installed Masque here and Apply. The Preview tab then
 --     provides a Skin dropdown that updates the preview immediately. Masque owns the skin
 --     selection; /masque opens its other settings. The preview window keeps its native appearance.
 --     Missing or incompatible APIs and provider errors retain the native preview.
-[2658] = "Включите здесь отдельно установленный Masque и нажмите «Применить». Тогда в «Общие > Предпросмотр» появится список «Обложка», который сразу обновляет предпросмотр. Выбором обложки управляет Masque; /masque открывает его другие настройки. Окно предпросмотра сохраняет свой встроенный вид. При отсутствии или несовместимости API и ошибках поставщика сохраняется встроенный предпросмотр.",
+[2658] = "Включите здесь отдельно установленный Masque и нажмите «Применить». Тогда на вкладке «Предпросмотр» появится список «Обложка», который сразу обновляет предпросмотр. Выбором обложки управляет Masque; /masque открывает его другие настройки. Окно предпросмотра сохраняет свой встроенный вид. При отсутствии или несовместимости API и ошибках поставщика сохраняется встроенный предпросмотр.",
 -- 34199d23 English: Enable Masque in Integrations to choose a skin. Skin changes update the open
 --     preview immediately and are saved by Masque, independently of Apply or Discard. Without
 --     enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons
@@ -9031,11 +9031,11 @@ addon.translation = {
 --     membership. A known nonmember is false; unavailable native data stays unavailable, including
 --     under NOT.
 [2663] = "Если отмечено, проверяется только членство в рейде. Если не отмечено — членство в группе или рейде. Известный не-участник — ложь; недоступные встроенные данные остаются недоступными, в том числе под НЕ.",
--- d44133b4 English: Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item
---     Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page
---     controls. Search and filters belong to the current page. Built In entries remain read-only;
---     Duplicate creates an editable copy.
-[2664] = "Вкладки открывают «Ротации», «Общие», «Условия», «Функции», «Эффекты», «Комплекты предметов», «Оповещения», «Профили» и «Интеграции». У открытых панелей своя справка по элементам страницы. Поиск и фильтры относятся к текущей странице. Встроенные записи доступны только для чтения; «Дублировать» создаёт редактируемую копию.",
+-- b436f664 English: Choose tabs to browse Rotations, General, Preview, Conditions, Functions,
+--     Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own
+--     Help for page controls. Search and filters belong to the current page. Built In entries
+--     remain read-only; Duplicate creates an editable copy.
+[2664] = "Вкладки открывают «Ротации», «Общие», «Предпросмотр», «Условия», «Функции», «Эффекты», «Комплекты предметов», «Оповещения», «Профили» и «Интеграции». У открытых панелей своя справка по элементам страницы. Поиск и фильтры относятся к текущей странице. Встроенные записи доступны только для чтения; «Дублировать» создаёт редактируемую копию.",
 -- 28510b80 English: Scale changes the whole workbench and its child windows from 70% to 130%. Drag
 --     the top-left slider or enter an integer percentage and press Enter. Escape restores the saved
 --     scale text. Drag the title bar to move; drag the lower-right corner to resize.
@@ -12161,4 +12161,8 @@ addon.translation = {
 --     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
 --     background art keeps its own colors.
 [3651] = "Выберите цвет простой подложки предпросмотра. Он используется, когда фоновое изображение отключено, а непрозрачность больше нуля; его альфа-канал умножается на непрозрачность. Фоновое изображение сохраняет собственные цвета.",
+-- 75205de8 English: Forecast
+[3652] = "Прогноз",
+-- 000e5077 English: Configure the preview window and the forecast.
+[3653] = "Настройте окно предпросмотра и прогноз.",
 }

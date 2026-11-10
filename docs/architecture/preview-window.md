@@ -1,7 +1,7 @@
 # The preview window's background
 
 The preview window (`UI/preview.lua`) shows one to five recommended icons in a row or a column. When there are fewer recommendations than
-slots, the empty slots show the window's background. Three settings in General shape it (all per profile):
+slots, the empty slots show the window's background. Three settings on the Preview tab shape it (all per profile):
 
 | Setting | Key | Default | Effect |
 | --- | --- | --- | --- |

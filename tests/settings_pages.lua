@@ -5,7 +5,7 @@ local function fixture(product)
     local f=F.new(product);local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     local codecData,codecDeps=dofile('tests/fixtures/codec.lua')();a.RotationData=codecData;a.NewRotationCodec=function() return codecData.NewCodec(codecDeps) end
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.configPaneGeneration=1
-    for _,path in ipairs({'Platform/spells.lua','Data/catalog.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/cpu_profile.lua','UI/settings_general.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Platform/spells.lua','Data/catalog.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/cpu_profile.lua','UI/settings_general.lua','UI/settings_preview.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     local parent=create('Frame');parent:SetSize(1000,600)
     return f,parent
 end
@@ -123,7 +123,7 @@ test('the shell routes every built-in settings tab to reusable native forms',fun
     f.load('UI/config.lua')
     local shell=a:ShowConfig('General');assert(shell.nativePane and shell.pane.fields.poll)
     local initial=shell.pane;local stale=initial.fields.enable.scripts.OnClick
-    for _,key in ipairs({'Conditions','Effects','ItemSets','Announces','Profiles','General'}) do shell:SelectSection(key);assert(shell.nativePane and shell.pane.active and shell.settingsPanes[key]==shell.pane) end
+    for _,key in ipairs({'Conditions','Effects','ItemSets','Announces','Profiles','Preview','General'}) do shell:SelectSection(key);assert(shell.nativePane and shell.pane.active and shell.settingsPanes[key]==shell.pane) end
     assert(shell.pane==initial);stale();assert(a.db.profile.enable==nil)
     shell:Hide();assert(not initial.active and not initial.frame:IsShown())
 end)
@@ -241,14 +241,32 @@ test('General page help retains authored explanations without scattering questio
     local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
     assert(not p.fields.poll_help)
     local all=a:WorkbenchPageHelp('General');local fields={};for _,entry in ipairs(all) do fields[entry.title]=entry.text end
-    for _,caption in ipairs({'Enable','Polling Interval (seconds)','Idle Re-check Interval (seconds)','Auto-Switch Re-check Interval (seconds)','Live Status Update Frequency (seconds)','Minimap Icon','Default rotation view','Disable Bar Highlighting','Spell History Memory (seconds)','Combat History Memory (seconds)','Damage History Memory (seconds)','Preview Spells','Effect','Magnification','Highlight Color','Anchor','V','H','Log Level','Detailed Profiling'}) do assert(fields[caption],caption..' missing help') end
+    for _,caption in ipairs({'Enable','Polling Interval (seconds)','Idle Re-check Interval (seconds)','Auto-Switch Re-check Interval (seconds)','Live Status Update Frequency (seconds)','Minimap Icon','Default rotation view','Disable Bar Highlighting','Spell History Memory (seconds)','Combat History Memory (seconds)','Damage History Memory (seconds)','Effect','Magnification','Highlight Color','Anchor','V','H','Log Level','Detailed Profiling'}) do assert(fields[caption],caption..' missing help') end
     local order={};for i,entry in ipairs(all) do order[entry.title]=i end;assert(order['Disable Bar Highlighting']==order['Enable']+1 and order['Minimap Icon']==order['Disable Bar Highlighting']+1 and order['Polling Interval (seconds)']==order['Minimap Icon']+1 and order['Magnification']==order['Effect']+1)
+end)
+
+test('Preview help localizes whole field explanations in the visible control order',function()
+    local f,parent=fixture();local a=f.addon
+    local controls={'preview_spells','preview_opacity','preview_background','preview_color','preview_locked','preview_vertical','preview_reset','preview_skin','preview_sample',
+        'preview_title','preview_target_health','preview_readiness','preview_gray_unaffordable','forecast','forecast_confidence','forecast_percent','forecast_delay','forecast_clear'}
+    for _,row in ipairs(a:GetPreviewOptionHelp()) do if row.id then f.translations[row.text]='Translated field '..row.id end end
+    local p=a:OpenNativeSettings(parent,'Preview')
+    local found,last={},0
+    for index,entry in ipairs(a:GetPreviewOptionHelp()) do if entry.id then found[entry.id]={entry=entry,index=index} end end
+    for _,key in ipairs(controls) do
+        assert(p.fields[key],'test fixture did not expose actual control '..key)
+        local row=assert(found[key],'missing authored help for '..key)
+        assert(row.entry.text=='Translated field '..key,'field explanation bypassed localization: '..key)
+        assert(row.index>last,'help order differs from controls: '..key);last=row.index
+    end
+    local page={};for _,entry in ipairs(a:WorkbenchPageHelp('Preview')) do page[entry.title or '']=true end
+    assert(page['Preview Spells'] and page['Predict upcoming recommendations from the expected state'])
 end)
 
 test('General help localizes whole field explanations in the visible control order',function()
     local f,parent=fixture();local a=f.addon
     local controls={'enable','disable_buttons','minimap','poll','idle_poll','autoswitch_poll','live_config_update','rotation_view',
-        'spell_history','combat_history','damage_history','preview_spells','preview_opacity','preview_title','preview_locked','preview_vertical','preview_reset',
+        'spell_history','combat_history','damage_history',
         'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling','cpu_capture','cpu_report'}
     for _,row in ipairs(a:GetGeneralOptionHelp()) do if row.id then f.translations[row.text]='Translated field '..row.id end end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
@@ -835,7 +853,7 @@ test('effect and item rows show edits and reordering relative to the saved entri
     p.fields.undo:Click();assert(not p.fields.item1.rmUnsaved)
 end)
 test('preview spell count rounds drag values and rejects fractional raw input',function()
-    local f,parent=fixture();local a=f.addon;a.db.profile.preview_spells=1;local p=a:OpenNativeSettings(parent,'General')
+    local f,parent=fixture();local a=f.addon;a.db.profile.preview_spells=1;local p=a:OpenNativeSettings(parent,'Preview')
     p.fields.preview_spells:SetValue(2.4);assert(p:SettingsData().profile.preview_spells==2 and p.fields.preview_spells_value:GetText()=='2')
     local field=p.fields.preview_spells_value;field:SetText('2.5');field.scripts.OnTextChanged(field,true);assert(not p:FlushEdits())
 end)
@@ -863,7 +881,7 @@ test('category reordering marks the rows whose saved positions changed',function
 end)
 test('preview orientation opacity and count stage while lock is immediate and profile transfers preserve them',function()
     local f,parent=fixture();local a=f.addon;a.db.profile.preview_spells=2;local calls=0;a.RefreshPreviewWindow=function() calls=calls+1 end
-    local p=a:OpenNativeSettings(parent,'General');p.fields.preview_vertical:Click();p.fields.preview_locked:Click();p.fields.preview_opacity:SetValue(.5)
+    local p=a:OpenNativeSettings(parent,'Preview');p.fields.preview_vertical:Click();p.fields.preview_locked:Click();p.fields.preview_opacity:SetValue(.5)
     assert(not a.db.profile.preview_vertical and a.db.profile.preview_locked and calls==1);p.fields.apply:Click();assert(a.db.profile.preview_vertical and a.db.profile.preview_locked and a.db.profile.preview_opacity==.5 and calls==2)
     local portable=a:ProfileToPortable(a.db.profile);local restored=a:ProfileFromPortable(portable);assert(a:ValidateProfileTransfer(restored) and restored.preview_vertical and restored.preview_locked)
     for _,patch in ipairs({{preview_spells=2.5},{preview_opacity=1.1},{preview_icon_size=12}}) do assert(not a:ValidateProfileTransfer(patch)) end
@@ -878,7 +896,7 @@ test('selected dropdown icons persist and preview row divides into lock directio
     local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent)
     p:Open(function(form) form:Choice('choice','Choice',1,{{value=1,text='First',icon=11},{value=2,text='Second',icon=22}},function() end) end)
     local field=p.fields.choice;assert(field.valueIcon:GetTexture()==11);field:Click();p.menu.rows[2]:Click();assert(field.valueIcon:GetTexture()==22)
-    p=a:OpenNativeSettings(parent,'General');local left,middle,right=p.fields.preview_locked,p.fields.preview_vertical,p.fields.preview_reset
+    p=a:OpenNativeSettings(parent,'Preview');local left,middle,right=p.fields.preview_locked,p.fields.preview_vertical,p.fields.preview_reset
     assert(left:GetWidth()==middle:GetWidth() and middle:GetWidth()==right:GetWidth() and left.point[3]==middle.point[3] and middle.point[3]==right.point[3])
     assert(left.point[2]==0 and middle.point[2]==p.columnWidth/3 and right.point[2]==p.columnWidth*2/3)
     assert(p.fields.preview_opacity.point[3]>left.point[3],'opacity must sit above the control row')
@@ -903,7 +921,7 @@ end)
 test('preview Reset immediately changes saved and staged geometry without requiring Apply',function()
     local f,parent=fixture();local a=f.addon;a.db.profile.preview_spells=2;a.db.profile.preview_icon_size=96;a.db.profile.preview_window={point='LEFT',relpoint='LEFT',xoffs=10,yoffs=20}
     local configured,centered=0,0;a.RefreshPreviewWindow=function() end;a.nextWindow={Configure=function() configured=configured+1 end,ClearAllPoints=function() end,SetPoint=function() centered=centered+1 end}
-    local p=a:OpenNativeSettings(parent,'General');assert(not p.fields.apply:IsEnabled());p.fields.preview_reset:Click()
+    local p=a:OpenNativeSettings(parent,'Preview');assert(not p.fields.apply:IsEnabled());p.fields.preview_reset:Click()
     assert(not a.db.profile.preview_window and a.db.profile.preview_icon_size==64 and configured==1 and centered==1 and not p.fields.apply:IsEnabled())
     assert(not p:IsSettingsDraftDirty());p.fields.preview_opacity:SetValue(.4);p.fields.preview_reset:Click();assert(p:IsSettingsDraftDirty() and a.db.profile.preview_opacity~=.4 and p:SettingsData().profile.preview_opacity==.4)
     assert(p:SaveSettingsDraft(),'immediate Reset must synchronize only its owned baselines')

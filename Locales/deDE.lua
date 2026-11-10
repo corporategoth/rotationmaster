@@ -4959,9 +4959,9 @@ addon.translation = {
 [1466] = "Das Vorschaufenster sofort in die Bildschirmmitte zurücksetzen und 64-Pixel-Symbole wiederherstellen, ohne Übernehmen. Andere ausstehende Einstellungen bleiben erhalten.",
 -- 10d580ca English: Lock position and size
 [1467] = "Position und Größe sperren",
--- 0e556ee1 English: Open General settings
+-- 17f58169 English: Open Preview settings
 -- Context: Entry in the preview window's right-click menu: opens the General settings page.
-[1468] = "Allgemeine Einstellungen öffnen",
+[1468] = "Vorschaueinstellungen öffnen",
 -- f65ed2ec English: View Changes
 -- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
 --     differs between the saved and unsaved version.
@@ -8126,10 +8126,10 @@ addon.translation = {
 -- Context: Section title in the rotation editor help for the cards that combine conditions and the
 --     state they show.
 [2449] = "Bedingungen und Zustand",
--- eacf49cb English: Configure recommendation timing, automatic switching, history, preview and
---     profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show
---     numeric values, and fields validate before saving.
-[2450] = "Zeitpunkt der Empfehlungen, automatischen Wechsel, Verlauf, Vorschau und Standardwerte für die Profilhervorhebung festlegen. Die Beschriftungen stehen links. Kontrollkästchen schalten Optionen um, Schieberegler zeigen Zahlenwerte, und Felder werden vor dem Speichern geprüft.",
+-- 01b5fc07 English: Configure recommendation timing, automatic switching, history and profile
+--     highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric
+--     values, and fields validate before saving.
+[2450] = "Zeitpunkt der Empfehlungen, automatischen Wechsel, Verlauf und Standardwerte für die Profilhervorhebung festlegen. Die Beschriftungen stehen links. Kontrollkästchen schalten Optionen um, Schieberegler zeigen Zahlenwerte, und Felder werden vor dem Speichern geprüft.",
 -- 63ee762f English: Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry
 --     that card and all following siblings. A branch always carries its children. Use Up / Down on
 --     the left to move one card. Duplicate copies the card and the red trash can deletes it.
@@ -8629,21 +8629,21 @@ addon.translation = {
 --     results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing
 --     scales all icons while preserving their square shape and the window ratio.
 [2569] = "Eine ganze Zahl kommender Empfehlungen wählen, von null (ausgeblendet) bis fünf. Dies ist der einzige Schalter für das Vorschaufenster: Es wird angezeigt, solange der Wert über null liegt, und bei null ausgeblendet; das Fenster hat keine Schließen-Schaltfläche. Die Vorschau zeigt die aktuellen Prioritätsergebnisse, keine Simulation künftiger Abklingzeiten oder Kämpfe. Symbole beginnen bei 64 Pixeln; eine Größenänderung skaliert alle Symbole und erhält ihre quadratische Form und das Fensterverhältnis.",
--- 9a03212a English: Adjust the preview background opacity without fading its icons. At zero only
+-- 49b05d75 English: Adjust the preview background opacity without fading its icons. At zero only
 --     the icons remain, the hidden background does not intercept blank-space clicks and the resize
 --     grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity
---     in General to resize it.
-[2570] = "Passt die Deckkraft des Vorschauhintergrunds an, ohne die Symbole auszublenden. Bei null bleiben nur die Symbole übrig: Der unsichtbare Hintergrund fängt keine Klicks auf leere Flächen ab und der Größengriff ist nicht verfügbar; eine entsperrte Vorschau lässt sich weiterhin an ihren Symbolen ziehen. Die Deckkraft unter „Allgemein“ wiederherstellen, um die Größe zu ändern.",
--- 7884cae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
+--     in Preview to resize it.
+[2570] = "Passt die Deckkraft des Vorschauhintergrunds an, ohne die Symbole auszublenden. Bei null bleiben nur die Symbole übrig: Der unsichtbare Hintergrund fängt keine Klicks auf leere Flächen ab und der Größengriff ist nicht verfügbar; eine entsperrte Vorschau lässt sich weiterhin an ihren Symbolen ziehen. Die Deckkraft unter „Vorschau“ wiederherstellen, um die Größe zu ändern.",
+-- 88479ae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
 --     it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved
 --     or resized and its background lets clicks through. Right-click an icon (or the background
 --     while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take
---     effect immediately and are saved without Apply. Other pending General edits remain unchanged.
-[2571] = "Entsperrt lässt sich die Vorschau an einem beliebigen Symbol oder ihrem Hintergrund verschieben und über den Griff in der unteren rechten Ecke, der beim Überfahren erscheint, in der Größe ändern. Gesperrt kann sie weder verschoben noch in der Größe geändert werden, und ihr Hintergrund lässt Klicks durch. Ein Rechtsklick auf ein Symbol (oder entsperrt auf den Hintergrund) öffnet ein Menü zum Sperren, Entsperren oder Öffnen dieser Einstellungen. Sperren und Entsperren wirken sofort und werden ohne „Übernehmen“ gespeichert. Andere ausstehende Änderungen unter „Allgemein“ bleiben unverändert.",
--- 110dd6c2 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
---     Reset share one row below the opacity slider. Changing direction keeps icons square and
---     adjusts the window ratio.
-[2572] = "Ordnet die Vorschausymbole horizontal (Standard) oder vertikal an. „Sperren“, „Richtung“ und „Zurücksetzen“ teilen sich eine Zeile unter dem Deckkraft-Schieberegler. Beim Richtungswechsel bleiben die Symbole quadratisch und das Fensterverhältnis wird angepasst.",
+--     effect immediately and are saved without Apply. Other pending Preview edits remain unchanged.
+[2571] = "Entsperrt lässt sich die Vorschau an einem beliebigen Symbol oder ihrem Hintergrund verschieben und über den Griff in der unteren rechten Ecke, der beim Überfahren erscheint, in der Größe ändern. Gesperrt kann sie weder verschoben noch in der Größe geändert werden, und ihr Hintergrund lässt Klicks durch. Ein Rechtsklick auf ein Symbol (oder entsperrt auf den Hintergrund) öffnet ein Menü zum Sperren, Entsperren oder Öffnen dieser Einstellungen. Sperren und Entsperren wirken sofort und werden ohne „Übernehmen“ gespeichert. Andere ausstehende Änderungen unter „Vorschau“ bleiben unverändert.",
+-- 6e8109b0 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
+--     Reset share one row below the color. Changing direction keeps icons square and adjusts the
+--     window ratio.
+[2572] = "Ordnet die Vorschausymbole horizontal (Standard) oder vertikal an. „Sperren“, „Richtung“ und „Zurücksetzen“ teilen sich eine Zeile unter der Farbe. Beim Richtungswechsel bleiben die Symbole quadratisch und das Fensterverhältnis wird angepasst.",
 -- 46417b1b English: This icon previews the selected profile effect, color, size, anchor and
 --     offsets. Previewing an effect does not save the draft or change the spell being recommended.
 [2573] = "Dieses Symbol zeigt Effekt, Farbe, Größe, Anker und Versätze des ausgewählten Profils in der Vorschau. Die Vorschau eines Effekts speichert weder den Entwurf noch ändert sie den empfohlenen Zauber.",
@@ -8995,11 +8995,11 @@ addon.translation = {
 --     preference for the next source-editor opening; it does not switch a selected external editor.
 --     Show line numbers under the editor heading applies to every provider.
 [2657] = "Syntaxhervorhebung gilt nur für den nativen Lua-Editor. „Übernehmen“ speichert diese Einstellung für das nächste Öffnen eines Quelltext-Editors; ein ausgewählter externer Editor wird dadurch nicht gewechselt. „Zeilennummern anzeigen“ unter der Editor-Überschrift gilt für jeden Anbieter.",
--- eb084da9 English: Enable separately installed Masque here and Apply. General > Preview then
+-- 84e0b9c0 English: Enable separately installed Masque here and Apply. The Preview tab then
 --     provides a Skin dropdown that updates the preview immediately. Masque owns the skin
 --     selection; /masque opens its other settings. The preview window keeps its native appearance.
 --     Missing or incompatible APIs and provider errors retain the native preview.
-[2658] = "Separat installiertes Masque hier aktivieren und „Übernehmen“ wählen. Unter Allgemein > Vorschau steht dann ein Auswahlmenü „Skin“ bereit, das die Vorschau sofort aktualisiert. Masque verwaltet die Skin-Auswahl; /masque öffnet seine weiteren Einstellungen. Das Vorschaufenster behält sein natives Erscheinungsbild. Bei fehlenden oder inkompatiblen APIs und Anbieterfehlern bleibt die native Vorschau erhalten.",
+[2658] = "Separat installiertes Masque hier aktivieren und „Übernehmen“ wählen. Im Reiter „Vorschau“ steht dann ein Auswahlmenü „Skin“ bereit, das die Vorschau sofort aktualisiert. Masque verwaltet die Skin-Auswahl; /masque öffnet seine weiteren Einstellungen. Das Vorschaufenster behält sein natives Erscheinungsbild. Bei fehlenden oder inkompatiblen APIs und Anbieterfehlern bleibt die native Vorschau erhalten.",
 -- 34199d23 English: Enable Masque in Integrations to choose a skin. Skin changes update the open
 --     preview immediately and are saved by Masque, independently of Apply or Discard. Without
 --     enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons
@@ -9031,11 +9031,11 @@ addon.translation = {
 --     membership. A known nonmember is false; unavailable native data stays unavailable, including
 --     under NOT.
 [2663] = "Aktiviert: prüft nur die Schlachtzugsmitgliedschaft. Deaktiviert: prüft Gruppen- oder Schlachtzugsmitgliedschaft. Ein bekanntes Nichtmitglied ist nicht erfüllt; nicht verfügbare native Daten bleiben nicht verfügbar, auch unter NOT.",
--- d44133b4 English: Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item
---     Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page
---     controls. Search and filters belong to the current page. Built In entries remain read-only;
---     Duplicate creates an editable copy.
-[2664] = "Über die Reiter „Rotationen“, „Allgemein“, „Bedingungen“, „Funktionen“, „Effekte“, „Gegenstandssets“, „Ankündigungen“, „Profile“ und „Integrationen“ navigieren. Die geöffneten Bereiche haben eine eigene Hilfe für ihre Seitensteuerelemente. Suche und Filter gehören zur aktuellen Seite. Integrierte Einträge bleiben schreibgeschützt; „Duplizieren“ erstellt eine bearbeitbare Kopie.",
+-- b436f664 English: Choose tabs to browse Rotations, General, Preview, Conditions, Functions,
+--     Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own
+--     Help for page controls. Search and filters belong to the current page. Built In entries
+--     remain read-only; Duplicate creates an editable copy.
+[2664] = "Über die Reiter „Rotationen“, „Allgemein“, „Vorschau“, „Bedingungen“, „Funktionen“, „Effekte“, „Gegenstandssets“, „Ankündigungen“, „Profile“ und „Integrationen“ navigieren. Die geöffneten Bereiche haben eine eigene Hilfe für ihre Seitensteuerelemente. Suche und Filter gehören zur aktuellen Seite. Integrierte Einträge bleiben schreibgeschützt; „Duplizieren“ erstellt eine bearbeitbare Kopie.",
 -- 28510b80 English: Scale changes the whole workbench and its child windows from 70% to 130%. Drag
 --     the top-left slider or enter an integer percentage and press Enter. Escape restores the saved
 --     scale text. Drag the title bar to move; drag the lower-right corner to resize.
@@ -12161,4 +12161,8 @@ addon.translation = {
 --     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
 --     background art keeps its own colors.
 [3651] = "Wählen Sie die Farbe des einfachen Vorschaufelds. Sie wird verwendet, wenn das Hintergrundbild aus ist und die Deckkraft über null liegt; der Alphakanal wird mit der Deckkraft multipliziert. Das Hintergrundbild behält seine eigenen Farben.",
+-- 75205de8 English: Forecast
+[3652] = "Prognose",
+-- 000e5077 English: Configure the preview window and the forecast.
+[3653] = "Vorschaufenster und Prognose einrichten.",
 }

@@ -1103,10 +1103,10 @@ function addon:CreateNativePreviewWindow()
                     end,
                 },
                 {
-                    text = L['Open General settings'],
+                    text = L['Open Preview settings'],
                     func = function()
                         if current() then
-                            addon:ShowConfig('General')
+                            addon:ShowConfig('Preview')
                         end
                     end,
                 },

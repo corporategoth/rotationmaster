@@ -66,7 +66,7 @@ test('native top tabs navigate every section resize and release only native owne
     end
 
     assert(
-        #shell.tabs == 10 and sections.Functions and not sections['module:Example'],
+        #shell.tabs == 11 and sections.Functions and not sections['module:Example'],
         'retired module UI is still registered'
     )
 
@@ -520,7 +520,7 @@ test('retired module maps and foreign builders cannot create tabs render panes o
     f.load('UI/help.lua')
     f.load('UI/config.lua')
     local shell = a:ShowConfig('module:Module title')
-    assert(#shell.tabs == 10 and shell.section == 'Rotations' and shell.nativePane)
+    assert(#shell.tabs == 11 and shell.section == 'Rotations' and shell.nativePane)
 
     for _, tab in ipairs(shell.tabs) do
         assert(not tab.section:match('^module:'))

@@ -160,13 +160,14 @@ end
 -- covers and builds the page. The key lists in the function are the transaction boundary: Apply compares and copies
 -- back only the keys named for the tab, so a key a page edits must be listed.
 -- @param parent table  The frame that holds the form.
--- @param key string  The tab: 'General', 'Metrics', 'Profiles', 'About', 'Announces', 'Effects', 'ItemSets', 'Conditions',
+-- @param key string  The tab: 'General', 'Preview', 'Metrics', 'Profiles', 'About', 'Announces', 'Effects', 'ItemSets', 'Conditions',
 --   'Functions' or 'Integrations'.
 -- @param cached table|nil  A settings form to reuse instead of creating one.
 -- @return table|nil  The form; nil for an unknown tab.
 function addon:OpenNativeSettings(parent, key, cached)
     local builders = {
         General = self.BuildGeneralSettings,
+        Preview = self.BuildPreviewSettings,
         Metrics = self.BuildMetricsSettings,
         Profiles = self.BuildProfileSettings,
         About = self.BuildAboutSettings,
@@ -212,18 +213,23 @@ function addon:OpenNativeSettings(parent, key, cached)
             },
             global = { 'custom_conditions' },
         },
+        Preview = {
+            profile = {
+                'preview_readiness', 'preview_ignore_mana', 'preview_ignore_range', 'preview_ignore_moving',
+                'preview_target_health', 'preview_gray_unaffordable', 'forecast', 'forecast_confidence',
+                'forecast_percent', 'forecast_delay', 'preview_spells', 'preview_vertical', 'preview_locked',
+                'preview_opacity', 'preview_background', 'preview_color', 'preview_title', 'preview_icon_size',
+                'preview_window'
+            },
+        },
         General = {
             profile = {
                 'enable', 'poll', 'idle_poll', 'autoswitch_poll', 'ignore_mana', 'ignore_range', 'ignore_moving',
-                'remember_hidden', 'preview_readiness', 'preview_ignore_mana', 'preview_ignore_range',
-                'preview_ignore_moving', 'preview_target_health', 'preview_gray_unaffordable', 'effect', 'color',
-                'magnification', 'setpoint', 'xoffs', 'yoffs', 'loglevel', 'detailed_profiling', 'disable_autoswitch',
-                'forecast', 'forecast_confidence', 'forecast_percent', 'forecast_delay', 'live_config_update',
-                'spell_history', 'combat_history', 'damage_history', 'disable_buttons', 'assisted_highlight',
-                'tooltips', 'tooltip_itemsets', 'tooltip_rotations', 'tooltip_conditions', 'tooltip_disabled_rotations',
-                'tooltip_exclude_disabled_conditions', 'tooltip_limit', 'rotation_view', 'preview_spells',
-                'preview_vertical', 'preview_locked', 'preview_opacity', 'preview_background', 'preview_color',
-                'preview_title', 'preview_icon_size', 'preview_window', 'minimap'
+                'remember_hidden', 'effect', 'color', 'magnification', 'setpoint', 'xoffs', 'yoffs', 'loglevel',
+                'detailed_profiling', 'disable_autoswitch', 'live_config_update', 'spell_history', 'combat_history',
+                'damage_history', 'disable_buttons', 'assisted_highlight', 'tooltips', 'tooltip_itemsets',
+                'tooltip_rotations', 'tooltip_conditions', 'tooltip_disabled_rotations',
+                'tooltip_exclude_disabled_conditions', 'tooltip_limit', 'rotation_view', 'minimap'
             },
             char = { 'specs' },
         },

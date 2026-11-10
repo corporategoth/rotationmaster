@@ -185,7 +185,7 @@ function addon:WorkbenchWindowHelp()
     return {
         section(
             L['Navigation'],
-            L["Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page controls. Search and filters belong to the current page. Built In entries remain read-only; Duplicate creates an editable copy."]
+            L["Choose tabs to browse Rotations, General, Preview, Conditions, Functions, Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page controls. Search and filters belong to the current page. Built In entries remain read-only; Duplicate creates an editable copy."]
         ),
         section(
             L['Scale'],
@@ -385,7 +385,7 @@ function addon:GetIntegrationOptionHelp()
         {
             id = 'preview_masque',
             title = L['Skin preview buttons with Masque'],
-            text = L["Enable separately installed Masque here and Apply. General > Preview then provides a Skin dropdown that updates the preview immediately. Masque owns the skin selection; /masque opens its other settings. The preview window keeps its native appearance. Missing or incompatible APIs and provider errors retain the native preview."],
+            text = L["Enable separately installed Masque here and Apply. The Preview tab then provides a Skin dropdown that updates the preview immediately. Masque owns the skin selection; /masque opens its other settings. The preview window keeps its native appearance. Missing or incompatible APIs and provider errors retain the native preview."],
         },
         {
             id = 'questie_enabled',
@@ -483,7 +483,7 @@ end
 
 -- Full help for one settings page: an intro, the shared Apply / Discard note, the page's authored option entries and
 -- the window controls.
--- @param topic string  'General', 'Metrics', 'Conditions', 'Effects', 'ItemSets', 'Announces', 'Profiles', 'About', 'Rotations',
+-- @param topic string  'General', 'Preview', 'Metrics', 'Conditions', 'Effects', 'ItemSets', 'Announces', 'Profiles', 'About', 'Rotations',
 --   'Integrations' or 'Functions'.
 -- @return table[]  A list of sections shaped { title, text } (or authored option entries).
 function addon:WorkbenchPageHelp(topic)
@@ -526,7 +526,7 @@ function addon:WorkbenchPageHelp(topic)
 
     local description = {
         Metrics = L['Choose what to record, then see how closely you followed the advice, how long you took to act on it and what you cast instead, for the last fight, this instance, a period you set, or everything. Export the numbers for the website, with or without instructions for a language model. Reset deletes everything recorded.'],
-        General = L['Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving.'],
+        General = L['Configure recommendation timing, automatic switching, history and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving.'],
         Conditions = L['Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Discard abandons edits to a saved entry. Custom conditions can be edited, duplicated or deleted.'],
         Effects = L['Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Discard abandons edits to a saved entry. Import stages a validated replacement.'],
         ItemSets = L['Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Discard abandons edits to a saved entry. Binding changes are explicit action-bar operations.'],
@@ -548,6 +548,12 @@ function addon:WorkbenchPageHelp(topic)
 
     if topic == 'General' and self.GetGeneralOptionHelp then
         for _, entry in ipairs(self:GetGeneralOptionHelp()) do
+            result[#result + 1] = entry
+        end
+    end
+
+    if topic == 'Preview' and self.GetPreviewOptionHelp then
+        for _, entry in ipairs(self:GetPreviewOptionHelp()) do
             result[#result + 1] = entry
         end
     end

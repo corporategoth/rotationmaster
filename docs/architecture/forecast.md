@@ -2,7 +2,7 @@
 
 The preview window shows up to five upcoming recommendations (Preview Spells). Without the forecast the poll keeps walking the
 rotation against the game *as it is now* and shows the next steps whose conditions match, so a spell the first one is about to
-put on cooldown, spend mana on or apply a debuff for is judged as if it had not been cast. With the forecast on (General >
+put on cooldown, spend mana on or apply a debuff for is judged as if it had not been cast. With the forecast on (Preview >
 Forecast, off by default) the first recommendation is read exactly as before and each later one is predicted from the state
 after the earlier ones were cast. It needs Preview Spells above one; it adds one rotation walk per extra slot (at most four).
 
@@ -49,7 +49,7 @@ While the switch is on, per spell, saved in `RotationMasterDB.global.forecast` (
 target or the player (the auras before the cast, on `UNIT_SPELLCAST_SENT`, against 0.35 seconds after `UNIT_SPELLCAST_SUCCEEDED`; settled
 after three matching sightings or five empty looks, after which the spell is not scanned again), and the damage it does and the
 healing it does to the player (a running average, from the combat log; not on Retail and Forever). Nothing is registered with the
-switch off, and General > Forecast has a button to forget it all.
+switch off, and Preview > Forecast has a button to forget it all.
 
 What a cast leaves is taken from, in this order:
 
@@ -84,10 +84,10 @@ the rate of a proc, not of the cast applying its own aura), so a chance is worke
   the likelier outcome is that it is not there. Records saved by an earlier version, which kept one aura and no count, are taken as
   certain.
 * *Whether the cast lands.* Not on Retail: a spell the tables aim at an enemy (or known to do damage) has a chance to miss from the
-  player's and the target's level (a level the game does not show is taken as three above) less the player's hit (`GetHitModifier` or
-  `GetSpellHitModifier`, and `GetCombatRatingBonus` for the hit rating, where the client has them); the base is the Classic-era table
-  (physical 5, 5.5, 6 and 8 percent, magical 4, 5, 6 and 17 at 0 to 3 levels above). Half of a miss changes what follows, so a
-  chance of 6% costs 3% of the confidence. The spell's school decides which table (physical or not).
+  player's and the target's level (a level the game does not show is taken as three above), from the Classic-era table (physical 5,
+  5.5, 6 and 8 percent, magical 4, 5, 6 and 17 at 0 to 3 levels above) with no hit rating taken off: no client manifest lists a way to
+  read the player's hit, so a well-geared player is shown as surer of a miss than they are. Half of a miss changes what follows, so a
+  chance of 8% costs 4% of the confidence. The spell's school decides which table (physical or not).
 
 Costs are read live (`C_Spell.GetSpellPowerCost`) on every pass. Where the game hides them (in combat on a restricted client) the last
 readable answer for that spell is used, because nothing that sets a cost (gear, talents, level, maximum mana, which is what a cost
@@ -107,9 +107,9 @@ Slot confidence starts at 1 and each predicted step multiplies it by 0.9, by 0.9
 for a spell with a cast time (it can be interrupted or moved away from), by 0.88 for a cost in a resource the pass does not
 project, by 0.97 for a cost taken from the tables, by 0.95 for an aura assumed from the rotation and for an item whose cooldown has
 not been seen, by `0.5 + 0.5 x chance` for an aura seen after only some casts, and by half the chance to miss. With prediction tracking on, the measured hit rate of that slot (over all rotations, once 20 predictions have been
-checked) is averaged with it. The preview icon fades with it (opacity 0.4 to 1) unless General > Forecast > "Fade predictions that are
+checked) is averaged with it. The preview icon fades with it (opacity 0.4 to 1) unless Preview > Forecast > "Fade predictions that are
 less certain" is off; the first icon never fades. Each predicted icon also says, over its middle, how many seconds after the
-first spell it would be cast ("+3.5s"), and, at its foot, the confidence as a percentage. The fade, the percentage and the seconds are three options (General > Forecast: "Fade
+first spell it would be cast ("+3.5s"), and, at its foot, the confidence as a percentage. The fade, the percentage and the seconds are three options (Preview > Forecast: "Fade
 predictions that are less certain", "Show how sure each prediction is", "Show the seconds until each prediction is cast"), each on by default.
 When nothing is ready after a cast the projection moves forward a second at a time, up to ten seconds, to the next step that is,
 so the queue is filled even while everything cools down; each second waited costs 3% of the confidence. The preview icons draw no

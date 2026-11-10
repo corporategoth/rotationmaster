@@ -36,6 +36,103 @@ function addon:GetMetricsOptionHelp()
     }
 end
 
+-- Returns the authored help for the Preview page's options.
+-- @return table[]  The entries, each {id=string, title=string, text=string}.
+function addon:GetPreviewOptionHelp()
+    return {
+        {
+            id = "preview_spells",
+            title = L["Preview Spells"],
+            text = L["Choose a whole number of upcoming recommendations, from zero (hidden) to five. This is the only switch for the preview window: it is shown whenever this is above zero and hidden at zero, and the window has no close button. The preview shows current priority results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."],
+        },
+        {
+            id = "preview_opacity",
+            title = L["Preview window opacity"],
+            text = L["Adjust the preview background opacity without fading its icons. At zero only the icons remain, the hidden background does not intercept blank-space clicks and the resize grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity in Preview to resize it."],
+        },
+        {
+            id = "preview_background",
+            title = L["Draw the preview background art"],
+            text = L["Draw the class painting behind the preview icons, with a border that fills up as icons appear, while the opacity is above zero. The painting shows through every empty slot and follows how many slots there are. Turn it off to use a plain box in the color chosen below it."],
+        },
+        {
+            id = "preview_color",
+            title = L["Preview window color"],
+            text = L["Choose the color of the plain preview box. It is used when the background art is off and the opacity is above zero; its alpha channel multiplies the window opacity. The background art keeps its own colors."],
+        },
+        {
+            id = "preview_locked",
+            title = L["Lock position and size"],
+            text = L["Unlocked, drag the preview by any icon or its background to move it, and resize it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved or resized and its background lets clicks through. Right-click an icon (or the background while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take effect immediately and are saved without Apply. Other pending Preview edits remain unchanged."],
+        },
+        {
+            id = "preview_vertical",
+            title = L["Horizontal"],
+            text = L["Arrange preview icons horizontally (default) or vertically. Lock, Direction and Reset share one row below the color. Changing direction keeps icons square and adjusts the window ratio."],
+        },
+        {
+            id = "preview_reset",
+            title = L["Reset preview position"],
+            text = L["Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."],
+        },
+        {
+            id = "preview_skin",
+            title = L["Skin"],
+            text = L["Enable Masque in Integrations to choose a skin. Skin changes update the open preview immediately and are saved by Masque, independently of Apply or Discard. Without enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons whether Masque is enabled or not."],
+        },
+        {
+            id = "preview_sample",
+            title = L["Preview"],
+            text = L["Click Preview to toggle temporary sample icons when no real recommendations are available. Real recommendations replace the samples. This does not change Preview Spells, cast spells, or save the sample state."],
+        },
+        {
+            id = "preview_title",
+            title = L["Show a title above the preview"],
+            text = L["Show \"Rotation Preview\" above the preview window so it is clear what it is. Turn it off to show only the icons."],
+        },
+        {
+            id = "preview_target_health",
+            title = L["Show target health under the preview"],
+            text = L["Shows your target's health as a thin bar under the preview window. The game draws it from the real health even where it hides health from addons (Retail and Forever in combat), so it is shown but never used to choose a step."],
+        },
+        {
+            id = "preview_readiness",
+            title = L["Preview uses its own readiness options"],
+            text = L["Give the preview window its own Ignore Mana, Ignore Range and Ignore Moving. The bar highlight keeps the options under Recommendations, and the preview shows the first steps that are ready under its own, so it can, for example, show a spell that is out of range while the bar highlights the next one you can use. Off, the preview follows the same options as the bar highlight."],
+        },
+        {
+            id = "preview_gray_unaffordable",
+            title = L["Gray out preview spells you cannot afford yet"],
+            text = L["Shows a recommended spell in gray while you lack the mana, rage or other power to cast it. This only happens with Ignore Mana on, which lets the preview show a spell before you can afford it."],
+        },
+        {
+            id = "forecast",
+            title = L["Predict upcoming recommendations from the expected state"],
+            text = L["Predict the next few recommendations by walking the rotation again as if each earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast time passed, and, for spells the addon has watched leave an aura or do damage or healing, that effect applied. It needs Preview Spells above one and learns from your casts while this is on. Retail and Forever hide most of the numbers it needs, so there it predicts less."],
+        },
+        {
+            id = "forecast_confidence",
+            title = L["Fade predictions that are less certain"],
+            text = L["Fade the icons of predicted recommendations that the addon is less sure of. The first recommendation is read from the game as it is now and never fades."],
+        },
+        {
+            id = "forecast_percent",
+            title = L["Show how sure each prediction is"],
+            text = L["Show, at the foot of each predicted icon, how sure the addon is of that prediction, as a percentage."],
+        },
+        {
+            id = "forecast_delay",
+            title = L["Show the seconds until each prediction is cast"],
+            text = L["Show, over each predicted icon, how many seconds it would be cast after the first recommendation, or from now when nothing is ready yet."],
+        },
+        {
+            id = "forecast_clear",
+            title = L["Forget what the forecast has learned"],
+            text = L["Delete what the forecast has learned about your spells (the auras they leave, the damage and healing they do). It starts learning again if the forecast is on."],
+        },
+    }
+end
+
 -- Returns the General page help entries in page order, with optional entries included only when their feature is
 -- present on this client.
 -- @return table[]  The entries, each {id=string, title=string, text=string}.
@@ -121,96 +218,6 @@ function addon:GetGeneralOptionHelp()
             id = "damage_history",
             title = L["Damage History Memory (seconds)"],
             text = L["Choose how many seconds of observed damage and healing to retain for burn-rate and time-to-die estimates. Recent observations receive more weight. A longer window uses more records and smooths short changes; it cannot supply events the client does not expose."],
-        },
-        {
-            id = "preview_spells",
-            title = L["Preview Spells"],
-            text = L["Choose a whole number of upcoming recommendations, from zero (hidden) to five. This is the only switch for the preview window: it is shown whenever this is above zero and hidden at zero, and the window has no close button. The preview shows current priority results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."],
-        },
-        {
-            id = "preview_opacity",
-            title = L["Preview window opacity"],
-            text = L["Adjust the preview background opacity without fading its icons. At zero only the icons remain, the hidden background does not intercept blank-space clicks and the resize grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity in General to resize it."],
-        },
-        {
-            id = "preview_background",
-            title = L["Draw the preview background art"],
-            text = L["Draw the class painting behind the preview icons, with a border that fills up as icons appear, while the opacity is above zero. The painting shows through every empty slot and follows how many slots there are. Turn it off to use a plain box in the color chosen below it."],
-        },
-        {
-            id = "preview_color",
-            title = L["Preview window color"],
-            text = L["Choose the color of the plain preview box. It is used when the background art is off and the opacity is above zero; its alpha channel multiplies the window opacity. The background art keeps its own colors."],
-        },
-        {
-            id = "preview_title",
-            title = L["Show a title above the preview"],
-            text = L["Show \"Rotation Preview\" above the preview window so it is clear what it is. Turn it off to show only the icons."],
-        },
-        {
-            id = "preview_locked",
-            title = L["Lock position and size"],
-            text = L["Unlocked, drag the preview by any icon or its background to move it, and resize it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved or resized and its background lets clicks through. Right-click an icon (or the background while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take effect immediately and are saved without Apply. Other pending General edits remain unchanged."],
-        },
-        {
-            id = "preview_vertical",
-            title = L["Horizontal"],
-            text = L["Arrange preview icons horizontally (default) or vertically. Lock, Direction and Reset share one row below the opacity slider. Changing direction keeps icons square and adjusts the window ratio."],
-        },
-        {
-            id = "preview_readiness",
-            title = L["Preview uses its own readiness options"],
-            text = L["Give the preview window its own Ignore Mana, Ignore Range and Ignore Moving. The bar highlight keeps the options under Recommendations, and the preview shows the first steps that are ready under its own, so it can, for example, show a spell that is out of range while the bar highlights the next one you can use. Off, the preview follows the same options as the bar highlight."],
-        },
-        {
-            id = "preview_target_health",
-            title = L["Show target health under the preview"],
-            text = L["Shows your target's health as a thin bar under the preview window. The game draws it from the real health even where it hides health from addons (Retail and Forever in combat), so it is shown but never used to choose a step."],
-        },
-        {
-            id = "preview_gray_unaffordable",
-            title = L["Gray out preview spells you cannot afford yet"],
-            text = L["Shows a recommended spell in gray while you lack the mana, rage or other power to cast it. This only happens with Ignore Mana on, which lets the preview show a spell before you can afford it."],
-        },
-        {
-            id = "preview_reset",
-            title = L["Reset preview position"],
-            text = L["Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."],
-        },
-        {
-            id = "preview_skin",
-            title = L["Skin"],
-            text = L["Enable Masque in Integrations to choose a skin. Skin changes update the open preview immediately and are saved by Masque, independently of Apply or Discard. Without enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons whether Masque is enabled or not."],
-        },
-        {
-            id = "preview_sample",
-            title = L["Preview"],
-            text = L["Click Preview to toggle temporary sample icons when no real recommendations are available. Real recommendations replace the samples. This does not change Preview Spells, cast spells, or save the sample state."],
-        },
-        {
-            id = "forecast",
-            title = L["Predict upcoming recommendations from the expected state"],
-            text = L["Predict the next few recommendations by walking the rotation again as if each earlier one had been cast: its cooldown started, its cost spent, the global cooldown or cast time passed, and, for spells the addon has watched leave an aura or do damage or healing, that effect applied. It needs Preview Spells above one and learns from your casts while this is on. Retail and Forever hide most of the numbers it needs, so there it predicts less."],
-        },
-        {
-            id = "forecast_confidence",
-            title = L["Fade predictions that are less certain"],
-            text = L["Fade the icons of predicted recommendations that the addon is less sure of. The first recommendation is read from the game as it is now and never fades."],
-        },
-        {
-            id = "forecast_percent",
-            title = L["Show how sure each prediction is"],
-            text = L["Show, at the foot of each predicted icon, how sure the addon is of that prediction, as a percentage."],
-        },
-        {
-            id = "forecast_delay",
-            title = L["Show the seconds until each prediction is cast"],
-            text = L["Show, over each predicted icon, how many seconds it would be cast after the first recommendation, or from now when nothing is ready yet."],
-        },
-        {
-            id = "forecast_clear",
-            title = L["Forget what the forecast has learned"],
-            text = L["Delete what the forecast has learned about your spells (the auras they leave, the damage and healing they do). It starts learning again if the forecast is on."],
         },
         {
             id = "preview",

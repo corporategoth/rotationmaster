@@ -4959,9 +4959,9 @@ addon.translation = {
 [1466] = "Devuelve al instante la ventana de vista previa al centro de la pantalla y restaura los iconos de 64 píxeles sin Aplicar. Los demás ajustes pendientes se conservan.",
 -- 10d580ca English: Lock position and size
 [1467] = "Bloquear posición y tamaño",
--- 0e556ee1 English: Open General settings
+-- 17f58169 English: Open Preview settings
 -- Context: Entry in the preview window's right-click menu: opens the General settings page.
-[1468] = "Abrir los ajustes generales",
+[1468] = "Abrir los ajustes de la vista previa",
 -- f65ed2ec English: View Changes
 -- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
 --     differs between the saved and unsaved version.
@@ -8126,10 +8126,10 @@ addon.translation = {
 -- Context: Section title in the rotation editor help for the cards that combine conditions and the
 --     state they show.
 [2449] = "Condiciones y estado",
--- eacf49cb English: Configure recommendation timing, automatic switching, history, preview and
---     profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show
---     numeric values, and fields validate before saving.
-[2450] = "Configura el ritmo de las recomendaciones, el cambio automático, el historial, la vista previa y los valores predeterminados de resaltado del perfil. Las etiquetas están a la izquierda. Las casillas activan o desactivan opciones, los controles deslizantes muestran valores numéricos y los campos se validan antes de guardar.",
+-- 01b5fc07 English: Configure recommendation timing, automatic switching, history and profile
+--     highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric
+--     values, and fields validate before saving.
+[2450] = "Configura el ritmo de las recomendaciones, el cambio automático, el historial y los valores predeterminados de resaltado del perfil. Las etiquetas están a la izquierda. Las casillas activan o desactivan opciones, los controles deslizantes muestran valores numéricos y los campos se validan antes de guardar.",
 -- 63ee762f English: Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry
 --     that card and all following siblings. A branch always carries its children. Use Up / Down on
 --     the left to move one card. Duplicate copies the card and the red trash can deletes it.
@@ -8629,21 +8629,21 @@ addon.translation = {
 --     results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing
 --     scales all icons while preserving their square shape and the window ratio.
 [2569] = "Elige un número entero de próximas recomendaciones, de cero (oculta) a cinco. Es el único interruptor de la ventana de vista previa: se muestra siempre que sea mayor que cero y se oculta en cero, y la ventana no tiene botón de cierre. La vista previa muestra los resultados de prioridad actuales, no una simulación de los tiempos de reutilización ni del combate futuros. Los iconos empiezan con 64 píxeles; cambiar el tamaño escala todos los iconos conservando su forma cuadrada y la proporción de la ventana.",
--- 9a03212a English: Adjust the preview background opacity without fading its icons. At zero only
+-- 49b05d75 English: Adjust the preview background opacity without fading its icons. At zero only
 --     the icons remain, the hidden background does not intercept blank-space clicks and the resize
 --     grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity
---     in General to resize it.
-[2570] = "Ajusta la opacidad del fondo de la vista previa sin atenuar sus iconos. En cero solo quedan los iconos: el fondo oculto no intercepta los clics en espacios vacíos y el control de tamaño no está disponible; una vista previa desbloqueada aún puede arrastrarse por sus iconos. Restaura la opacidad en General para cambiar su tamaño.",
--- 7884cae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
+--     in Preview to resize it.
+[2570] = "Ajusta la opacidad del fondo de la vista previa sin atenuar sus iconos. En cero solo quedan los iconos: el fondo oculto no intercepta los clics en espacios vacíos y el control de tamaño no está disponible; una vista previa desbloqueada aún puede arrastrarse por sus iconos. Restaura la opacidad en Vista previa para cambiar su tamaño.",
+-- 88479ae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
 --     it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved
 --     or resized and its background lets clicks through. Right-click an icon (or the background
 --     while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take
---     effect immediately and are saved without Apply. Other pending General edits remain unchanged.
-[2571] = "Desbloqueada, arrastra la vista previa por cualquier icono o por su fondo para moverla, y cambia su tamaño con el control que aparece en su esquina inferior derecha al pasar el cursor. Bloqueada, no se puede mover ni cambiar de tamaño y su fondo deja pasar los clics. Haz clic derecho en un icono (o en el fondo si está desbloqueada) para abrir un menú para bloquear, desbloquear o abrir estos ajustes. Bloquear y desbloquear surten efecto al instante y se guardan sin Aplicar. Las demás ediciones pendientes de General no cambian.",
--- 110dd6c2 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
---     Reset share one row below the opacity slider. Changing direction keeps icons square and
---     adjusts the window ratio.
-[2572] = "Coloca los iconos de la vista previa en horizontal (predeterminado) o en vertical. Bloquear, Dirección y Restablecer comparten una fila debajo del control de opacidad. Cambiar la dirección mantiene los iconos cuadrados y ajusta la proporción de la ventana.",
+--     effect immediately and are saved without Apply. Other pending Preview edits remain unchanged.
+[2571] = "Desbloqueada, arrastra la vista previa por cualquier icono o por su fondo para moverla, y cambia su tamaño con el control que aparece en su esquina inferior derecha al pasar el cursor. Bloqueada, no se puede mover ni cambiar de tamaño y su fondo deja pasar los clics. Haz clic derecho en un icono (o en el fondo si está desbloqueada) para abrir un menú para bloquear, desbloquear o abrir estos ajustes. Bloquear y desbloquear surten efecto al instante y se guardan sin Aplicar. Las demás ediciones pendientes de Vista previa no cambian.",
+-- 6e8109b0 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
+--     Reset share one row below the color. Changing direction keeps icons square and adjusts the
+--     window ratio.
+[2572] = "Coloca los iconos de la vista previa en horizontal (predeterminado) o en vertical. Bloquear, Dirección y Restablecer comparten una fila debajo del color. Cambiar la dirección mantiene los iconos cuadrados y ajusta la proporción de la ventana.",
 -- 46417b1b English: This icon previews the selected profile effect, color, size, anchor and
 --     offsets. Previewing an effect does not save the draft or change the spell being recommended.
 [2573] = "Este icono previsualiza el efecto, el color, el tamaño, el anclaje y los desplazamientos del perfil seleccionado. Previsualizar un efecto no guarda el borrador ni cambia el hechizo recomendado.",
@@ -8995,11 +8995,11 @@ addon.translation = {
 --     preference for the next source-editor opening; it does not switch a selected external editor.
 --     Show line numbers under the editor heading applies to every provider.
 [2657] = "El resaltado de sintaxis solo se aplica al editor Lua nativo. Aplicar guarda esta preferencia para la próxima vez que se abra el editor de código; no cambia un editor externo seleccionado. Mostrar números de línea, bajo el encabezado del editor, se aplica a todos los proveedores.",
--- eb084da9 English: Enable separately installed Masque here and Apply. General > Preview then
+-- 84e0b9c0 English: Enable separately installed Masque here and Apply. The Preview tab then
 --     provides a Skin dropdown that updates the preview immediately. Masque owns the skin
 --     selection; /masque opens its other settings. The preview window keeps its native appearance.
 --     Missing or incompatible APIs and provider errors retain the native preview.
-[2658] = "Activa aquí Masque, instalado por separado, y presiona Aplicar. General > Vista previa ofrecerá entonces un desplegable de Aspecto que actualiza la vista previa al instante. Masque administra la selección de aspecto; /masque abre sus demás ajustes. La ventana de vista previa mantiene su apariencia nativa. Si faltan API, son incompatibles o el proveedor falla, se mantiene la vista previa nativa.",
+[2658] = "Activa aquí Masque, instalado por separado, y presiona Aplicar. La pestaña Vista previa ofrecerá entonces un desplegable de Aspecto que actualiza la vista previa al instante. Masque administra la selección de aspecto; /masque abre sus demás ajustes. La ventana de vista previa mantiene su apariencia nativa. Si faltan API, son incompatibles o el proveedor falla, se mantiene la vista previa nativa.",
 -- 34199d23 English: Enable Masque in Integrations to choose a skin. Skin changes update the open
 --     preview immediately and are saved by Masque, independently of Apply or Discard. Without
 --     enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons
@@ -9031,11 +9031,11 @@ addon.translation = {
 --     membership. A known nonmember is false; unavailable native data stays unavailable, including
 --     under NOT.
 [2663] = "Si está marcada, solo comprueba la pertenencia a la banda. Si no, comprueba la pertenencia al grupo o a la banda. Un no miembro conocido es falso; los datos nativos no disponibles siguen sin estar disponibles, también bajo NO.",
--- d44133b4 English: Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item
---     Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page
---     controls. Search and filters belong to the current page. Built In entries remain read-only;
---     Duplicate creates an editable copy.
-[2664] = "Elige pestañas para explorar Rotaciones, General, Condiciones, Funciones, Efectos, Conjuntos de objetos, Anuncios, Perfiles e Integraciones. Los paneles abiertos tienen su propia Ayuda sobre los controles de la página. La búsqueda y los filtros pertenecen a la página actual. Las entradas integradas son de solo lectura; Duplicar crea una copia editable.",
+-- b436f664 English: Choose tabs to browse Rotations, General, Preview, Conditions, Functions,
+--     Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own
+--     Help for page controls. Search and filters belong to the current page. Built In entries
+--     remain read-only; Duplicate creates an editable copy.
+[2664] = "Elige pestañas para explorar Rotaciones, General, Vista previa, Condiciones, Funciones, Efectos, Conjuntos de objetos, Anuncios, Perfiles e Integraciones. Los paneles abiertos tienen su propia Ayuda sobre los controles de la página. La búsqueda y los filtros pertenecen a la página actual. Las entradas integradas son de solo lectura; Duplicar crea una copia editable.",
 -- 28510b80 English: Scale changes the whole workbench and its child windows from 70% to 130%. Drag
 --     the top-left slider or enter an integer percentage and press Enter. Escape restores the saved
 --     scale text. Drag the title bar to move; drag the lower-right corner to resize.
@@ -12161,4 +12161,8 @@ addon.translation = {
 --     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
 --     background art keeps its own colors.
 [3651] = "Elige el color del cuadro liso de la vista previa. Se usa cuando la ilustración de fondo está desactivada y la opacidad es mayor que cero; su canal alfa se multiplica por la opacidad. La ilustración de fondo conserva sus propios colores.",
+-- 75205de8 English: Forecast
+[3652] = "Previsión",
+-- 000e5077 English: Configure the preview window and the forecast.
+[3653] = "Configura la ventana de vista previa y la previsión.",
 }

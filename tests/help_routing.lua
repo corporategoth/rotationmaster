@@ -193,7 +193,7 @@ test('top tabs keep navigation briefs without Help icons while window and pane H
     c.scripts.OnTextChanged(c, true)
     c:SetFocus()
     local t = tooltip(f)
-    assert(#shell.tabs == 10)
+    assert(#shell.tabs == 11)
 
     for _, tab in ipairs(shell.tabs) do
         assert(not tab.help, 'top-level tab still has Help: ' .. tab.section)

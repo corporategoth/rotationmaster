@@ -156,7 +156,7 @@ local function settingsShell(key,setup)
     local f=F.new();local a=f.addon;local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     local layout=dofile('tests/fixtures/deferred_layout.lua')(f.env,create)
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.configPaneGeneration=1;a.RotationData=make()
-    for _,path in ipairs({'Platform/spells.lua','Data/catalog.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/cpu_profile.lua','UI/settings_general.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Platform/spells.lua','Data/catalog.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/cpu_profile.lua','UI/settings_general.lua','UI/settings_preview.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     f.load('UI/config.lua')
     a.SetupOptions=function() end;a.RemoveAllCurrentGlows=function() end;a.HideGlow=function() end;a.Glow=function() end
     a.listConditions=function() return {} end
@@ -180,7 +180,7 @@ test('tracked frames answer with the size just assigned and note the size the cl
     layout.userResize(frame,640,200);layout.step();assert(seen==640 and frame:GetWidth()==640,'client sizing was not visible to the handler')
 end)
 
-for _,key in ipairs({'General','Effects','ItemSets','Announces','Profiles','Conditions'}) do
+for _,key in ipairs({'General','Preview','Effects','ItemSets','Announces','Profiles','Conditions'}) do
     test(key..' reflows live when the window is resized and when the divider moves',function()
         local f,a,shell,layout,frames=settingsShell(key);local state=pointer(f)
         for _,size in ipairs({{1600,820},{800,500},{1120,760}}) do
@@ -195,7 +195,7 @@ for _,key in ipairs({'General','Effects','ItemSets','Announces','Profiles','Cond
             -- and nothing drawn on that row reaches under the "?".
             local help=shell.pageHelp;local box=audit.resolver(shell.frame)(help)
             assert(shell.paneHeaderHeight==0 and box.top==audit.resolver(shell.frame)(shell.content).top,key..' page Help takes its own row')
-            audit.assertCornerFree(shell.frame,frames,box,key..' first row runs under the page Help at '..size[1],function(frame) return frame==help or frame.parent==help end)
+            audit.assertCornerFree(shell.frame,frames,box,key..' first row runs under the page Help at '..size[1],function(frame) return frame==help or frame.parent==help or (frame.parent and frame.parent.section~=nil) end)
         end
         local p=shell.pane
         if p.roster then

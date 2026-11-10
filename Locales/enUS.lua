@@ -4781,9 +4781,9 @@ T["Arrange preview icons horizontally (default) or vertically. Below the opacity
 T["Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."] = 1466
 -- 10d580ca
 T["Lock position and size"] = 1467
--- 0e556ee1
+-- 17f58169
 -- Context: Entry in the preview window's right-click menu: opens the General settings page.
-T["Open General settings"] = 1468
+T["Open Preview settings"] = 1468
 -- f65ed2ec
 -- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
 --     differs between the saved and unsaved version.
@@ -7248,8 +7248,8 @@ T["Click the guard text to edit the branch condition. Evaluate uses that conditi
 -- Context: Section title in the rotation editor help for the cards that combine conditions and the
 --     state they show.
 T["Conditions and state"] = 2449
--- eacf49cb
-T["Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving."] = 2450
+-- 01b5fc07
+T["Configure recommendation timing, automatic switching, history and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving."] = 2450
 -- 63ee762f
 T["Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry that card and all following siblings. A branch always carries its children. Use Up / Down on the left to move one card. Duplicate copies the card and the red trash can deletes it. Cooldowns are independent, so they have no move arrows."] = 2451
 -- 24e03e5b
@@ -7518,12 +7518,12 @@ T["Choose how many seconds of combat events to retain for conditions such as rec
 T["Choose how many seconds of observed damage and healing to retain for burn-rate and time-to-die estimates. Recent observations receive more weight. A longer window uses more records and smooths short changes; it cannot supply events the client does not expose."] = 2568
 -- 1826b95e
 T["Choose a whole number of upcoming recommendations, from zero (hidden) to five. This is the only switch for the preview window: it is shown whenever this is above zero and hidden at zero, and the window has no close button. The preview shows current priority results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."] = 2569
--- 9a03212a
-T["Adjust the preview background opacity without fading its icons. At zero only the icons remain, the hidden background does not intercept blank-space clicks and the resize grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity in General to resize it."] = 2570
--- 7884cae2
-T["Unlocked, drag the preview by any icon or its background to move it, and resize it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved or resized and its background lets clicks through. Right-click an icon (or the background while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take effect immediately and are saved without Apply. Other pending General edits remain unchanged."] = 2571
--- 110dd6c2
-T["Arrange preview icons horizontally (default) or vertically. Lock, Direction and Reset share one row below the opacity slider. Changing direction keeps icons square and adjusts the window ratio."] = 2572
+-- 49b05d75
+T["Adjust the preview background opacity without fading its icons. At zero only the icons remain, the hidden background does not intercept blank-space clicks and the resize grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity in Preview to resize it."] = 2570
+-- 88479ae2
+T["Unlocked, drag the preview by any icon or its background to move it, and resize it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved or resized and its background lets clicks through. Right-click an icon (or the background while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take effect immediately and are saved without Apply. Other pending Preview edits remain unchanged."] = 2571
+-- 6e8109b0
+T["Arrange preview icons horizontally (default) or vertically. Lock, Direction and Reset share one row below the color. Changing direction keeps icons square and adjusts the window ratio."] = 2572
 -- 46417b1b
 T["This icon previews the selected profile effect, color, size, anchor and offsets. Previewing an effect does not save the draft or change the spell being recommended."] = 2573
 -- 0e030acc
@@ -7702,8 +7702,8 @@ T["URL"] = 2655
 T["Select URL for copying (Ctrl+C)"] = 2656
 -- 42592899
 T["Syntax highlighting applies only to the Native Lua editor. Apply saves this preference for the next source-editor opening; it does not switch a selected external editor. Show line numbers under the editor heading applies to every provider."] = 2657
--- eb084da9
-T["Enable separately installed Masque here and Apply. General > Preview then provides a Skin dropdown that updates the preview immediately. Masque owns the skin selection; /masque opens its other settings. The preview window keeps its native appearance. Missing or incompatible APIs and provider errors retain the native preview."] = 2658
+-- 84e0b9c0
+T["Enable separately installed Masque here and Apply. The Preview tab then provides a Skin dropdown that updates the preview immediately. Masque owns the skin selection; /masque opens its other settings. The preview window keeps its native appearance. Missing or incompatible APIs and provider errors retain the native preview."] = 2658
 -- 34199d23
 T["Enable Masque in Integrations to choose a skin. Skin changes update the open preview immediately and are saved by Masque, independently of Apply or Discard. Without enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons whether Masque is enabled or not."] = 2659
 -- 5b167013
@@ -7714,8 +7714,8 @@ T["Optional conditions use the Announcement condition list and All, Any and Not 
 T["Choose the unit whose membership in your party or raid is checked. Player keeps the original player group-status behavior. Spell recipient uses only the current announcement event context; without that readable context the result is unavailable. It never substitutes your selected target or a previous cast."] = 2662
 -- 27cc3255
 T["Checked tests raid membership only. Unchecked tests party membership or raid membership. A known nonmember is false; unavailable native data stays unavailable, including under NOT."] = 2663
--- d44133b4
-T["Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page controls. Search and filters belong to the current page. Built In entries remain read-only; Duplicate creates an editable copy."] = 2664
+-- b436f664
+T["Choose tabs to browse Rotations, General, Preview, Conditions, Functions, Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page controls. Search and filters belong to the current page. Built In entries remain read-only; Duplicate creates an editable copy."] = 2664
 -- 28510b80
 T["Scale changes the whole workbench and its child windows from 70% to 130%. Drag the top-left slider or enter an integer percentage and press Enter. Escape restores the saved scale text. Drag the title bar to move; drag the lower-right corner to resize."] = 2665
 -- 81701f02
@@ -10349,6 +10349,10 @@ T["Preview window color"] = 3649
 T["Draw the class painting behind the preview icons, with a border that fills up as icons appear, while the opacity is above zero. The painting shows through every empty slot and follows how many slots there are. Turn it off to use a plain box in the color chosen below it."] = 3650
 -- 24b23387
 T["Choose the color of the plain preview box. It is used when the background art is off and the opacity is above zero; its alpha channel multiplies the window opacity. The background art keeps its own colors."] = 3651
+-- 75205de8
+T["Forecast"] = 3652
+-- 000e5077
+T["Configure the preview window and the forecast."] = 3653
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

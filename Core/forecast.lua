@@ -1192,32 +1192,11 @@ local function startsCombat(spell)
     return effects ~= nil and effects.harmful == true
 end
 
--- Percent chance for an attack to miss a target of 0 to 3 levels above the player, before the player's hit (Classic-era values;
--- a guess, used only to take a little confidence).
+-- Percent chance for an attack to miss a target of 0 to 3 levels above the player, with no hit rating (Classic-era values; a
+-- guess, used only to take a little confidence). The client API manifests list no way to read the player's hit, so it is not read.
 local MELEE_MISS, SPELL_MISS = { 5, 5.5, 6, 8 }, { 4, 5, 6, 17 }
 
--- Adds up the player's hit bonuses (talents and auras, and gear's hit rating) for physical or magical attacks, in percent.
--- @param physical boolean  True for melee and ranged attacks, false for spells.
--- @return number  The bonus; 0 when the client does not say.
-local function hitBonus(physical)
-    local total = 0
-    local rating = physical and CR_HIT_MELEE or CR_HIT_SPELL
-
-    for _, read in ipairs({
-        { physical and GetHitModifier or (not physical and GetSpellHitModifier or nil) },
-        { GetCombatRatingBonus, rating },
-    }) do
-        if type(read[1]) == 'function' and (read[2] ~= nil or read[1] ~= GetCombatRatingBonus) then
-            local ok, value = pcall(read[1], read[2])
-            total = total + (ok and number(value) or 0)
-        end
-    end
-
-    return total
-end
-
--- Estimates the chance that a spell cast at the target now misses it: from the player's and the target's level and the hit the
--- player has. Retail has no hit chance to speak of, and a spell the tables do not aim at an enemy cannot miss.
+-- Estimates the chance that a spell cast at the target now misses it, from the player's and the target's level. Retail has no hit chance to speak of, and a spell the tables do not aim at an enemy cannot miss.
 -- @param effects table|nil  What the tables say of the spell.
 -- @param known table|nil  What was learned of the spell.
 -- @return number  The chance, 0 to 1.
@@ -1247,7 +1226,7 @@ local function missChance(effects, known)
     ))
         + 1]
 
-    return math.max(0, base - hitBonus((effects and effects.school or 1) == 1)) / 100
+    return base / 100
 end
 
 -- Applies a spell cast at the projected time to the state: its cooldown, cost, charges, auras and health effects, and

@@ -4959,9 +4959,9 @@ addon.translation = {
 [1466] = "立即将预览窗口移回屏幕中央，并恢复 64 像素的图标，无需点击“应用”。其他待处理的设置会被保留。",
 -- 10d580ca English: Lock position and size
 [1467] = "锁定位置和大小",
--- 0e556ee1 English: Open General settings
+-- 17f58169 English: Open Preview settings
 -- Context: Entry in the preview window's right-click menu: opens the General settings page.
-[1468] = "打开常规设置",
+[1468] = "打开预览设置",
 -- f65ed2ec English: View Changes
 -- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
 --     differs between the saved and unsaved version.
@@ -8126,10 +8126,10 @@ addon.translation = {
 -- Context: Section title in the rotation editor help for the cards that combine conditions and the
 --     state they show.
 [2449] = "条件与状态",
--- eacf49cb English: Configure recommendation timing, automatic switching, history, preview and
---     profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show
---     numeric values, and fields validate before saving.
-[2450] = "配置推荐的时机、自动切换、历史、预览以及配置文件的默认高亮。标签位于左侧。复选框用于开关选项，滑块显示数值，字段会在保存前进行验证。",
+-- 01b5fc07 English: Configure recommendation timing, automatic switching, history and profile
+--     highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric
+--     values, and fields validate before saving.
+[2450] = "配置推荐的时机、自动切换、历史以及配置文件的默认高亮。标签位于左侧。复选框用于开关选项，滑块显示数值，字段会在保存前进行验证。",
 -- 63ee762f English: Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry
 --     that card and all following siblings. A branch always carries its children. Use Up / Down on
 --     the left to move one card. Duplicate copies the card and the red trash can deletes it.
@@ -8629,21 +8629,21 @@ addon.translation = {
 --     results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing
 --     scales all icons while preserving their square shape and the window ratio.
 [2569] = "选择要显示的后续推荐数量（整数），从零（隐藏）到五。这是预览窗口唯一的开关：大于零时显示，为零时隐藏，窗口没有关闭按钮。预览显示的是当前优先级的结果，而不是对未来冷却或战斗的模拟。图标初始为 64 像素；调整大小会缩放所有图标，同时保持其正方形外观和窗口比例。",
--- 9a03212a English: Adjust the preview background opacity without fading its icons. At zero only
+-- 49b05d75 English: Adjust the preview background opacity without fading its icons. At zero only
 --     the icons remain, the hidden background does not intercept blank-space clicks and the resize
 --     grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity
---     in General to resize it.
-[2570] = "调整预览背景的不透明度，而不会让图标变淡。为零时只保留图标：隐藏的背景不会拦截空白处的点击，调整大小的手柄也不可用；未锁定的预览仍可拖动其图标来移动。若要调整大小，请在“常规”中恢复不透明度。",
--- 7884cae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
+--     in Preview to resize it.
+[2570] = "调整预览背景的不透明度，而不会让图标变淡。为零时只保留图标：隐藏的背景不会拦截空白处的点击，调整大小的手柄也不可用；未锁定的预览仍可拖动其图标来移动。若要调整大小，请在“预览”中恢复不透明度。",
+-- 88479ae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
 --     it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved
 --     or resized and its background lets clicks through. Right-click an icon (or the background
 --     while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take
---     effect immediately and are saved without Apply. Other pending General edits remain unchanged.
-[2571] = "未锁定时，拖动任一图标或背景即可移动预览，鼠标悬停时右下角出现的手柄可用来调整大小。锁定时既不能移动也不能调整大小，背景也会让点击穿透。右键点击图标（未锁定时也可右键点击背景）会打开菜单，用于锁定、解锁或打开这些设置。锁定和解锁会立即生效，并且无需“应用”即可保存。其他待处理的常规编辑保持不变。",
--- 110dd6c2 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
---     Reset share one row below the opacity slider. Changing direction keeps icons square and
---     adjusts the window ratio.
-[2572] = "将预览图标水平（默认）或垂直排列。“锁定”“方向”和“重置”位于不透明度滑块下方的同一行。更改方向会保持图标为正方形并调整窗口比例。",
+--     effect immediately and are saved without Apply. Other pending Preview edits remain unchanged.
+[2571] = "未锁定时，拖动任一图标或背景即可移动预览，鼠标悬停时右下角出现的手柄可用来调整大小。锁定时既不能移动也不能调整大小，背景也会让点击穿透。右键点击图标（未锁定时也可右键点击背景）会打开菜单，用于锁定、解锁或打开这些设置。锁定和解锁会立即生效，并且无需“应用”即可保存。其他待处理的预览编辑保持不变。",
+-- 6e8109b0 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
+--     Reset share one row below the color. Changing direction keeps icons square and adjusts the
+--     window ratio.
+[2572] = "将预览图标水平（默认）或垂直排列。“锁定”“方向”和“重置”位于颜色下方的同一行。更改方向会保持图标为正方形并调整窗口比例。",
 -- 46417b1b English: This icon previews the selected profile effect, color, size, anchor and
 --     offsets. Previewing an effect does not save the draft or change the spell being recommended.
 [2573] = "此图标会预览所选配置文件的效果、颜色、大小、锚点和偏移。预览效果不会保存草稿，也不会改变正在推荐的法术。",
@@ -8995,11 +8995,11 @@ addon.translation = {
 --     preference for the next source-editor opening; it does not switch a selected external editor.
 --     Show line numbers under the editor heading applies to every provider.
 [2657] = "语法高亮仅适用于原生 Lua 编辑器。“应用”会保存此偏好，供下次打开源码编辑器时使用；它不会切换已选择的外部编辑器。编辑器标题下的“显示行号”适用于所有提供者。",
--- eb084da9 English: Enable separately installed Masque here and Apply. General > Preview then
+-- 84e0b9c0 English: Enable separately installed Masque here and Apply. The Preview tab then
 --     provides a Skin dropdown that updates the preview immediately. Masque owns the skin
 --     selection; /masque opens its other settings. The preview window keeps its native appearance.
 --     Missing or incompatible APIs and provider errors retain the native preview.
-[2658] = "在此启用另外安装的 Masque 并点击“应用”。之后“常规 > 预览”会提供一个“皮肤”下拉菜单，可立即更新预览。皮肤选择由 Masque 管理；/masque 可打开其其他设置。预览窗口保持其原生外观。API 缺失或不兼容以及提供者出错时，会保留原生预览。",
+[2658] = "在此启用另外安装的 Masque 并点击“应用”。之后“预览”标签页会提供一个“皮肤”下拉菜单，可立即更新预览。皮肤选择由 Masque 管理；/masque 可打开其其他设置。预览窗口保持其原生外观。API 缺失或不兼容以及提供者出错时，会保留原生预览。",
 -- 34199d23 English: Enable Masque in Integrations to choose a skin. Skin changes update the open
 --     preview immediately and are saved by Masque, independently of Apply or Discard. Without
 --     enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons
@@ -9031,11 +9031,11 @@ addon.translation = {
 --     membership. A known nonmember is false; unavailable native data stays unavailable, including
 --     under NOT.
 [2663] = "勾选时只检测团队成员身份。未勾选时检测小队成员或团队成员身份。已知的非成员为假；不可用的原生数据保持为不可用，在 NOT 下同样如此。",
--- d44133b4 English: Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item
---     Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page
---     controls. Search and filters belong to the current page. Built In entries remain read-only;
---     Duplicate creates an editable copy.
-[2664] = "选择标签页以浏览“循环”“常规”“条件”“函数”“效果”“物品组”“通报”“配置文件”和“集成”。打开的面板有各自针对页面控件的帮助。搜索和筛选属于当前页面。内置条目保持只读；“复制”会创建一个可编辑的副本。",
+-- b436f664 English: Choose tabs to browse Rotations, General, Preview, Conditions, Functions,
+--     Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own
+--     Help for page controls. Search and filters belong to the current page. Built In entries
+--     remain read-only; Duplicate creates an editable copy.
+[2664] = "选择标签页以浏览“循环”“常规”“预览”“条件”“函数”“效果”“物品组”“通报”“配置文件”和“集成”。打开的面板有各自针对页面控件的帮助。搜索和筛选属于当前页面。内置条目保持只读；“复制”会创建一个可编辑的副本。",
 -- 28510b80 English: Scale changes the whole workbench and its child windows from 70% to 130%. Drag
 --     the top-left slider or enter an integer percentage and press Enter. Escape restores the saved
 --     scale text. Drag the title bar to move; drag the lower-right corner to resize.
@@ -12161,4 +12161,8 @@ addon.translation = {
 --     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
 --     background art keeps its own colors.
 [3651] = "选择纯色预览方框的颜色。当背景图关闭且不透明度大于零时使用；其 Alpha 通道会与不透明度相乘。背景图保留自己的颜色。",
+-- 75205de8 English: Forecast
+[3652] = "预测",
+-- 000e5077 English: Configure the preview window and the forecast.
+[3653] = "配置预览窗口和预测。",
 }

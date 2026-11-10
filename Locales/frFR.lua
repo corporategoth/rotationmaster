@@ -4959,9 +4959,9 @@ addon.translation = {
 [1466] = "Ramener immédiatement la fenêtre d'aperçu au centre de l'écran et rétablir des icônes de 64 pixels, sans Appliquer. Les autres paramètres en attente sont conservés.",
 -- 10d580ca English: Lock position and size
 [1467] = "Verrouiller la position et la taille",
--- 0e556ee1 English: Open General settings
+-- 17f58169 English: Open Preview settings
 -- Context: Entry in the preview window's right-click menu: opens the General settings page.
-[1468] = "Ouvrir les paramètres généraux",
+[1468] = "Ouvrir les paramètres de l'aperçu",
 -- f65ed2ec English: View Changes
 -- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
 --     differs between the saved and unsaved version.
@@ -8126,10 +8126,10 @@ addon.translation = {
 -- Context: Section title in the rotation editor help for the cards that combine conditions and the
 --     state they show.
 [2449] = "Conditions et état",
--- eacf49cb English: Configure recommendation timing, automatic switching, history, preview and
---     profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show
---     numeric values, and fields validate before saving.
-[2450] = "Configurez le délai des recommandations, la bascule automatique, l'historique, l'aperçu et les valeurs par défaut de surbrillance du profil. Les libellés sont à gauche. Les cases à cocher activent les options, les curseurs affichent des valeurs numériques et les champs sont validés avant l'enregistrement.",
+-- 01b5fc07 English: Configure recommendation timing, automatic switching, history and profile
+--     highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric
+--     values, and fields validate before saving.
+[2450] = "Configurez le délai des recommandations, la bascule automatique, l'historique et les valeurs par défaut de surbrillance du profil. Les libellés sont à gauche. Les cases à cocher activent les options, les curseurs affichent des valeurs numériques et les champs sont validés avant l'enregistrement.",
 -- 63ee762f English: Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry
 --     that card and all following siblings. A branch always carries its children. Use Up / Down on
 --     the left to move one card. Duplicate copies the card and the red trash can deletes it.
@@ -8629,21 +8629,21 @@ addon.translation = {
 --     results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing
 --     scales all icons while preserving their square shape and the window ratio.
 [2569] = "Choisissez un nombre entier de recommandations à venir, de zéro (masqué) à cinq. C'est le seul interrupteur de la fenêtre d'aperçu : elle est affichée tant que cette valeur est supérieure à zéro et masquée à zéro, et la fenêtre n'a pas de bouton de fermeture. L'aperçu affiche les résultats de priorité actuels, pas une simulation des temps de recharge ou du combat à venir. Les icônes mesurent initialement 64 pixels ; le redimensionnement met toutes les icônes à l'échelle en conservant leur forme carrée et les proportions de la fenêtre.",
--- 9a03212a English: Adjust the preview background opacity without fading its icons. At zero only
+-- 49b05d75 English: Adjust the preview background opacity without fading its icons. At zero only
 --     the icons remain, the hidden background does not intercept blank-space clicks and the resize
 --     grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity
---     in General to resize it.
-[2570] = "Réglez l'opacité du fond de l'aperçu sans estomper ses icônes. À zéro, seules les icônes restent : le fond masqué n'intercepte pas les clics dans les zones vides et la poignée de redimensionnement n'est pas disponible ; un aperçu déverrouillé peut toujours être déplacé par ses icônes. Rétablissez l'opacité dans Général pour le redimensionner.",
--- 7884cae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
+--     in Preview to resize it.
+[2570] = "Réglez l'opacité du fond de l'aperçu sans estomper ses icônes. À zéro, seules les icônes restent : le fond masqué n'intercepte pas les clics dans les zones vides et la poignée de redimensionnement n'est pas disponible ; un aperçu déverrouillé peut toujours être déplacé par ses icônes. Rétablissez l'opacité dans Aperçu pour le redimensionner.",
+-- 88479ae2 English: Unlocked, drag the preview by any icon or its background to move it, and resize
 --     it from the grip that appears at its lower-right corner on hover. Locked, it cannot be moved
 --     or resized and its background lets clicks through. Right-click an icon (or the background
 --     while unlocked) for a menu to lock, unlock or open these settings. Locking and unlocking take
---     effect immediately and are saved without Apply. Other pending General edits remain unchanged.
-[2571] = "Déverrouillé, faites glisser l'aperçu par n'importe quelle icône ou par son fond pour le déplacer, et redimensionnez-le avec la poignée qui apparaît dans son coin inférieur droit au survol. Verrouillé, il ne peut être ni déplacé ni redimensionné et son fond laisse passer les clics. Faites un clic droit sur une icône (ou sur le fond s'il est déverrouillé) pour ouvrir un menu permettant de verrouiller, déverrouiller ou ouvrir ces paramètres. Le verrouillage et le déverrouillage prennent effet immédiatement et sont enregistrés sans Appliquer. Les autres modifications en attente de Général restent inchangées.",
--- 110dd6c2 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
---     Reset share one row below the opacity slider. Changing direction keeps icons square and
---     adjusts the window ratio.
-[2572] = "Disposez les icônes de l'aperçu horizontalement (par défaut) ou verticalement. Verrouiller, Direction et Réinitialiser partagent une ligne sous le curseur d'opacité. Changer de direction conserve des icônes carrées et ajuste les proportions de la fenêtre.",
+--     effect immediately and are saved without Apply. Other pending Preview edits remain unchanged.
+[2571] = "Déverrouillé, faites glisser l'aperçu par n'importe quelle icône ou par son fond pour le déplacer, et redimensionnez-le avec la poignée qui apparaît dans son coin inférieur droit au survol. Verrouillé, il ne peut être ni déplacé ni redimensionné et son fond laisse passer les clics. Faites un clic droit sur une icône (ou sur le fond s'il est déverrouillé) pour ouvrir un menu permettant de verrouiller, déverrouiller ou ouvrir ces paramètres. Le verrouillage et le déverrouillage prennent effet immédiatement et sont enregistrés sans Appliquer. Les autres modifications en attente d'Aperçu restent inchangées.",
+-- 6e8109b0 English: Arrange preview icons horizontally (default) or vertically. Lock, Direction and
+--     Reset share one row below the color. Changing direction keeps icons square and adjusts the
+--     window ratio.
+[2572] = "Disposez les icônes de l'aperçu horizontalement (par défaut) ou verticalement. Verrouiller, Direction et Réinitialiser partagent une ligne sous la couleur. Changer de direction conserve des icônes carrées et ajuste les proportions de la fenêtre.",
 -- 46417b1b English: This icon previews the selected profile effect, color, size, anchor and
 --     offsets. Previewing an effect does not save the draft or change the spell being recommended.
 [2573] = "Cette icône donne un aperçu de l'effet, de la couleur, de la taille, de l'ancre et des décalages sélectionnés dans le profil. L'aperçu d'un effet n'enregistre pas le brouillon et ne change pas le sort recommandé.",
@@ -8995,11 +8995,11 @@ addon.translation = {
 --     preference for the next source-editor opening; it does not switch a selected external editor.
 --     Show line numbers under the editor heading applies to every provider.
 [2657] = "La coloration syntaxique ne s'applique qu'à l'éditeur Lua Natif. Appliquer enregistre cette préférence pour la prochaine ouverture d'un éditeur de source ; cela ne remplace pas un éditeur externe sélectionné. Afficher les numéros de ligne, sous le titre de l'éditeur, s'applique à tous les fournisseurs.",
--- eb084da9 English: Enable separately installed Masque here and Apply. General > Preview then
+-- 84e0b9c0 English: Enable separately installed Masque here and Apply. The Preview tab then
 --     provides a Skin dropdown that updates the preview immediately. Masque owns the skin
 --     selection; /masque opens its other settings. The preview window keeps its native appearance.
 --     Missing or incompatible APIs and provider errors retain the native preview.
-[2658] = "Activez ici Masque, installé séparément, puis cliquez sur Appliquer. Général > Aperçu propose alors une liste déroulante Habillage qui met à jour l'aperçu immédiatement. Masque gère la sélection de l'habillage ; /masque ouvre ses autres réglages. La fenêtre d'aperçu conserve son apparence native. En cas d'API manquantes ou incompatibles ou d'erreurs du fournisseur, l'aperçu natif est conservé.",
+[2658] = "Activez ici Masque, installé séparément, puis cliquez sur Appliquer. L'onglet Aperçu propose alors une liste déroulante Habillage qui met à jour l'aperçu immédiatement. Masque gère la sélection de l'habillage ; /masque ouvre ses autres réglages. La fenêtre d'aperçu conserve son apparence native. En cas d'API manquantes ou incompatibles ou d'erreurs du fournisseur, l'aperçu natif est conservé.",
 -- 34199d23 English: Enable Masque in Integrations to choose a skin. Skin changes update the open
 --     preview immediately and are saved by Masque, independently of Apply or Discard. Without
 --     enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons
@@ -9031,11 +9031,11 @@ addon.translation = {
 --     membership. A known nonmember is false; unavailable native data stays unavailable, including
 --     under NOT.
 [2663] = "Cochée, ne vérifie que l'appartenance à un raid. Décochée, vérifie l'appartenance à un groupe ou à un raid. Un non-membre connu donne faux ; des données natives indisponibles restent indisponibles, y compris sous NOT.",
--- d44133b4 English: Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item
---     Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page
---     controls. Search and filters belong to the current page. Built In entries remain read-only;
---     Duplicate creates an editable copy.
-[2664] = "Choisissez des onglets pour parcourir Rotations, Général, Conditions, Fonctions, Effets, Ensembles d'objets, Annonces, Profils et Intégrations. Les volets ouverts ont leur propre Aide pour les commandes de la page. La recherche et les filtres concernent la page actuelle. Les entrées Intégrées restent en lecture seule ; Dupliquer crée une copie modifiable.",
+-- b436f664 English: Choose tabs to browse Rotations, General, Preview, Conditions, Functions,
+--     Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own
+--     Help for page controls. Search and filters belong to the current page. Built In entries
+--     remain read-only; Duplicate creates an editable copy.
+[2664] = "Choisissez des onglets pour parcourir Rotations, Général, Aperçu, Conditions, Fonctions, Effets, Ensembles d'objets, Annonces, Profils et Intégrations. Les volets ouverts ont leur propre Aide pour les commandes de la page. La recherche et les filtres concernent la page actuelle. Les entrées Intégrées restent en lecture seule ; Dupliquer crée une copie modifiable.",
 -- 28510b80 English: Scale changes the whole workbench and its child windows from 70% to 130%. Drag
 --     the top-left slider or enter an integer percentage and press Enter. Escape restores the saved
 --     scale text. Drag the title bar to move; drag the lower-right corner to resize.
@@ -12161,4 +12161,8 @@ addon.translation = {
 --     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
 --     background art keeps its own colors.
 [3651] = "Choisissez la couleur du cadre uni de l'aperçu. Elle est utilisée lorsque l'illustration d'arrière-plan est désactivée et que l'opacité est supérieure à zéro ; son canal alpha est multiplié par l'opacité. L'illustration d'arrière-plan conserve ses propres couleurs.",
+-- 75205de8 English: Forecast
+[3652] = "Prévision",
+-- 000e5077 English: Configure the preview window and the forecast.
+[3653] = "Configurez la fenêtre d'aperçu et la prévision.",
 }
