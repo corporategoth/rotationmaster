@@ -75,8 +75,20 @@ test(
         w:Configure()
         assert(w.cells[2]:GetTexture():find('shaman%-t2$'), tostring(w.cells[2]:GetTexture()))
 
-        -- A class that has no painting yet, an unreadable class, and no UnitClass at all draw nothing over the slate.
-        for _, class in ipairs({ 'MAGE', 'MYSTERY', false }) do
+        -- A class without a painting of its own gets the neutral one when there is one, and the plain box when there is not; an
+        -- unreadable class and a missing UnitClass are treated the same way.
+        local source = io.open('UI/preview.lua'):read('*a')
+        local neutral = source:find("'rotation%-master%-w1'") ~= nil
+        local absent
+
+        for _, token in ipairs({
+            'WARRIOR', 'PALADIN', 'HUNTER', 'ROGUE', 'PRIEST', 'DEATHKNIGHT', 'MAGE', 'WARLOCK', 'MONK', 'DRUID',
+            'DEMONHUNTER', 'EVOKER'
+        }) do
+            absent = absent or (not source:find("'" .. token:lower() .. "%-w1'") and token or nil)
+        end
+
+        for _, class in ipairs({ absent or 'MYSTERY', 'MYSTERY', false }) do
             local f, other = fixture(class or nil, { preview_icon_size = 64 })
 
             if not class then
@@ -85,8 +97,13 @@ test(
 
             local window = other:CreateNativePreviewWindow()
             window:Configure()
-            assert(not window.useArt and window.body:IsShown() and window.body.color[1] == 0.055, tostring(class))
-            assert(window.frame:GetWidth() == 3 * 64 + 8, 'the plain box keeps its four')
+
+            if neutral then
+                assert(window.useArt and window.cells[1]:GetTexture():find('rotation%-master%-w1$'), tostring(class))
+            else
+                assert(not window.useArt and window.body:IsShown() and window.body.color[1] == 0.055, tostring(class))
+                assert(window.frame:GetWidth() == 3 * 64 + 8, 'the plain box keeps its four')
+            end
         end
     end
 )

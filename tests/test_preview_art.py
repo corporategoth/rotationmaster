@@ -22,8 +22,8 @@ def themes():
     text = (ROOT / 'UI' / 'preview.lua').read_text(encoding='utf-8')
     block = text[text.index('local ART_THEMES'):text.index('local BORDER_PIECES')]
     found = {}
-    for name in re.findall(r"'([a-z]+-(?:[wt][1-5]|border))'", block):
-        found.setdefault(name.split('-')[0], []).append(name)
+    for name in re.findall(r"'([a-z-]+-(?:[wt][1-5]|border))'", block):
+        found.setdefault(name.rsplit('-', 1)[0], []).append(name)
     return found
 
 

@@ -46,6 +46,9 @@ local ART_THEMES = {
     },
 }
 
+-- The painting for a class that has none of its own (nil until it is made).
+local ART_NEUTRAL = nil
+
 -- Where each piece sits on the border sheet, as texture coordinates (left, right, top, bottom); the sheet is 256 x 64, in rows of 16.
 local BORDER_PIECES = {
     dimRail = { 0, 1, 0, 0.25 },
@@ -58,20 +61,21 @@ local BORDER_PIECES = {
 local PLAIN_PAD, BORDER_SHARE, BORDER_MIN, BORDER_MAX = 4, 0.1, 5, 12
 
 -- Returns the art theme for the player's class.
--- @return table|nil  { wide, tall, border } texture names; nil when the class has no painting yet (the plain box is drawn).
+-- @return table|nil  { wide, tall, border } texture names; the neutral painting for a class without its own, nil when there is none
+--   (the plain box is drawn).
 local function artTheme()
     if type(UnitClass) ~= 'function' then
-        return nil
+        return ART_NEUTRAL
     end
 
     local ok, _, token = pcall(UnitClass, 'player')
 
     -- The class token is not secret, but nothing from a game call is used as a table key unchecked.
     if not ok or type(token) ~= 'string' or (canaccessvalue and not canaccessvalue(token)) then
-        return nil
+        return ART_NEUTRAL
     end
 
-    return ART_THEMES[token]
+    return ART_THEMES[token] or ART_NEUTRAL
 end
 
 -- Returns the padding round the icons.
