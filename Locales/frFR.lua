@@ -12152,17 +12152,25 @@ addon.translation = {
 [3648] = "Dessiner l'illustration d'arrière-plan de l'aperçu",
 -- 2639e726 English: Preview window color
 [3649] = "Couleur de la fenêtre d'aperçu",
--- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
---     as icons appear, while the opacity is above zero. The painting shows through every empty slot
---     and follows how many slots there are. Turn it off to use a plain box in the color chosen
---     below it.
-[3650] = "Dessine l'illustration de la classe derrière les icônes de l'aperçu, avec une bordure qui se remplit à mesure que des icônes apparaissent, tant que l'opacité est supérieure à zéro. L'illustration transparaît dans chaque emplacement vide et suit le nombre d'emplacements. Désactivez cette option pour utiliser un cadre uni de la couleur choisie en dessous.",
--- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
---     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
---     background art keeps its own colors.
-[3651] = "Choisissez la couleur du cadre uni de l'aperçu. Elle est utilisée lorsque l'illustration d'arrière-plan est désactivée et que l'opacité est supérieure à zéro ; son canal alpha est multiplié par l'opacité. L'illustration d'arrière-plan conserve ses propres couleurs.",
+-- ec3039d7 English: Choose the painting behind the preview icons: your own class, any other class,
+--     the Rotation Master one or a solid background. A painting is drawn while the opacity is above
+--     zero, shows through every empty slot, follows how many slots there are and has a border that
+--     fills up as icons appear. Solid background draws a plain box in the color chosen below it.
+[3650] = "Choisissez l'illustration derrière les icônes de l'aperçu : votre propre classe, une autre classe, celle de Rotation Master ou un arrière-plan uni. L'illustration est dessinée tant que l'opacité est supérieure à zéro, transparaît dans chaque emplacement vide, suit le nombre d'emplacements et a une bordure qui se remplit à mesure que des icônes apparaissent. Arrière-plan uni dessine un cadre uni de la couleur choisie en dessous.",
+-- 0c9e775b English: Choose the color of the plain preview box. It is used when Solid background is
+--     chosen and the opacity is above zero; its alpha channel multiplies the window opacity. A
+--     painting keeps its own colors.
+[3651] = "Choisissez la couleur du cadre uni de l'aperçu. Elle est utilisée lorsque Arrière-plan uni est choisi et que l'opacité est supérieure à zéro ; son canal alpha est multiplié par l'opacité. Une illustration conserve ses propres couleurs.",
 -- 75205de8 English: Forecast
 [3652] = "Prévision",
 -- 000e5077 English: Configure the preview window and the forecast.
 [3653] = "Configurez la fenêtre d'aperçu et la prévision.",
+-- 3907fa7f English: Appearance
+[3654] = "Apparence",
+-- 35d0cc87 English: Preview background
+[3655] = "Arrière-plan de l'aperçu",
+-- 0eff3ed6 English: My class (%s)
+[3656] = "Ma classe (%s)",
+-- d8453386 English: Solid background
+[3657] = "Arrière-plan uni",
 }

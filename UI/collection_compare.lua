@@ -292,6 +292,7 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             preview_locked = L['Lock position and size'],
             preview_opacity = L['Preview window opacity'],
             preview_background = L['Draw the preview background art'],
+            preview_art = L['Preview background'],
             preview_color = L['Preview window color'],
             preview_title = L['Show a title above the preview'],
             preview_icon_size = L['Preview icon size'],

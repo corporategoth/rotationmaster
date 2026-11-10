@@ -41,9 +41,14 @@ end
 function addon:GetPreviewOptionHelp()
     return {
         {
-            id = "preview_spells",
-            title = L["Preview Spells"],
-            text = L["Choose a whole number of upcoming recommendations, from zero (hidden) to five. This is the only switch for the preview window: it is shown whenever this is above zero and hidden at zero, and the window has no close button. The preview shows current priority results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."],
+            id = "preview_art",
+            title = L["Preview background"],
+            text = L["Choose the painting behind the preview icons: your own class, any other class, the Rotation Master one or a solid background. A painting is drawn while the opacity is above zero, shows through every empty slot, follows how many slots there are and has a border that fills up as icons appear. Solid background draws a plain box in the color chosen below it."],
+        },
+        {
+            id = "preview_color",
+            title = L["Preview window color"],
+            text = L["Choose the color of the plain preview box. It is used when Solid background is chosen and the opacity is above zero; its alpha channel multiplies the window opacity. A painting keeps its own colors."],
         },
         {
             id = "preview_opacity",
@@ -51,14 +56,14 @@ function addon:GetPreviewOptionHelp()
             text = L["Adjust the preview background opacity without fading its icons. At zero only the icons remain, the hidden background does not intercept blank-space clicks and the resize grip is unavailable; an unlocked preview can still be dragged by its icons. Restore opacity in Preview to resize it."],
         },
         {
-            id = "preview_background",
-            title = L["Draw the preview background art"],
-            text = L["Draw the class painting behind the preview icons, with a border that fills up as icons appear, while the opacity is above zero. The painting shows through every empty slot and follows how many slots there are. Turn it off to use a plain box in the color chosen below it."],
+            id = "preview_title",
+            title = L["Show a title above the preview"],
+            text = L["Show \"Rotation Preview\" above the preview window so it is clear what it is. Turn it off to show only the icons."],
         },
         {
-            id = "preview_color",
-            title = L["Preview window color"],
-            text = L["Choose the color of the plain preview box. It is used when the background art is off and the opacity is above zero; its alpha channel multiplies the window opacity. The background art keeps its own colors."],
+            id = "preview_target_health",
+            title = L["Show target health under the preview"],
+            text = L["Shows your target's health as a thin bar under the preview window. The game draws it from the real health even where it hides health from addons (Retail and Forever in combat), so it is shown but never used to choose a step."],
         },
         {
             id = "preview_locked",
@@ -76,6 +81,11 @@ function addon:GetPreviewOptionHelp()
             text = L["Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."],
         },
         {
+            id = "preview_spells",
+            title = L["Preview Spells"],
+            text = L["Choose a whole number of upcoming recommendations, from zero (hidden) to five. This is the only switch for the preview window: it is shown whenever this is above zero and hidden at zero, and the window has no close button. The preview shows current priority results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."],
+        },
+        {
             id = "preview_skin",
             title = L["Skin"],
             text = L["Enable Masque in Integrations to choose a skin. Skin changes update the open preview immediately and are saved by Masque, independently of Apply or Discard. Without enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons whether Masque is enabled or not."],
@@ -84,16 +94,6 @@ function addon:GetPreviewOptionHelp()
             id = "preview_sample",
             title = L["Preview"],
             text = L["Click Preview to toggle temporary sample icons when no real recommendations are available. Real recommendations replace the samples. This does not change Preview Spells, cast spells, or save the sample state."],
-        },
-        {
-            id = "preview_title",
-            title = L["Show a title above the preview"],
-            text = L["Show \"Rotation Preview\" above the preview window so it is clear what it is. Turn it off to show only the icons."],
-        },
-        {
-            id = "preview_target_health",
-            title = L["Show target health under the preview"],
-            text = L["Shows your target's health as a thin bar under the preview window. The game draws it from the real health even where it hides health from addons (Retail and Forever in combat), so it is shown but never used to choose a step."],
         },
         {
             id = "preview_readiness",

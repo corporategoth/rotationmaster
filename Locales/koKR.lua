@@ -12152,17 +12152,25 @@ addon.translation = {
 [3648] = "미리보기 배경 그림 그리기",
 -- 2639e726 English: Preview window color
 [3649] = "미리보기 창 색상",
--- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
---     as icons appear, while the opacity is above zero. The painting shows through every empty slot
---     and follows how many slots there are. Turn it off to use a plain box in the color chosen
---     below it.
-[3650] = "투명도가 0보다 클 때 미리보기 아이콘 뒤에 직업 그림을 그리고, 아이콘이 나타날수록 채워지는 테두리를 표시합니다. 그림은 비어 있는 모든 칸 사이로 보이며 칸의 개수를 따라갑니다. 끄면 아래에서 선택한 색상의 단순한 상자를 사용합니다.",
--- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
---     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
---     background art keeps its own colors.
-[3651] = "단순한 미리보기 상자의 색상을 선택하세요. 배경 그림이 꺼져 있고 투명도가 0보다 클 때 사용되며, 알파 채널은 투명도와 곱해집니다. 배경 그림은 자체 색상을 유지합니다.",
+-- ec3039d7 English: Choose the painting behind the preview icons: your own class, any other class,
+--     the Rotation Master one or a solid background. A painting is drawn while the opacity is above
+--     zero, shows through every empty slot, follows how many slots there are and has a border that
+--     fills up as icons appear. Solid background draws a plain box in the color chosen below it.
+[3650] = "미리보기 아이콘 뒤에 표시할 그림을 선택합니다: 내 직업, 다른 직업, Rotation Master 그림 또는 단색 배경. 그림은 투명도가 0보다 클 때 그려지고, 비어 있는 모든 칸 사이로 보이며, 칸의 개수를 따라가고, 아이콘이 나타날수록 채워지는 테두리가 있습니다. 단색 배경은 아래에서 선택한 색상의 단순한 상자를 그립니다.",
+-- 0c9e775b English: Choose the color of the plain preview box. It is used when Solid background is
+--     chosen and the opacity is above zero; its alpha channel multiplies the window opacity. A
+--     painting keeps its own colors.
+[3651] = "단순한 미리보기 상자의 색상을 선택하세요. 단색 배경을 선택했고 투명도가 0보다 클 때 사용되며, 알파 채널은 투명도와 곱해집니다. 그림은 자체 색상을 유지합니다.",
 -- 75205de8 English: Forecast
 [3652] = "예측",
 -- 000e5077 English: Configure the preview window and the forecast.
 [3653] = "미리보기 창과 예측을 설정합니다.",
+-- 3907fa7f English: Appearance
+[3654] = "외관",
+-- 35d0cc87 English: Preview background
+[3655] = "미리보기 배경",
+-- 0eff3ed6 English: My class (%s)
+[3656] = "내 직업 (%s)",
+-- d8453386 English: Solid background
+[3657] = "단색 배경",
 }

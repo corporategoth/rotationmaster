@@ -12152,17 +12152,25 @@ addon.translation = {
 [3648] = "Desenhar a arte de fundo da pré-visualização",
 -- 2639e726 English: Preview window color
 [3649] = "Cor da janela de pré-visualização",
--- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
---     as icons appear, while the opacity is above zero. The painting shows through every empty slot
---     and follows how many slots there are. Turn it off to use a plain box in the color chosen
---     below it.
-[3650] = "Desenha a pintura da classe atrás dos ícones da pré-visualização, com uma borda que vai se preenchendo conforme os ícones aparecem, enquanto a opacidade for maior que zero. A pintura aparece através de cada espaço vazio e acompanha o número de espaços. Desative para usar uma caixa simples na cor escolhida abaixo.",
--- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
---     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
---     background art keeps its own colors.
-[3651] = "Escolha a cor da caixa simples da pré-visualização. Ela é usada quando a arte de fundo está desativada e a opacidade é maior que zero; o canal alfa é multiplicado pela opacidade. A arte de fundo mantém as próprias cores.",
+-- ec3039d7 English: Choose the painting behind the preview icons: your own class, any other class,
+--     the Rotation Master one or a solid background. A painting is drawn while the opacity is above
+--     zero, shows through every empty slot, follows how many slots there are and has a border that
+--     fills up as icons appear. Solid background draws a plain box in the color chosen below it.
+[3650] = "Escolha a pintura atrás dos ícones da pré-visualização: sua própria classe, qualquer outra classe, a do Rotation Master ou um fundo sólido. A pintura é desenhada enquanto a opacidade for maior que zero, aparece através de cada espaço vazio, acompanha o número de espaços e tem uma borda que vai se preenchendo conforme os ícones aparecem. Fundo sólido desenha uma caixa simples na cor escolhida abaixo.",
+-- 0c9e775b English: Choose the color of the plain preview box. It is used when Solid background is
+--     chosen and the opacity is above zero; its alpha channel multiplies the window opacity. A
+--     painting keeps its own colors.
+[3651] = "Escolha a cor da caixa simples da pré-visualização. Ela é usada quando Fundo sólido está escolhido e a opacidade é maior que zero; o canal alfa é multiplicado pela opacidade. Uma pintura mantém as próprias cores.",
 -- 75205de8 English: Forecast
 [3652] = "Previsão",
 -- 000e5077 English: Configure the preview window and the forecast.
 [3653] = "Configure a janela de pré-visualização e a previsão.",
+-- 3907fa7f English: Appearance
+[3654] = "Aparência",
+-- 35d0cc87 English: Preview background
+[3655] = "Fundo da pré-visualização",
+-- 0eff3ed6 English: My class (%s)
+[3656] = "Minha classe (%s)",
+-- d8453386 English: Solid background
+[3657] = "Fundo sólido",
 }

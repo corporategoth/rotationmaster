@@ -12152,17 +12152,25 @@ addon.translation = {
 [3648] = "Dibujar la ilustración de fondo de la vista previa",
 -- 2639e726 English: Preview window color
 [3649] = "Color de la ventana de vista previa",
--- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
---     as icons appear, while the opacity is above zero. The painting shows through every empty slot
---     and follows how many slots there are. Turn it off to use a plain box in the color chosen
---     below it.
-[3650] = "Dibuja la ilustración de clase detrás de los iconos de la vista previa y un borde que se va llenando a medida que aparecen iconos, mientras la opacidad sea mayor que cero. La ilustración se ve a través de cada hueco vacío y sigue el número de huecos. Desactívala para usar un cuadro liso del color elegido debajo.",
--- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
---     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
---     background art keeps its own colors.
-[3651] = "Elige el color del cuadro liso de la vista previa. Se usa cuando la ilustración de fondo está desactivada y la opacidad es mayor que cero; su canal alfa se multiplica por la opacidad. La ilustración de fondo conserva sus propios colores.",
+-- ec3039d7 English: Choose the painting behind the preview icons: your own class, any other class,
+--     the Rotation Master one or a solid background. A painting is drawn while the opacity is above
+--     zero, shows through every empty slot, follows how many slots there are and has a border that
+--     fills up as icons appear. Solid background draws a plain box in the color chosen below it.
+[3650] = "Elige la ilustración detrás de los iconos de la vista previa: tu propia clase, cualquier otra clase, la de Rotation Master o un fondo liso. La ilustración se dibuja mientras la opacidad sea mayor que cero, se ve a través de cada hueco vacío, sigue el número de huecos y tiene un borde que se va llenando a medida que aparecen iconos. Fondo liso dibuja un cuadro liso del color elegido debajo.",
+-- 0c9e775b English: Choose the color of the plain preview box. It is used when Solid background is
+--     chosen and the opacity is above zero; its alpha channel multiplies the window opacity. A
+--     painting keeps its own colors.
+[3651] = "Elige el color del cuadro liso de la vista previa. Se usa cuando se elige Fondo liso y la opacidad es mayor que cero; su canal alfa se multiplica por la opacidad. Una ilustración conserva sus propios colores.",
 -- 75205de8 English: Forecast
 [3652] = "Previsión",
 -- 000e5077 English: Configure the preview window and the forecast.
 [3653] = "Configura la ventana de vista previa y la previsión.",
+-- 3907fa7f English: Appearance
+[3654] = "Apariencia",
+-- 35d0cc87 English: Preview background
+[3655] = "Fondo de la vista previa",
+-- 0eff3ed6 English: My class (%s)
+[3656] = "Mi clase (%s)",
+-- d8453386 English: Solid background
+[3657] = "Fondo liso",
 }

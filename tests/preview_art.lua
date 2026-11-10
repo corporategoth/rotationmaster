@@ -109,7 +109,7 @@ test(
 )
 
 test(
-    'each slot gets its own chapter, laid over exactly the slot, and the window is as many slots wide as it was',
+    'each slot gets its own chapter over its slot, the first and last running out under the padding so no bar shows at the ends',
     function()
         local _, a = fixture('SHAMAN', { preview_icon_size = 64 })
         local w = a:CreateNativePreviewWindow()
@@ -124,24 +124,70 @@ test(
                 'a border of six round the slots'
             )
 
+            local covered = 0
+
             for index = 1, slots do
                 local point = w.cells[index].points[1]
+                local width = w.cells[index]:GetWidth()
+                local first, last = index == 1, index == slots
 
+                -- Together the cells run from the left edge of the window to its right edge.
                 assert(
-                    point[1] == 'TOPLEFT' and point[4] == 6 + (index - 1) * 64 and point[5] == -6,
+                    point[1] == 'TOPLEFT' and point[4] == (first and 0 or 6 + (index - 1) * 64) and point[5] == -6,
                     slots .. '/' .. index
                 )
 
-                assert(w.cells[index]:GetWidth() == 64 and w.cells[index]:GetHeight() == 64)
+                assert(width == 64 + (first and 6 or 0) + (last and 6 or 0) and w.cells[index]:GetHeight() == 64)
+                covered = covered + width
             end
+
+            assert(covered == w.frame:GetWidth(), slots .. ': no bar of the box left at the ends')
 
             a.db.profile.preview_vertical = true
             w:Configure()
             local last = w.cells[slots].points[1]
-            assert(last[4] == 6 and last[5] == -(6 + (slots - 1) * 64), slots .. ' tall')
+            local ends = w.cells[slots]:GetHeight()
+            assert(last[4] == 6 and last[5] == -(slots == 1 and 0 or 6 + (slots - 1) * 64), slots .. ' tall')
+            assert(ends == 64 + 6 + (slots == 1 and 6 or 0), slots .. ' tall length')
         end
     end
 )
+
+test('the Preview background choice picks the painting: my class, any class, the neutral one or a plain box', function()
+    local _, a = fixture('SHAMAN', { preview_spells = 2 })
+    local w = a:CreateNativePreviewWindow()
+    w:Configure()
+    assert(w.useArt and w.cells[1]:GetTexture():find('shaman%-w1$'), 'default: my class')
+
+    for choice, expected in pairs({
+        MAGE = 'mage%-w1$',
+        ROTATION_MASTER = 'rotation%-master%-w1$',
+        class = 'shaman%-w1$',
+    }) do
+        a.db.profile.preview_art = choice
+        w:Configure()
+        assert(w.useArt and w.cells[1]:GetTexture():find(expected), choice)
+    end
+
+    a.db.profile.preview_art = 'solid'
+    w:Configure()
+    assert(not w.useArt and not w.cells[1]:IsShown() and w.frame:GetWidth() == 2 * 64 + 8)
+
+    -- A profile saved with the old background switch off is a plain box, whatever painting it names.
+    a.db.profile.preview_art = 'class'
+    a.db.profile.preview_background = false
+    w:Configure()
+    assert(not w.useArt)
+    a.db.profile.preview_background = true
+    w:Configure()
+    assert(w.useArt)
+
+    -- Something that is not a painting is the player's class.
+    a.db.profile.preview_art = 'NOT_A_CLASS'
+    w:Configure()
+    assert(w.useArt and w.cells[1]:GetTexture():find('shaman%-w1$'))
+    assert(#a:GetPreviewArtChoices() == 14 and a:GetPreviewArtChoices()[14] == 'ROTATION_MASTER')
+end)
 
 test('the border is a tenth of the icon size, between five and twelve pixels, and four for a plain box', function()
     local _, a = fixture('SHAMAN', { preview_spells = 2 })
@@ -154,10 +200,10 @@ test('the border is a tenth of the icon size, between five and twelve pixels, an
     end
 
     a.db.profile.preview_icon_size = 64
-    a.db.profile.preview_background = false
+    a.db.profile.preview_art = 'solid'
     w:Configure()
     assert(w.frame:GetWidth() == 2 * 64 + 8, 'the plain box keeps its four')
-    a.db.profile.preview_background = true
+    a.db.profile.preview_art = 'class'
     a.db.profile.preview_opacity = 0
     w:Configure()
     assert(w.frame:GetWidth() == 2 * 64, 'no border when fully transparent')
@@ -240,7 +286,7 @@ test(
         assert(w.cells[1]:IsShown() and w.cells[1]:GetAlpha() == 0.5 and w.rails[1]:GetAlpha() == 0.5)
         assert(w.body.color[1] == 0.055, 'the art sits on the default slate, not the chosen color')
 
-        a.db.profile.preview_background = false
+        a.db.profile.preview_art = 'solid'
         a.db.profile.preview_color = { r = 0.2, g = 0.4, b = 0.6, a = 0.5 }
         w:Configure()
         assert(w.body:IsShown() and w.body:GetAlpha() == 0.5)
@@ -252,7 +298,7 @@ test(
         w:Configure()
         assert(w.body.color[1] == 0.055)
 
-        a.db.profile.preview_background = true
+        a.db.profile.preview_art = 'class'
         a.db.profile.preview_opacity = 0
         w:Configure()
 

@@ -218,8 +218,8 @@ function addon:OpenNativeSettings(parent, key, cached)
                 'preview_readiness', 'preview_ignore_mana', 'preview_ignore_range', 'preview_ignore_moving',
                 'preview_target_health', 'preview_gray_unaffordable', 'forecast', 'forecast_confidence',
                 'forecast_percent', 'forecast_delay', 'preview_spells', 'preview_vertical', 'preview_locked',
-                'preview_opacity', 'preview_background', 'preview_color', 'preview_title', 'preview_icon_size',
-                'preview_window'
+                'preview_opacity', 'preview_background', 'preview_art', 'preview_color', 'preview_title',
+                'preview_icon_size', 'preview_window'
             },
         },
         General = {

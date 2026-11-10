@@ -10345,14 +10345,22 @@ T["Official project page. Publisher lists Forever. Choose the matching file; exa
 T["Draw the preview background art"] = 3648
 -- 2639e726
 T["Preview window color"] = 3649
--- 694582b5
-T["Draw the class painting behind the preview icons, with a border that fills up as icons appear, while the opacity is above zero. The painting shows through every empty slot and follows how many slots there are. Turn it off to use a plain box in the color chosen below it."] = 3650
--- 24b23387
-T["Choose the color of the plain preview box. It is used when the background art is off and the opacity is above zero; its alpha channel multiplies the window opacity. The background art keeps its own colors."] = 3651
+-- ec3039d7
+T["Choose the painting behind the preview icons: your own class, any other class, the Rotation Master one or a solid background. A painting is drawn while the opacity is above zero, shows through every empty slot, follows how many slots there are and has a border that fills up as icons appear. Solid background draws a plain box in the color chosen below it."] = 3650
+-- 0c9e775b
+T["Choose the color of the plain preview box. It is used when Solid background is chosen and the opacity is above zero; its alpha channel multiplies the window opacity. A painting keeps its own colors."] = 3651
 -- 75205de8
 T["Forecast"] = 3652
 -- 000e5077
 T["Configure the preview window and the forecast."] = 3653
+-- 3907fa7f
+T["Appearance"] = 3654
+-- 35d0cc87
+T["Preview background"] = 3655
+-- 0eff3ed6
+T["My class (%s)"] = 3656
+-- d8453386
+T["Solid background"] = 3657
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

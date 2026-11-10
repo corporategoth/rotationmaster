@@ -136,22 +136,80 @@ local BORDER_PIECES = {
 
 local PLAIN_PAD, BORDER_SHARE, BORDER_MIN, BORDER_MAX = 4, 0.1, 5, 12
 
--- Returns the art theme for the player's class.
--- @return table|nil  { wide, tall, border } texture names; the neutral painting for a class without its own, nil when there is none
---   (the plain box is drawn).
-local function artTheme()
+-- The painting choices in the order the Preview page lists them, after "my class": the class tokens, then the neutral one.
+local ART_CHOICES = {
+    'DEATHKNIGHT', 'DEMONHUNTER', 'DRUID', 'EVOKER', 'HUNTER', 'MAGE', 'MONK', 'PALADIN', 'PRIEST', 'ROGUE', 'SHAMAN',
+    'WARLOCK', 'WARRIOR', 'ROTATION_MASTER'
+}
+
+-- Returns the player's class token.
+-- @return string|nil  The token; nil when it cannot be read.
+local function playerClass()
     if type(UnitClass) ~= 'function' then
-        return ART_NEUTRAL
+        return nil
     end
 
     local ok, _, token = pcall(UnitClass, 'player')
 
     -- The class token is not secret, but nothing from a game call is used as a table key unchecked.
     if not ok or type(token) ~= 'string' or (canaccessvalue and not canaccessvalue(token)) then
+        return nil
+    end
+
+    return token
+end
+
+-- Returns the art theme a profile asks for.
+-- @param profile table|nil  The profile; nil reads the active one.
+-- @return table|nil  { wide, tall, border } texture names; nil for a plain box in the profile's color. "class" (the default) is the
+--   player's class, or the neutral painting for a class without its own. The old background switch, off, is a plain box: a profile
+--   saved before the choice existed keeps it, and choosing a painting on the Preview page turns it back on.
+local function artTheme(profile)
+    profile = profile or addon.db and addon.db.profile or {}
+    local choice = profile.preview_art
+
+    if profile.preview_background == false or choice == 'solid' then
+        return nil
+    end
+    if choice == 'ROTATION_MASTER' then
         return ART_NEUTRAL
     end
 
-    return ART_THEMES[token] or ART_NEUTRAL
+    if type(choice) == 'string' and choice ~= 'class' and (not canaccessvalue or canaccessvalue(choice)) then
+        local theme = ART_THEMES[choice]
+
+        if theme then
+            return theme
+        end
+    end
+
+    return ART_THEMES[playerClass() or ''] or ART_NEUTRAL
+end
+
+-- Lists the paintings a player can choose from.
+-- @return string[]  The class tokens that have a painting, then "ROTATION_MASTER".
+function addon:GetPreviewArtChoices()
+    return ART_CHOICES
+end
+
+-- Returns the painting a profile shows.
+-- @param profile table|nil  The profile; nil reads the active one.
+-- @return table|nil  { wide, tall, border } texture names, nil for a plain box.
+function addon:GetPreviewArtTheme(profile)
+    return artTheme(profile)
+end
+
+-- Returns the painting a choice shows, to preview it on the settings page.
+-- @param choice string  "class", a class token or "ROTATION_MASTER".
+-- @return table|nil  { wide, tall, border } texture names.
+function addon:GetPreviewArtFor(choice)
+    return artTheme({ preview_art = choice })
+end
+
+-- The folder the painting textures are in.
+-- @return string  The path with its trailing separator.
+function addon:GetPreviewArtDirectory()
+    return ART_DIR
 end
 
 -- Returns the padding round the icons.
@@ -283,7 +341,7 @@ function addon:CreateNativePreviewWindow()
 
         -- Draws the class painting over the slots and the border round them, for the number of slots and icons now shown.
         function window:LayoutArt()
-            local theme = self.useArt and self.artBuilt and artTheme() or nil
+            local theme = self.useArt and self.artBuilt and self.artTheme or nil
 
             if not theme then
                 self:HideArt()
@@ -320,9 +378,18 @@ function addon:CreateNativePreviewWindow()
                 if index <= slots then
                     local at = pad + (index - 1) * size
 
+                    -- The first and last cells run out under the padding at the ends, so no bar of the box shows beside them.
+                    local start = index == 1 and 0 or at
+                    local length = size + (index == 1 and pad or 0) + (index == slots and pad or 0)
+
                     cell:SetTexture(ART_DIR .. names[index])
                     cell:SetTexCoord(0, 1, 0, 1)
-                    place(cell, 'TOPLEFT', vertical and pad or at, vertical and -at or -pad, size, size)
+
+                    if vertical then
+                        place(cell, 'TOPLEFT', pad, -start, size, length)
+                    else
+                        place(cell, 'TOPLEFT', start, -pad, length, size)
+                    end
                 else
                     cell:Hide()
                 end
@@ -659,7 +726,8 @@ function addon:CreateNativePreviewWindow()
             self.vertical = profile.preview_vertical == true
             self.locked = profile.preview_locked == true
             self.opacity = clamp(profile.preview_opacity, 0, 1, 1)
-            self.useArt = self.opacity > 0 and profile.preview_background ~= false and artTheme() ~= nil
+            self.artTheme = artTheme(profile)
+            self.useArt = self.opacity > 0 and self.artTheme ~= nil
 
             -- The art over a slate box, or a plain box in the chosen color; either one at the window's opacity.
             local color = profile.preview_color

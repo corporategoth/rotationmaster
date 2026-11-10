@@ -247,8 +247,8 @@ end)
 
 test('Preview help localizes whole field explanations in the visible control order',function()
     local f,parent=fixture();local a=f.addon
-    local controls={'preview_spells','preview_opacity','preview_background','preview_color','preview_locked','preview_vertical','preview_reset','preview_skin','preview_sample',
-        'preview_title','preview_target_health','preview_readiness','preview_gray_unaffordable','forecast','forecast_confidence','forecast_percent','forecast_delay','forecast_clear'}
+    local controls={'preview_art','preview_opacity','preview_title','preview_target_health','preview_locked','preview_vertical','preview_reset','preview_spells','preview_skin','preview_sample',
+        'preview_readiness','preview_gray_unaffordable','forecast','forecast_confidence','forecast_percent','forecast_delay','forecast_clear'}
     for _,row in ipairs(a:GetPreviewOptionHelp()) do if row.id then f.translations[row.text]='Translated field '..row.id end end
     local p=a:OpenNativeSettings(parent,'Preview')
     local found,last={},0
@@ -898,7 +898,7 @@ test('selected dropdown icons persist and preview row divides into lock directio
     local field=p.fields.choice;assert(field.valueIcon:GetTexture()==11);field:Click();p.menu.rows[2]:Click();assert(field.valueIcon:GetTexture()==22)
     p=a:OpenNativeSettings(parent,'Preview');local left,middle,right=p.fields.preview_locked,p.fields.preview_vertical,p.fields.preview_reset
     assert(left:GetWidth()==middle:GetWidth() and middle:GetWidth()==right:GetWidth() and left.point[3]==middle.point[3] and middle.point[3]==right.point[3])
-    assert(left.point[2]==0 and middle.point[2]==p.columnWidth/3 and right.point[2]==p.columnWidth*2/3)
+    assert(left.point[2]==0 and middle.point[2]==p.fullWidth/3 and right.point[2]==p.fullWidth*2/3)
     assert(p.fields.preview_opacity.point[3]>left.point[3],'opacity must sit above the control row')
 end)
 test('condition source filters precede categories and transfer only editable custom definitions',function()

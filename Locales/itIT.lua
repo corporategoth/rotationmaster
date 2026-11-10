@@ -12152,17 +12152,25 @@ addon.translation = {
 [3648] = "Disegna l'illustrazione di sfondo dell'anteprima",
 -- 2639e726 English: Preview window color
 [3649] = "Colore della finestra di anteprima",
--- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
---     as icons appear, while the opacity is above zero. The painting shows through every empty slot
---     and follows how many slots there are. Turn it off to use a plain box in the color chosen
---     below it.
-[3650] = "Disegna l'illustrazione della classe dietro le icone dell'anteprima, con un bordo che si riempie man mano che compaiono le icone, finché l'opacità è sopra zero. L'illustrazione si vede attraverso ogni slot vuoto e segue il numero di slot. Disattivala per usare un riquadro semplice del colore scelto qui sotto.",
--- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
---     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
---     background art keeps its own colors.
-[3651] = "Scegli il colore del riquadro semplice dell'anteprima. Viene usato quando l'illustrazione di sfondo è disattivata e l'opacità è sopra zero; il suo canale alfa viene moltiplicato per l'opacità. L'illustrazione di sfondo mantiene i propri colori.",
+-- ec3039d7 English: Choose the painting behind the preview icons: your own class, any other class,
+--     the Rotation Master one or a solid background. A painting is drawn while the opacity is above
+--     zero, shows through every empty slot, follows how many slots there are and has a border that
+--     fills up as icons appear. Solid background draws a plain box in the color chosen below it.
+[3650] = "Scegli l'illustrazione dietro le icone dell'anteprima: la tua classe, un'altra classe, quella di Rotation Master o uno sfondo tinta unita. L'illustrazione viene disegnata finché l'opacità è sopra zero, si vede attraverso ogni slot vuoto, segue il numero di slot e ha un bordo che si riempie man mano che compaiono le icone. Sfondo tinta unita disegna un riquadro semplice del colore scelto qui sotto.",
+-- 0c9e775b English: Choose the color of the plain preview box. It is used when Solid background is
+--     chosen and the opacity is above zero; its alpha channel multiplies the window opacity. A
+--     painting keeps its own colors.
+[3651] = "Scegli il colore del riquadro semplice dell'anteprima. Viene usato quando è scelto Sfondo tinta unita e l'opacità è sopra zero; il suo canale alfa viene moltiplicato per l'opacità. Un'illustrazione mantiene i propri colori.",
 -- 75205de8 English: Forecast
 [3652] = "Previsione",
 -- 000e5077 English: Configure the preview window and the forecast.
 [3653] = "Configura la finestra di anteprima e la previsione.",
+-- 3907fa7f English: Appearance
+[3654] = "Aspetto",
+-- 35d0cc87 English: Preview background
+[3655] = "Sfondo dell'anteprima",
+-- 0eff3ed6 English: My class (%s)
+[3656] = "La mia classe (%s)",
+-- d8453386 English: Solid background
+[3657] = "Sfondo tinta unita",
 }

@@ -70,12 +70,14 @@ function addon:InstallSettingsLayout(p)
 
             self.columns = self.columns or {}
             self.columnWidth = (self.fullWidth - 24) / 2
+            -- A page's first row sits at 4; anything lower is full-width content the columns start below.
+            self.columnTop = self.y > 4 and self.y or 0
 
             for i = 1, 2 do
                 local f = self.columns[i] or addon:TrackWorkbenchSize(CreateFrame('Frame', nil, self.child))
                 self.columns[i] = f
                 f:ClearAllPoints()
-                f:SetPoint('TOPLEFT', (i - 1) * (self.columnWidth + 24), 0)
+                f:SetPoint('TOPLEFT', (i - 1) * (self.columnWidth + 24), -self.columnTop)
                 f:SetSize(self.columnWidth, 1)
                 f:Show()
             end
@@ -114,7 +116,7 @@ function addon:InstallSettingsLayout(p)
         end
 
         self.columns[self.currentColumn]:SetHeight(math.max(1, self.y))
-        self.y = math.max(self.columns[1]:GetHeight(), self.columns[2]:GetHeight())
+        self.y = self.columnTop + math.max(self.columns[1]:GetHeight(), self.columns[2]:GetHeight())
         self.width = self.fullWidth
         self.surface = nil
         self.currentColumn = nil

@@ -12152,17 +12152,25 @@ addon.translation = {
 [3648] = "Рисовать фоновое изображение предпросмотра",
 -- 2639e726 English: Preview window color
 [3649] = "Цвет окна предпросмотра",
--- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
---     as icons appear, while the opacity is above zero. The painting shows through every empty slot
---     and follows how many slots there are. Turn it off to use a plain box in the color chosen
---     below it.
-[3650] = "Рисует картину класса позади значков предпросмотра и рамку, которая заполняется по мере появления значков, пока непрозрачность больше нуля. Картина видна через каждую пустую ячейку и следует за числом ячеек. Отключите, чтобы использовать простую подложку выбранного ниже цвета.",
--- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
---     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
---     background art keeps its own colors.
-[3651] = "Выберите цвет простой подложки предпросмотра. Он используется, когда фоновое изображение отключено, а непрозрачность больше нуля; его альфа-канал умножается на непрозрачность. Фоновое изображение сохраняет собственные цвета.",
+-- ec3039d7 English: Choose the painting behind the preview icons: your own class, any other class,
+--     the Rotation Master one or a solid background. A painting is drawn while the opacity is above
+--     zero, shows through every empty slot, follows how many slots there are and has a border that
+--     fills up as icons appear. Solid background draws a plain box in the color chosen below it.
+[3650] = "Выберите картину позади значков предпросмотра: свой класс, любой другой класс, картину Rotation Master или сплошной фон. Картина рисуется, пока непрозрачность больше нуля, видна через каждую пустую ячейку, следует за числом ячеек и имеет рамку, которая заполняется по мере появления значков. «Сплошной фон» рисует простую подложку выбранного ниже цвета.",
+-- 0c9e775b English: Choose the color of the plain preview box. It is used when Solid background is
+--     chosen and the opacity is above zero; its alpha channel multiplies the window opacity. A
+--     painting keeps its own colors.
+[3651] = "Выберите цвет простой подложки предпросмотра. Он используется, когда выбран «Сплошной фон», а непрозрачность больше нуля; его альфа-канал умножается на непрозрачность. Картина сохраняет собственные цвета.",
 -- 75205de8 English: Forecast
 [3652] = "Прогноз",
 -- 000e5077 English: Configure the preview window and the forecast.
 [3653] = "Настройте окно предпросмотра и прогноз.",
+-- 3907fa7f English: Appearance
+[3654] = "Внешний вид",
+-- 35d0cc87 English: Preview background
+[3655] = "Фон предпросмотра",
+-- 0eff3ed6 English: My class (%s)
+[3656] = "Мой класс (%s)",
+-- d8453386 English: Solid background
+[3657] = "Сплошной фон",
 }

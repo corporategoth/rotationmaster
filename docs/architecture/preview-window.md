@@ -6,8 +6,16 @@ slots, the empty slots show the window's background. Three settings on the Previ
 | Setting | Key | Default | Effect |
 | --- | --- | --- | --- |
 | Preview window opacity | `preview_opacity` | 1 | Fades the background, never the icons. At 0 nothing is drawn and there is no padding. |
-| Draw the preview background art | `preview_background` | on | The class painting and border below. Off: a plain box. |
-| Preview window color | `preview_color` (`r g b a`) | slate (0.055, 0.065, 0.075, 1) | The plain box's color, used only when the art is off; its alpha multiplies the opacity. The art sits on the default slate. |
+| Preview background | `preview_art` | `class` | `class` (the player's class, or the neutral painting for a class without one), a class token, `ROTATION_MASTER` for the neutral painting, or `solid` for a plain box. The old `preview_background` switch, when off, is a plain box whatever is chosen; the page sets it to match every choice, so a profile saved before the choice existed with the switch off shows `solid` until a painting is picked. |
+| Preview window color | `preview_color` (`r g b a`) | slate (0.055, 0.065, 0.075, 1) | The plain box's color, used only for `solid` (and chosen on the page in place of the painting preview); its alpha multiplies the opacity. A painting sits on the default slate. |
+
+## Choosing it (Preview tab)
+
+The Appearance section of the Preview tab holds the look: the Preview background list ("My class (X)", the thirteen classes, Rotation
+Master and Solid background), the chosen painting as a row of its five cells in the middle of the page (for Solid background the
+color chooser takes its place), the opacity, the title, the target health bar, the lock, direction and position reset. The preview
+options (spells, Masque skin, the preview's own readiness) and the forecast are in two columns under it
+(`p:Column` starts the columns below the content above them).
 
 ## The painting
 
@@ -15,7 +23,7 @@ One painting per class (all thirteen), plus a neutral Rotation Master one that a
 class comes from `UnitClass('player')` when the window is configured. Each painting is a short story told across five chapters, one per slot: one continuous scene cut into
 **five square cells of 256 x 256 texels**, each cell its own opaque 32-bit TGA in `Assets/Preview/`, so the scene flows through every
 boundary and every cell is a different moment. A row uses `<theme>-w1` to `w5`, a column `<theme>-t1` to `t5` (the same story,
-composed for a column). Each slot's cell is drawn over exactly that slot, at the window opacity; a window of `n` slots shows the first
+composed for a column). Each slot's cell is drawn over its slot, at the window opacity; the first and last cells run out under the padding at the ends of the window (a horizontal stretch of a tenth), so no bar of the box shows beside the painting; a window of `n` slots shows the first
 `n` chapters, so the picture follows how many icons the window holds, and every prefix of one to five cells is a finished scene.
 
 ## The border
@@ -40,5 +48,5 @@ window: theme by class and direction, a cell over each slot, the border size, th
 
 ## Website
 
-The profile fields `preview_background` and `preview_color` are part of the profile transfer format and the profile comparison
+The profile fields `preview_art`, `preview_background` (legacy) and `preview_color` are part of the profile transfer format and the profile comparison
 (`UI/collection_compare.lua`); the website's profile reader needs both.

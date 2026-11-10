@@ -12152,17 +12152,25 @@ addon.translation = {
 [3648] = "繪製預覽背景圖",
 -- 2639e726 English: Preview window color
 [3649] = "預覽視窗顏色",
--- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
---     as icons appear, while the opacity is above zero. The painting shows through every empty slot
---     and follows how many slots there are. Turn it off to use a plain box in the color chosen
---     below it.
-[3650] = "在不透明度大於零時，於預覽圖示後方繪製職業畫作，並繪製隨圖示出現而逐漸填滿的邊框。畫作會透過每個空位顯示，並隨欄位數量變化。關閉後將使用下方所選顏色的純色方框。",
--- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
---     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
---     background art keeps its own colors.
-[3651] = "選擇純色預覽方框的顏色。當背景圖關閉且不透明度大於零時使用；其 Alpha 色版會與不透明度相乘。背景圖保留自己的顏色。",
+-- ec3039d7 English: Choose the painting behind the preview icons: your own class, any other class,
+--     the Rotation Master one or a solid background. A painting is drawn while the opacity is above
+--     zero, shows through every empty slot, follows how many slots there are and has a border that
+--     fills up as icons appear. Solid background draws a plain box in the color chosen below it.
+[3650] = "選擇預覽圖示後方的畫作：你自己的職業、其他任一職業、Rotation Master 畫作或純色背景。畫作在不透明度大於零時繪製，會透過每個空位顯示，並隨欄位數量變化，且帶有隨圖示出現而逐漸填滿的邊框。「純色背景」會繪製下方所選顏色的純色方框。",
+-- 0c9e775b English: Choose the color of the plain preview box. It is used when Solid background is
+--     chosen and the opacity is above zero; its alpha channel multiplies the window opacity. A
+--     painting keeps its own colors.
+[3651] = "選擇純色預覽方框的顏色。當選擇「純色背景」且不透明度大於零時使用；其 Alpha 色版會與不透明度相乘。畫作保留自己的顏色。",
 -- 75205de8 English: Forecast
 [3652] = "預測",
 -- 000e5077 English: Configure the preview window and the forecast.
 [3653] = "設定預覽視窗與預測。",
+-- 3907fa7f English: Appearance
+[3654] = "外觀",
+-- 35d0cc87 English: Preview background
+[3655] = "預覽背景",
+-- 0eff3ed6 English: My class (%s)
+[3656] = "我的職業 (%s)",
+-- d8453386 English: Solid background
+[3657] = "純色背景",
 }

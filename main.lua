@@ -512,6 +512,7 @@ local defaults = {
         preview_locked = false,
         preview_opacity = 1,
         preview_background = true,
+        preview_art = 'class',
         preview_color = { r = 0.055, g = 0.065, b = 0.075, a = 1.0 },
         preview_title = true,
         preview_icon_size = 64,

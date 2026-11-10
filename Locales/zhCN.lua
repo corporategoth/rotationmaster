@@ -12152,17 +12152,25 @@ addon.translation = {
 [3648] = "绘制预览背景图",
 -- 2639e726 English: Preview window color
 [3649] = "预览窗口颜色",
--- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
---     as icons appear, while the opacity is above zero. The painting shows through every empty slot
---     and follows how many slots there are. Turn it off to use a plain box in the color chosen
---     below it.
-[3650] = "在不透明度大于零时，在预览图标后绘制职业画作，并绘制随图标出现而逐渐填满的边框。画作会透过每个空位显示，并随位数变化。关闭后将使用下方所选颜色的纯色方框。",
--- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
---     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
---     background art keeps its own colors.
-[3651] = "选择纯色预览方框的颜色。当背景图关闭且不透明度大于零时使用；其 Alpha 通道会与不透明度相乘。背景图保留自己的颜色。",
+-- ec3039d7 English: Choose the painting behind the preview icons: your own class, any other class,
+--     the Rotation Master one or a solid background. A painting is drawn while the opacity is above
+--     zero, shows through every empty slot, follows how many slots there are and has a border that
+--     fills up as icons appear. Solid background draws a plain box in the color chosen below it.
+[3650] = "选择预览图标后方的画作：你自己的职业、其他任意职业、Rotation Master 画作或纯色背景。画作在不透明度大于零时绘制，会透过每个空位显示，随位数变化，并带有随图标出现而逐渐填满的边框。“纯色背景”会绘制下方所选颜色的纯色方框。",
+-- 0c9e775b English: Choose the color of the plain preview box. It is used when Solid background is
+--     chosen and the opacity is above zero; its alpha channel multiplies the window opacity. A
+--     painting keeps its own colors.
+[3651] = "选择纯色预览方框的颜色。当选择“纯色背景”且不透明度大于零时使用；其 Alpha 通道会与不透明度相乘。画作保留自己的颜色。",
 -- 75205de8 English: Forecast
 [3652] = "预测",
 -- 000e5077 English: Configure the preview window and the forecast.
 [3653] = "配置预览窗口和预测。",
+-- 3907fa7f English: Appearance
+[3654] = "外观",
+-- 35d0cc87 English: Preview background
+[3655] = "预览背景",
+-- 0eff3ed6 English: My class (%s)
+[3656] = "我的职业 (%s)",
+-- d8453386 English: Solid background
+[3657] = "纯色背景",
 }

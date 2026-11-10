@@ -39,6 +39,7 @@ local scalar = {
     encounter_provider = 'string',
     preview_masque = 'boolean',
     preview_background = 'boolean',
+    preview_art = 'string',
     version = 'number',
     enable = 'boolean',
     poll = 'number',
@@ -394,6 +395,11 @@ function addon:ValidateProfileTransfer(value)
                 if v < 0 or v > 1 then
                     return false
                 end
+            end
+        elseif key == 'preview_art' then
+            -- "class", "solid" or a class token (letters and underscores): the value is only compared with painting names.
+            if #item > 24 or not item:match('^[%a_]+$') then
+                return false
             end
         elseif key == 'preview_window' then
             if not fields(item, { point = 'string', relpoint = 'string', xoffs = 'number', yoffs = 'number' }) then

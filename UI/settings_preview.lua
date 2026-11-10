@@ -18,8 +18,6 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:BuildPreviewSettings(p)
     local store = p:SettingsData()
     local profile = store.profile
-    p:Column(1)
-    p:Heading(L['Preview'])
 
     -- Applies a preview setting change to the preview window: refresh it, create it when preview spells were just
     -- raised above zero, resize it, or release it when set back to zero.
@@ -40,25 +38,111 @@ function addon:BuildPreviewSettings(p)
         end)
     end
 
-    p:Slider('preview_spells', L['Preview Spells'], profile.preview_spells, 0, 5, 1, function(v)
-        profile.preview_spells = v
+    p:Heading(L['Appearance'])
+
+    local classNames = _G.LOCALIZED_CLASS_NAMES_MALE or {}
+    local ok, myClass = pcall(UnitClass, 'player')
+    myClass = ok and type(myClass) == 'string' and myClass or L['Unknown']
+    local choice = profile.preview_background == false and 'solid' or profile.preview_art or 'class'
+
+    local entries = { { value = 'class', text = string.format(L['My class (%s)'], myClass) } }
+
+    for _, token in ipairs(self.GetPreviewArtChoices and self:GetPreviewArtChoices() or {}) do
+        entries[#entries + 1] = {
+            value = token,
+            text = token == 'ROTATION_MASTER' and L['Rotation Master'] or classNames[token] or token,
+        }
+    end
+
+    entries[#entries + 1] = { value = 'solid', text = L['Solid background'] }
+
+    p:Choice('preview_art', L['Preview background'], choice, entries, function(value)
+        profile.preview_art = value
+        -- The old background switch: a painting turns it back on, so it never overrules the choice.
+        profile.preview_background = value ~= 'solid'
         previewChanged()
+        p:Draw()
     end)
+
+    -- The chosen painting, as a row of its five cells in the middle of the page; a plain box has its color chosen here instead.
+    local theme = choice ~= 'solid' and self.GetPreviewArtFor and self:GetPreviewArtFor(choice) or nil
+
+    if theme then
+        local cell = math.max(24, math.min(96, math.floor((p.width - 8) / 5)))
+        local rowY = p:Row(nil, cell + 12)
+
+        local frame = p:Acquire('previewArt', function()
+            local created = CreateFrame('Frame', nil, p.child)
+            created.cells = {}
+
+            for index = 1, 5 do
+                created.cells[index] = created:CreateTexture(nil, 'ARTWORK')
+            end
+
+            return created
+        end)
+
+        frame:ClearAllPoints()
+        frame:SetPoint('TOPLEFT', math.floor((p.width - cell * 5) / 2), -rowY - 4)
+        frame:SetSize(cell * 5, cell)
+        p.fields.preview_art_image = frame
+
+        for index, texture in ipairs(frame.cells) do
+            texture:ClearAllPoints()
+            texture:SetPoint('TOPLEFT', frame, 'TOPLEFT', (index - 1) * cell, 0)
+            texture:SetSize(cell, cell)
+            texture:SetTexture(self:GetPreviewArtDirectory() .. theme.wide[index])
+            texture:Show()
+        end
+    else
+        p:Color('preview_color', L['Preview window color'], profile.preview_color, function(v)
+            profile.preview_color = v
+            previewChanged()
+        end)
+    end
 
     p:Slider('preview_opacity', L['Preview window opacity'], profile.preview_opacity or 1, 0, 1, .05, function(v)
         profile.preview_opacity = v
         previewChanged()
     end)
 
-    p:Check('preview_background', L['Draw the preview background art'], profile.preview_background ~= false, function(v)
-        profile.preview_background = v
-        previewChanged()
-    end)
+    -- The title and the target health bar share a row; the preview's own readiness options have a row of their own, with
+    -- the three they hold under it. The preview can judge readiness by its own three options (Core/action_policy.lua, both
+    -- engines in main.lua); off, it follows the ones above. The three are disabled while it is off.
+    local pairY = p.y
 
-    p:Color('preview_color', L['Preview window color'], profile.preview_color, function(v)
-        profile.preview_color = v
-        previewChanged()
-    end)
+    local title = p:Check(
+        'preview_title',
+        L['Show a title above the preview'],
+        profile.preview_title ~= false,
+        function(v)
+            profile.preview_title = v
+            previewChanged()
+        end
+    )
+
+    p.y = pairY
+
+    local health = p:Check(
+        'preview_target_health',
+        L['Show target health under the preview'],
+        profile.preview_target_health == true,
+        function(v)
+            profile.preview_target_health = v
+            previewChanged()
+        end
+    )
+
+    local half = p.width / 2
+
+    for i, control in ipairs({ title, health }) do
+        control:ClearAllPoints()
+        control:SetPoint('TOPLEFT', (i - 1) * half, -pairY)
+        control:SetWidth(half - 8)
+        control:GetFontString():SetWidth(half - 30)
+    end
+
+    p.y = pairY + 30
 
     local previewY = p.y
     local third = p.width / 3
@@ -168,6 +252,14 @@ function addon:BuildPreviewSettings(p)
 
     locked:GetFontString():SetWidth(third - 30)
     p.y = previewY + 30
+
+    p:Column(1)
+    p:Heading(L['Preview'])
+
+    p:Slider('preview_spells', L['Preview Spells'], profile.preview_spells, 0, 5, 1, function(v)
+        profile.preview_spells = v
+        previewChanged()
+    end)
 
     -- Masque owns this immediate appearance preference. Keep it outside the
     -- General draft so Discard never rewinds another addon's skin settings.
@@ -294,44 +386,6 @@ function addon:BuildPreviewSettings(p)
     else
         sample:Disable()
     end
-
-    -- The title and the target health bar share a row; the preview's own readiness options have a row of their own, with
-    -- the three they hold under it. The preview can judge readiness by its own three options (Core/action_policy.lua, both
-    -- engines in main.lua); off, it follows the ones above. The three are disabled while it is off.
-    local pairY = p.y
-
-    local title = p:Check(
-        'preview_title',
-        L['Show a title above the preview'],
-        profile.preview_title ~= false,
-        function(v)
-            profile.preview_title = v
-            previewChanged()
-        end
-    )
-
-    p.y = pairY
-
-    local health = p:Check(
-        'preview_target_health',
-        L['Show target health under the preview'],
-        profile.preview_target_health == true,
-        function(v)
-            profile.preview_target_health = v
-            previewChanged()
-        end
-    )
-
-    local half = p.width / 2
-
-    for i, control in ipairs({ title, health }) do
-        control:ClearAllPoints()
-        control:SetPoint('TOPLEFT', (i - 1) * half, -pairY)
-        control:SetWidth(half - 8)
-        control:GetFontString():SetWidth(half - 30)
-    end
-
-    p.y = pairY + 30
 
     p:Check(
         'preview_readiness',

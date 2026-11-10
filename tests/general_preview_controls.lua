@@ -565,4 +565,65 @@ test('real General Preview action paints transient samples without applying the 
     assert(not a.nextWindow and a.db.profile.preview_spells == 0)
 end)
 
+test(
+    'the Appearance section picks the painting from a list, shows it centered or the color for a plain box, and holds the look controls',
+    function()
+        local env, a, p = fixture()
+        env.load('UI/preview.lua')
+        p:Draw()
+        local f = p.fields
+        assert(f.preview_art and f.preview_art_image and not f.preview_color, 'a painting is previewed, not a color')
+
+        -- The painting is a row of the five cells, centered across the page.
+        local image = f.preview_art_image
+        local cell = image.cells[1]:GetWidth()
+        assert(image:GetWidth() == cell * 5 and image.point[2] == math.floor((p.fullWidth - cell * 5) / 2))
+        assert(image.cells[1]:GetTexture():find('%-w1$') and image.cells[5]:GetTexture():find('%-w5$'))
+
+        f.preview_art:Click()
+        local rows = p.menu.rows
+        local choices = {}
+
+        for _, entry in ipairs(p.menu.entries or {}) do
+            choices[#choices + 1] = entry.text
+        end
+
+        assert(#choices == 16, #choices)
+        assert(choices[1]:find('^My class %(') and choices[16] == 'Solid background', choices[1] .. '/' .. choices[16])
+
+        p.menu.changed('ROTATION_MASTER', 'Rotation Master')
+
+        assert(
+            p:SettingsData().profile.preview_art == 'ROTATION_MASTER'
+                and p.fields.preview_art_image.cells[1]:GetTexture():find('rotation%-master%-w1$')
+        )
+
+        p.fields.preview_art:Click()
+
+        p.menu.changed('solid', 'Solid background')
+
+        assert(p:SettingsData().profile.preview_art == 'solid' and p:SettingsData().profile.preview_background == false)
+        assert(p.fields.preview_color and not p.fields.preview_art_image, 'the color is chosen where the painting was')
+
+        -- Appearance: background, opacity, title, target health, lock and direction come before the preview's own options.
+        local function top(field)
+            return -select(3, field:GetPoint())
+        end
+
+        assert(top(p.fields.preview_art) < top(p.fields.preview_opacity))
+        assert(p.columnTop and p.columnTop > 0, 'the two columns start below the appearance section')
+
+        for _, key in ipairs({
+            'preview_title',
+            'preview_target_health',
+            'preview_locked',
+            'preview_vertical',
+            'preview_reset',
+        }) do
+            assert(p.fields[key], key)
+            assert(top(p.fields[key]) < p.columnTop, key .. ' sits above the columns')
+        end
+    end
+)
+
 finish()
