@@ -12148,4 +12148,17 @@ addon.translation = {
 -- d4308367 English: Official project page. Publisher lists Forever. Choose the matching file; exact
 --     patch and RM integration behavior may be unverified.
 [3647] = "Página oficial do projeto. O autor lista Forever. Escolha o arquivo correspondente; o patch exato e o comportamento da integração com o RM podem não estar verificados.",
+-- db773bc8 English: Draw the preview background art
+[3648] = "Desenhar a arte de fundo da pré-visualização",
+-- 2639e726 English: Preview window color
+[3649] = "Cor da janela de pré-visualização",
+-- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
+--     as icons appear, while the opacity is above zero. The painting shows through every empty slot
+--     and follows how many slots there are. Turn it off to use a plain box in the color chosen
+--     below it.
+[3650] = "Desenha a pintura da classe atrás dos ícones da pré-visualização, com uma borda que vai se preenchendo conforme os ícones aparecem, enquanto a opacidade for maior que zero. A pintura aparece através de cada espaço vazio e acompanha o número de espaços. Desative para usar uma caixa simples na cor escolhida abaixo.",
+-- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
+--     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
+--     background art keeps its own colors.
+[3651] = "Escolha a cor da caixa simples da pré-visualização. Ela é usada quando a arte de fundo está desativada e a opacidade é maior que zero; o canal alfa é multiplicado pela opacidade. A arte de fundo mantém as próprias cores.",
 }

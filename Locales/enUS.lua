@@ -10345,8 +10345,8 @@ T["Official project page. Publisher lists Forever. Choose the matching file; exa
 T["Draw the preview background art"] = 3648
 -- 2639e726
 T["Preview window color"] = 3649
--- 6cdcb778
-T["Draw the themed background art behind the preview icons while the opacity is above zero. It stretches to fit one to five icons at any size, in a row or a column. Turn it off to use a plain box in the color chosen below it."] = 3650
+-- 694582b5
+T["Draw the class painting behind the preview icons, with a border that fills up as icons appear, while the opacity is above zero. The painting shows through every empty slot and follows how many slots there are. Turn it off to use a plain box in the color chosen below it."] = 3650
 -- 24b23387
 T["Choose the color of the plain preview box. It is used when the background art is off and the opacity is above zero; its alpha channel multiplies the window opacity. The background art keeps its own colors."] = 3651
 

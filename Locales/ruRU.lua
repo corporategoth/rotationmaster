@@ -12148,4 +12148,17 @@ addon.translation = {
 -- d4308367 English: Official project page. Publisher lists Forever. Choose the matching file; exact
 --     patch and RM integration behavior may be unverified.
 [3647] = "Официальная страница проекта. Издатель указывает Forever. Выберите подходящий файл; точный патч и работа интеграции с RM могут быть не проверены.",
+-- db773bc8 English: Draw the preview background art
+[3648] = "Рисовать фоновое изображение предпросмотра",
+-- 2639e726 English: Preview window color
+[3649] = "Цвет окна предпросмотра",
+-- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
+--     as icons appear, while the opacity is above zero. The painting shows through every empty slot
+--     and follows how many slots there are. Turn it off to use a plain box in the color chosen
+--     below it.
+[3650] = "Рисует картину класса позади значков предпросмотра и рамку, которая заполняется по мере появления значков, пока непрозрачность больше нуля. Картина видна через каждую пустую ячейку и следует за числом ячеек. Отключите, чтобы использовать простую подложку выбранного ниже цвета.",
+-- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
+--     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
+--     background art keeps its own colors.
+[3651] = "Выберите цвет простой подложки предпросмотра. Он используется, когда фоновое изображение отключено, а непрозрачность больше нуля; его альфа-канал умножается на непрозрачность. Фоновое изображение сохраняет собственные цвета.",
 }

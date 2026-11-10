@@ -6,13 +6,13 @@ slots, the empty slots show the window's background. Three settings in General s
 | Setting | Key | Default | Effect |
 | --- | --- | --- | --- |
 | Preview window opacity | `preview_opacity` | 1 | Fades the background, never the icons. At 0 nothing is drawn and there is no padding. |
-| Draw the preview background art | `preview_background` | on | The class painting and border below. Off, or for a class with no painting yet: a plain box. |
+| Draw the preview background art | `preview_background` | on | The class painting and border below. Off: a plain box. |
 | Preview window color | `preview_color` (`r g b a`) | slate (0.055, 0.065, 0.075, 1) | The plain box's color, used only when the art is off; its alpha multiplies the opacity. The art sits on the default slate. |
 
 ## The painting
 
-One painting per class (Shaman is the first; a class without one gets the plain box). The class comes from `UnitClass('player')` when
-the window is configured. Each painting is a short story told across five chapters, one per slot: one continuous scene cut into
+One painting per class (all thirteen), plus a neutral Rotation Master one that any class without its own gets (`ART_NEUTRAL`). The
+class comes from `UnitClass('player')` when the window is configured. Each painting is a short story told across five chapters, one per slot: one continuous scene cut into
 **five square cells of 256 x 256 texels**, each cell its own opaque 32-bit TGA in `Assets/Preview/`, so the scene flows through every
 boundary and every cell is a different moment. A row uses `<theme>-w1` to `w5`, a column `<theme>-t1` to `t5` (the same story,
 composed for a column). Each slot's cell is drawn over exactly that slot, at the window opacity; a window of `n` slots shows the first
@@ -25,7 +25,7 @@ One sheet per theme, `<theme>-border.tga` (256 x 64, transparent outside the art
 0.1), 5, 12)` pixels (6 at the default 64 px), and is the window's padding (a plain box keeps four). It shows how many slots hold an
 icon (`window.count`, or the sample icons): every slot has a rail along both long sides, **lit for the slots that hold an icon and dim
 for the rest**; the four corners are mirrored copies of one; and a stud sits at every joint between two slots on both long sides,
-**lit when both its neighbours hold an icon**. The rail's outer side is the top of its row, which the second side flips and a column
+**lit when both its neighbors hold an icon**. The rail's outer side is the top of its row, which the second side flips and a column
 turns a quarter. `ResumeLayout` redraws it after every poll's recommendations.
 
 ## Files and checks

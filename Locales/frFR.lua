@@ -12148,4 +12148,17 @@ addon.translation = {
 -- d4308367 English: Official project page. Publisher lists Forever. Choose the matching file; exact
 --     patch and RM integration behavior may be unverified.
 [3647] = "Page officielle du projet. L'éditeur indique Forever. Choisissez le fichier correspondant ; le patch exact et le comportement de l'intégration RM peuvent ne pas être vérifiés.",
+-- db773bc8 English: Draw the preview background art
+[3648] = "Dessiner l'illustration d'arrière-plan de l'aperçu",
+-- 2639e726 English: Preview window color
+[3649] = "Couleur de la fenêtre d'aperçu",
+-- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
+--     as icons appear, while the opacity is above zero. The painting shows through every empty slot
+--     and follows how many slots there are. Turn it off to use a plain box in the color chosen
+--     below it.
+[3650] = "Dessine l'illustration de la classe derrière les icônes de l'aperçu, avec une bordure qui se remplit à mesure que des icônes apparaissent, tant que l'opacité est supérieure à zéro. L'illustration transparaît dans chaque emplacement vide et suit le nombre d'emplacements. Désactivez cette option pour utiliser un cadre uni de la couleur choisie en dessous.",
+-- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
+--     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
+--     background art keeps its own colors.
+[3651] = "Choisissez la couleur du cadre uni de l'aperçu. Elle est utilisée lorsque l'illustration d'arrière-plan est désactivée et que l'opacité est supérieure à zéro ; son canal alpha est multiplié par l'opacité. L'illustration d'arrière-plan conserve ses propres couleurs.",
 }

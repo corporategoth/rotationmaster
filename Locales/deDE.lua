@@ -12148,4 +12148,17 @@ addon.translation = {
 -- d4308367 English: Official project page. Publisher lists Forever. Choose the matching file; exact
 --     patch and RM integration behavior may be unverified.
 [3647] = "Offizielle Projektseite. Der Herausgeber nennt Forever. Die passende Datei wählen; genauer Patch und Integrationsverhalten von RM sind möglicherweise ungeprüft.",
+-- db773bc8 English: Draw the preview background art
+[3648] = "Hintergrundbild der Vorschau zeichnen",
+-- 2639e726 English: Preview window color
+[3649] = "Farbe des Vorschaufensters",
+-- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
+--     as icons appear, while the opacity is above zero. The painting shows through every empty slot
+--     and follows how many slots there are. Turn it off to use a plain box in the color chosen
+--     below it.
+[3650] = "Zeichnet das Klassengemälde hinter den Vorschausymbolen und einen Rahmen, der sich füllt, sobald Symbole erscheinen, solange die Deckkraft über null liegt. Das Gemälde scheint durch jeden leeren Platz und folgt der Anzahl der Plätze. Deaktivieren Sie die Option, um ein einfaches Feld in der darunter gewählten Farbe zu verwenden.",
+-- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
+--     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
+--     background art keeps its own colors.
+[3651] = "Wählen Sie die Farbe des einfachen Vorschaufelds. Sie wird verwendet, wenn das Hintergrundbild aus ist und die Deckkraft über null liegt; der Alphakanal wird mit der Deckkraft multipliziert. Das Hintergrundbild behält seine eigenen Farben.",
 }

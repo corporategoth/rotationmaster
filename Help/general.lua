@@ -135,7 +135,7 @@ function addon:GetGeneralOptionHelp()
         {
             id = "preview_background",
             title = L["Draw the preview background art"],
-            text = L["Draw the themed background art behind the preview icons while the opacity is above zero. It stretches to fit one to five icons at any size, in a row or a column. Turn it off to use a plain box in the color chosen below it."],
+            text = L["Draw the class painting behind the preview icons, with a border that fills up as icons appear, while the opacity is above zero. The painting shows through every empty slot and follows how many slots there are. Turn it off to use a plain box in the color chosen below it."],
         },
         {
             id = "preview_color",

@@ -12148,4 +12148,17 @@ addon.translation = {
 -- d4308367 English: Official project page. Publisher lists Forever. Choose the matching file; exact
 --     patch and RM integration behavior may be unverified.
 [3647] = "官方项目页面。发布者列出了永久服。请选择相应的文件；确切的补丁版本和 RM 集成行为可能未经验证。",
+-- db773bc8 English: Draw the preview background art
+[3648] = "绘制预览背景图",
+-- 2639e726 English: Preview window color
+[3649] = "预览窗口颜色",
+-- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
+--     as icons appear, while the opacity is above zero. The painting shows through every empty slot
+--     and follows how many slots there are. Turn it off to use a plain box in the color chosen
+--     below it.
+[3650] = "在不透明度大于零时，在预览图标后绘制职业画作，并绘制随图标出现而逐渐填满的边框。画作会透过每个空位显示，并随位数变化。关闭后将使用下方所选颜色的纯色方框。",
+-- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
+--     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
+--     background art keeps its own colors.
+[3651] = "选择纯色预览方框的颜色。当背景图关闭且不透明度大于零时使用；其 Alpha 通道会与不透明度相乘。背景图保留自己的颜色。",
 }

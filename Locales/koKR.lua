@@ -12148,4 +12148,17 @@ addon.translation = {
 -- d4308367 English: Official project page. Publisher lists Forever. Choose the matching file; exact
 --     patch and RM integration behavior may be unverified.
 [3647] = "공식 프로젝트 페이지입니다. 배포자는 Forever를 표기합니다. 맞는 파일을 선택하세요. 정확한 패치와 RM 연동 동작은 검증되지 않았을 수 있습니다.",
+-- db773bc8 English: Draw the preview background art
+[3648] = "미리보기 배경 그림 그리기",
+-- 2639e726 English: Preview window color
+[3649] = "미리보기 창 색상",
+-- 694582b5 English: Draw the class painting behind the preview icons, with a border that fills up
+--     as icons appear, while the opacity is above zero. The painting shows through every empty slot
+--     and follows how many slots there are. Turn it off to use a plain box in the color chosen
+--     below it.
+[3650] = "투명도가 0보다 클 때 미리보기 아이콘 뒤에 직업 그림을 그리고, 아이콘이 나타날수록 채워지는 테두리를 표시합니다. 그림은 비어 있는 모든 칸 사이로 보이며 칸의 개수를 따라갑니다. 끄면 아래에서 선택한 색상의 단순한 상자를 사용합니다.",
+-- 24b23387 English: Choose the color of the plain preview box. It is used when the background art
+--     is off and the opacity is above zero; its alpha channel multiplies the window opacity. The
+--     background art keeps its own colors.
+[3651] = "단순한 미리보기 상자의 색상을 선택하세요. 배경 그림이 꺼져 있고 투명도가 0보다 클 때 사용되며, 알파 채널은 투명도와 곱해집니다. 배경 그림은 자체 색상을 유지합니다.",
 }
