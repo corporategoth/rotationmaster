@@ -153,7 +153,12 @@ def build_rows(directory, family):
         for row in table(directory, 'SpellClassOptions')
         if integer(row['SpellClassSet'])
     }
-    spells = {integer(row['Spell']) for row in table(directory, 'SkillLineAbility') if integer(row['ClassMask']) != 0}
+    # A class spell, or a racial: a spell with a race mask (the tables hold the masks as two words).
+    spells = {
+        integer(row['Spell'])
+        for row in table(directory, 'SkillLineAbility')
+        if integer(row['ClassMask']) != 0 or integer(row.get('RaceMasks_0')) != 0 or integer(row.get('RaceMasks_1')) != 0
+    }
     if family == 'retail':
         spells |= {integer(row['SpellID']) for row in table(directory, 'TraitDefinition') if integer(row['SpellID'])}
         spells |= {integer(row['SpellID']) for row in table(directory, 'SpecializationSpells')}

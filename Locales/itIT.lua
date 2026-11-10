@@ -12241,4 +12241,16 @@ addon.translation = {
 [3690] = "Avvia",
 -- b3358cff English: Show report
 [3691] = "Mostra rapporto",
+-- a0a66b42 English:     Ignored: nothing is learned about this spell.
+[3692] = "    Ignorato: non si impara nulla su questo incantesimo.",
+-- 5bafd7fe English: %s (%d): ignored
+[3693] = "%s (%d): ignorato",
+-- a4517ed3 English: %s (ignored)
+[3694] = "%s (ignorato)",
+-- 0fc2365d English: Ignore this spell from now on
+[3695] = "Ignora questo incantesimo d'ora in poi",
+-- dd501e57 English: Stop ignoring this spell
+[3696] = "Smetti di ignorare questo incantesimo",
+-- 59f006d6 English: seconds
+[3697] = "secondi",
 }

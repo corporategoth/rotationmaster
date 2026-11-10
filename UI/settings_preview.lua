@@ -534,7 +534,11 @@ function addon:BuildPreviewSettings(p)
         local choices, selected = {}, nil
 
         for _, spell in ipairs(learned) do
-            choices[#choices + 1] = { value = spell.id, text = spell.name }
+            choices[#choices + 1] = {
+                value = spell.id,
+                text = spell.ignored and string.format(L['%s (ignored)'], spell.name) or spell.name,
+                icon = spell.icon,
+            }
 
             if spell.id == self.forecastLearnedSelection then
                 selected = spell
@@ -551,10 +555,34 @@ function addon:BuildPreviewSettings(p)
 
         p:Text(table.concat(selected.lines, '\n'))
 
-        p:Button('forecast_forget_spell', L['Forget this spell'], function()
-            self.Forecast:Forget(selected.id)
-            p:Draw()
-        end)
+        -- Forget it, or tell the forecast to learn nothing about it from now on (and so to forget it too).
+        local buttonsY = p.y
+        local forgetSpell, ignoreSpell
+
+        if selected.ignored then
+            ignoreSpell = p:Button('forecast_ignore_spell', L['Stop ignoring this spell'], function()
+                self.Forecast:Ignore(selected.id, false)
+                p:Draw()
+            end)
+        else
+            forgetSpell = p:Button('forecast_forget_spell', L['Forget this spell'], function()
+                self.Forecast:Forget(selected.id)
+                p:Draw()
+            end)
+
+            ignoreSpell = p:Button('forecast_ignore_spell', L['Ignore this spell from now on'], function()
+                self.Forecast:Ignore(selected.id, true)
+                p:Draw()
+            end)
+        end
+
+        for index, button in ipairs({ forgetSpell or ignoreSpell, forgetSpell and ignoreSpell or nil }) do
+            button:ClearAllPoints()
+            button:SetPoint('TOPLEFT', (index - 1) * (wide + 4), -buttonsY)
+            button:SetWidth(forgetSpell and wide or p.width)
+        end
+
+        p.y = buttonsY + 28
     end
 
     local base = self.GetForecastLearnedBase and self:GetForecastLearnedBase()

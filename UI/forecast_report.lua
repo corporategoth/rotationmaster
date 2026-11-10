@@ -18,6 +18,15 @@ local function spellName(id)
     return info and type(info.name) == 'string' and info.name or tostring(id)
 end
 
+-- Finds a spell's icon for the list.
+-- @param id number  The spell id.
+-- @return number|string|nil  The icon, or nil when the client has none.
+local function spellIcon(id)
+    local info = addon.Platform and addon.Platform:GetSpellInfo(id)
+
+    return info and info.iconID or nil
+end
+
 -- Formats how long an aura lasts.
 -- @param seconds number|nil  The duration; zero or nil is until removed.
 -- @return string  The text.
@@ -112,7 +121,8 @@ local function learnedLines(entry, spell)
 end
 
 -- Lists the spells the forecast has learned something about that the game's tables do not already say.
--- @return table[]  A list of { id, name, lines }, sorted by name; empty when there is none.
+-- @return table[]  A list of { id, name, icon, lines, casts, ignored }, sorted by name; the spells told to be ignored are
+--   listed too (so they can be learned again), with an explanation as their line; empty when there is none.
 function addon:GetForecastLearnedSpells()
     local saved = addon.db and addon.db.global and addon.db.global.forecast
     local spells = type(saved) == 'table' and type(saved.spells) == 'table' and saved.spells or {}
@@ -123,8 +133,27 @@ function addon:GetForecastLearnedSpells()
             local lines = learnedLines(entry, id)
 
             if #lines > 0 then
-                list[#list + 1] = { id = id, name = spellName(id), lines = lines, casts = entry.casts or 0 }
+                list[#list + 1] = {
+                    id = id,
+                    name = spellName(id),
+                    icon = spellIcon(id),
+                    lines = lines,
+                    casts = entry.casts or 0,
+                }
             end
+        end
+    end
+
+    for id in pairs(type(saved) == 'table' and type(saved.ignored) == 'table' and saved.ignored or {}) do
+        if type(id) == 'number' then
+            list[#list + 1] = {
+                id = id,
+                name = spellName(id),
+                icon = spellIcon(id),
+                lines = { L['    Ignored: nothing is learned about this spell.'] },
+                casts = 0,
+                ignored = true,
+            }
         end
     end
 
@@ -164,7 +193,8 @@ function addon:BuildForecastLearned()
     end
 
     for _, spell in ipairs(list) do
-        lines[#lines + 1] = string.format(L['%s (%d): %d casts watched'], spell.name, spell.id, spell.casts)
+        lines[#lines + 1] = spell.ignored and string.format(L['%s (%d): ignored'], spell.name, spell.id)
+            or string.format(L['%s (%d): %d casts watched'], spell.name, spell.id, spell.casts)
 
         for _, line in ipairs(spell.lines) do
             lines[#lines + 1] = line

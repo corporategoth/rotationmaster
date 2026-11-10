@@ -824,4 +824,46 @@ test(
     end
 )
 
+test('the spell list has icons, and a spell can be ignored from now on and learned about again', function()
+    local env, a, p = fixture()
+    env.load('UI/preview.lua')
+    env.load('UI/forecast_report.lua')
+    env.load('Core/forecast.lua')
+    a.Platform.GetSpellInfo = function(_, id) return { name = 'Spell ' .. id, iconID = 130000 + id } end
+
+    a.db.global.forecast = {
+        version = 1,
+        spells = { [2001] = { casts = 20, damage = 12 }, [2002] = { casts = 20, heal = 3 } },
+    }
+
+    p:Draw()
+
+    p.fields.forecast_spell:Click()
+    local icons = {}
+
+    for _, entry in ipairs(p.menu.entries or {}) do
+        icons[entry.text] = entry.icon
+    end
+
+    assert(icons['Spell 2001'] == 132001 and icons['Spell 2002'] == 132002, 'each spell shows its icon')
+
+    p.fields.forecast_ignore_spell:Click()
+    assert(a.Forecast:IsIgnored(2001) and a.db.global.forecast.spells[2001] == nil)
+    p:Draw()
+
+    -- It stays in the list, marked, with a way back.
+    p.fields.forecast_spell:Click()
+    local names = {}
+
+    for _, entry in ipairs(p.menu.entries or {}) do
+        names[entry.text] = true
+    end
+
+    assert(names['Spell 2001 (ignored)'] and names['Spell 2002'])
+    p.menu.changed(2001, 'Spell 2001 (ignored)')
+    assert(p.fields.forecast_ignore_spell and not p.fields.forecast_forget_spell)
+    p.fields.forecast_ignore_spell:Click()
+    assert(not a.Forecast:IsIgnored(2001))
+end)
+
 finish()

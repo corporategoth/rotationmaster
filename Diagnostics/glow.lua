@@ -1337,6 +1337,7 @@ function addon:RunGlowDiagnostic(seconds)
                 self:CancelTimer(watcher.timer)
                 watcher = nil
                 self:print(L['Glow watch finished. Run /rm debug glow show to view it.'])
+                self:ShowGlowDiagnostic()
             end
         end, 1)
 
@@ -1431,6 +1432,7 @@ function addon:StopGlowWatch()
         self:CancelTimer(watcher.timer)
         watcher = nil
         self:print(L['Glow watch finished. Run /rm debug glow show to view it.'])
+        self:ShowGlowDiagnostic()
     end
 end
 

@@ -47,6 +47,10 @@ end
 -- Takes the auras before a cast.
 -- @param spell number  The spell about to be cast.
 local function before(spell)
+    if forecast:IsIgnored(spell) then
+        return
+    end
+
     local known = forecast:Known(spell)
 
     if known and ((known.casts or 0) >= SAMPLE or ((known.none or 0) >= NONE and next(known.seen or {}) == nil)) then

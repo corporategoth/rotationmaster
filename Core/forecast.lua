@@ -78,6 +78,11 @@ function forecast:Known(spell, create)
         return nil
     end
 
+    -- A spell the player asked to be left alone is neither learned nor used.
+    if saved.ignored and saved.ignored[spell] then
+        return nil
+    end
+
     local entry = saved.spells[spell]
 
     if entry or not create then
@@ -97,6 +102,34 @@ function forecast:Known(spell, create)
     entry = {}
     saved.spells[spell] = entry
     return entry
+end
+
+-- Tells whether a spell is one the forecast was told to learn nothing about.
+-- @param spell number  The spell id.
+-- @return boolean  True when it is ignored.
+function forecast:IsIgnored(spell)
+    local saved = store()
+
+    return saved ~= nil and saved.ignored ~= nil and saved.ignored[spell] == true
+end
+
+-- Tells the forecast to learn nothing about a spell from now on (forgetting what it has), or to learn again.
+-- @param spell number  The spell id.
+-- @param on boolean  True to ignore it, false to stop ignoring it.
+function forecast:Ignore(spell, on)
+    local saved = store()
+
+    if not saved then
+        return
+    end
+
+    if on then
+        saved.spells[spell] = nil
+        saved.ignored = saved.ignored or {}
+        saved.ignored[spell] = true
+    elseif saved.ignored then
+        saved.ignored[spell] = nil
+    end
 end
 
 -- Forgets what was learned about one spell.

@@ -12241,4 +12241,16 @@ addon.translation = {
 [3690] = "开始",
 -- b3358cff English: Show report
 [3691] = "显示报告",
+-- a0a66b42 English:     Ignored: nothing is learned about this spell.
+[3692] = "    已忽略：不会学习此法术的任何信息。",
+-- 5bafd7fe English: %s (%d): ignored
+[3693] = "%s (%d)：已忽略",
+-- a4517ed3 English: %s (ignored)
+[3694] = "%s（已忽略）",
+-- 0fc2365d English: Ignore this spell from now on
+[3695] = "今后忽略此法术",
+-- dd501e57 English: Stop ignoring this spell
+[3696] = "不再忽略此法术",
+-- 59f006d6 English: seconds
+[3697] = "秒",
 }

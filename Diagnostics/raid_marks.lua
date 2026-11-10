@@ -1,11 +1,12 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
--- /rm debug marks: prints, read only, what this client offers for raid marks (which functions and events exist), the
+-- /rm debug marks: shows in the copyable window, read only, what this client offers for raid marks (which functions and events exist), the
 -- raid mark table (mark, GUID, token, reachable, age since last seen), what each mark unit type resolves to now, and the
 -- mark capabilities. It starts the mark watch for the usual lease so the table
 -- is current, changes no saved data and sets no mark. The report is plain English like the other debug reports.
 -- Loaded from RotationMaster.toc after Diagnostics/timeline.lua; Diagnostics/glow.lua routes /rm debug marks here.
-local _, addon = ...
+local addon_name, addon = ...
+local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Shows a boolean as yes or no, and nil as unknown.
 -- @param value boolean|nil  The value to show.
@@ -139,9 +140,16 @@ function addon:BuildRaidMarkDiagnostic()
     return lines
 end
 
--- Prints the report to chat. Arguments are ignored.
+-- Shows the report in the copyable text window (to chat where there is none). Arguments are ignored.
 function addon:RunRaidMarkDiagnostic()
-    for _, line in ipairs(self:BuildRaidMarkDiagnostic()) do
+    local lines = self:BuildRaidMarkDiagnostic()
+
+    if self.ShowConditionText then
+        self:ShowConditionText(table.concat(lines, '\n'), L['Raid mark report'])
+        return
+    end
+
+    for _, line in ipairs(lines) do
         self:print('%s', line)
     end
 end

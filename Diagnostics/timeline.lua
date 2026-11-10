@@ -309,6 +309,7 @@ local function finish(self)
 
     watcher = nil
     self:print(L['Timeline watch finished. Run /rm debug timeline show to view it.'])
+    self:ShowTimelineDiagnostic()
 end
 
 -- Builds the one-shot report.

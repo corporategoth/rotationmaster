@@ -231,6 +231,7 @@ local function finish()
     end
 
     addon:print('Preview report saved (%d lines). /rm debug preview show opens it.', #lines)
+    addon:RunPreviewDiagnostic('show')
 end
 
 -- Starts recording, or opens the saved report.

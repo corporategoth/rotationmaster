@@ -10417,6 +10417,18 @@ T["Forget this spell"] = 3689
 T["Start"] = 3690
 -- b3358cff
 T["Show report"] = 3691
+-- a0a66b42
+T["    Ignored: nothing is learned about this spell."] = 3692
+-- 5bafd7fe
+T["%s (%d): ignored"] = 3693
+-- a4517ed3
+T["%s (ignored)"] = 3694
+-- 0fc2365d
+T["Ignore this spell from now on"] = 3695
+-- dd501e57
+T["Stop ignoring this spell"] = 3696
+-- 59f006d6
+T["seconds"] = 3697
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

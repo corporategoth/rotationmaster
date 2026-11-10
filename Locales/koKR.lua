@@ -12241,4 +12241,16 @@ addon.translation = {
 [3690] = "시작",
 -- b3358cff English: Show report
 [3691] = "보고서 보기",
+-- a0a66b42 English:     Ignored: nothing is learned about this spell.
+[3692] = "    무시됨: 이 주문에 대해서는 아무것도 학습하지 않습니다.",
+-- 5bafd7fe English: %s (%d): ignored
+[3693] = "%s (%d): 무시됨",
+-- a4517ed3 English: %s (ignored)
+[3694] = "%s (무시됨)",
+-- 0fc2365d English: Ignore this spell from now on
+[3695] = "지금부터 이 주문 무시",
+-- dd501e57 English: Stop ignoring this spell
+[3696] = "이 주문 무시 해제",
+-- 59f006d6 English: seconds
+[3697] = "초",
 }

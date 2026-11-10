@@ -901,4 +901,32 @@ test('the chance of a miss, from the levels, costs a share of the confidence', f
     assert(math.abs(a.Forecast:Run({ { spell = B, action = true } }, 500, 1)[1].confidence - 0.9) < 1e-9)
 end)
 
+test(
+    'a spell told to be ignored is forgotten and nothing is learned or used about it until it is not ignored',
+    function()
+        local f, a = client()
+        local entry = a.Forecast:Known(500, true)
+        entry.damage = 10
+        assert(a.Forecast:Known(500) == entry and not a.Forecast:IsIgnored(500))
+
+        a.Forecast:Ignore(500, true)
+        assert(a.Forecast:IsIgnored(500) and a.Forecast:Known(500) == nil, 'what it had is forgotten')
+        assert(a.Forecast:Known(500, true) == nil, 'and no record is made')
+
+        a.Forecast:Ignore(500, false)
+        assert(not a.Forecast:IsIgnored(500) and a.Forecast:Known(500, true) ~= nil, 'learning again')
+    end
+)
+
+test('the Forever table has the racial that gives an aura, as Walk on Air does', function()
+    local f, a, platform = client()
+
+    platform.GetClientFamily = function() return 'forever' end
+    f.load('Data/spell_effects_forever.lua')
+    a.Forecast:ResetEffects()
+
+    local row = a.Forecast:Effects(1259416)
+    assert(row and row.auras[1] and row.auras[1].aura == 1259416 and row.auras[1].unit == 'player')
+end)
+
 finish()

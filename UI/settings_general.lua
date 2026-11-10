@@ -518,10 +518,23 @@ function addon:BuildGeneralSettings(p)
 
         -- The time sits next to the list, the buttons under them.
         local seconds = p:Acquire('diagnosticSeconds', function() return addon:CreateWorkbenchEditBox(p.child) end)
-        local timeWidth = 56
-        pick:SetWidth(math.max(1, p.width - 220 - timeWidth - 4))
+        local timeWidth, unitWidth = 56, 56
+
+        -- The unit after the time, so it is clear the number is in seconds.
+        local unit = p:Acquire('diagnosticUnit', function()
+            local holder = CreateFrame('Frame', nil, p.child)
+            holder.text = holder:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+            holder.text:SetPoint('LEFT', 0, 0)
+            return holder
+        end)
+
+        unit:ClearAllPoints()
+        unit:SetPoint('TOPLEFT', p.width - unitWidth + 4, -rowY)
+        unit:SetSize(unitWidth - 4, 24)
+        unit.text:SetText(L['seconds'])
+        pick:SetWidth(math.max(1, p.width - 220 - timeWidth - unitWidth - 8))
         seconds:ClearAllPoints()
-        seconds:SetPoint('TOPLEFT', p.width - timeWidth, -rowY)
+        seconds:SetPoint('TOPLEFT', p.width - timeWidth - unitWidth, -rowY)
         seconds:SetSize(timeWidth, 24)
         seconds:SetMaxLetters(4)
         seconds:EnableMouse(true)
