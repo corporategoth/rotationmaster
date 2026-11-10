@@ -9369,8 +9369,8 @@ T["No glow diagnostic is saved yet. Run /rm debug glow."] = 3230
 T["Talent diagnostic"] = 3231
 -- c728736f
 T["Talent diagnostic saved."] = 3232
--- 311c1134
-T["Usage: /rm debug glow [seconds||show], /rm debug talents [views], /rm debug secrets [reset] or /rm debug editor"] = 3233
+-- a3081f84
+T["Usage: /rm debug glow [seconds||show], /rm debug preview [seconds||show], /rm debug spells [show], /rm debug secrets [reset], /rm debug talents [views], /rm debug timeline [seconds||show||stop], /rm debug marks or /rm debug editor"] = 3233
 -- 268f14bb
 T["Diagnostics"] = 3234
 -- bdd4e1fa
@@ -10361,6 +10361,66 @@ T["Preview background"] = 3655
 T["My class (%s)"] = 3656
 -- d8453386
 T["Solid background"] = 3657
+-- 0fad1613
+T["Evoker"] = 3658
+-- 324772e2
+T["Show what the forecast has learned"] = 3659
+-- a3a6b602
+T["What the forecast has learned"] = 3660
+-- a0b41e7f
+T["Nothing has been learned yet. With the forecast on, it watches the first twenty casts of each spell."] = 3661
+-- 0130e789
+T["%s (%d): %d casts watched"] = 3662
+-- f3e91d39
+T["    on the target: %s, %s, seen after %d of %d casts"] = 3663
+-- eecbdaf4
+T["    on you: %s, %s, seen after %d of %d casts"] = 3664
+-- d86aae14
+T["%d seconds"] = 3665
+-- d62db641
+T["until removed"] = 3666
+-- 7e602a05
+T[" - a proc, not projected"] = 3667
+-- cdc2f658
+T["    leaves no aura"] = 3668
+-- 35dd2f48
+T["    does about %d damage"] = 3669
+-- dbc55228
+T["    heals you for about %d"] = 3670
+-- ef3b0fc7
+T["    cooldown %d seconds"] = 3671
+-- 63e45ad7
+T["Base mana at level %d: %d"] = 3672
+-- 487cecc3
+T["Capture preview (20s)"] = 3673
+-- f577ee23
+T["Stop preview capture"] = 3674
+-- 55288341
+T["Preview report"] = 3675
+-- c26d1121
+T["Premade spell report"] = 3676
+-- 68e35f81
+T["Timeline report"] = 3677
+-- 8e02028e
+T["Raid mark report"] = 3678
+-- 78e0f597
+T["Lua editor report"] = 3679
+-- f778cb4f
+T["Open a window, which can be copied, with what the forecast has learned about your spells: the auras each leaves on the target or on you and how long they last, how often each was seen after a cast (an aura seen after only some casts is a proc, which is not projected), the damage and healing they do, the cooldown of an item and the base mana worked out for your level. It learns from the first twenty casts of each spell while the forecast is on."] = 3680
+-- d1a1bed8
+T["Open one of the diagnostic reports for a problem report or to find out why something does not work: Glow (why no button lights), Premade spell (spells in the shipped rotations that this client does not have), Secret value probe (what a restricted client hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report and Lua editor report. Capture preview records what the preview was given and why for twenty seconds, and its report opens afterwards. The same reports run from /rm debug."] = 3681
+-- 95fc5a3c
+T["Capture glow (10s)"] = 3682
+-- 6e37c9a7
+T["Stop glow capture"] = 3683
+-- 53dc47ca
+T["Glow report"] = 3684
+-- e9a078aa
+T["Capture timeline (30s)"] = 3685
+-- 0ae5ab6e
+T["Stop timeline capture"] = 3686
+-- 8ad2e5f7
+T["Diagnostic reports"] = 3687
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

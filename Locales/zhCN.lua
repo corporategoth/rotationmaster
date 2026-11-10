@@ -11010,9 +11010,10 @@ addon.translation = {
 [3231] = "天赋诊断",
 -- c728736f English: Talent diagnostic saved.
 [3232] = "天赋诊断已保存。",
--- 311c1134 English: Usage: /rm debug glow [seconds||show], /rm debug talents [views], /rm debug
---     secrets [reset] or /rm debug editor
-[3233] = "用法：/rm debug glow [秒数||show]、/rm debug talents [views]、/rm debug secrets [reset] 或 /rm debug editor",
+-- a3081f84 English: Usage: /rm debug glow [seconds||show], /rm debug preview [seconds||show], /rm
+--     debug spells [show], /rm debug secrets [reset], /rm debug talents [views], /rm debug timeline
+--     [seconds||show||stop], /rm debug marks or /rm debug editor
+[3233] = "用法：/rm debug glow [秒数||show]、/rm debug preview [秒数||show]、/rm debug spells [show]、/rm debug secrets [reset]、/rm debug talents [views]、/rm debug timeline [秒数||show||stop]、/rm debug marks 或 /rm debug editor",
 -- 268f14bb English: Diagnostics
 [3234] = "诊断",
 -- bdd4e1fa English: Advice: not available; presentation: not available; ordinary-cast proof: not
@@ -12173,4 +12174,75 @@ addon.translation = {
 [3656] = "我的职业 (%s)",
 -- d8453386 English: Solid background
 [3657] = "纯色背景",
+-- 0fad1613 English: Evoker
+[3658] = "唤魔师",
+-- 324772e2 English: Show what the forecast has learned
+[3659] = "显示预测已学到的内容",
+-- a3a6b602 English: What the forecast has learned
+[3660] = "预测已学到的内容",
+-- a0b41e7f English: Nothing has been learned yet. With the forecast on, it watches the first twenty
+--     casts of each spell.
+[3661] = "尚未学到任何内容。开启预测后，它会观察每个法术的前二十次施放。",
+-- 0130e789 English: %s (%d): %d casts watched
+[3662] = "%s (%d)：已观察 %d 次施放",
+-- f3e91d39 English:     on the target: %s, %s, seen after %d of %d casts
+[3663] = "    对目标：%s，%s，在 %d/%d 次施放后出现",
+-- eecbdaf4 English:     on you: %s, %s, seen after %d of %d casts
+[3664] = "    对你：%s，%s，在 %d/%d 次施放后出现",
+-- d86aae14 English: %d seconds
+[3665] = "%d 秒",
+-- d62db641 English: until removed
+[3666] = "直到移除",
+-- 7e602a05 English:  - a proc, not projected
+[3667] = " - 触发效果，不做预测",
+-- cdc2f658 English:     leaves no aura
+[3668] = "    不留下光环",
+-- 35dd2f48 English:     does about %d damage
+[3669] = "    造成约 %d 点伤害",
+-- dbc55228 English:     heals you for about %d
+[3670] = "    为你恢复约 %d 点生命值",
+-- ef3b0fc7 English:     cooldown %d seconds
+[3671] = "    冷却 %d 秒",
+-- 63e45ad7 English: Base mana at level %d: %d
+[3672] = "%d 级基础法力值：%d",
+-- 487cecc3 English: Capture preview (20s)
+[3673] = "捕获预览（20 秒）",
+-- f577ee23 English: Stop preview capture
+[3674] = "停止捕获预览",
+-- 55288341 English: Preview report
+[3675] = "预览报告",
+-- c26d1121 English: Premade spell report
+[3676] = "预制法术报告",
+-- 68e35f81 English: Timeline report
+[3677] = "时间轴报告",
+-- 8e02028e English: Raid mark report
+[3678] = "团队标记报告",
+-- 78e0f597 English: Lua editor report
+[3679] = "Lua 编辑器报告",
+-- f778cb4f English: Open a window, which can be copied, with what the forecast has learned about
+--     your spells: the auras each leaves on the target or on you and how long they last, how often
+--     each was seen after a cast (an aura seen after only some casts is a proc, which is not
+--     projected), the damage and healing they do, the cooldown of an item and the base mana worked
+--     out for your level. It learns from the first twenty casts of each spell while the forecast is
+--     on.
+[3680] = "打开一个可复制的窗口，显示预测已学到的关于你法术的信息：每个法术在目标或你身上留下的光环及其持续时间、每个光环在施放后出现的频率（仅在部分施放后出现的光环属于触发效果，不做预测）、它们造成的伤害和治疗、物品的冷却时间，以及按你的等级算出的基础法力值。开启预测时，它会从每个法术的前二十次施放中学习。",
+-- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
+--     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
+--     rotations that this client does not have), Secret value probe (what a restricted client
+--     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
+--     and Lua editor report. Capture preview records what the preview was given and why for twenty
+--     seconds, and its report opens afterwards. The same reports run from /rm debug.
+[3681] = "打开其中一份诊断报告，用于提交问题报告或查明某项功能为何无法工作：发光（为何没有按钮亮起）、预制法术（随附轮换中此客户端没有的法术）、机密值探测（受限客户端隐藏了什么）、天赋诊断、时间轴报告（暴雪的战斗时间轴）、团队标记报告和 Lua 编辑器报告。捕获预览会记录二十秒内预览收到的内容及原因，之后打开其报告。相同的报告也可通过 /rm debug 运行。",
+-- 95fc5a3c English: Capture glow (10s)
+[3682] = "捕获高亮 (10秒)",
+-- 6e37c9a7 English: Stop glow capture
+[3683] = "停止高亮捕获",
+-- 53dc47ca English: Glow report
+[3684] = "高亮报告",
+-- e9a078aa English: Capture timeline (30s)
+[3685] = "捕获时间轴 (30秒)",
+-- 0ae5ab6e English: Stop timeline capture
+[3686] = "停止时间轴捕获",
+-- 8ad2e5f7 English: Diagnostic reports
+[3687] = "诊断报告",
 }

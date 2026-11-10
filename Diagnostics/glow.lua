@@ -1415,6 +1415,29 @@ function addon:HandleDebugCommand(args)
     end
 
     self:print(
-        L["Usage: /rm debug glow [seconds||show], /rm debug talents [views], /rm debug secrets [reset] or /rm debug editor"]
+        L["Usage: /rm debug glow [seconds||show], /rm debug preview [seconds||show], /rm debug spells [show], /rm debug secrets [reset], /rm debug talents [views], /rm debug timeline [seconds||show||stop], /rm debug marks or /rm debug editor"]
     )
+end
+
+-- Tells whether a glow watch (/rm debug glow with seconds) is running.
+-- @return boolean  True while it runs.
+function addon:IsGlowWatchRunning()
+    return watcher ~= nil
+end
+
+-- Ends a glow watch early; the report keeps the lines written so far.
+function addon:StopGlowWatch()
+    if watcher then
+        self:CancelTimer(watcher.timer)
+        watcher = nil
+        self:print(L['Glow watch finished. Run /rm debug glow show to view it.'])
+    end
+end
+
+-- Tells whether a glow report is saved.
+-- @return boolean  True when /rm debug glow show would open one.
+function addon:HasGlowReport()
+    local reports = store()
+
+    return reports ~= nil and #reports > 0
 end

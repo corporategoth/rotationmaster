@@ -49,7 +49,7 @@ While the switch is on, per spell, saved in `RotationMasterDB.global.forecast` (
 target or the player (the auras before the cast, on `UNIT_SPELLCAST_SENT`, against 0.35 seconds after `UNIT_SPELLCAST_SUCCEEDED`; settled
 after three matching sightings or five empty looks, after which the spell is not scanned again), and the damage it does and the
 healing it does to the player (a running average, from the combat log; not on Retail and Forever). Nothing is registered with the
-switch off, and Preview > Forecast has a button to forget it all.
+switch off, and Preview > Forecast has a button to show it all (`UI/forecast_report.lua`: per spell, the auras seen, for how long and after how many of the casts watched, a proc marked, the damage, the healing, an item's cooldown and the base mana worked out for the level, in the copyable text window) and a button to forget it all.
 
 What a cast leaves is taken from, in this order:
 

@@ -626,4 +626,115 @@ test(
     end
 )
 
+test('General has Debugging under History, with captures in rows of three and the untimed reports below', function()
+    local _, a, first = fixture({ page = 'General' })
+
+    for _, name in ipairs({
+        'RunGlowDiagnostic', 'ShowGlowDiagnostic', 'StopGlowWatch', 'RunPreviewDiagnostic', 'StopPreviewCapture',
+        'RunTimelineDiagnostic', 'ShowTimelineDiagnostic', 'RunPremadeSpellDiagnostic', 'RunSecretsDiagnostic',
+        'RunTalentDiagnostic', 'RunRaidMarkDiagnostic', 'ShowLuaEditorInputReport'
+    }) do
+        a[name] = function() end
+    end
+
+    for _, name in ipairs({ 'IsGlowWatchRunning', 'IsPreviewCaptureRunning', 'IsTimelineWatchRunning' }) do
+        a[name] = function() return false end
+    end
+
+    for _, name in ipairs({ 'HasGlowReport', 'HasPreviewReport', 'HasTimelineReport' }) do
+        a[name] = function() return true end
+    end
+
+    for _, name in ipairs({ 'StartCPURuntimeCapture', 'StartMemoryCapture', 'RunCastCaptureAction' }) do
+        a[name] = a[name] or function() end
+    end
+
+    local parent = first.frame:GetParent()
+    parent:SetSize(1500, 900)
+    local p = a:OpenNativeSettings(parent, 'General')
+
+    local function top(field)
+        return -select(3, field:GetPoint())
+    end
+
+    local f = p.fields
+    assert(f.glow_capture and f.preview_capture and f.timeline_capture and f.glow_report and f.timeline_report)
+
+    -- The first row is the three performance captures, the second glow, preview and timeline, then the cast capture.
+    assert(top(f.cpu_capture) == top(f.cpu_runtime_capture) and top(f.cpu_capture) == top(f.memory_capture))
+    assert(top(f.glow_capture) > top(f.cpu_capture) and top(f.cast_capture) > top(f.glow_capture))
+    assert(top(f.glow_capture) == top(f.preview_capture) and top(f.preview_capture) == top(f.timeline_capture))
+    assert(top(f.glow_report) > top(f.glow_capture), 'the show button is under its capture')
+    assert(top(f.glow_report) == top(f.timeline_report))
+
+    -- Untimed reports: three to a row, below the timed ones.
+    assert(top(f.spells_report) == top(f.secrets_report) and top(f.secrets_report) == top(f.talents_report))
+    assert(top(f.marks_report) > top(f.spells_report) and top(f.marks_report) == top(f.editor_report))
+    assert(top(f.spells_report) > top(f.timeline_report))
+
+    local history, debugging, effect = text(p, 'History'), text(p, 'Debugging Options'), text(p, 'Effect Options')
+    assert(history and debugging and effect)
+    assert(top(debugging) > top(history), 'Debugging Options is under History')
+    assert(debugging:GetParent() == history:GetParent(), 'in the same column as History')
+    assert(effect:GetParent() ~= history:GetParent())
+end)
+
+test('the forecast report lists what was learned per spell, a proc marked, and says when there is nothing', function()
+    local f, a = fixture({ page = 'General' })
+    f.load('UI/forecast_report.lua')
+    local empty = table.concat(a:BuildForecastLearned(), '\n')
+    assert(empty:find('Nothing has been learned yet', 1, true))
+
+    a.db.global.forecast = {
+        version = 1,
+        base = { level = 60, mana = 1000 },
+        spells = {
+            [116] = {
+                casts = 20,
+                seen = {
+                    [1] = { unit = 'target', duration = 8, n = 20 },
+                    [2] = { unit = 'player', duration = 15, n = 3 },
+                },
+                damage = 123.4,
+            },
+            [9001] = { cooldown = 120 },
+        },
+    }
+
+    local text = table.concat(a:BuildForecastLearned(), '\n')
+    assert(text:find('(116): 20 casts watched', 1, true))
+    assert(text:find('on the target', 1, true) and text:find('seen after 20 of 20 casts', 1, true))
+    assert(text:find('on you', 1, true) and text:find('a proc, not projected', 1, true))
+    assert(text:find('does about 123 damage', 1, true) and text:find('cooldown 120 seconds', 1, true))
+    assert(text:find('Base mana at level 60: 1000', 1, true))
+end)
+
+test(
+    'the forecast options each have a row, the learned data has a button, and classes the client lacks are named',
+    function()
+        local env, a, p = fixture()
+        env.env.LOCALIZED_CLASS_NAMES_MALE = { MAGE = 'Magier' }
+        env.load('UI/preview.lua')
+        p:Draw()
+
+        local function top(field)
+            return -select(3, field:GetPoint())
+        end
+
+        local f = p.fields
+        assert(top(f.forecast_delay) > top(f.forecast_percent), 'the seconds option has its own row')
+        assert(f.forecast_learned and top(f.forecast_clear) > top(f.forecast_learned))
+
+        f.preview_art:Click()
+        local names = {}
+
+        for _, entry in ipairs(p.menu.entries or {}) do
+            names[entry.text] = true
+        end
+
+        assert(names.Magier and not names.Mage, 'the client names the classes it has')
+        assert(names.Evoker and names['Demon Hunter'] and names['Death Knight'] and names['Rotation Master'])
+    end
+)
+
 finish()

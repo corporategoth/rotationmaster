@@ -11010,9 +11010,10 @@ addon.translation = {
 [3231] = "Diagnostic des talents",
 -- c728736f English: Talent diagnostic saved.
 [3232] = "Diagnostic des talents enregistré.",
--- 311c1134 English: Usage: /rm debug glow [seconds||show], /rm debug talents [views], /rm debug
---     secrets [reset] or /rm debug editor
-[3233] = "Utilisation : /rm debug glow [secondes||show], /rm debug talents [views], /rm debug secrets [reset] ou /rm debug editor",
+-- a3081f84 English: Usage: /rm debug glow [seconds||show], /rm debug preview [seconds||show], /rm
+--     debug spells [show], /rm debug secrets [reset], /rm debug talents [views], /rm debug timeline
+--     [seconds||show||stop], /rm debug marks or /rm debug editor
+[3233] = "Utilisation : /rm debug glow [secondes||show], /rm debug preview [secondes||show], /rm debug spells [show], /rm debug secrets [reset], /rm debug talents [views], /rm debug timeline [secondes||show||stop], /rm debug marks ou /rm debug editor",
 -- 268f14bb English: Diagnostics
 [3234] = "Diagnostics",
 -- bdd4e1fa English: Advice: not available; presentation: not available; ordinary-cast proof: not
@@ -12173,4 +12174,75 @@ addon.translation = {
 [3656] = "Ma classe (%s)",
 -- d8453386 English: Solid background
 [3657] = "Arrière-plan uni",
+-- 0fad1613 English: Evoker
+[3658] = "Évocateur",
+-- 324772e2 English: Show what the forecast has learned
+[3659] = "Afficher ce que la prévision a appris",
+-- a3a6b602 English: What the forecast has learned
+[3660] = "Ce que la prévision a appris",
+-- a0b41e7f English: Nothing has been learned yet. With the forecast on, it watches the first twenty
+--     casts of each spell.
+[3661] = "Rien n'a encore été appris. Quand la prévision est activée, elle observe les vingt premiers lancers de chaque sort.",
+-- 0130e789 English: %s (%d): %d casts watched
+[3662] = "%s (%d) : %d lancers observés",
+-- f3e91d39 English:     on the target: %s, %s, seen after %d of %d casts
+[3663] = "    sur la cible : %s, %s, vue après %d lancers sur %d",
+-- eecbdaf4 English:     on you: %s, %s, seen after %d of %d casts
+[3664] = "    sur vous : %s, %s, vue après %d lancers sur %d",
+-- d86aae14 English: %d seconds
+[3665] = "%d secondes",
+-- d62db641 English: until removed
+[3666] = "jusqu'au retrait",
+-- 7e602a05 English:  - a proc, not projected
+[3667] = " - un proc, non projeté",
+-- cdc2f658 English:     leaves no aura
+[3668] = "    ne laisse aucune aura",
+-- 35dd2f48 English:     does about %d damage
+[3669] = "    inflige environ %d dégâts",
+-- dbc55228 English:     heals you for about %d
+[3670] = "    vous soigne d'environ %d",
+-- ef3b0fc7 English:     cooldown %d seconds
+[3671] = "    temps de recharge : %d secondes",
+-- 63e45ad7 English: Base mana at level %d: %d
+[3672] = "Mana de base au niveau %d : %d",
+-- 487cecc3 English: Capture preview (20s)
+[3673] = "Capturer l'aperçu (20 s)",
+-- f577ee23 English: Stop preview capture
+[3674] = "Arrêter la capture de l'aperçu",
+-- 55288341 English: Preview report
+[3675] = "Rapport de l'aperçu",
+-- c26d1121 English: Premade spell report
+[3676] = "Rapport des sorts prédéfinis",
+-- 68e35f81 English: Timeline report
+[3677] = "Rapport de la chronologie",
+-- 8e02028e English: Raid mark report
+[3678] = "Rapport des marques de raid",
+-- 78e0f597 English: Lua editor report
+[3679] = "Rapport de l'éditeur Lua",
+-- f778cb4f English: Open a window, which can be copied, with what the forecast has learned about
+--     your spells: the auras each leaves on the target or on you and how long they last, how often
+--     each was seen after a cast (an aura seen after only some casts is a proc, which is not
+--     projected), the damage and healing they do, the cooldown of an item and the base mana worked
+--     out for your level. It learns from the first twenty casts of each spell while the forecast is
+--     on.
+[3680] = "Ouvre une fenêtre, dont le contenu peut être copié, montrant ce que la prévision a appris sur vos sorts : les auras que chacun laisse sur la cible ou sur vous et leur durée, la fréquence à laquelle chacune a été vue après un lancer (une aura vue après seulement certains lancers est un proc, qui n'est pas projeté), les dégâts et les soins qu'ils produisent, le temps de recharge d'un objet et le mana de base calculé pour votre niveau. Elle apprend à partir des vingt premiers lancers de chaque sort tant que la prévision est activée.",
+-- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
+--     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
+--     rotations that this client does not have), Secret value probe (what a restricted client
+--     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
+--     and Lua editor report. Capture preview records what the preview was given and why for twenty
+--     seconds, and its report opens afterwards. The same reports run from /rm debug.
+[3681] = "Ouvre l'un des rapports de diagnostic pour un rapport de problème ou pour comprendre pourquoi quelque chose ne fonctionne pas : Surbrillance (pourquoi aucun bouton ne s'allume), Sort prédéfini (sorts des rotations fournies que ce client n'a pas), Sonde des valeurs secrètes (ce qu'un client restreint masque), Diagnostic des talents, Rapport de la chronologie (la chronologie des rencontres de Blizzard), Rapport des marques de raid et Rapport de l'éditeur Lua. Capturer l'aperçu enregistre pendant vingt secondes ce que l'aperçu a reçu et pourquoi, et son rapport s'ouvre ensuite. Les mêmes rapports s'exécutent depuis /rm debug.",
+-- 95fc5a3c English: Capture glow (10s)
+[3682] = "Capturer la surbrillance (10 s)",
+-- 6e37c9a7 English: Stop glow capture
+[3683] = "Arrêter la capture de surbrillance",
+-- 53dc47ca English: Glow report
+[3684] = "Rapport de surbrillance",
+-- e9a078aa English: Capture timeline (30s)
+[3685] = "Capturer la chronologie (30 s)",
+-- 0ae5ab6e English: Stop timeline capture
+[3686] = "Arrêter la capture de chronologie",
+-- 8ad2e5f7 English: Diagnostic reports
+[3687] = "Rapports de diagnostic",
 }

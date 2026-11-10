@@ -479,3 +479,17 @@ function addon:ShowTimelineDiagnostic()
         self:ShowConditionText(table.concat(entry.lines, '\n'), L['Timeline diagnostic'])
     end
 end
+
+-- Tells whether a timeline watch is running.
+-- @return boolean  True while it runs.
+function addon:IsTimelineWatchRunning()
+    return watcher ~= nil
+end
+
+-- Tells whether a timeline report is saved.
+-- @return boolean  True when /rm debug timeline show would open one.
+function addon:HasTimelineReport()
+    local reports = store()
+
+    return reports ~= nil and #reports > 0
+end

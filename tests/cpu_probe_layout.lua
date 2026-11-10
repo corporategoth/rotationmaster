@@ -133,8 +133,8 @@ for _, width in ipairs({ 380, 1800, 2800 }) do
     end)
 end
 
-test('capture geometry exercises four, two and one column layouts', function()
-    assert(observedColumns[4] and observedColumns[2] and observedColumns[1], 'missing column counts')
+test('capture geometry exercises three, two and one column layouts', function()
+    assert(observedColumns[3] and observedColumns[2] and observedColumns[1], 'missing column counts')
 end)
 
 test('capture dispatch is explicit and bypasses pending edits without changing live or draft settings', function()

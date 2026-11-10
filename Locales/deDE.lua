@@ -11010,9 +11010,10 @@ addon.translation = {
 [3231] = "Talentdiagnose",
 -- c728736f English: Talent diagnostic saved.
 [3232] = "Talentdiagnose gespeichert.",
--- 311c1134 English: Usage: /rm debug glow [seconds||show], /rm debug talents [views], /rm debug
---     secrets [reset] or /rm debug editor
-[3233] = "Verwendung: /rm debug glow [Sekunden||show], /rm debug talents [views], /rm debug secrets [reset] oder /rm debug editor",
+-- a3081f84 English: Usage: /rm debug glow [seconds||show], /rm debug preview [seconds||show], /rm
+--     debug spells [show], /rm debug secrets [reset], /rm debug talents [views], /rm debug timeline
+--     [seconds||show||stop], /rm debug marks or /rm debug editor
+[3233] = "Verwendung: /rm debug glow [Sekunden||show], /rm debug preview [Sekunden||show], /rm debug spells [show], /rm debug secrets [reset], /rm debug talents [views], /rm debug timeline [Sekunden||show||stop], /rm debug marks oder /rm debug editor",
 -- 268f14bb English: Diagnostics
 [3234] = "Diagnose",
 -- bdd4e1fa English: Advice: not available; presentation: not available; ordinary-cast proof: not
@@ -12173,4 +12174,75 @@ addon.translation = {
 [3656] = "Meine Klasse (%s)",
 -- d8453386 English: Solid background
 [3657] = "Einfarbiger Hintergrund",
+-- 0fad1613 English: Evoker
+[3658] = "Rufer",
+-- 324772e2 English: Show what the forecast has learned
+[3659] = "Zeige, was die Prognose gelernt hat",
+-- a3a6b602 English: What the forecast has learned
+[3660] = "Was die Prognose gelernt hat",
+-- a0b41e7f English: Nothing has been learned yet. With the forecast on, it watches the first twenty
+--     casts of each spell.
+[3661] = "Es wurde noch nichts gelernt. Bei aktivierter Prognose beobachtet sie die ersten zwanzig Zauber jedes Zaubers.",
+-- 0130e789 English: %s (%d): %d casts watched
+[3662] = "%s (%d): %d Zauber beobachtet",
+-- f3e91d39 English:     on the target: %s, %s, seen after %d of %d casts
+[3663] = "    auf dem Ziel: %s, %s, gesehen nach %d von %d Zaubern",
+-- eecbdaf4 English:     on you: %s, %s, seen after %d of %d casts
+[3664] = "    auf Ihnen: %s, %s, gesehen nach %d von %d Zaubern",
+-- d86aae14 English: %d seconds
+[3665] = "%d Sekunden",
+-- d62db641 English: until removed
+[3666] = "bis zur Entfernung",
+-- 7e602a05 English:  - a proc, not projected
+[3667] = " - ein Proc, nicht projiziert",
+-- cdc2f658 English:     leaves no aura
+[3668] = "    hinterlässt keine Aura",
+-- 35dd2f48 English:     does about %d damage
+[3669] = "    verursacht etwa %d Schaden",
+-- dbc55228 English:     heals you for about %d
+[3670] = "    heilt Sie um etwa %d",
+-- ef3b0fc7 English:     cooldown %d seconds
+[3671] = "    Abklingzeit %d Sekunden",
+-- 63e45ad7 English: Base mana at level %d: %d
+[3672] = "Basismana auf Stufe %d: %d",
+-- 487cecc3 English: Capture preview (20s)
+[3673] = "Vorschau aufzeichnen (20 s)",
+-- f577ee23 English: Stop preview capture
+[3674] = "Vorschau-Aufzeichnung stoppen",
+-- 55288341 English: Preview report
+[3675] = "Vorschaubericht",
+-- c26d1121 English: Premade spell report
+[3676] = "Bericht zu vorgefertigten Zaubern",
+-- 68e35f81 English: Timeline report
+[3677] = "Zeitleistenbericht",
+-- 8e02028e English: Raid mark report
+[3678] = "Schlachtzugsmarkierungsbericht",
+-- 78e0f597 English: Lua editor report
+[3679] = "Lua-Editor-Bericht",
+-- f778cb4f English: Open a window, which can be copied, with what the forecast has learned about
+--     your spells: the auras each leaves on the target or on you and how long they last, how often
+--     each was seen after a cast (an aura seen after only some casts is a proc, which is not
+--     projected), the damage and healing they do, the cooldown of an item and the base mana worked
+--     out for your level. It learns from the first twenty casts of each spell while the forecast is
+--     on.
+[3680] = "Öffnet ein kopierbares Fenster mit dem, was die Prognose über Ihre Zauber gelernt hat: die Auren, die jeder Zauber auf dem Ziel oder auf Ihnen hinterlässt, und wie lange sie halten, wie oft sie nach einem Zauber gesehen wurden (eine Aura, die nur nach manchen Zaubern auftritt, ist ein Proc und wird nicht projiziert), den Schaden und die Heilung, die sie bewirken, die Abklingzeit eines Gegenstands und das für Ihre Stufe berechnete Basismana. Sie lernt aus den ersten zwanzig Zaubern jedes Zaubers, solange die Prognose aktiviert ist.",
+-- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
+--     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
+--     rotations that this client does not have), Secret value probe (what a restricted client
+--     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
+--     and Lua editor report. Capture preview records what the preview was given and why for twenty
+--     seconds, and its report opens afterwards. The same reports run from /rm debug.
+[3681] = "Öffnet einen der Diagnoseberichte für eine Problemmeldung oder um herauszufinden, warum etwas nicht funktioniert: Leuchten (warum kein Button leuchtet), Vorgefertigte Zauber (Zauber in den mitgelieferten Rotationen, die dieser Client nicht kennt), Geheimwert-Sonde (was ein eingeschränkter Client verbirgt), Talentdiagnose, Zeitleistenbericht (Blizzards Begegnungszeitleiste), Schlachtzugsmarkierungsbericht und Lua-Editor-Bericht. Vorschau aufzeichnen erfasst zwanzig Sekunden lang, was die Vorschau erhalten hat und warum; danach öffnet sich der Bericht. Dieselben Berichte lassen sich mit /rm debug starten.",
+-- 95fc5a3c English: Capture glow (10s)
+[3682] = "Hervorhebung erfassen (10 s)",
+-- 6e37c9a7 English: Stop glow capture
+[3683] = "Erfassung der Hervorhebung beenden",
+-- 53dc47ca English: Glow report
+[3684] = "Hervorhebungsbericht",
+-- e9a078aa English: Capture timeline (30s)
+[3685] = "Zeitleiste erfassen (30 s)",
+-- 0ae5ab6e English: Stop timeline capture
+[3686] = "Erfassung der Zeitleiste beenden",
+-- 8ad2e5f7 English: Diagnostic reports
+[3687] = "Diagnoseberichte",
 }

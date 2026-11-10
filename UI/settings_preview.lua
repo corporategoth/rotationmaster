@@ -40,7 +40,26 @@ function addon:BuildPreviewSettings(p)
 
     p:Heading(L['Appearance'])
 
-    local classNames = _G.LOCALIZED_CLASS_NAMES_MALE or {}
+    local classNames = LOCALIZED_CLASS_NAMES_MALE or {}
+
+    -- The client names only the classes it has; the others are named here.
+    local classLabels = {
+        DEATHKNIGHT = L['Death Knight'],
+        DEMONHUNTER = L['Demon Hunter'],
+        DRUID = L['Druid'],
+        EVOKER = L['Evoker'],
+        HUNTER = L['Hunter'],
+        MAGE = L['Mage'],
+        MONK = L['Monk'],
+        PALADIN = L['Paladin'],
+        PRIEST = L['Priest'],
+        ROGUE = L['Rogue'],
+        SHAMAN = L['Shaman'],
+        WARLOCK = L['Warlock'],
+        WARRIOR = L['Warrior'],
+        ROTATION_MASTER = L['Rotation Master'],
+    }
+
     local ok, myClass = pcall(UnitClass, 'player')
     myClass = ok and type(myClass) == 'string' and myClass or L['Unknown']
     local choice = profile.preview_background == false and 'solid' or profile.preview_art or 'class'
@@ -50,7 +69,7 @@ function addon:BuildPreviewSettings(p)
     for _, token in ipairs(self.GetPreviewArtChoices and self:GetPreviewArtChoices() or {}) do
         entries[#entries + 1] = {
             value = token,
-            text = token == 'ROTATION_MASTER' and L['Rotation Master'] or classNames[token] or token,
+            text = classNames[token] or classLabels[token] or token,
         }
     end
 
@@ -471,21 +490,11 @@ function addon:BuildPreviewSettings(p)
         end
     )
 
-    -- How sure and how soon share a row.
-    local rowY = p.y
+    p:Check('forecast_percent', L['Show how sure each prediction is'], profile.forecast_percent ~= false, function(v)
+        profile.forecast_percent = v
+    end)
 
-    local percent = p:Check(
-        'forecast_percent',
-        L['Show how sure each prediction is'],
-        profile.forecast_percent ~= false,
-        function(v)
-            profile.forecast_percent = v
-        end
-    )
-
-    p.y = rowY
-
-    local seconds = p:Check(
+    p:Check(
         'forecast_delay',
         L['Show the seconds until each prediction is cast'],
         profile.forecast_delay ~= false,
@@ -494,14 +503,12 @@ function addon:BuildPreviewSettings(p)
         end
     )
 
-    for i, control in ipairs({ percent, seconds }) do
-        control:ClearAllPoints()
-        control:SetPoint('TOPLEFT', (i - 1) * (p.width / 2), -rowY)
-        control:SetWidth(p.width / 2 - 8)
-        control:GetFontString():SetWidth(p.width / 2 - 30)
-    end
-
-    p.y = rowY + 30
+    -- What the forecast has learned, in a window that can be copied, and a button to forget it.
+    p:Button('forecast_learned', L['Show what the forecast has learned'], function()
+        if self.ShowForecastLearned then
+            self:ShowForecastLearned()
+        end
+    end)
 
     p:Button('forecast_clear', L['Forget what the forecast has learned'], function()
         self:ClearForecast()

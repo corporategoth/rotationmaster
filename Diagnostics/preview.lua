@@ -266,3 +266,24 @@ function addon:RunPreviewDiagnostic(rest)
         end)
     end
 end
+
+-- Tells whether the preview is being recorded.
+-- @return boolean  True while a recording runs.
+function addon:IsPreviewCaptureRunning()
+    return recording ~= nil
+end
+
+-- Ends a recording early and saves what it has.
+function addon:StopPreviewCapture()
+    if recording then
+        finish()
+    end
+end
+
+-- Tells whether a preview report is saved.
+-- @return boolean  True when /rm debug preview show would open one.
+function addon:HasPreviewReport()
+    local diagnostics = store()
+
+    return diagnostics ~= nil and diagnostics.preview ~= nil
+end

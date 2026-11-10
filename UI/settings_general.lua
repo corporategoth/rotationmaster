@@ -201,6 +201,452 @@ function addon:BuildGeneralSettings(p)
         end)
     end
 
+    p:Heading(L['Debugging Options'])
+
+    local logEntries = {
+        { value = 4, text = self.loglevels[4] },
+        { value = 3, text = self.loglevels[3] },
+        { value = 2, text = self.loglevels[2] },
+        { value = 1, text = L['Silent'] },
+    }
+
+    local logY = p.y
+
+    local logLevel = p:Choice('loglevel', L['Log Level'], profile.loglevel or 2, logEntries, function(v)
+        profile.loglevel = v
+
+        p:RunSettingsEffect('loglevel', function()
+            if self.RefreshEvaluationProfilerPolicy then
+                self:RefreshEvaluationProfilerPolicy()
+            end
+        end)
+
+        p:Draw()
+    end)
+
+    local detail = p:Check('detailed_profiling', L['Detailed Profiling'], profile.detailed_profiling, function(v)
+        profile.detailed_profiling = v
+    end)
+
+    if (profile.loglevel or 2) < 3 then
+        detail:Disable()
+    end
+
+    -- Detailed Profiling follows Log Level on its row, only as wide as its
+    -- box and caption.
+    local detailText = detail:GetFontString()
+    detailText:SetWidth(300)
+    local detailWidth = 22 + math.min(180, math.max(40, math.ceil(detailText:GetStringWidth() or 0) + 2))
+    detailText:SetWidth(detailWidth - 22)
+    detail:SetWidth(detailWidth)
+    detail:ClearAllPoints()
+    detail:SetPoint('TOPLEFT', math.max(0, p.width - detailWidth), -logY - 3)
+    logLevel:SetWidth(math.max(60, p.width - 220 - detailWidth - 8))
+    p.y = logY + 30
+
+    if self.GetCacheDiagnosticMode and self.SetCacheDiagnosticMode then
+        local _, requested = self:GetCacheDiagnosticMode()
+        local control = p:Check('cpu_cache_bypass', '', requested == 'cached', function() end)
+        control.tooltip = L['Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode.']
+
+        -- Labels the observation cache box "required" when the loaded mode matches the requested one, "pending" while a
+        -- reload would change it, and checks it when the requested mode is the cached one.
+        local function updateModeCaption()
+            local loaded, nextMode = self:GetCacheDiagnosticMode()
+
+            control:SetText(
+                loaded == nextMode and L['Enable observation cache (reload required)']
+                    or L['Enable observation cache (pending)']
+            )
+
+            control:SetChecked(nextMode == 'cached')
+        end
+
+        updateModeCaption()
+
+        -- Diagnostic requests persist independently of pending settings edits.
+        self:SetUIScript(control, 'OnClick', p:Guard(function()
+            local _, current = self:GetCacheDiagnosticMode()
+            local wanted = current == 'direct' and 'cached' or 'direct'
+            local ok = self:SetCacheDiagnosticMode(wanted)
+            updateModeCaption()
+            p:Message(ok and '' or L['Cache diagnostic is unavailable.'], ok)
+        end))
+    end
+
+    -- Diagnostics: one column per capture kind, its capture button above its
+    -- report button. While a capture runs its button stops it (the report is
+    -- kept); a report button stays disabled until that kind has a report.
+    -- Labels follow live state, whoever started or ended the capture, but only
+    -- while this page is shown. Each action uses live settings, never a draft.
+    local captures = {}
+
+    -- Calls an addon method under pcall.
+    -- @param method string  The name of the addon method.
+    -- @param ... any  The arguments passed after the addon.
+    -- @return any  The method's first result; false when the method is missing or errors.
+    local function call(method, ...)
+        local fn = self[method]
+
+        if type(fn) ~= 'function' then
+            return false
+        end
+
+        local ok, value = pcall(fn, self, ...)
+        return ok and value
+    end
+
+    -- Returns the action that stops a capture: through the shared performance command when it exists, otherwise by
+    -- calling the stop method directly.
+    -- @param kind string  The capture kind used in the performance command ('cpu', 'runtime' or 'memory').
+    -- @param method string  The name of the addon method that stops the capture.
+    -- @return function  The action; it returns whether it worked and a message.
+    local function stopper(kind, method)
+        return function()
+            if type(self.HandlePerformanceCommand) == 'function' then
+                return self:HandlePerformanceCommand(kind .. ' stop')
+            end
+
+            local ok = call(method)
+            return ok, ''
+        end
+    end
+
+    -- Returns a check that is true when an addon method yields a stored report string.
+    -- @param method string  The name of the addon method that returns the report.
+    -- @return function  The check; it returns true when a report exists.
+    local function stored(method)
+        return function()
+            local fn = self[method]
+
+            if type(fn) ~= 'function' then
+                return false
+            end
+
+            local ok, value = pcall(fn, self)
+            return ok and type(value) == 'string'
+        end
+    end
+
+    if self.RunCPUProfileAction then
+        captures[#captures + 1] = {
+            key = 'cpu_capture',
+            reportKey = 'cpu_report',
+            start = L['Capture CPU (10s)'],
+            stop = L['Stop CPU capture'],
+            report = L['CPU report'],
+            running = function() return call('IsCPUProfileRunning') == true end,
+            hasReport = stored('GetCPUProfileReport'),
+            begin = function() return self:RunCPUProfileAction('start') end,
+            finish = stopper('cpu', 'StopCPUProfile'),
+            open = function() return self:RunCPUProfileAction('report') end,
+        }
+
+        if type(self.StartCPURuntimeCapture) == 'function' then
+            captures[#captures + 1] = {
+                key = 'cpu_runtime_capture',
+                reportKey = 'cpu_runtime_report',
+                start = L['Capture runtime (10s)'],
+                stop = L['Stop runtime capture'],
+                report = L['Runtime report'],
+                running = function() return call('IsCPURuntimeCaptureRunning') == true end,
+                hasReport = stored('GetCPURuntimeCaptureReport'),
+                begin = function() return self:RunCPUProfileAction('runtime') end,
+                finish = stopper('runtime', 'StopCPURuntimeCapture'),
+                open = function() return self:RunCPUProfileAction('runtimereport') end,
+            }
+        end
+        if type(self.StartMemoryCapture) == 'function' then
+            captures[#captures + 1] = {
+                key = 'memory_capture',
+                reportKey = 'memory_report',
+                start = L['Capture memory (10m)'],
+                stop = L['Stop memory capture'],
+                report = L['Memory report'],
+                running = function() return call('IsMemoryCaptureRunning') == true end,
+                hasReport = stored('GetMemoryCaptureReport'),
+                begin = function() return self:RunCPUProfileAction('memory') end,
+                finish = stopper('memory', 'CompleteMemoryCapture'),
+                open = function() return self:RunCPUProfileAction('memoryreport') end,
+            }
+        end
+    end
+
+    if self.RunGlowDiagnostic and self.IsGlowWatchRunning then
+        captures[#captures + 1] = {
+            key = 'glow_capture',
+            reportKey = 'glow_report',
+            start = L['Capture glow (10s)'],
+            stop = L['Stop glow capture'],
+            report = L['Glow report'],
+            running = function() return call('IsGlowWatchRunning') == true end,
+            hasReport = function() return call('HasGlowReport') == true end,
+            begin = function()
+                self:RunGlowDiagnostic(10)
+                return true, ''
+            end,
+            finish = function()
+                self:StopGlowWatch()
+                return true, ''
+            end,
+            open = function()
+                self:ShowGlowDiagnostic()
+                return true, ''
+            end,
+        }
+    end
+    if self.RunPreviewDiagnostic and self.IsPreviewCaptureRunning then
+        captures[#captures + 1] = {
+            key = 'preview_capture',
+            reportKey = 'preview_report',
+            start = L['Capture preview (20s)'],
+            stop = L['Stop preview capture'],
+            report = L['Preview report'],
+            running = function() return call('IsPreviewCaptureRunning') == true end,
+            hasReport = function() return call('HasPreviewReport') == true end,
+            begin = function()
+                self:RunPreviewDiagnostic('20')
+                return true, ''
+            end,
+            finish = function()
+                self:StopPreviewCapture()
+                return true, ''
+            end,
+            open = function()
+                self:RunPreviewDiagnostic('show')
+                return true, ''
+            end,
+        }
+    end
+    if self.RunTimelineDiagnostic and self.IsTimelineWatchRunning then
+        captures[#captures + 1] = {
+            key = 'timeline_capture',
+            reportKey = 'timeline_report',
+            start = L['Capture timeline (30s)'],
+            stop = L['Stop timeline capture'],
+            report = L['Timeline report'],
+            running = function() return call('IsTimelineWatchRunning') == true end,
+            hasReport = function() return call('HasTimelineReport') == true end,
+            begin = function()
+                self:RunTimelineDiagnostic('30')
+                return true, ''
+            end,
+            finish = function()
+                self:RunTimelineDiagnostic('stop')
+                return true, ''
+            end,
+            open = function()
+                self:ShowTimelineDiagnostic()
+                return true, ''
+            end,
+        }
+    end
+
+    if self.RunCastCaptureAction then
+        -- The cast report copies its snapshot, so it is checked only when the
+        -- running state changes (and now and then as a safety net).
+        captures[#captures + 1] = {
+            key = 'cast_capture',
+            reportKey = 'cast_report',
+            start = L['Capture casts (30s)'],
+            stop = L['Stop cast capture'],
+            report = L['Cast report'],
+            costly = true,
+            running = function()
+                return type(self.GetCastCaptureState) == 'function' and self:GetCastCaptureState() == true
+            end,
+            hasReport = function()
+                if type(self.GetCastCaptureState) ~= 'function' then
+                    return true
+                end
+
+                local _, available = self:GetCastCaptureState(true)
+                return available == true
+            end,
+            begin = function() return self:RunCastCaptureAction('start') end,
+            finish = function() return self:RunCastCaptureAction('stop') end,
+            open = function() return self:RunCastCaptureAction('report') end,
+        }
+    end
+
+    if #captures > 0 then
+        local token = p.generation
+        local minimumWidth = 120
+        local diagnosticY = p.y
+
+        -- Sets one capture's button label from its running state and enables its report button when a report exists. A
+        -- costly check (the cast report copies its snapshot) is repeated only when the running state changed, when
+        -- forced, or about every two seconds.
+        -- @param entry table  The capture entry.
+        -- @param force boolean|nil  True re-checks for a report even for a costly entry.
+        local function paint(entry, force)
+            local running = entry.running()
+            local has = entry.has
+
+            if not running and (force or not entry.costly or running ~= entry.wasRunning or (entry.age or 0) >= 2) then
+                has = entry.hasReport() == true
+                entry.age = 0
+            end
+
+            if running then
+                has = false
+            end
+
+            entry.wasRunning = running
+            entry.has = has
+            entry.button:SetText(running and entry.stop or entry.start)
+
+            if has then
+                entry.reportButton:Enable()
+            else
+                entry.reportButton:Disable()
+            end
+        end
+
+        -- Repaints every capture's buttons, but only while this drawing of the page is current.
+        -- @param force boolean|nil  True forces the report check.
+        local function repaint(force)
+            if p:Valid(token) then
+                for _, entry in ipairs(captures) do
+                    paint(entry, force)
+                end
+            end
+        end
+
+        for _, entry in ipairs(captures) do
+            local button = p:Button(entry.key, entry.start, function() end)
+            local reportButton = p:Button(entry.reportKey, entry.report, function() end)
+            entry.button, entry.reportButton = button, reportButton
+
+            for _, text in ipairs({ entry.start, entry.stop }) do
+                button:SetText(text)
+                minimumWidth = math.max(minimumWidth, button:GetFontString():GetStringWidth() + 20)
+            end
+
+            self:SetUIScript(button, 'OnClick', p:Guard(function()
+                local action = entry.running() and entry.finish or entry.begin
+                local ok, message, current = action()
+
+                if current == false or not p:Valid(token) then
+                    return
+                end
+
+                if message and message ~= '' then
+                    p:Message(message, ok)
+                end
+
+                repaint(true)
+            end))
+
+            self:SetUIScript(reportButton, 'OnClick', p:Guard(function()
+                local ok, message, current = entry.open()
+
+                if current == false or not p:Valid(token) then
+                    return
+                end
+
+                p:Message(message or '', ok)
+                repaint(true)
+            end))
+        end
+
+        local gap = 4
+        local columns = math.max(1, math.min(3, #captures, math.floor((p.width + gap) / (minimumWidth + gap))))
+        local each = (p.width - (columns - 1) * gap) / columns
+
+        for i, entry in ipairs(captures) do
+            local x = ((i - 1) % columns) * (each + gap)
+            local top = diagnosticY + math.floor((i - 1) / columns) * 58
+            entry.button:ClearAllPoints()
+            entry.button:SetPoint('TOPLEFT', x, -top)
+            entry.button:SetWidth(each)
+            entry.reportButton:ClearAllPoints()
+            entry.reportButton:SetPoint('TOPLEFT', x, -top - 28)
+            entry.reportButton:SetWidth(each)
+        end
+
+        p.y = diagnosticY + math.ceil(#captures / columns) * 58
+        repaint(true)
+        local watcher = p:Acquire('captureWatcher', function() return CreateFrame('Frame', nil, p.child) end)
+        local elapsed = 0
+
+        -- Every quarter of a second while the page is shown: ages the capture entries and repaints their buttons, so
+        -- the labels follow the live state whoever started or ended the capture. Stops itself when the page was
+        -- redrawn.
+        -- @param frame table  The watcher frame.
+        -- @param delta number|nil  The time since the last update, in seconds.
+        self:SetUIScript(watcher, 'OnUpdate', function(frame, delta)
+            if not p:Valid(token) then
+                self:SetUIScript(frame, 'OnUpdate', nil)
+                return
+            end
+
+            elapsed = elapsed + (delta or 0)
+
+            if elapsed < .25 then
+                return
+            end
+
+            for _, entry in ipairs(captures) do
+                entry.age = (entry.age or 0) + elapsed
+            end
+
+            elapsed = 0
+            repaint(false)
+        end)
+    end
+
+    -- One-shot reports (the other /rm debug commands): each opens at once in the copyable window, or prints to chat.
+    local reports = {}
+
+    for _, entry in ipairs({
+        { 'spells_report', L['Premade spell report'], 'RunPremadeSpellDiagnostic' },
+        { 'secrets_report', L['Secret value probe'], 'RunSecretsDiagnostic' },
+        { 'talents_report', L['Talent diagnostic'], 'RunTalentDiagnostic' },
+        { 'marks_report', L['Raid mark report'], 'RunRaidMarkDiagnostic' },
+        { 'editor_report', L['Lua editor report'], 'ShowLuaEditorInputReport' },
+    }) do
+        if type(self[entry[3]]) == 'function' then
+            reports[#reports + 1] = entry
+        end
+    end
+
+    if #reports > 0 then
+        local token = p.generation
+        local gap, wide = 4, 120
+        local reportY = p.y
+        local buttons = {}
+
+        for _, entry in ipairs(reports) do
+            local button = p:Button(entry[1], entry[2], function() end)
+            buttons[#buttons + 1] = button
+            wide = math.max(wide, button:GetFontString():GetStringWidth() + 20)
+
+            self:SetUIScript(button, 'OnClick', p:Guard(function()
+                if p:Valid(token) then
+                    call(entry[3])
+                end
+            end))
+        end
+
+        local columns = math.max(1, math.min(3, #buttons, math.floor((p.width + gap) / (wide + gap))))
+        local each = (p.width - (columns - 1) * gap) / columns
+
+        for i, button in ipairs(buttons) do
+            button:ClearAllPoints()
+
+            button:SetPoint(
+                'TOPLEFT',
+                ((i - 1) % columns) * (each + gap),
+                -reportY - math.floor((i - 1) / columns) * 30
+            )
+
+            button:SetWidth(each)
+        end
+
+        p.y = reportY + math.ceil(#buttons / columns) * 30
+    end
+
     -- Talent groups need your own names (Primary, Secondary, ...) on every client that keys rotations by talent group:
     -- Era, TBC, Wrath, Cataclysm and Forever. Retail and Mists name real specializations, so the option is gone.
     if self.Platform:GetRotationSpecKind() == 'slot' and store.char and store.char.specs then
@@ -452,331 +898,6 @@ function addon:BuildGeneralSettings(p)
         profile.tooltip_limit = v
         tooltipsChanged()
     end)
-
-    p:Heading(L['Debugging Options'])
-
-    local logEntries = {
-        { value = 4, text = self.loglevels[4] },
-        { value = 3, text = self.loglevels[3] },
-        { value = 2, text = self.loglevels[2] },
-        { value = 1, text = L['Silent'] },
-    }
-
-    local logY = p.y
-
-    local logLevel = p:Choice('loglevel', L['Log Level'], profile.loglevel or 2, logEntries, function(v)
-        profile.loglevel = v
-
-        p:RunSettingsEffect('loglevel', function()
-            if self.RefreshEvaluationProfilerPolicy then
-                self:RefreshEvaluationProfilerPolicy()
-            end
-        end)
-
-        p:Draw()
-    end)
-
-    local detail = p:Check('detailed_profiling', L['Detailed Profiling'], profile.detailed_profiling, function(v)
-        profile.detailed_profiling = v
-    end)
-
-    if (profile.loglevel or 2) < 3 then
-        detail:Disable()
-    end
-
-    -- Detailed Profiling follows Log Level on its row, only as wide as its
-    -- box and caption.
-    local detailText = detail:GetFontString()
-    detailText:SetWidth(300)
-    local detailWidth = 22 + math.min(180, math.max(40, math.ceil(detailText:GetStringWidth() or 0) + 2))
-    detailText:SetWidth(detailWidth - 22)
-    detail:SetWidth(detailWidth)
-    detail:ClearAllPoints()
-    detail:SetPoint('TOPLEFT', math.max(0, p.width - detailWidth), -logY - 3)
-    logLevel:SetWidth(math.max(60, p.width - 220 - detailWidth - 8))
-    p.y = logY + 30
-
-    if self.GetCacheDiagnosticMode and self.SetCacheDiagnosticMode then
-        local _, requested = self:GetCacheDiagnosticMode()
-        local control = p:Check('cpu_cache_bypass', '', requested == 'cached', function() end)
-        control.tooltip = L['Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode.']
-
-        -- Labels the observation cache box "required" when the loaded mode matches the requested one, "pending" while a
-        -- reload would change it, and checks it when the requested mode is the cached one.
-        local function updateModeCaption()
-            local loaded, nextMode = self:GetCacheDiagnosticMode()
-
-            control:SetText(
-                loaded == nextMode and L['Enable observation cache (reload required)']
-                    or L['Enable observation cache (pending)']
-            )
-
-            control:SetChecked(nextMode == 'cached')
-        end
-
-        updateModeCaption()
-
-        -- Diagnostic requests persist independently of pending settings edits.
-        self:SetUIScript(control, 'OnClick', p:Guard(function()
-            local _, current = self:GetCacheDiagnosticMode()
-            local wanted = current == 'direct' and 'cached' or 'direct'
-            local ok = self:SetCacheDiagnosticMode(wanted)
-            updateModeCaption()
-            p:Message(ok and '' or L['Cache diagnostic is unavailable.'], ok)
-        end))
-    end
-
-    -- Diagnostics: one column per capture kind, its capture button above its
-    -- report button. While a capture runs its button stops it (the report is
-    -- kept); a report button stays disabled until that kind has a report.
-    -- Labels follow live state, whoever started or ended the capture, but only
-    -- while this page is shown. Each action uses live settings, never a draft.
-    local captures = {}
-
-    -- Calls an addon method under pcall.
-    -- @param method string  The name of the addon method.
-    -- @param ... any  The arguments passed after the addon.
-    -- @return any  The method's first result; false when the method is missing or errors.
-    local function call(method, ...)
-        local fn = self[method]
-
-        if type(fn) ~= 'function' then
-            return false
-        end
-
-        local ok, value = pcall(fn, self, ...)
-        return ok and value
-    end
-
-    -- Returns the action that stops a capture: through the shared performance command when it exists, otherwise by
-    -- calling the stop method directly.
-    -- @param kind string  The capture kind used in the performance command ('cpu', 'runtime' or 'memory').
-    -- @param method string  The name of the addon method that stops the capture.
-    -- @return function  The action; it returns whether it worked and a message.
-    local function stopper(kind, method)
-        return function()
-            if type(self.HandlePerformanceCommand) == 'function' then
-                return self:HandlePerformanceCommand(kind .. ' stop')
-            end
-
-            local ok = call(method)
-            return ok, ''
-        end
-    end
-
-    -- Returns a check that is true when an addon method yields a stored report string.
-    -- @param method string  The name of the addon method that returns the report.
-    -- @return function  The check; it returns true when a report exists.
-    local function stored(method)
-        return function()
-            local fn = self[method]
-
-            if type(fn) ~= 'function' then
-                return false
-            end
-
-            local ok, value = pcall(fn, self)
-            return ok and type(value) == 'string'
-        end
-    end
-
-    if self.RunCPUProfileAction then
-        captures[#captures + 1] = {
-            key = 'cpu_capture',
-            reportKey = 'cpu_report',
-            start = L['Capture CPU (10s)'],
-            stop = L['Stop CPU capture'],
-            report = L['CPU report'],
-            running = function() return call('IsCPUProfileRunning') == true end,
-            hasReport = stored('GetCPUProfileReport'),
-            begin = function() return self:RunCPUProfileAction('start') end,
-            finish = stopper('cpu', 'StopCPUProfile'),
-            open = function() return self:RunCPUProfileAction('report') end,
-        }
-
-        if type(self.StartCPURuntimeCapture) == 'function' then
-            captures[#captures + 1] = {
-                key = 'cpu_runtime_capture',
-                reportKey = 'cpu_runtime_report',
-                start = L['Capture runtime (10s)'],
-                stop = L['Stop runtime capture'],
-                report = L['Runtime report'],
-                running = function() return call('IsCPURuntimeCaptureRunning') == true end,
-                hasReport = stored('GetCPURuntimeCaptureReport'),
-                begin = function() return self:RunCPUProfileAction('runtime') end,
-                finish = stopper('runtime', 'StopCPURuntimeCapture'),
-                open = function() return self:RunCPUProfileAction('runtimereport') end,
-            }
-        end
-        if type(self.StartMemoryCapture) == 'function' then
-            captures[#captures + 1] = {
-                key = 'memory_capture',
-                reportKey = 'memory_report',
-                start = L['Capture memory (10m)'],
-                stop = L['Stop memory capture'],
-                report = L['Memory report'],
-                running = function() return call('IsMemoryCaptureRunning') == true end,
-                hasReport = stored('GetMemoryCaptureReport'),
-                begin = function() return self:RunCPUProfileAction('memory') end,
-                finish = stopper('memory', 'CompleteMemoryCapture'),
-                open = function() return self:RunCPUProfileAction('memoryreport') end,
-            }
-        end
-    end
-
-    if self.RunCastCaptureAction then
-        -- The cast report copies its snapshot, so it is checked only when the
-        -- running state changes (and now and then as a safety net).
-        captures[#captures + 1] = {
-            key = 'cast_capture',
-            reportKey = 'cast_report',
-            start = L['Capture casts (30s)'],
-            stop = L['Stop cast capture'],
-            report = L['Cast report'],
-            costly = true,
-            running = function()
-                return type(self.GetCastCaptureState) == 'function' and self:GetCastCaptureState() == true
-            end,
-            hasReport = function()
-                if type(self.GetCastCaptureState) ~= 'function' then
-                    return true
-                end
-
-                local _, available = self:GetCastCaptureState(true)
-                return available == true
-            end,
-            begin = function() return self:RunCastCaptureAction('start') end,
-            finish = function() return self:RunCastCaptureAction('stop') end,
-            open = function() return self:RunCastCaptureAction('report') end,
-        }
-    end
-
-    if #captures > 0 then
-        local token = p.generation
-        local minimumWidth = 120
-        local diagnosticY = p.y
-
-        -- Sets one capture's button label from its running state and enables its report button when a report exists. A
-        -- costly check (the cast report copies its snapshot) is repeated only when the running state changed, when
-        -- forced, or about every two seconds.
-        -- @param entry table  The capture entry.
-        -- @param force boolean|nil  True re-checks for a report even for a costly entry.
-        local function paint(entry, force)
-            local running = entry.running()
-            local has = entry.has
-
-            if not running and (force or not entry.costly or running ~= entry.wasRunning or (entry.age or 0) >= 2) then
-                has = entry.hasReport() == true
-                entry.age = 0
-            end
-
-            if running then
-                has = false
-            end
-
-            entry.wasRunning = running
-            entry.has = has
-            entry.button:SetText(running and entry.stop or entry.start)
-
-            if has then
-                entry.reportButton:Enable()
-            else
-                entry.reportButton:Disable()
-            end
-        end
-
-        -- Repaints every capture's buttons, but only while this drawing of the page is current.
-        -- @param force boolean|nil  True forces the report check.
-        local function repaint(force)
-            if p:Valid(token) then
-                for _, entry in ipairs(captures) do
-                    paint(entry, force)
-                end
-            end
-        end
-
-        for _, entry in ipairs(captures) do
-            local button = p:Button(entry.key, entry.start, function() end)
-            local reportButton = p:Button(entry.reportKey, entry.report, function() end)
-            entry.button, entry.reportButton = button, reportButton
-
-            for _, text in ipairs({ entry.start, entry.stop }) do
-                button:SetText(text)
-                minimumWidth = math.max(minimumWidth, button:GetFontString():GetStringWidth() + 20)
-            end
-
-            self:SetUIScript(button, 'OnClick', p:Guard(function()
-                local action = entry.running() and entry.finish or entry.begin
-                local ok, message, current = action()
-
-                if current == false or not p:Valid(token) then
-                    return
-                end
-
-                if message and message ~= '' then
-                    p:Message(message, ok)
-                end
-
-                repaint(true)
-            end))
-
-            self:SetUIScript(reportButton, 'OnClick', p:Guard(function()
-                local ok, message, current = entry.open()
-
-                if current == false or not p:Valid(token) then
-                    return
-                end
-
-                p:Message(message or '', ok)
-                repaint(true)
-            end))
-        end
-
-        local gap = 4
-        local columns = math.max(1, math.min(#captures, math.floor((p.width + gap) / (minimumWidth + gap))))
-        local each = (p.width - (columns - 1) * gap) / columns
-
-        for i, entry in ipairs(captures) do
-            local x = ((i - 1) % columns) * (each + gap)
-            local top = diagnosticY + math.floor((i - 1) / columns) * 58
-            entry.button:ClearAllPoints()
-            entry.button:SetPoint('TOPLEFT', x, -top)
-            entry.button:SetWidth(each)
-            entry.reportButton:ClearAllPoints()
-            entry.reportButton:SetPoint('TOPLEFT', x, -top - 28)
-            entry.reportButton:SetWidth(each)
-        end
-
-        p.y = diagnosticY + math.ceil(#captures / columns) * 58
-        repaint(true)
-        local watcher = p:Acquire('captureWatcher', function() return CreateFrame('Frame', nil, p.child) end)
-        local elapsed = 0
-
-        -- Every quarter of a second while the page is shown: ages the capture entries and repaints their buttons, so
-        -- the labels follow the live state whoever started or ended the capture. Stops itself when the page was
-        -- redrawn.
-        -- @param frame table  The watcher frame.
-        -- @param delta number|nil  The time since the last update, in seconds.
-        self:SetUIScript(watcher, 'OnUpdate', function(frame, delta)
-            if not p:Valid(token) then
-                self:SetUIScript(frame, 'OnUpdate', nil)
-                return
-            end
-
-            elapsed = elapsed + (delta or 0)
-
-            if elapsed < .25 then
-                return
-            end
-
-            for _, entry in ipairs(captures) do
-                entry.age = (entry.age or 0) + elapsed
-            end
-
-            elapsed = 0
-            repaint(false)
-        end)
-    end
 
     if self.Glow and store.global.effects and store.global.effects[profile.effect] then
         self:Glow(

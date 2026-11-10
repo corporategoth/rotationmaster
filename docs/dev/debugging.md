@@ -52,3 +52,5 @@ The suites run the real files against a client model. To reproduce a report, fin
 (`ls tests | grep <area>`), copy its fixture setup (`tests/fixtures/addon.lua`), and model what the report says the client
 returned, including APIs that are absent. `docs/dev/running-things.md` has the commands. If a probe is needed in game, build a
 throwaway addon whose output lands in a multi-line copy window, not only in chat.
+
+The same reports have buttons under Debugging on the General tab, in rows of three: the performance captures (CPU, runtime, memory) each with its report button under it, then the timed captures (glow, preview, timeline, casts) with theirs, then the reports that are not timed (premade spells, secret values, talents, raid marks, Lua editor). `/rm debug` with nothing after it lists every command.

@@ -126,6 +126,11 @@ function addon:GetPreviewOptionHelp()
             text = L["Show, over each predicted icon, how many seconds it would be cast after the first recommendation, or from now when nothing is ready yet."],
         },
         {
+            id = "forecast_learned",
+            title = L["Show what the forecast has learned"],
+            text = L["Open a window, which can be copied, with what the forecast has learned about your spells: the auras each leaves on the target or on you and how long they last, how often each was seen after a cast (an aura seen after only some casts is a proc, which is not projected), the damage and healing they do, the cooldown of an item and the base mana worked out for your level. It learns from the first twenty casts of each spell while the forecast is on."],
+        },
+        {
             id = "forecast_clear",
             title = L["Forget what the forecast has learned"],
             text = L["Delete what the forecast has learned about your spells (the auras they leave, the damage and healing they do). It starts learning again if the forecast is on."],
@@ -336,6 +341,12 @@ function addon:GetGeneralOptionHelp()
         id = "detailed_profiling",
         title = L['Detailed Profiling'],
         text = L["Include component timings in the periodic Debug or Verbose profiling report. Reports show measured runs, total, minimum, average and maximum in milliseconds. Timings include child work; nested scopes overlap and must not be added together. The overall scope starts after rotation preparation. This is elapsed timing, not the native addon CPU report."],
+    }
+
+    ordered[#ordered + 1] = {
+        id = "debug_reports",
+        title = L["Diagnostic reports"],
+        text = L["Open one of the diagnostic reports for a problem report or to find out why something does not work: Glow (why no button lights), Premade spell (spells in the shipped rotations that this client does not have), Secret value probe (what a restricted client hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report and Lua editor report. Capture preview records what the preview was given and why for twenty seconds, and its report opens afterwards. The same reports run from /rm debug."],
     }
 
     if self.GetCacheDiagnosticMode then
