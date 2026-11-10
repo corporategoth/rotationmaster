@@ -308,8 +308,7 @@ test('General shares the Enable row in thirds and its capture columns reflow',fu
         local third=(width-8)/3
         assert(enable.point[3]==bar.point[3] and bar.point[3]==minimap.point[3] and enable.point[2]==0 and math.abs(enable:GetWidth()-third)<.01 and bar:GetWidth()==enable:GetWidth() and minimap:GetWidth()==enable:GetWidth()
             and math.abs(bar.point[2]-(third+4))<.01 and math.abs(minimap.point[2]-2*(third+4))<.01,'Enable row is not split in thirds at '..size[1])
-        local tops={};for _,key in ipairs({'cpu_capture','cpu_runtime_capture','memory_capture','cast_capture'}) do local b=p.fields[key];if b then tops[#tops+1]=b end end
-        for _,b in ipairs(tops) do assert(b:GetWidth()<=width+.01,'capture column wider than the page') end
+        for _,key in ipairs({'diagnostic','diagnostic_start','diagnostic_report'}) do local b=p.fields[key];if b then assert(b:GetWidth()<=width+.01,'diagnostic control wider than the page') end end
         audit.assertContained(shell.frame,frames,'General at '..size[1],{captions=true})
     end
 end)
@@ -323,11 +322,11 @@ test('capture buttons follow captures started, stopped or finished elsewhere onl
         a.GetCPUProfileReport=function() if state.running then return 'running' end;return state.report end
         a.print=function() end
     end)
-    local p=shell.pane;local capture,report=p.fields.cpu_capture,p.fields.cpu_report
-    assert(capture:GetText()=='Capture CPU (10s)' and not report:IsEnabled(),'report enabled before any capture')
-    state.running=true;layout.settle(20);assert(capture:GetText()=='Stop CPU capture' and not report:IsEnabled(),'capture started elsewhere was not shown')
-    state.running=false;state.report='finished';layout.settle(20);assert(capture:GetText()=='Capture CPU (10s)' and report:IsEnabled(),'finished capture did not enable its report')
-    capture:Click();assert(state.running and capture:GetText()=='Stop CPU capture')
+    local p=shell.pane;local capture,report=p.fields.diagnostic_start,p.fields.diagnostic_report
+    assert(capture:GetText()=='Start' and not report:IsEnabled(),'report enabled before any capture')
+    state.running=true;layout.settle(20);assert(capture:GetText()=='Stop' and not report:IsEnabled(),'capture started elsewhere was not shown')
+    state.running=false;state.report='finished';layout.settle(20);assert(capture:GetText()=='Start' and report:IsEnabled(),'finished capture did not enable its report')
+    capture:Click();assert(state.running and capture:GetText()=='Stop')
     capture:Click();assert(not state.running and state.report=='kept' and report:IsEnabled(),'Stop did not keep the report')
     shell.frame:Hide();local reads=state.reads;state.running=true;layout.settle(20);assert(state.reads==reads,'hidden page polled capture state')
 end)

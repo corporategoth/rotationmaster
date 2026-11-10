@@ -626,58 +626,94 @@ test(
     end
 )
 
-test('General has Debugging under History, with captures in rows of three and the untimed reports below', function()
-    local _, a, first = fixture({ page = 'General' })
+test(
+    'General has Debugging under History, with one list of captures and reports, a time, Start and Show report',
+    function()
+        local _, a, first = fixture({ page = 'General' })
+        local shown, started = {}, {}
 
-    for _, name in ipairs({
-        'RunGlowDiagnostic', 'ShowGlowDiagnostic', 'StopGlowWatch', 'RunPreviewDiagnostic', 'StopPreviewCapture',
-        'RunTimelineDiagnostic', 'ShowTimelineDiagnostic', 'RunPremadeSpellDiagnostic', 'RunSecretsDiagnostic',
-        'RunTalentDiagnostic', 'RunRaidMarkDiagnostic', 'ShowLuaEditorInputReport'
-    }) do
-        a[name] = function() end
+        for _, name in ipairs({
+            'RunGlowDiagnostic', 'ShowGlowDiagnostic', 'StopGlowWatch', 'RunPreviewDiagnostic', 'StopPreviewCapture',
+            'RunTimelineDiagnostic', 'ShowTimelineDiagnostic', 'RunPremadeSpellDiagnostic', 'RunSecretsDiagnostic',
+            'RunTalentDiagnostic', 'RunRaidMarkDiagnostic', 'ShowLuaEditorInputReport', 'StartCPURuntimeCapture',
+            'StartMemoryCapture', 'RunCastCaptureAction'
+        }) do
+            a[name] = a[name] or function() end
+        end
+
+        a.RunGlowDiagnostic = function(_, seconds)
+            started[#started + 1] = 'glow:' .. tostring(seconds)
+        end
+
+        a.RunPremadeSpellDiagnostic = function()
+            shown[#shown + 1] = 'spells'
+        end
+
+        for _, name in ipairs({ 'IsGlowWatchRunning', 'IsPreviewCaptureRunning', 'IsTimelineWatchRunning' }) do
+            a[name] = function() return false end
+        end
+
+        -- No glow report has been saved yet; the preview and timeline ones have.
+        a.HasGlowReport = function() return false end
+        a.HasPreviewReport = function() return true end
+        a.HasTimelineReport = function() return true end
+        local parent = first.frame:GetParent()
+        parent:SetSize(1500, 900)
+
+        -- Draws the page with an entry chosen and returns it.
+        local function open(kind)
+            a.diagnosticSelection = kind
+            return a:OpenNativeSettings(parent, 'General')
+        end
+
+        local p = open('glow')
+        local f = p.fields
+        assert(f.diagnostic and f.diagnostic_seconds and f.diagnostic_start and f.diagnostic_report)
+
+        -- The list holds every capture and report; Glow has no report saved, so its report button is off, and its time can be set.
+        local names = {}
+
+        f.diagnostic:Click()
+
+        for _, entry in ipairs(p.menu.entries or {}) do
+            names[entry.text] = true
+        end
+
+        for _, label in ipairs({
+            'CPU report', 'Runtime report', 'Memory report', 'Cast report', 'Glow report', 'Preview report',
+            'Timeline report', 'Premade spell report', 'Secret value probe', 'Talent diagnostic', 'Raid mark report',
+            'Lua editor report'
+        }) do
+            assert(names[label], 'not in the list: ' .. label)
+        end
+
+        assert(
+            not f.diagnostic_report:IsEnabled() and f.diagnostic_start:IsEnabled() and f.diagnostic_seconds:IsEnabled()
+        )
+
+        f.diagnostic_seconds:SetText('15')
+        f.diagnostic_start:Click()
+        assert(started[1] == 'glow:15', tostring(started[1]))
+
+        -- A report that was saved enables the report button; the time of a fixed capture cannot be changed.
+        p = open('preview')
+        assert(p.fields.diagnostic_report:IsEnabled() and p.fields.diagnostic_seconds:GetText() == '20')
+        p = open('cpu')
+        assert(not p.fields.diagnostic_seconds:IsEnabled())
+
+        -- A report that is not timed has no Start and no time, and its button makes and opens it.
+        p = open('spells')
+        assert(not p.fields.diagnostic_start:IsEnabled() and not p.fields.diagnostic_seconds:IsEnabled())
+        assert(p.fields.diagnostic_report:IsEnabled())
+        p.fields.diagnostic_report:Click()
+        assert(shown[1] == 'spells')
+
+        local history, debugging, effect = text(p, 'History'), text(p, 'Debugging Options'), text(p, 'Effect Options')
+        assert(history and debugging and effect)
+        assert(debugging:GetParent() == history:GetParent() and effect:GetParent() ~= history:GetParent())
+        assert(-select(3, debugging:GetPoint()) > -select(3, history:GetPoint()), 'Debugging Options is under History')
     end
-
-    for _, name in ipairs({ 'IsGlowWatchRunning', 'IsPreviewCaptureRunning', 'IsTimelineWatchRunning' }) do
-        a[name] = function() return false end
-    end
-
-    for _, name in ipairs({ 'HasGlowReport', 'HasPreviewReport', 'HasTimelineReport' }) do
-        a[name] = function() return true end
-    end
-
-    for _, name in ipairs({ 'StartCPURuntimeCapture', 'StartMemoryCapture', 'RunCastCaptureAction' }) do
-        a[name] = a[name] or function() end
-    end
-
-    local parent = first.frame:GetParent()
-    parent:SetSize(1500, 900)
-    local p = a:OpenNativeSettings(parent, 'General')
-
-    local function top(field)
-        return -select(3, field:GetPoint())
-    end
-
-    local f = p.fields
-    assert(f.glow_capture and f.preview_capture and f.timeline_capture and f.glow_report and f.timeline_report)
-
-    -- The first row is the three performance captures, the second glow, preview and timeline, then the cast capture.
-    assert(top(f.cpu_capture) == top(f.cpu_runtime_capture) and top(f.cpu_capture) == top(f.memory_capture))
-    assert(top(f.glow_capture) > top(f.cpu_capture) and top(f.cast_capture) > top(f.glow_capture))
-    assert(top(f.glow_capture) == top(f.preview_capture) and top(f.preview_capture) == top(f.timeline_capture))
-    assert(top(f.glow_report) > top(f.glow_capture), 'the show button is under its capture')
-    assert(top(f.glow_report) == top(f.timeline_report))
-
-    -- Untimed reports: three to a row, below the timed ones.
-    assert(top(f.spells_report) == top(f.secrets_report) and top(f.secrets_report) == top(f.talents_report))
-    assert(top(f.marks_report) > top(f.spells_report) and top(f.marks_report) == top(f.editor_report))
-    assert(top(f.spells_report) > top(f.timeline_report))
-
-    local history, debugging, effect = text(p, 'History'), text(p, 'Debugging Options'), text(p, 'Effect Options')
-    assert(history and debugging and effect)
-    assert(top(debugging) > top(history), 'Debugging Options is under History')
-    assert(debugging:GetParent() == history:GetParent(), 'in the same column as History')
-    assert(effect:GetParent() ~= history:GetParent())
-end)
+)
 
 test('the forecast report lists what was learned per spell, a proc marked, and says when there is nothing', function()
     local f, a = fixture({ page = 'General' })
@@ -723,7 +759,7 @@ test(
 
         local f = p.fields
         assert(top(f.forecast_delay) > top(f.forecast_percent), 'the seconds option has its own row')
-        assert(f.forecast_learned and top(f.forecast_clear) > top(f.forecast_learned))
+        assert(f.forecast_learned and top(f.forecast_clear) == top(f.forecast_learned), 'Show and Forget share a row')
 
         f.preview_art:Click()
         local names = {}
@@ -734,6 +770,57 @@ test(
 
         assert(names.Magier and not names.Mage, 'the client names the classes it has')
         assert(names.Evoker and names['Demon Hunter'] and names['Death Knight'] and names['Rotation Master'])
+    end
+)
+
+test(
+    'the forecast panel lists only what was learned beyond the game tables, one spell at a time, with Forget for it',
+    function()
+        local env, a, p = fixture()
+        env.load('UI/preview.lua')
+        env.load('UI/forecast_report.lua')
+        env.load('Core/forecast.lua')
+        a.SpellEffectData = { forever = { rows = '1001=t:900:30' } }
+        a.Platform.GetClientFamily = function() return 'forever' end
+        a.Forecast:ResetEffects()
+
+        a.db.global.forecast = {
+            version = 1,
+            base = { level = 60, mana = 1000 },
+            spells = {
+                -- Seen on every cast, as the tables say: nothing to show.
+                [1001] = { casts = 20, seen = { [900] = { unit = 'target', duration = 30, n = 20 } } },
+                -- Nothing learned at all.
+                [1002] = { casts = 3 },
+                -- Beyond the tables: a proc and the damage.
+                [1003] = { casts = 20, seen = { [901] = { unit = 'player', duration = 8, n = 3 } }, damage = 55 },
+                [1004] = { casts = 20, heal = 30 },
+            },
+        }
+
+        local list = a:GetForecastLearnedSpells()
+        assert(#list == 2 and list[1].id == 1003 and list[2].id == 1004, 'only spells with something beyond the tables')
+        p:Draw()
+
+        local f = p.fields
+        assert(f.forecast_spell and f.forecast_forget_spell, 'a spell list and its Forget button')
+
+        f.forecast_forget_spell:Click()
+
+        assert(
+            a.db.global.forecast.spells[1003] == nil and a.db.global.forecast.spells[1004] ~= nil,
+            'only that spell is forgotten'
+        )
+
+        assert(a.db.global.forecast.spells[1001] ~= nil, 'the others are kept')
+
+        a.db.global.forecast.spells[1004] = nil
+        p:Draw()
+
+        assert(
+            not p.fields.forecast_spell and not p.fields.forecast_forget_spell,
+            'nothing to pick when nothing is learned'
+        )
     end
 )
 

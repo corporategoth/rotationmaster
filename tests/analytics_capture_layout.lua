@@ -11,7 +11,7 @@ end
 
 local prefix = assert(read('tests/settings_pages.lua'):match('^(.-)\ntest%('))
 local fixture = assert(loadstring(prefix .. '\nreturn fixture', '@independent-geometry-settings'))()
-local keys = { 'cast_capture', 'cast_report' }
+local keys = { 'diagnostic_start', 'diagnostic_report' }
 local passed, failed = 0, 0
 
 for _, width in ipairs({ 380, 1000, 1100, 1200, 1400, 1800 }) do
@@ -21,6 +21,7 @@ for _, width in ipairs({ 380, 1000, 1100, 1200, 1400, 1800 }) do
         local a = f.addon
         a.RunCastCaptureAction = function() return true, '' end
         a.GetCastCaptureStatusText = function() return 'Cast capture status: idle' end
+        a.diagnosticSelection = 'cast'
         local p = a:OpenNativeSettings(parent, 'General')
         local rects = {}
 
@@ -55,11 +56,6 @@ for _, width in ipairs({ 380, 1000, 1100, 1200, 1400, 1800 }) do
         end
 
         assert(not p.fields.cast_stop and not p.fields.cast_clear, 'cast Stop and Clear buttons are retired')
-
-        assert(
-            rects[2].left == rects[1].left and rects[2].top == rects[1].top + 28,
-            'Cast report is not under its capture'
-        )
 
         for i = 1, #rects do
             for j = i + 1, #rects do

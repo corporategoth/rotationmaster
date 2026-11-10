@@ -1,8 +1,7 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 -- Real General form/layout with modeled 7px font metrics, not native clipping proof.
--- Diagnostics are four capture columns (CPU, Runtime, Memory, Casts): a capture
--- button above its report button. The native profiler probe has no button; it
+-- Diagnostics are one list with a time next to it and a Start and a report button under them. The native profiler probe has no button; it
 -- stays a /rm perf probe command.
 local function read(path)
     local f = assert(io.open(path))
@@ -15,14 +14,7 @@ local prefix = assert(read('tests/settings_pages.lua'):match('^(.-)\ntest%('))
 local fixture = assert(loadstring(prefix .. '\nreturn fixture', '@cpu-probe-layout-fixture'))()
 local test, finish = dofile('tests/fixtures/addon.lua').suite()
 
-local columns = {
-    { 'cpu_capture', 'cpu_report' },
-    { 'cpu_runtime_capture', 'cpu_runtime_report' },
-    { 'memory_capture', 'memory_report' },
-    { 'cast_capture', 'cast_report' },
-}
-
-local observedColumns = {}
+local observed = {}
 
 local function page(width, translated)
     local f, parent = fixture()
@@ -30,9 +22,10 @@ local function page(width, translated)
     parent:SetSize(width, 600)
 
     if translated then
-        f.libraries['AceLocale-3.0']:GetLocale(
-            'rotationmaster'
-        )['Stop runtime capture'] = 'Translated stop of the native runtime capture'
+        local L = f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
+
+        L['Start'], L['Stop'], L['Show report'] =
+            'Translated start of a capture', 'Translated stop of a capture', 'Translated report'
     end
 
     local calls = 0
@@ -63,56 +56,27 @@ end
 local function geometry(width, translated)
     local f, a, p = page(width, translated)
     local available = p.columnSingle and p.fullWidth or p.columnWidth
-    local blocks = {}
+    local start, report = assert(p.fields.diagnostic_start), assert(p.fields.diagnostic_report)
+    local pick, seconds = assert(p.fields.diagnostic), assert(p.fields.diagnostic_seconds)
 
-    for _, keys in ipairs(columns) do
-        local top, bottom = assert(p.fields[keys[1]], 'missing ' .. keys[1]), assert(
-            p.fields[keys[2]],
-            'missing ' .. keys[2]
-        )
-
-        for _, b in ipairs({ top, bottom }) do
-            assert(b:GetFontString():GetStringWidth() + 20 <= b:GetWidth() + .01, 'caption clipped at width' .. width)
-        end
-
-        local t, r = top.point, bottom.point
-        assert(t[1] == 'TOPLEFT' and r[1] == 'TOPLEFT')
-
-        assert(
-            t[2] == r[2] and r[3] == t[3] - 28 and top:GetWidth() == bottom:GetWidth(),
-            'report is not stacked under its capture'
-        )
-
-        assert(t[2] >= 0 and t[2] + top:GetWidth() <= available + .01, keys[1] .. ' outside column')
-
-        blocks[#blocks + 1] = {
-            left = t[2],
-            right = t[2] + top:GetWidth(),
-            top = -t[3],
-            bottom = -r[3] + bottom:GetHeight(),
-        }
+    for _, b in ipairs({ start, report }) do
+        assert(b:GetFontString():GetStringWidth() + 20 <= b:GetWidth() + .01, 'caption clipped at width' .. width)
     end
 
-    local used = 0
+    -- The time sits next to the list; Start and the report button share the row under them, or are stacked when a translated
+    -- caption would not fit half the width.
+    assert(pick.point[3] == seconds.point[3], 'the time is not beside the list')
+    assert(start.point[3] < pick.point[3] and start.point[2] == 0, 'Start is not under the list')
 
-    for _, b in ipairs(blocks) do
-        if b.top == blocks[1].top then
-            used = used + 1
-        end
+    if start.point[3] == report.point[3] then
+        assert(report.point[2] > start.point[2] and start:GetWidth() == report:GetWidth())
+        assert(report.point[2] + report:GetWidth() <= available + .01)
+    else
+        assert(report.point[3] < start.point[3] and report.point[2] == 0, 'the report button is not under Start')
     end
 
-    observedColumns[used] = true
-
-    for i = 1, #blocks do
-        for j = i + 1, #blocks do
-            local x, y = blocks[i], blocks[j]
-
-            assert(
-                not (x.left < y.right and y.left < x.right and x.top < y.bottom and y.top < x.bottom),
-                'capture columns overlap'
-            )
-        end
-    end
+    assert(pick.point[2] + pick:GetWidth() <= seconds.point[2], 'the list overlaps the time')
+    observed[#observed + 1] = width
 
     for _, key in ipairs({ 'cpu_cancel', 'cpu_probe', 'memory_stop', 'cast_stop', 'cast_clear' }) do
         assert(not p.fields[key], key .. ' should be gone')
@@ -133,10 +97,6 @@ for _, width in ipairs({ 380, 1800, 2800 }) do
     end)
 end
 
-test('capture geometry exercises three, two and one column layouts', function()
-    assert(observedColumns[3] and observedColumns[2] and observedColumns[1], 'missing column counts')
-end)
-
 test('capture dispatch is explicit and bypasses pending edits without changing live or draft settings', function()
     local f, parent = fixture()
     local a = f.addon
@@ -150,7 +110,7 @@ test('capture dispatch is explicit and bypasses pending edits without changing l
     end
 
     local p = a:OpenNativeSettings(parent, 'General')
-    local b = assert(p.fields.cpu_capture, 'missing capture')
+    local b = assert(p.fields.diagnostic_start, 'missing capture')
     assert(#calls == 0)
 
     local edit = p:Edit('invalid', 'Unrelated', '', function() return nil end, function()
@@ -184,7 +144,7 @@ test('capture callbacks reject replaced page and profile leases', function()
         end
 
         local p = a:OpenNativeSettings(parent, 'General')
-        local callback = assert(p.fields.cpu_capture, 'missing capture').scripts.OnClick
+        local callback = assert(p.fields.diagnostic_start, 'missing capture').scripts.OnClick
 
         if mode == 'redraw' then
             p:Draw()
@@ -222,7 +182,7 @@ test('CPU action reentry cannot message a retired General page', function()
             messages = messages + 1
         end
 
-        assert(p.fields.cpu_capture, 'missing capture'):Click()
+        assert(p.fields.diagnostic_start, 'missing capture'):Click()
         assert(calls == 1 and messages == 0, mode .. ' late message')
     end
 end)

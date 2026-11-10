@@ -503,14 +503,63 @@ function addon:BuildPreviewSettings(p)
         end
     )
 
-    -- What the forecast has learned, in a window that can be copied, and a button to forget it.
-    p:Button('forecast_learned', L['Show what the forecast has learned'], function()
+    -- Show (a copyable window) and Forget (everything) share a row.
+    local rowY = p.y
+    local wide = (p.width - 4) / 2
+
+    local show = p:Button('forecast_learned', L['Show what the forecast has learned'], function()
         if self.ShowForecastLearned then
             self:ShowForecastLearned()
         end
     end)
 
-    p:Button('forecast_clear', L['Forget what the forecast has learned'], function()
+    local forget = p:Button('forecast_clear', L['Forget what the forecast has learned'], function()
         self:ClearForecast()
+        p:Draw()
     end)
+
+    for index, button in ipairs({ show, forget }) do
+        button:ClearAllPoints()
+        button:SetPoint('TOPLEFT', (index - 1) * (wide + 4), -rowY)
+        button:SetWidth(wide)
+    end
+
+    p.y = rowY + 28
+
+    -- What it has learned, one spell at a time: pick a spell (searchable, as everywhere), read what is learned about it, and
+    -- forget just that. What the game's own tables already say is left out.
+    local learned = self.GetForecastLearnedSpells and self:GetForecastLearnedSpells() or {}
+
+    if #learned > 0 then
+        local choices, selected = {}, nil
+
+        for _, spell in ipairs(learned) do
+            choices[#choices + 1] = { value = spell.id, text = spell.name }
+
+            if spell.id == self.forecastLearnedSelection then
+                selected = spell
+            end
+        end
+
+        selected = selected or learned[1]
+        self.forecastLearnedSelection = selected.id
+
+        p:Choice('forecast_spell', L['Spell'], selected.id, choices, function(value)
+            self.forecastLearnedSelection = value
+            p:Draw()
+        end)
+
+        p:Text(table.concat(selected.lines, '\n'))
+
+        p:Button('forecast_forget_spell', L['Forget this spell'], function()
+            self.Forecast:Forget(selected.id)
+            p:Draw()
+        end)
+    end
+
+    local base = self.GetForecastLearnedBase and self:GetForecastLearnedBase()
+
+    if base then
+        p:Text(base)
+    end
 end

@@ -12205,10 +12205,6 @@ addon.translation = {
 [3671] = "    재사용 대기시간 %d초",
 -- 63e45ad7 English: Base mana at level %d: %d
 [3672] = "%d레벨 기본 마나: %d",
--- 487cecc3 English: Capture preview (20s)
-[3673] = "미리보기 기록 (20초)",
--- f577ee23 English: Stop preview capture
-[3674] = "미리보기 기록 중지",
 -- 55288341 English: Preview report
 [3675] = "미리보기 보고서",
 -- c26d1121 English: Premade spell report
@@ -12226,23 +12222,23 @@ addon.translation = {
 --     out for your level. It learns from the first twenty casts of each spell while the forecast is
 --     on.
 [3680] = "예측이 주문에 대해 학습한 내용을 복사할 수 있는 창으로 엽니다. 각 주문이 대상이나 자신에게 남기는 오라와 지속 시간, 시전 후 각 오라가 확인된 빈도(일부 시전 후에만 나타나는 오라는 발동 효과이며 예측에서 제외됩니다), 주문이 주는 피해와 치유량, 아이템의 재사용 대기시간, 자신의 레벨에 맞게 계산된 기본 마나가 표시됩니다. 예측을 켜 두면 각 주문의 처음 스무 번의 시전에서 학습합니다.",
--- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
---     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
---     rotations that this client does not have), Secret value probe (what a restricted client
---     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
---     and Lua editor report. Capture preview records what the preview was given and why for twenty
---     seconds, and its report opens afterwards. The same reports run from /rm debug.
-[3681] = "문제 보고나 무언가 작동하지 않는 이유를 확인하기 위해 진단 보고서 중 하나를 엽니다. 반짝임(버튼이 빛나지 않는 이유), 기본 제공 주문(이 클라이언트에 없는 기본 제공 연계 주문), 비밀 값 탐지(제한된 클라이언트가 숨기는 것), 특성 진단, 타임라인 보고서(블리자드의 전투 타임라인), 공격대 징표 보고서, Lua 편집기 보고서가 있습니다. 미리보기 기록은 20초 동안 미리보기가 받은 내용과 그 이유를 기록하며, 끝나면 보고서가 열립니다. 같은 보고서를 /rm debug로도 실행할 수 있습니다.",
--- 95fc5a3c English: Capture glow (10s)
-[3682] = "강조 캡처 (10초)",
--- 6e37c9a7 English: Stop glow capture
-[3683] = "강조 캡처 중지",
+-- 0219b900 English: Choose a capture or report from the list and press Start; it becomes Stop while
+--     the capture runs, and Show report opens the last report once there is one. The time next to
+--     the list can be set for glow, preview and timeline captures; the others last a fixed time.
+--     Premade spell, secret value, talent, raid mark and Lua editor reports are not timed: Show
+--     report makes and opens them. These are what a problem report needs, and the same reports run
+--     from /rm debug.
+[3681] = "목록에서 캡처나 보고서를 선택하고 시작을 누르세요. 캡처가 진행되는 동안에는 중지로 바뀌며, 보고서가 있으면 보고서 보기로 마지막 보고서를 엽니다. 목록 옆의 시간은 강조, 미리보기, 타임라인 캡처에서 설정할 수 있고, 나머지는 고정된 시간 동안 진행됩니다. 기본 제공 주문, 비밀 값, 특성, 공격대 징표, Lua 편집기 보고서는 시간제가 아니며, 보고서 보기를 누르면 만들어서 엽니다. 문제 보고에 필요한 것들이며, 같은 보고서를 /rm debug로도 실행할 수 있습니다.",
 -- 53dc47ca English: Glow report
 [3684] = "강조 보고서",
--- e9a078aa English: Capture timeline (30s)
-[3685] = "타임라인 캡처 (30초)",
--- 0ae5ab6e English: Stop timeline capture
-[3686] = "타임라인 캡처 중지",
 -- 8ad2e5f7 English: Diagnostic reports
 [3687] = "진단 보고서",
+-- 3d04fc7a English: What agrees with the game's own spell tables is not shown.
+[3688] = "게임 자체의 주문 테이블과 일치하는 내용은 표시되지 않습니다.",
+-- 9b95a7bb English: Forget this spell
+[3689] = "이 주문 잊기",
+-- e4bb9f1e English: Start
+[3690] = "시작",
+-- b3358cff English: Show report
+[3691] = "보고서 보기",
 }

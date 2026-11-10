@@ -12205,10 +12205,6 @@ addon.translation = {
 [3671] = "    Abklingzeit %d Sekunden",
 -- 63e45ad7 English: Base mana at level %d: %d
 [3672] = "Basismana auf Stufe %d: %d",
--- 487cecc3 English: Capture preview (20s)
-[3673] = "Vorschau aufzeichnen (20 s)",
--- f577ee23 English: Stop preview capture
-[3674] = "Vorschau-Aufzeichnung stoppen",
 -- 55288341 English: Preview report
 [3675] = "Vorschaubericht",
 -- c26d1121 English: Premade spell report
@@ -12226,23 +12222,23 @@ addon.translation = {
 --     out for your level. It learns from the first twenty casts of each spell while the forecast is
 --     on.
 [3680] = "Öffnet ein kopierbares Fenster mit dem, was die Prognose über Ihre Zauber gelernt hat: die Auren, die jeder Zauber auf dem Ziel oder auf Ihnen hinterlässt, und wie lange sie halten, wie oft sie nach einem Zauber gesehen wurden (eine Aura, die nur nach manchen Zaubern auftritt, ist ein Proc und wird nicht projiziert), den Schaden und die Heilung, die sie bewirken, die Abklingzeit eines Gegenstands und das für Ihre Stufe berechnete Basismana. Sie lernt aus den ersten zwanzig Zaubern jedes Zaubers, solange die Prognose aktiviert ist.",
--- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
---     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
---     rotations that this client does not have), Secret value probe (what a restricted client
---     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
---     and Lua editor report. Capture preview records what the preview was given and why for twenty
---     seconds, and its report opens afterwards. The same reports run from /rm debug.
-[3681] = "Öffnet einen der Diagnoseberichte für eine Problemmeldung oder um herauszufinden, warum etwas nicht funktioniert: Leuchten (warum kein Button leuchtet), Vorgefertigte Zauber (Zauber in den mitgelieferten Rotationen, die dieser Client nicht kennt), Geheimwert-Sonde (was ein eingeschränkter Client verbirgt), Talentdiagnose, Zeitleistenbericht (Blizzards Begegnungszeitleiste), Schlachtzugsmarkierungsbericht und Lua-Editor-Bericht. Vorschau aufzeichnen erfasst zwanzig Sekunden lang, was die Vorschau erhalten hat und warum; danach öffnet sich der Bericht. Dieselben Berichte lassen sich mit /rm debug starten.",
--- 95fc5a3c English: Capture glow (10s)
-[3682] = "Hervorhebung erfassen (10 s)",
--- 6e37c9a7 English: Stop glow capture
-[3683] = "Erfassung der Hervorhebung beenden",
+-- 0219b900 English: Choose a capture or report from the list and press Start; it becomes Stop while
+--     the capture runs, and Show report opens the last report once there is one. The time next to
+--     the list can be set for glow, preview and timeline captures; the others last a fixed time.
+--     Premade spell, secret value, talent, raid mark and Lua editor reports are not timed: Show
+--     report makes and opens them. These are what a problem report needs, and the same reports run
+--     from /rm debug.
+[3681] = "Wählen Sie eine Aufzeichnung oder einen Bericht aus der Liste und klicken Sie auf „Starten“; während die Aufzeichnung läuft, wird daraus „Stopp“, und „Bericht anzeigen“ öffnet den letzten Bericht, sobald es einen gibt. Die Zeit neben der Liste lässt sich für Hervorhebungs-, Vorschau- und Zeitleistenaufzeichnungen einstellen; die anderen dauern eine feste Zeit. Berichte zu vorgefertigten Zaubern, geheimen Werten, Talenten, Schlachtzugsmarkierungen und dem Lua-Editor sind nicht zeitgesteuert: „Bericht anzeigen“ erstellt und öffnet sie. Sie werden für einen Problembericht gebraucht, und dieselben Berichte laufen über /rm debug.",
 -- 53dc47ca English: Glow report
 [3684] = "Hervorhebungsbericht",
--- e9a078aa English: Capture timeline (30s)
-[3685] = "Zeitleiste erfassen (30 s)",
--- 0ae5ab6e English: Stop timeline capture
-[3686] = "Erfassung der Zeitleiste beenden",
 -- 8ad2e5f7 English: Diagnostic reports
 [3687] = "Diagnoseberichte",
+-- 3d04fc7a English: What agrees with the game's own spell tables is not shown.
+[3688] = "Was mit den eigenen Zaubertabellen des Spiels übereinstimmt, wird nicht angezeigt.",
+-- 9b95a7bb English: Forget this spell
+[3689] = "Diesen Zauber vergessen",
+-- e4bb9f1e English: Start
+[3690] = "Starten",
+-- b3358cff English: Show report
+[3691] = "Bericht anzeigen",
 }

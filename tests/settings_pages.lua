@@ -55,14 +55,14 @@ test('General CPU capture controls bypass pending edits and retain callback leas
     local edit=p:Edit('unrelated','Unrelated','',function() return nil end,function() error('must not flush') end)
     edit:SetText('invalid');edit.scripts.OnTextChanged(edit,true)
     local wasDirty=p:IsSettingsDraftDirty()
-    assert(p.fields.cpu_capture and p.fields.cpu_report and not p.fields.cpu_cancel and not p.fields.cpu_probe,'capture column controls differ')
+    assert(p.fields.diagnostic_start and p.fields.diagnostic_report and not p.fields.cpu_cancel and not p.fields.cpu_probe,'capture controls differ')
     -- Capture becomes Stop while running; the report waits for a finished capture.
-    p.fields.cpu_capture:Click();assert(p.fields.cpu_capture:GetText()=='Stop CPU capture' and not p.fields.cpu_report:IsEnabled())
-    p.fields.cpu_capture:Click();assert(p.fields.cpu_capture:GetText()=='Capture CPU (10s)' and p.fields.cpu_report:IsEnabled())
-    p.fields.cpu_report:Click()
+    p.fields.diagnostic_start:Click();assert(p.fields.diagnostic_start:GetText()=='Stop' and not p.fields.diagnostic_report:IsEnabled())
+    p.fields.diagnostic_start:Click();assert(p.fields.diagnostic_start:GetText()=='Start' and p.fields.diagnostic_report:IsEnabled())
+    p.fields.diagnostic_report:Click()
     assert(table.concat(calls,',')=='start:10,stop,report' and a.db.profile.poll==.15)
     assert(p:IsSettingsDraftDirty()==wasDirty,'diagnostics must not change pending edits')
-    local stale=p.fields.cpu_capture.scripts.OnClick;p:Release();stale();assert(#calls==3)
+    local stale=p.fields.diagnostic_start.scripts.OnClick;p:Release();stale();assert(#calls==3)
 end)
 test('profile replacement brackets runtime lifecycle and stale confirmations do not execute',function()
     local f,parent=fixture();local a=f.addon;assert(a.BuildProfileSettings,'native Profiles missing')
@@ -267,7 +267,7 @@ test('General help localizes whole field explanations in the visible control ord
     local f,parent=fixture();local a=f.addon
     local controls={'enable','disable_buttons','minimap','poll','idle_poll','autoswitch_poll','live_config_update','rotation_view',
         'spell_history','combat_history','damage_history',
-        'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling','cpu_capture','cpu_report'}
+        'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling'}
     for _,row in ipairs(a:GetGeneralOptionHelp()) do if row.id then f.translations[row.text]='Translated field '..row.id end end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
     local found,last={},0

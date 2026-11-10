@@ -12205,10 +12205,6 @@ addon.translation = {
 [3671] = "    ricarica %d secondi",
 -- 63e45ad7 English: Base mana at level %d: %d
 [3672] = "Mana base al livello %d: %d",
--- 487cecc3 English: Capture preview (20s)
-[3673] = "Cattura anteprima (20 s)",
--- f577ee23 English: Stop preview capture
-[3674] = "Ferma cattura anteprima",
 -- 55288341 English: Preview report
 [3675] = "Report anteprima",
 -- c26d1121 English: Premade spell report
@@ -12226,23 +12222,23 @@ addon.translation = {
 --     out for your level. It learns from the first twenty casts of each spell while the forecast is
 --     on.
 [3680] = "Apre una finestra, copiabile, con ciò che la previsione ha imparato sui tuoi incantesimi: le aure che ciascuno lascia sul bersaglio o su di te e quanto durano, quanto spesso ciascuna è stata vista dopo un lancio (un'aura vista solo dopo alcuni lanci è un proc, che non viene proiettato), i danni e le guarigioni che causano, la ricarica di un oggetto e il mana base calcolato per il tuo livello. Impara dai primi venti lanci di ogni incantesimo finché la previsione è attiva.",
--- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
---     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
---     rotations that this client does not have), Secret value probe (what a restricted client
---     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
---     and Lua editor report. Capture preview records what the preview was given and why for twenty
---     seconds, and its report opens afterwards. The same reports run from /rm debug.
-[3681] = "Apre uno dei report diagnostici per una segnalazione di problema o per scoprire perché qualcosa non funziona: Glow (perché nessun pulsante si illumina), Incantesimi predefiniti (incantesimi delle rotazioni incluse che questo client non ha), Sonda dei valori segreti (ciò che un client con restrizioni nasconde), Diagnostica talenti, Report timeline (la timeline degli incontri di Blizzard), Report segnalini raid e Report editor Lua. Cattura anteprima registra per venti secondi ciò che è stato fornito all'anteprima e perché, e poi ne apre il report. Gli stessi report si eseguono da /rm debug.",
--- 95fc5a3c English: Capture glow (10s)
-[3682] = "Cattura evidenziazione (10 s)",
--- 6e37c9a7 English: Stop glow capture
-[3683] = "Interrompi cattura evidenziazione",
+-- 0219b900 English: Choose a capture or report from the list and press Start; it becomes Stop while
+--     the capture runs, and Show report opens the last report once there is one. The time next to
+--     the list can be set for glow, preview and timeline captures; the others last a fixed time.
+--     Premade spell, secret value, talent, raid mark and Lua editor reports are not timed: Show
+--     report makes and opens them. These are what a problem report needs, and the same reports run
+--     from /rm debug.
+[3681] = "Scegli una cattura o un rapporto dall'elenco e premi Avvia; diventa Interrompi mentre la cattura è in corso, e Mostra rapporto apre l'ultimo rapporto quando ce n'è uno. Il tempo accanto all'elenco si può impostare per le catture di evidenziazione, anteprima e timeline; le altre hanno una durata fissa. I rapporti su incantesimi predefiniti, valori segreti, talenti, segnalini del raid ed editor Lua non sono a tempo: Mostra rapporto li crea e li apre. Sono ciò che serve per una segnalazione di problema, e gli stessi rapporti si avviano da /rm debug.",
 -- 53dc47ca English: Glow report
 [3684] = "Rapporto evidenziazione",
--- e9a078aa English: Capture timeline (30s)
-[3685] = "Cattura timeline (30 s)",
--- 0ae5ab6e English: Stop timeline capture
-[3686] = "Interrompi cattura timeline",
 -- 8ad2e5f7 English: Diagnostic reports
 [3687] = "Rapporti di diagnostica",
+-- 3d04fc7a English: What agrees with the game's own spell tables is not shown.
+[3688] = "Ciò che coincide con le tabelle degli incantesimi del gioco non viene mostrato.",
+-- 9b95a7bb English: Forget this spell
+[3689] = "Dimentica questo incantesimo",
+-- e4bb9f1e English: Start
+[3690] = "Avvia",
+-- b3358cff English: Show report
+[3691] = "Mostra rapporto",
 }

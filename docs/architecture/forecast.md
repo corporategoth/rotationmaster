@@ -49,7 +49,7 @@ While the switch is on, per spell, saved in `RotationMasterDB.global.forecast` (
 target or the player (the auras before the cast, on `UNIT_SPELLCAST_SENT`, against 0.35 seconds after `UNIT_SPELLCAST_SUCCEEDED`; settled
 after three matching sightings or five empty looks, after which the spell is not scanned again), and the damage it does and the
 healing it does to the player (a running average, from the combat log; not on Retail and Forever). Nothing is registered with the
-switch off, and Preview > Forecast has a button to show it all (`UI/forecast_report.lua`: per spell, the auras seen, for how long and after how many of the casts watched, a proc marked, the damage, the healing, an item's cooldown and the base mana worked out for the level, in the copyable text window) and a button to forget it all.
+switch off, and Preview > Forecast shows it (`UI/forecast_report.lua`): a spell list (searchable, spells with something learned only) with, under it, what was learned about that spell (the auras seen, for how long and after how many of the casts watched, a proc marked, the damage, the healing, an item's cooldown) and a button to forget just that spell, the base mana worked out for the level, and, on one row, buttons to open everything in the copyable text window and to forget it all. What agrees with the game's own tables (the same aura on the same unit for the same time) is left out.
 
 What a cast leaves is taken from, in this order:
 

@@ -12205,10 +12205,6 @@ addon.translation = {
 [3671] = "    temps de recharge : %d secondes",
 -- 63e45ad7 English: Base mana at level %d: %d
 [3672] = "Mana de base au niveau %d : %d",
--- 487cecc3 English: Capture preview (20s)
-[3673] = "Capturer l'aperçu (20 s)",
--- f577ee23 English: Stop preview capture
-[3674] = "Arrêter la capture de l'aperçu",
 -- 55288341 English: Preview report
 [3675] = "Rapport de l'aperçu",
 -- c26d1121 English: Premade spell report
@@ -12226,23 +12222,23 @@ addon.translation = {
 --     out for your level. It learns from the first twenty casts of each spell while the forecast is
 --     on.
 [3680] = "Ouvre une fenêtre, dont le contenu peut être copié, montrant ce que la prévision a appris sur vos sorts : les auras que chacun laisse sur la cible ou sur vous et leur durée, la fréquence à laquelle chacune a été vue après un lancer (une aura vue après seulement certains lancers est un proc, qui n'est pas projeté), les dégâts et les soins qu'ils produisent, le temps de recharge d'un objet et le mana de base calculé pour votre niveau. Elle apprend à partir des vingt premiers lancers de chaque sort tant que la prévision est activée.",
--- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
---     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
---     rotations that this client does not have), Secret value probe (what a restricted client
---     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
---     and Lua editor report. Capture preview records what the preview was given and why for twenty
---     seconds, and its report opens afterwards. The same reports run from /rm debug.
-[3681] = "Ouvre l'un des rapports de diagnostic pour un rapport de problème ou pour comprendre pourquoi quelque chose ne fonctionne pas : Surbrillance (pourquoi aucun bouton ne s'allume), Sort prédéfini (sorts des rotations fournies que ce client n'a pas), Sonde des valeurs secrètes (ce qu'un client restreint masque), Diagnostic des talents, Rapport de la chronologie (la chronologie des rencontres de Blizzard), Rapport des marques de raid et Rapport de l'éditeur Lua. Capturer l'aperçu enregistre pendant vingt secondes ce que l'aperçu a reçu et pourquoi, et son rapport s'ouvre ensuite. Les mêmes rapports s'exécutent depuis /rm debug.",
--- 95fc5a3c English: Capture glow (10s)
-[3682] = "Capturer la surbrillance (10 s)",
--- 6e37c9a7 English: Stop glow capture
-[3683] = "Arrêter la capture de surbrillance",
+-- 0219b900 English: Choose a capture or report from the list and press Start; it becomes Stop while
+--     the capture runs, and Show report opens the last report once there is one. The time next to
+--     the list can be set for glow, preview and timeline captures; the others last a fixed time.
+--     Premade spell, secret value, talent, raid mark and Lua editor reports are not timed: Show
+--     report makes and opens them. These are what a problem report needs, and the same reports run
+--     from /rm debug.
+[3681] = "Choisissez une capture ou un rapport dans la liste puis cliquez sur Démarrer ; le bouton devient Arrêter pendant la capture, et Afficher le rapport ouvre le dernier rapport dès qu'il y en a un. La durée à côté de la liste se règle pour les captures de surbrillance, d'aperçu et de chronologie ; les autres ont une durée fixe. Les rapports de sorts prédéfinis, de valeurs secrètes, de talents, de marques de raid et de l'éditeur Lua ne sont pas chronométrés : Afficher le rapport les crée et les ouvre. Ce sont ceux qu'il faut joindre à un rapport de problème, et les mêmes rapports se lancent avec /rm debug.",
 -- 53dc47ca English: Glow report
 [3684] = "Rapport de surbrillance",
--- e9a078aa English: Capture timeline (30s)
-[3685] = "Capturer la chronologie (30 s)",
--- 0ae5ab6e English: Stop timeline capture
-[3686] = "Arrêter la capture de chronologie",
 -- 8ad2e5f7 English: Diagnostic reports
 [3687] = "Rapports de diagnostic",
+-- 3d04fc7a English: What agrees with the game's own spell tables is not shown.
+[3688] = "Ce qui correspond aux tables de sorts du jeu n'est pas affiché.",
+-- 9b95a7bb English: Forget this spell
+[3689] = "Oublier ce sort",
+-- e4bb9f1e English: Start
+[3690] = "Démarrer",
+-- b3358cff English: Show report
+[3691] = "Afficher le rapport",
 }

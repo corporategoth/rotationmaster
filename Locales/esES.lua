@@ -12205,10 +12205,6 @@ addon.translation = {
 [3671] = "    tiempo de reutilización de %d segundos",
 -- 63e45ad7 English: Base mana at level %d: %d
 [3672] = "Maná base a nivel %d: %d",
--- 487cecc3 English: Capture preview (20s)
-[3673] = "Capturar vista previa (20 s)",
--- f577ee23 English: Stop preview capture
-[3674] = "Detener captura de vista previa",
 -- 55288341 English: Preview report
 [3675] = "Informe de vista previa",
 -- c26d1121 English: Premade spell report
@@ -12226,23 +12222,23 @@ addon.translation = {
 --     out for your level. It learns from the first twenty casts of each spell while the forecast is
 --     on.
 [3680] = "Abre una ventana, que se puede copiar, con lo que la previsión ha aprendido sobre tus hechizos: las auras que cada uno deja en el objetivo o en ti y cuánto duran, cuántas veces se vio cada una tras un lanzamiento (un aura vista solo tras algunos lanzamientos es un proc, que no se proyecta), el daño y la curación que hacen, el tiempo de reutilización de un objeto y el maná base calculado para tu nivel. Aprende de los primeros veinte lanzamientos de cada hechizo mientras la previsión está activada.",
--- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
---     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
---     rotations that this client does not have), Secret value probe (what a restricted client
---     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
---     and Lua editor report. Capture preview records what the preview was given and why for twenty
---     seconds, and its report opens afterwards. The same reports run from /rm debug.
-[3681] = "Abre uno de los informes de diagnóstico para un informe de problemas o para averiguar por qué algo no funciona: Resplandor (por qué no se ilumina ningún botón), Hechizos prefabricados (hechizos de las rotaciones incluidas que este cliente no tiene), Sonda de valores secretos (lo que oculta un cliente restringido), Diagnóstico de talentos, Informe de cronología (la cronología de encuentros de Blizzard), Informe de marcas de banda e Informe del editor de Lua. Capturar vista previa registra lo que recibió la vista previa y por qué durante veinte segundos, y su informe se abre después. Los mismos informes se ejecutan desde /rm debug.",
--- 95fc5a3c English: Capture glow (10s)
-[3682] = "Capturar resaltado (10 s)",
--- 6e37c9a7 English: Stop glow capture
-[3683] = "Detener captura de resaltado",
+-- 0219b900 English: Choose a capture or report from the list and press Start; it becomes Stop while
+--     the capture runs, and Show report opens the last report once there is one. The time next to
+--     the list can be set for glow, preview and timeline captures; the others last a fixed time.
+--     Premade spell, secret value, talent, raid mark and Lua editor reports are not timed: Show
+--     report makes and opens them. These are what a problem report needs, and the same reports run
+--     from /rm debug.
+[3681] = "Elige una captura o un informe de la lista y pulsa Iniciar; pasa a Detener mientras la captura se ejecuta, y Mostrar informe abre el último informe cuando hay uno. El tiempo junto a la lista se puede ajustar en las capturas de resaltado, vista previa y línea de tiempo; las demás duran un tiempo fijo. Los informes de hechizos prefabricados, valores secretos, talentos, marcas de banda y editor de Lua no son temporizados: Mostrar informe los crea y los abre. Son lo que hace falta para un informe de problema, y los mismos informes se ejecutan desde /rm debug.",
 -- 53dc47ca English: Glow report
 [3684] = "Informe de resaltado",
--- e9a078aa English: Capture timeline (30s)
-[3685] = "Capturar línea de tiempo (30 s)",
--- 0ae5ab6e English: Stop timeline capture
-[3686] = "Detener captura de línea de tiempo",
 -- 8ad2e5f7 English: Diagnostic reports
 [3687] = "Informes de diagnóstico",
+-- 3d04fc7a English: What agrees with the game's own spell tables is not shown.
+[3688] = "Lo que coincide con las tablas de hechizos del propio juego no se muestra.",
+-- 9b95a7bb English: Forget this spell
+[3689] = "Olvidar este hechizo",
+-- e4bb9f1e English: Start
+[3690] = "Iniciar",
+-- b3358cff English: Show report
+[3691] = "Mostrar informe",
 }

@@ -99,6 +99,16 @@ function forecast:Known(spell, create)
     return entry
 end
 
+-- Forgets what was learned about one spell.
+-- @param spell number  The spell id.
+function forecast:Forget(spell)
+    local saved = store()
+
+    if saved then
+        saved.spells[spell] = nil
+    end
+end
+
 -- Forgets everything learned.
 function forecast:Clear()
     local db = addon.db

@@ -274,12 +274,11 @@ function addon:BuildGeneralSettings(p)
         end))
     end
 
-    -- Diagnostics: one column per capture kind, its capture button above its
-    -- report button. While a capture runs its button stops it (the report is
-    -- kept); a report button stays disabled until that kind has a report.
-    -- Labels follow live state, whoever started or ended the capture, but only
-    -- while this page is shown. Each action uses live settings, never a draft.
-    local captures = {}
+    -- Diagnostics: pick a capture or report from the list. A timed capture has a time next to it (fixed for those that cannot be
+    -- changed), a Start button that becomes Stop while it runs, and a report button that is enabled once there is a report; a
+    -- report that is not timed has only its report button, which makes and opens it. Labels follow live state, whoever started or
+    -- ended the capture, but only while this page is shown. Each action uses live settings, never a draft.
+    local diagnostics = {}
 
     -- Calls an addon method under pcall.
     -- @param method string  The name of the addon method.
@@ -328,129 +327,76 @@ function addon:BuildGeneralSettings(p)
         end
     end
 
+    -- Adds a timed capture to the list.
+    -- @param entry table  { key, label, seconds (the default), editable (the time can be changed), running, hasReport, begin(seconds),
+    --   finish, open }.
+    local function capture(entry)
+        diagnostics[#diagnostics + 1] = entry
+    end
+
+    -- Adds a report that is not timed to the list.
+    -- @param key string  The entry's key.
+    -- @param label string  Its name in the list.
+    -- @param method string  The addon method that makes and opens it.
+    local function report(key, label, method)
+        if type(self[method]) == 'function' then
+            diagnostics[#diagnostics + 1] = {
+                key = key,
+                label = label,
+                instant = true,
+                open = function()
+                    call(method)
+                    return true, ''
+                end,
+            }
+        end
+    end
+
     if self.RunCPUProfileAction then
-        captures[#captures + 1] = {
-            key = 'cpu_capture',
-            reportKey = 'cpu_report',
-            start = L['Capture CPU (10s)'],
-            stop = L['Stop CPU capture'],
-            report = L['CPU report'],
+        capture({
+            key = 'cpu',
+            label = L['CPU report'],
+            seconds = 10,
             running = function() return call('IsCPUProfileRunning') == true end,
             hasReport = stored('GetCPUProfileReport'),
             begin = function() return self:RunCPUProfileAction('start') end,
             finish = stopper('cpu', 'StopCPUProfile'),
             open = function() return self:RunCPUProfileAction('report') end,
-        }
+        })
 
         if type(self.StartCPURuntimeCapture) == 'function' then
-            captures[#captures + 1] = {
-                key = 'cpu_runtime_capture',
-                reportKey = 'cpu_runtime_report',
-                start = L['Capture runtime (10s)'],
-                stop = L['Stop runtime capture'],
-                report = L['Runtime report'],
+            capture({
+                key = 'runtime',
+                label = L['Runtime report'],
+                seconds = 10,
                 running = function() return call('IsCPURuntimeCaptureRunning') == true end,
                 hasReport = stored('GetCPURuntimeCaptureReport'),
                 begin = function() return self:RunCPUProfileAction('runtime') end,
                 finish = stopper('runtime', 'StopCPURuntimeCapture'),
                 open = function() return self:RunCPUProfileAction('runtimereport') end,
-            }
+            })
         end
         if type(self.StartMemoryCapture) == 'function' then
-            captures[#captures + 1] = {
-                key = 'memory_capture',
-                reportKey = 'memory_report',
-                start = L['Capture memory (10m)'],
-                stop = L['Stop memory capture'],
-                report = L['Memory report'],
+            capture({
+                key = 'memory',
+                label = L['Memory report'],
+                seconds = 600,
                 running = function() return call('IsMemoryCaptureRunning') == true end,
                 hasReport = stored('GetMemoryCaptureReport'),
                 begin = function() return self:RunCPUProfileAction('memory') end,
                 finish = stopper('memory', 'CompleteMemoryCapture'),
                 open = function() return self:RunCPUProfileAction('memoryreport') end,
-            }
+            })
         end
     end
 
-    if self.RunGlowDiagnostic and self.IsGlowWatchRunning then
-        captures[#captures + 1] = {
-            key = 'glow_capture',
-            reportKey = 'glow_report',
-            start = L['Capture glow (10s)'],
-            stop = L['Stop glow capture'],
-            report = L['Glow report'],
-            running = function() return call('IsGlowWatchRunning') == true end,
-            hasReport = function() return call('HasGlowReport') == true end,
-            begin = function()
-                self:RunGlowDiagnostic(10)
-                return true, ''
-            end,
-            finish = function()
-                self:StopGlowWatch()
-                return true, ''
-            end,
-            open = function()
-                self:ShowGlowDiagnostic()
-                return true, ''
-            end,
-        }
-    end
-    if self.RunPreviewDiagnostic and self.IsPreviewCaptureRunning then
-        captures[#captures + 1] = {
-            key = 'preview_capture',
-            reportKey = 'preview_report',
-            start = L['Capture preview (20s)'],
-            stop = L['Stop preview capture'],
-            report = L['Preview report'],
-            running = function() return call('IsPreviewCaptureRunning') == true end,
-            hasReport = function() return call('HasPreviewReport') == true end,
-            begin = function()
-                self:RunPreviewDiagnostic('20')
-                return true, ''
-            end,
-            finish = function()
-                self:StopPreviewCapture()
-                return true, ''
-            end,
-            open = function()
-                self:RunPreviewDiagnostic('show')
-                return true, ''
-            end,
-        }
-    end
-    if self.RunTimelineDiagnostic and self.IsTimelineWatchRunning then
-        captures[#captures + 1] = {
-            key = 'timeline_capture',
-            reportKey = 'timeline_report',
-            start = L['Capture timeline (30s)'],
-            stop = L['Stop timeline capture'],
-            report = L['Timeline report'],
-            running = function() return call('IsTimelineWatchRunning') == true end,
-            hasReport = function() return call('HasTimelineReport') == true end,
-            begin = function()
-                self:RunTimelineDiagnostic('30')
-                return true, ''
-            end,
-            finish = function()
-                self:RunTimelineDiagnostic('stop')
-                return true, ''
-            end,
-            open = function()
-                self:ShowTimelineDiagnostic()
-                return true, ''
-            end,
-        }
-    end
-
     if self.RunCastCaptureAction then
-        -- The cast report copies its snapshot, so it is checked only when the
-        -- running state changes (and now and then as a safety net).
-        captures[#captures + 1] = {
-            key = 'cast_capture',
-            reportKey = 'cast_report',
-            start = L['Capture casts (30s)'],
-            stop = L['Stop cast capture'],
-            report = L['Cast report'],
+        -- The cast report copies its snapshot, so it is checked only when the running state changes (and now and then as a
+        -- safety net).
+        capture({
+            key = 'cast',
+            label = L['Cast report'],
+            seconds = 30,
             costly = true,
             running = function()
                 return type(self.GetCastCaptureState) == 'function' and self:GetCastCaptureState() == true
@@ -466,24 +412,175 @@ function addon:BuildGeneralSettings(p)
             begin = function() return self:RunCastCaptureAction('start') end,
             finish = function() return self:RunCastCaptureAction('stop') end,
             open = function() return self:RunCastCaptureAction('report') end,
-        }
+        })
     end
 
-    if #captures > 0 then
-        local token = p.generation
-        local minimumWidth = 120
-        local diagnosticY = p.y
+    if self.RunGlowDiagnostic and self.IsGlowWatchRunning then
+        capture({
+            key = 'glow',
+            label = L['Glow report'],
+            seconds = 10,
+            editable = true,
+            running = function() return call('IsGlowWatchRunning') == true end,
+            hasReport = function() return call('HasGlowReport') == true end,
+            begin = function(seconds)
+                self:RunGlowDiagnostic(seconds)
+                return true, ''
+            end,
+            finish = function()
+                self:StopGlowWatch()
+                return true, ''
+            end,
+            open = function()
+                self:ShowGlowDiagnostic()
+                return true, ''
+            end,
+        })
+    end
+    if self.RunPreviewDiagnostic and self.IsPreviewCaptureRunning then
+        capture({
+            key = 'preview',
+            label = L['Preview report'],
+            seconds = 20,
+            editable = true,
+            running = function() return call('IsPreviewCaptureRunning') == true end,
+            hasReport = function() return call('HasPreviewReport') == true end,
+            begin = function(seconds)
+                self:RunPreviewDiagnostic(tostring(seconds))
+                return true, ''
+            end,
+            finish = function()
+                self:StopPreviewCapture()
+                return true, ''
+            end,
+            open = function()
+                self:RunPreviewDiagnostic('show')
+                return true, ''
+            end,
+        })
+    end
+    if self.RunTimelineDiagnostic and self.IsTimelineWatchRunning then
+        capture({
+            key = 'timeline',
+            label = L['Timeline report'],
+            seconds = 30,
+            editable = true,
+            running = function() return call('IsTimelineWatchRunning') == true end,
+            hasReport = function() return call('HasTimelineReport') == true end,
+            begin = function(seconds)
+                self:RunTimelineDiagnostic(tostring(seconds))
+                return true, ''
+            end,
+            finish = function()
+                self:RunTimelineDiagnostic('stop')
+                return true, ''
+            end,
+            open = function()
+                self:ShowTimelineDiagnostic()
+                return true, ''
+            end,
+        })
+    end
 
-        -- Sets one capture's button label from its running state and enables its report button when a report exists. A
-        -- costly check (the cast report copies its snapshot) is repeated only when the running state changed, when
-        -- forced, or about every two seconds.
-        -- @param entry table  The capture entry.
+    report('spells', L['Premade spell report'], 'RunPremadeSpellDiagnostic')
+    report('secrets', L['Secret value probe'], 'RunSecretsDiagnostic')
+    report('talents', L['Talent diagnostic'], 'RunTalentDiagnostic')
+    report('marks', L['Raid mark report'], 'RunRaidMarkDiagnostic')
+    report('editor', L['Lua editor report'], 'ShowLuaEditorInputReport')
+
+    if #diagnostics > 0 then
+        local token = p.generation
+        self.diagnosticSeconds = self.diagnosticSeconds or {}
+
+        -- The chosen entry: kept for the session so a redraw does not lose it.
+        local chosen = diagnostics[1]
+
+        for _, entry in ipairs(diagnostics) do
+            if entry.key == self.diagnosticSelection then
+                chosen = entry
+            end
+        end
+
+        self.diagnosticSelection = chosen.key
+
+        local choices = {}
+
+        for _, entry in ipairs(diagnostics) do
+            choices[#choices + 1] = { value = entry.key, text = entry.label }
+        end
+
+        local rowY = p.y
+
+        local pick = p:Choice('diagnostic', L['Diagnostics'], chosen.key, choices, function(value)
+            self.diagnosticSelection = value
+            p:Draw()
+        end)
+
+        -- The time sits next to the list, the buttons under them.
+        local seconds = p:Acquire('diagnosticSeconds', function() return addon:CreateWorkbenchEditBox(p.child) end)
+        local timeWidth = 56
+        pick:SetWidth(math.max(1, p.width - 220 - timeWidth - 4))
+        seconds:ClearAllPoints()
+        seconds:SetPoint('TOPLEFT', p.width - timeWidth, -rowY)
+        seconds:SetSize(timeWidth, 24)
+        seconds:SetMaxLetters(4)
+        seconds:EnableMouse(true)
+        seconds:SetTextColor(1, 1, 1)
+        seconds:SetTextInsets(4, 4, 0, 0)
+        seconds:ClearFocus()
+        seconds.tooltip = L['Seconds']
+        p.fields.diagnostic_seconds = seconds
+        seconds:SetText(tostring(self.diagnosticSeconds[chosen.key] or chosen.seconds or ''))
+
+        addon:SetUIScript(seconds, 'OnEnterPressed', p:Guard(function()
+            seconds:ClearFocus()
+        end))
+
+        local buttonsY = p.y
+        local start = p:Button('diagnostic_start', L['Start'], function() end)
+        local show = p:Button('diagnostic_report', L['Show report'], function() end)
+        local half = (p.width - 4) / 2
+        local need = 0
+
+        for _, caption in ipairs({ L['Start'], L['Stop'], L['Show report'] }) do
+            start:SetText(caption)
+            need = math.max(need, start:GetFontString():GetStringWidth() + 20)
+        end
+
+        -- Side by side, or one under the other when a translated caption would not fit half the width.
+        local stacked = need > half
+
+        for index, button in ipairs({ start, show }) do
+            button:ClearAllPoints()
+
+            if stacked then
+                button:SetPoint('TOPLEFT', 0, -buttonsY - (index - 1) * 28)
+                button:SetWidth(p.width)
+            else
+                button:SetPoint('TOPLEFT', (index - 1) * (half + 4), -buttonsY)
+                button:SetWidth(half)
+            end
+        end
+
+        start:SetText(L['Start'])
+        p.y = buttonsY + (stacked and 56 or 28)
+
+        -- Sets the buttons from the chosen entry's state: Start or Stop, the time (editable or fixed), and the report button.
         -- @param force boolean|nil  True re-checks for a report even for a costly entry.
-        local function paint(entry, force)
-            local running = entry.running()
+        local function paint(force)
+            if not p:Valid(token) then
+                return
+            end
+
+            local entry = chosen
+            local running = entry.running and entry.running() or false
             local has = entry.has
 
-            if not running and (force or not entry.costly or running ~= entry.wasRunning or (entry.age or 0) >= 2) then
+            if entry.instant then
+                has = true
+            elseif
+                not running and (force or not entry.costly or running ~= entry.wasRunning or (entry.age or 0) >= 2)
+            then
                 has = entry.hasReport() == true
                 entry.age = 0
             end
@@ -492,87 +589,76 @@ function addon:BuildGeneralSettings(p)
                 has = false
             end
 
-            entry.wasRunning = running
-            entry.has = has
-            entry.button:SetText(running and entry.stop or entry.start)
+            entry.wasRunning, entry.has = running, has
+            start:SetText(running and L['Stop'] or L['Start'])
+
+            if entry.instant then
+                start:Disable()
+                seconds:SetText('')
+                seconds:Disable()
+            else
+                start:Enable()
+
+                if entry.editable and not running then
+                    seconds:Enable()
+                else
+                    seconds:Disable()
+                end
+
+                if not entry.editable or running then
+                    seconds:SetText(tostring(self.diagnosticSeconds[entry.key] or entry.seconds))
+                end
+            end
 
             if has then
-                entry.reportButton:Enable()
+                show:Enable()
             else
-                entry.reportButton:Disable()
+                show:Disable()
             end
         end
 
-        -- Repaints every capture's buttons, but only while this drawing of the page is current.
-        -- @param force boolean|nil  True forces the report check.
-        local function repaint(force)
-            if p:Valid(token) then
-                for _, entry in ipairs(captures) do
-                    paint(entry, force)
-                end
-            end
-        end
+        self:SetUIScript(start, 'OnClick', p:Guard(function()
+            local entry = chosen
+            local action, count = entry.begin, nil
 
-        for _, entry in ipairs(captures) do
-            local button = p:Button(entry.key, entry.start, function() end)
-            local reportButton = p:Button(entry.reportKey, entry.report, function() end)
-            entry.button, entry.reportButton = button, reportButton
-
-            for _, text in ipairs({ entry.start, entry.stop }) do
-                button:SetText(text)
-                minimumWidth = math.max(minimumWidth, button:GetFontString():GetStringWidth() + 20)
+            if entry.running() then
+                action = entry.finish
+            elseif entry.editable then
+                count = math.max(1, math.min(300, math.floor(tonumber(seconds:GetText()) or entry.seconds)))
+                self.diagnosticSeconds[entry.key] = count
             end
 
-            self:SetUIScript(button, 'OnClick', p:Guard(function()
-                local action = entry.running() and entry.finish or entry.begin
-                local ok, message, current = action()
+            local ok, message, current = action(count)
 
-                if current == false or not p:Valid(token) then
-                    return
-                end
+            if current == false or not p:Valid(token) then
+                return
+            end
 
-                if message and message ~= '' then
-                    p:Message(message, ok)
-                end
+            if message and message ~= '' then
+                p:Message(message, ok)
+            end
 
-                repaint(true)
-            end))
+            paint(true)
+        end))
 
-            self:SetUIScript(reportButton, 'OnClick', p:Guard(function()
-                local ok, message, current = entry.open()
+        self:SetUIScript(show, 'OnClick', p:Guard(function()
+            local ok, message, current = chosen.open()
 
-                if current == false or not p:Valid(token) then
-                    return
-                end
+            if current == false or not p:Valid(token) then
+                return
+            end
 
-                p:Message(message or '', ok)
-                repaint(true)
-            end))
-        end
+            p:Message(message or '', ok)
+            paint(true)
+        end))
 
-        local gap = 4
-        local columns = math.max(1, math.min(3, #captures, math.floor((p.width + gap) / (minimumWidth + gap))))
-        local each = (p.width - (columns - 1) * gap) / columns
+        paint(true)
 
-        for i, entry in ipairs(captures) do
-            local x = ((i - 1) % columns) * (each + gap)
-            local top = diagnosticY + math.floor((i - 1) / columns) * 58
-            entry.button:ClearAllPoints()
-            entry.button:SetPoint('TOPLEFT', x, -top)
-            entry.button:SetWidth(each)
-            entry.reportButton:ClearAllPoints()
-            entry.reportButton:SetPoint('TOPLEFT', x, -top - 28)
-            entry.reportButton:SetWidth(each)
-        end
-
-        p.y = diagnosticY + math.ceil(#captures / columns) * 58
-        repaint(true)
         local watcher = p:Acquire('captureWatcher', function() return CreateFrame('Frame', nil, p.child) end)
         local elapsed = 0
 
-        -- Every quarter of a second while the page is shown: ages the capture entries and repaints their buttons, so
-        -- the labels follow the live state whoever started or ended the capture. Stops itself when the page was
-        -- redrawn.
+        -- Every quarter of a second while the page is shown: ages the entry and repaints its buttons, so the labels follow the live
+        -- state whoever started or ended the capture. Stops itself when the page was redrawn.
         -- @param frame table  The watcher frame.
         -- @param delta number|nil  The time since the last update, in seconds.
         self:SetUIScript(watcher, 'OnUpdate', function(frame, delta)
@@ -587,64 +673,10 @@ function addon:BuildGeneralSettings(p)
                 return
             end
 
-            for _, entry in ipairs(captures) do
-                entry.age = (entry.age or 0) + elapsed
-            end
-
+            chosen.age = (chosen.age or 0) + elapsed
             elapsed = 0
-            repaint(false)
+            paint(false)
         end)
-    end
-
-    -- One-shot reports (the other /rm debug commands): each opens at once in the copyable window, or prints to chat.
-    local reports = {}
-
-    for _, entry in ipairs({
-        { 'spells_report', L['Premade spell report'], 'RunPremadeSpellDiagnostic' },
-        { 'secrets_report', L['Secret value probe'], 'RunSecretsDiagnostic' },
-        { 'talents_report', L['Talent diagnostic'], 'RunTalentDiagnostic' },
-        { 'marks_report', L['Raid mark report'], 'RunRaidMarkDiagnostic' },
-        { 'editor_report', L['Lua editor report'], 'ShowLuaEditorInputReport' },
-    }) do
-        if type(self[entry[3]]) == 'function' then
-            reports[#reports + 1] = entry
-        end
-    end
-
-    if #reports > 0 then
-        local token = p.generation
-        local gap, wide = 4, 120
-        local reportY = p.y
-        local buttons = {}
-
-        for _, entry in ipairs(reports) do
-            local button = p:Button(entry[1], entry[2], function() end)
-            buttons[#buttons + 1] = button
-            wide = math.max(wide, button:GetFontString():GetStringWidth() + 20)
-
-            self:SetUIScript(button, 'OnClick', p:Guard(function()
-                if p:Valid(token) then
-                    call(entry[3])
-                end
-            end))
-        end
-
-        local columns = math.max(1, math.min(3, #buttons, math.floor((p.width + gap) / (wide + gap))))
-        local each = (p.width - (columns - 1) * gap) / columns
-
-        for i, button in ipairs(buttons) do
-            button:ClearAllPoints()
-
-            button:SetPoint(
-                'TOPLEFT',
-                ((i - 1) % columns) * (each + gap),
-                -reportY - math.floor((i - 1) / columns) * 30
-            )
-
-            button:SetWidth(each)
-        end
-
-        p.y = reportY + math.ceil(#buttons / columns) * 30
     end
 
     -- Talent groups need your own names (Primary, Secondary, ...) on every client that keys rotations by talent group:

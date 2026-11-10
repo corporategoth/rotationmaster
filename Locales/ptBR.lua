@@ -12205,10 +12205,6 @@ addon.translation = {
 [3671] = "    tempo de recarga de %d segundos",
 -- 63e45ad7 English: Base mana at level %d: %d
 [3672] = "Mana base no nível %d: %d",
--- 487cecc3 English: Capture preview (20s)
-[3673] = "Capturar pré-visualização (20 s)",
--- f577ee23 English: Stop preview capture
-[3674] = "Parar captura da pré-visualização",
 -- 55288341 English: Preview report
 [3675] = "Relatório da pré-visualização",
 -- c26d1121 English: Premade spell report
@@ -12226,23 +12222,23 @@ addon.translation = {
 --     out for your level. It learns from the first twenty casts of each spell while the forecast is
 --     on.
 [3680] = "Abre uma janela, que pode ser copiada, com o que a previsão aprendeu sobre os seus feitiços: as auras que cada um deixa no alvo ou em você e quanto duram, quantas vezes cada uma foi vista após uma conjuração (uma aura vista apenas após algumas conjurações é um proc, que não é projetado), o dano e a cura que eles causam, o tempo de recarga de um item e a mana base calculada para o seu nível. Ela aprende com as primeiras vinte conjurações de cada feitiço enquanto a previsão está ativada.",
--- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
---     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
---     rotations that this client does not have), Secret value probe (what a restricted client
---     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
---     and Lua editor report. Capture preview records what the preview was given and why for twenty
---     seconds, and its report opens afterwards. The same reports run from /rm debug.
-[3681] = "Abre um dos relatórios de diagnóstico para um relatório de problema ou para descobrir por que algo não funciona: Brilho (por que nenhum botão acende), Feitiço pronto (feitiços das rotações incluídas que este cliente não tem), Sonda de valores secretos (o que um cliente restrito oculta), Diagnóstico de talentos, Relatório da linha do tempo (a linha do tempo de encontros da Blizzard), Relatório de marcas de raide e Relatório do editor Lua. Capturar pré-visualização registra o que a pré-visualização recebeu e por quê durante vinte segundos, e o relatório dela abre depois. Os mesmos relatórios rodam a partir de /rm debug.",
--- 95fc5a3c English: Capture glow (10s)
-[3682] = "Capturar destaque (10 s)",
--- 6e37c9a7 English: Stop glow capture
-[3683] = "Parar captura de destaque",
+-- 0219b900 English: Choose a capture or report from the list and press Start; it becomes Stop while
+--     the capture runs, and Show report opens the last report once there is one. The time next to
+--     the list can be set for glow, preview and timeline captures; the others last a fixed time.
+--     Premade spell, secret value, talent, raid mark and Lua editor reports are not timed: Show
+--     report makes and opens them. These are what a problem report needs, and the same reports run
+--     from /rm debug.
+[3681] = "Escolha uma captura ou um relatório na lista e clique em Iniciar; ele vira Parar enquanto a captura roda, e Mostrar relatório abre o último relatório quando houver um. O tempo ao lado da lista pode ser definido para as capturas de destaque, pré-visualização e linha do tempo; as outras duram um tempo fixo. Os relatórios de feitiços predefinidos, valores secretos, talentos, marcadores de raide e editor de Lua não são cronometrados: Mostrar relatório os cria e abre. São o que um relatório de problema precisa, e os mesmos relatórios rodam por /rm debug.",
 -- 53dc47ca English: Glow report
 [3684] = "Relatório de destaque",
--- e9a078aa English: Capture timeline (30s)
-[3685] = "Capturar linha do tempo (30 s)",
--- 0ae5ab6e English: Stop timeline capture
-[3686] = "Parar captura da linha do tempo",
 -- 8ad2e5f7 English: Diagnostic reports
 [3687] = "Relatórios de diagnóstico",
+-- 3d04fc7a English: What agrees with the game's own spell tables is not shown.
+[3688] = "O que coincide com as tabelas de feitiços do próprio jogo não é mostrado.",
+-- 9b95a7bb English: Forget this spell
+[3689] = "Esquecer este feitiço",
+-- e4bb9f1e English: Start
+[3690] = "Iniciar",
+-- b3358cff English: Show report
+[3691] = "Mostrar relatório",
 }

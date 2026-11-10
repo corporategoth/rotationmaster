@@ -12205,10 +12205,6 @@ addon.translation = {
 [3671] = "    перезарядка %d сек.",
 -- 63e45ad7 English: Base mana at level %d: %d
 [3672] = "Базовая мана на уровне %d: %d",
--- 487cecc3 English: Capture preview (20s)
-[3673] = "Записать предпросмотр (20 с)",
--- f577ee23 English: Stop preview capture
-[3674] = "Остановить запись предпросмотра",
 -- 55288341 English: Preview report
 [3675] = "Отчет предпросмотра",
 -- c26d1121 English: Premade spell report
@@ -12226,23 +12222,23 @@ addon.translation = {
 --     out for your level. It learns from the first twenty casts of each spell while the forecast is
 --     on.
 [3680] = "Открыть копируемое окно с тем, что прогноз узнал о ваших заклинаниях: какие эффекты каждое оставляет на цели или на вас и как долго они длятся, как часто эффект появлялся после применения (эффект, замеченный лишь после некоторых применений, является срабатыванием и не прогнозируется), какой урон и лечение они дают, перезарядку предмета и базовую ману, рассчитанную для вашего уровня. Прогноз учится на первых двадцати применениях каждого заклинания, пока он включен.",
--- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
---     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
---     rotations that this client does not have), Secret value probe (what a restricted client
---     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
---     and Lua editor report. Capture preview records what the preview was given and why for twenty
---     seconds, and its report opens afterwards. The same reports run from /rm debug.
-[3681] = "Открыть один из диагностических отчетов для сообщения о проблеме или чтобы выяснить, почему что-то не работает: Свечение (почему не подсвечивается ни одна кнопка), Готовые заклинания (заклинания из поставляемых ротаций, которых нет в этом клиенте), Проверка скрытых значений (что скрывает ограниченный клиент), Диагностика талантов, Отчет о временной шкале (шкала боя от Blizzard), Отчет о метках рейда и Отчет о редакторе Lua. Запись предпросмотра в течение двадцати секунд фиксирует, что получил предпросмотр и почему; затем открывается ее отчет. Те же отчеты запускаются командой /rm debug.",
--- 95fc5a3c English: Capture glow (10s)
-[3682] = "Запись подсветки (10 с)",
--- 6e37c9a7 English: Stop glow capture
-[3683] = "Остановить запись подсветки",
+-- 0219b900 English: Choose a capture or report from the list and press Start; it becomes Stop while
+--     the capture runs, and Show report opens the last report once there is one. The time next to
+--     the list can be set for glow, preview and timeline captures; the others last a fixed time.
+--     Premade spell, secret value, talent, raid mark and Lua editor reports are not timed: Show
+--     report makes and opens them. These are what a problem report needs, and the same reports run
+--     from /rm debug.
+[3681] = "Выберите запись или отчет в списке и нажмите «Начать»; пока запись идет, кнопка превращается в «Остановить», а «Показать отчет» открывает последний отчет, когда он есть. Время рядом со списком можно задать для записей подсветки, предпросмотра и хронологии; остальные длятся фиксированное время. Отчеты о готовых заклинаниях, скрытых значениях, талантах, метках рейда и редакторе Lua не ограничены по времени: «Показать отчет» создает и открывает их. Они нужны для сообщения о проблеме, и те же отчеты запускаются командой /rm debug.",
 -- 53dc47ca English: Glow report
 [3684] = "Отчет о подсветке",
--- e9a078aa English: Capture timeline (30s)
-[3685] = "Запись хронологии (30 с)",
--- 0ae5ab6e English: Stop timeline capture
-[3686] = "Остановить запись хронологии",
 -- 8ad2e5f7 English: Diagnostic reports
 [3687] = "Диагностические отчеты",
+-- 3d04fc7a English: What agrees with the game's own spell tables is not shown.
+[3688] = "То, что совпадает с таблицами заклинаний самой игры, не показывается.",
+-- 9b95a7bb English: Forget this spell
+[3689] = "Забыть это заклинание",
+-- e4bb9f1e English: Start
+[3690] = "Начать",
+-- b3358cff English: Show report
+[3691] = "Показать отчет",
 }

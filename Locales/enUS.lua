@@ -10391,10 +10391,6 @@ T["    heals you for about %d"] = 3670
 T["    cooldown %d seconds"] = 3671
 -- 63e45ad7
 T["Base mana at level %d: %d"] = 3672
--- 487cecc3
-T["Capture preview (20s)"] = 3673
--- f577ee23
-T["Stop preview capture"] = 3674
 -- 55288341
 T["Preview report"] = 3675
 -- c26d1121
@@ -10407,20 +10403,20 @@ T["Raid mark report"] = 3678
 T["Lua editor report"] = 3679
 -- f778cb4f
 T["Open a window, which can be copied, with what the forecast has learned about your spells: the auras each leaves on the target or on you and how long they last, how often each was seen after a cast (an aura seen after only some casts is a proc, which is not projected), the damage and healing they do, the cooldown of an item and the base mana worked out for your level. It learns from the first twenty casts of each spell while the forecast is on."] = 3680
--- d1a1bed8
-T["Open one of the diagnostic reports for a problem report or to find out why something does not work: Glow (why no button lights), Premade spell (spells in the shipped rotations that this client does not have), Secret value probe (what a restricted client hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report and Lua editor report. Capture preview records what the preview was given and why for twenty seconds, and its report opens afterwards. The same reports run from /rm debug."] = 3681
--- 95fc5a3c
-T["Capture glow (10s)"] = 3682
--- 6e37c9a7
-T["Stop glow capture"] = 3683
+-- 0219b900
+T["Choose a capture or report from the list and press Start; it becomes Stop while the capture runs, and Show report opens the last report once there is one. The time next to the list can be set for glow, preview and timeline captures; the others last a fixed time. Premade spell, secret value, talent, raid mark and Lua editor reports are not timed: Show report makes and opens them. These are what a problem report needs, and the same reports run from /rm debug."] = 3681
 -- 53dc47ca
 T["Glow report"] = 3684
--- e9a078aa
-T["Capture timeline (30s)"] = 3685
--- 0ae5ab6e
-T["Stop timeline capture"] = 3686
 -- 8ad2e5f7
 T["Diagnostic reports"] = 3687
+-- 3d04fc7a
+T["What agrees with the game's own spell tables is not shown."] = 3688
+-- 9b95a7bb
+T["Forget this spell"] = 3689
+-- e4bb9f1e
+T["Start"] = 3690
+-- b3358cff
+T["Show report"] = 3691
 
 for text, id in pairs(T) do
     L[text] = translations and translations[id] or text

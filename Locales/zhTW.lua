@@ -12205,10 +12205,6 @@ addon.translation = {
 [3671] = "    冷卻 %d 秒",
 -- 63e45ad7 English: Base mana at level %d: %d
 [3672] = "%d 級基礎法力：%d",
--- 487cecc3 English: Capture preview (20s)
-[3673] = "擷取預覽（20 秒）",
--- f577ee23 English: Stop preview capture
-[3674] = "停止擷取預覽",
 -- 55288341 English: Preview report
 [3675] = "預覽報告",
 -- c26d1121 English: Premade spell report
@@ -12226,23 +12222,23 @@ addon.translation = {
 --     out for your level. It learns from the first twenty casts of each spell while the forecast is
 --     on.
 [3680] = "開啟一個可複製的視窗，顯示預測已學到的關於你法術的資訊：每個法術在目標或你身上留下的光環及其持續時間、每個光環在施放後出現的頻率（僅在部分施放後出現的光環屬於觸發效果，不做預測）、它們造成的傷害和治療、物品的冷卻時間，以及依你的等級算出的基礎法力。開啟預測時，它會從每個法術的前二十次施放中學習。",
--- d1a1bed8 English: Open one of the diagnostic reports for a problem report or to find out why
---     something does not work: Glow (why no button lights), Premade spell (spells in the shipped
---     rotations that this client does not have), Secret value probe (what a restricted client
---     hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report
---     and Lua editor report. Capture preview records what the preview was given and why for twenty
---     seconds, and its report opens afterwards. The same reports run from /rm debug.
-[3681] = "開啟其中一份診斷報告，用於提交問題報告或查明某項功能為何無法運作：發光（為何沒有按鈕亮起）、預製法術（隨附輪替中此用戶端沒有的法術）、機密值探測（受限用戶端隱藏了什麼）、天賦診斷、時間軸報告（暴雪的戰鬥時間軸）、團隊標記報告和 Lua 編輯器報告。擷取預覽會記錄二十秒內預覽收到的內容及原因，之後開啟其報告。相同的報告也可透過 /rm debug 執行。",
--- 95fc5a3c English: Capture glow (10s)
-[3682] = "擷取醒目提示 (10秒)",
--- 6e37c9a7 English: Stop glow capture
-[3683] = "停止醒目提示擷取",
+-- 0219b900 English: Choose a capture or report from the list and press Start; it becomes Stop while
+--     the capture runs, and Show report opens the last report once there is one. The time next to
+--     the list can be set for glow, preview and timeline captures; the others last a fixed time.
+--     Premade spell, secret value, talent, raid mark and Lua editor reports are not timed: Show
+--     report makes and opens them. These are what a problem report needs, and the same reports run
+--     from /rm debug.
+[3681] = "從清單選擇一項擷取或報告並按「開始」；擷取進行時會變成「停止」，有報告後「顯示報告」會開啟最近的報告。清單旁的時間可為醒目提示、預覽與時間軸擷取設定，其餘擷取時長固定。預製法術、隱藏數值、天賦、團隊標記與 Lua 編輯器報告不計時：「顯示報告」會產生並開啟它們。問題報告需要這些內容，相同的報告也可透過 /rm debug 執行。",
 -- 53dc47ca English: Glow report
 [3684] = "醒目提示報告",
--- e9a078aa English: Capture timeline (30s)
-[3685] = "擷取時間軸 (30秒)",
--- 0ae5ab6e English: Stop timeline capture
-[3686] = "停止時間軸擷取",
 -- 8ad2e5f7 English: Diagnostic reports
 [3687] = "診斷報告",
+-- 3d04fc7a English: What agrees with the game's own spell tables is not shown.
+[3688] = "與遊戲本身法術表一致的內容不會顯示。",
+-- 9b95a7bb English: Forget this spell
+[3689] = "遺忘此法術",
+-- e4bb9f1e English: Start
+[3690] = "開始",
+-- b3358cff English: Show report
+[3691] = "顯示報告",
 }

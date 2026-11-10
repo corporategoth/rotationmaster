@@ -346,7 +346,7 @@ function addon:GetGeneralOptionHelp()
     ordered[#ordered + 1] = {
         id = "debug_reports",
         title = L["Diagnostic reports"],
-        text = L["Open one of the diagnostic reports for a problem report or to find out why something does not work: Glow (why no button lights), Premade spell (spells in the shipped rotations that this client does not have), Secret value probe (what a restricted client hides), Talent diagnostic, Timeline report (Blizzard's encounter timeline), Raid mark report and Lua editor report. Capture preview records what the preview was given and why for twenty seconds, and its report opens afterwards. The same reports run from /rm debug."],
+        text = L["Choose a capture or report from the list and press Start; it becomes Stop while the capture runs, and Show report opens the last report once there is one. The time next to the list can be set for glow, preview and timeline captures; the others last a fixed time. Premade spell, secret value, talent, raid mark and Lua editor reports are not timed: Show report makes and opens them. These are what a problem report needs, and the same reports run from /rm debug."],
     }
 
     if self.GetCacheDiagnosticMode then
