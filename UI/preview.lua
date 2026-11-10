@@ -107,7 +107,23 @@ local ART_THEMES = {
 }
 
 -- The painting for a class that has none of its own (nil until it is made).
-local ART_NEUTRAL = nil
+local ART_NEUTRAL = {
+    wide = {
+        'rotation-master-w1',
+        'rotation-master-w2',
+        'rotation-master-w3',
+        'rotation-master-w4',
+        'rotation-master-w5',
+    },
+    tall = {
+        'rotation-master-t1',
+        'rotation-master-t2',
+        'rotation-master-t3',
+        'rotation-master-t4',
+        'rotation-master-t5',
+    },
+    border = 'rotation-master-border',
+}
 
 -- Where each piece sits on the border sheet, as texture coordinates (left, right, top, bottom); the sheet is 256 x 64, in rows of 16.
 local BORDER_PIECES = {
