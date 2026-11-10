@@ -79,6 +79,11 @@ local ART_THEMES = {
         tall = { 'druid-t1', 'druid-t2', 'druid-t3', 'druid-t4', 'druid-t5' },
         border = 'druid-border',
     },
+    WARLOCK = {
+        wide = { 'warlock-w1', 'warlock-w2', 'warlock-w3', 'warlock-w4', 'warlock-w5' },
+        tall = { 'warlock-t1', 'warlock-t2', 'warlock-t3', 'warlock-t4', 'warlock-t5' },
+        border = 'warlock-border',
+    },
 }
 
 -- The painting for a class that has none of its own (nil until it is made).

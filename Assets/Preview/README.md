@@ -231,3 +231,35 @@ Generated with the built-in image generation tool. Exact prompts:
 **Processing:** Pillow cropped the row original at (0, 92, 2170, 526) and the final column at (145, 0, 579, 2170), in native pixels. Each exact-ratio master was uniformly darkened to 68% per channel, sliced into 434-pixel squares, and each slice resized to 256 pixels with Lanczos; no aspect-ratio deformation. Original generations and cropped masters are retained in `source/generated/`. The border atlas was drawn procedurally as repeatable bark and green-vine rails, mirrored antler joints, and dim/lit leaf-and-moon studs; unused pixels are transparent. The QA assembler applies the same per-slot rails, mirrored corners and neighbour-dependent studs as the Shaman reference; it renders at 64 pixels per slot with 6-pixel border and scales the composite 2x using Lanczos. QA uses actual Conditions icons.
 
 **Review:** The row reads continuously and retains all four seasonal trees. The column has all four trees and a recognizable Druid journey, though the scenes stack vertically and the gold tree has a residual illuminated center; some prefix cuts pass through foliage or water rather than resolving completely. The corner's antler detail is subtle at game size.
+
+## Warlock — the bargain
+
+| Cell | Story |
+| --- | --- |
+| 1 | A ritual circle in a bone-filled crypt. |
+| 2 | An imp whispers beside chained soulstones. |
+| 3 | Fel fire rises from an altar. |
+| 4 | A horned shadow looms over a ruined arch. |
+| 5 | Four soulstones rest on an altar under a green moon. |
+
+Built-in image generation prompts (exact):
+
+**Row, used:**
+
+> Use case: illustration-story. Create a richly detailed World of Warcraft inspired dark fantasy loading-screen painting, an exceptionally wide horizontal continuous panorama designed to crop a central 5:1 strip. Within that central strip tell a warlock's bargain sequentially left to right: bone-lit ritual circle in crypt; imp whispering beside chained soulstones; fel fire rising from an altar; horned shadow looming over a ruined arch; payoff four distinct soulstones aglow on an altar under a green moon. Each fifth contains its event, and transition at each fifth naturally resolves with stone or pillars. Full intricate detail everywhere, coherent continuous landscape and architecture, no separate panels, no lettering or UI. Charcoal bone, thorn and chain, fel green and purple, dark crypt stone. Muted dark soft contrast, no bloom, no blank or blurred areas. Match rich detailed painterly fantasy reference.
+
+**Column, first attempt:**
+
+> Use case: illustration-story. Create a richly detailed World of Warcraft inspired dark fantasy loading-screen painting, exceptionally tall vertical continuous composition designed to crop a central 1:5 strip, all subjects upright. Within that central strip tell a warlock's bargain sequentially top to bottom: bone-lit ritual circle in crypt; imp whispering beside chained soulstones; fel fire rising from an altar; horned shadow looming over a ruined arch; payoff four distinct soulstones aglow on an altar under a green moon. Each fifth contains its event, transition naturally resolves with masonry. Full intricate detail everywhere, coherent continuous scene, no panel borders, no lettering or UI. Charcoal bone, thorns and chains, fel green and purple, dark crypt stone. Muted dark soft contrast, no bloom, no blank or blurred areas. Rich detailed painterly fantasy.
+
+**Column, used:**
+
+> Use case: illustration-story. A vertical continuous dark fantasy Warlock loading-screen painting, no text. CRITICAL COMPOSITION: everything essential must fit within the central 20 percent of image width, as it will be cropped to a very narrow 1:5 strip; place all story subjects and all four final stones entirely inside this narrow central column, not across full image. Top to bottom: bone-lit ritual circle in crypt, a small imp whispering beside chained soulstones, fel fire rising from an altar, a horned shadow over a ruined arch, and four tiny soulstones together on an altar beneath a green moon. Each fifth of the central strip depicts its event, connected by detailed crypt masonry, no panel borders. Upright scene, sharp detailed painting, charcoal bone, chains, thorn, dark stone, muted green and purple. Dark, no bloom, no empty or blurred areas.
+
+**Row, second attempt (not used):**
+
+> Use case: illustration-story. A horizontal continuous dark fantasy Warlock loading-screen painting, no text. CRITICAL COMPOSITION: everything essential must fit within the central 20 percent of image height, as it will be cropped to a very narrow 5:1 strip; place all story subjects, entire ritual circle, moon, and all four final stones inside this narrow central horizontal strip. Left to right: bone-lit ritual circle in a crypt, an imp whispering beside chained soulstones, fel fire rising from an altar, a horned shadow over a ruined arch, and four small soulstones together on an altar beneath a green moon. Each fifth of the strip depicts its event, connected by detailed crypt masonry, no panel borders. Sharp detailed WoW-inspired painting, charcoal bone, chains, thorn, dark stone, muted green and purple. Dark, no bloom, no empty or blurred areas.
+
+Scripted edits: the row original is 2172×724, cropped at (1, 0, 2171, 434); the column original is 887×1774, cropped at (266, 0, 620, 1770). Each exact-ratio native-pixel master was uniformly darkened by multiplying RGB by 0.65, sliced into native square fifths, and each slice resized to 256×256 with Lanczos and saved as opaque RGBA PNG and uncompressed RGBA32 TGA. A PIL-drawn charcoal bone-and-thorn border atlas uses matching rail endpoints, dim and lit green inlays, mirrored corner and two symmetric studs. The QA assembler positions cells inside a 6 px external border, applies rails and studs according to active slots, uses real Conditions icons and renders at 2× Lanczos. The second row attempt confined the story to an excessively thin strip surrounded by black, so it was retained as an attempt rather than used.
+
+Review: the five beats and four-stone payoff are legible, with rich crypt detail and seamless source joins. The row crop cuts off much of the ritual circle, some prefix endings cut through objects, and the column reads as vertically stacked episodes; its final stones are small at game size. The border is quiet and its lit state is visibly greener, but its tiny horn details are subtle at game size.
