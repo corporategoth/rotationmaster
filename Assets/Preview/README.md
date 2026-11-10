@@ -263,3 +263,31 @@ Built-in image generation prompts (exact):
 Scripted edits: the row original is 2172×724, cropped at (1, 0, 2171, 434); the column original is 887×1774, cropped at (266, 0, 620, 1770). Each exact-ratio native-pixel master was uniformly darkened by multiplying RGB by 0.65, sliced into native square fifths, and each slice resized to 256×256 with Lanczos and saved as opaque RGBA PNG and uncompressed RGBA32 TGA. A PIL-drawn charcoal bone-and-thorn border atlas uses matching rail endpoints, dim and lit green inlays, mirrored corner and two symmetric studs. The QA assembler positions cells inside a 6 px external border, applies rails and studs according to active slots, uses real Conditions icons and renders at 2× Lanczos. The second row attempt confined the story to an excessively thin strip surrounded by black, so it was retained as an attempt rather than used.
 
 Review: the five beats and four-stone payoff are legible, with rich crypt detail and seamless source joins. The row crop cuts off much of the ritual circle, some prefix endings cut through objects, and the column reads as vertically stacked episodes; its final stones are small at game size. The border is quiet and its lit state is visibly greener, but its tiny horn details are subtle at game size.
+
+## Monk — pilgrimage
+
+| Cell | Story |
+| --- | --- |
+| 1 | A mountain stair at dawn. |
+| 2 | A path through a bamboo grove. |
+| 3 | A temple bell and brewery barrels in a courtyard. |
+| 4 | A jade dragon among clouds. |
+| 5 | A sunrise courtyard with four paper lanterns before a pagoda. |
+
+Generated with the built-in image generation tool. Exact prompts:
+
+**Row:**
+
+> Use case: stylized-concept. Paint a detailed World of Warcraft monk class-hall loading screen panorama, ultra-wide horizontal composition, one continuous pilgrimage traveling left to right in five equal consecutive regions: misty mountain stair at dawn; bamboo grove with path; temple bell and brewery barrels in courtyard; carved jade dragon among clouds; complete calm sunrise courtyard with exactly four lit paper lanterns before a pagoda. Continuous landscape and foreground, natural transitions at fifth boundaries; each region complete to its right edge. Full detail everywhere. Pale jade, lacquered wood, mist and muted sunrise gold; dark low contrast, no bloom, no text, no faces. Compose all the story within a narrow central horizontal band so it can be cropped to a 5:1 panorama without losing the subjects. Real painterly richly detailed fantasy illustration.
+
+**First column:**
+
+> Use case: stylized-concept. Paint a detailed World of Warcraft monk class-hall loading screen, tall vertical composition, a single continuous upright pilgrimage flowing top to bottom through five consecutive square regions: misty mountain stair at dawn; bamboo grove with path; temple bell and brewery barrels in courtyard; carved jade dragon among clouds; complete calm sunrise courtyard with exactly four lit paper lanterns before a pagoda. The path and landscape flow continuously downward, natural transitions at fifth boundaries, each region resolves at its bottom edge. Full detail throughout. Pale jade, lacquered wood, mist and muted sunrise gold; dark low contrast, no bloom, no text, no faces. Compose all the story within a narrow central vertical band so it can be cropped to a 1:5 panorama without losing subjects. Real painterly richly detailed fantasy illustration.
+
+**Replacement column:**
+
+> Use case: stylized-concept. Upright vertical World of Warcraft monk class-hall painting for a very narrow 1:5 crop. All essential subjects MUST fit completely within the CENTRAL 20 PERCENT of canvas width. Place small subjects closely together inside this central strip, do not place any story objects near the sides. Top to bottom five equally spaced square chapters: mountain stair at dawn, bamboo path, a small temple bell immediately next to brewery barrels, a jade dragon among carved clouds, and a complete small pagoda with exactly FOUR small lit paper lanterns packed closely together in front of it. One continuous upright pilgrimage, detailed landscape and architecture, natural bottom edges, no panels. Pale jade, lacquered wood, soft sunrise gold, muted dark soft contrast, no bloom, text, blurred patches or faces. Paint full canvas edge to edge.
+
+Scripted edits: retain all three outputs. Crop native pixels `(1, 120, 2171, 554)` from the 2172×724 row and `(266, 0, 620, 1770)` from the 887×1774 replacement column, uniformly multiply RGB by 0.59, and save the 2170×434 and 354×1770 masters. Slice five native square regions from each master and downscale each to 256×256 using Lanczos, exporting identical opaque RGBA PNG and uncompressed RGBA32 TGA pixels. Draw a transparent border atlas in Pillow with constant lacquer and jade rail cross sections, cloud-scroll corner and dim/lit jade disc joints. The QA assembler follows `UI/preview.lua`: 64px cells inside a 6px external border, reflected corners, slot-dependent rails and neighbour-dependent studs; real Conditions PNGs are overlaid for active slots, and each window is enlarged 2× using Lanczos. The full sheet displays the masters at 100%.
+
+Review: the row has a continuous path and distinct chapters; the column retains the bell, dragon and four-lantern payoff. Both are detailed and dark, and the lit border is distinguishable. Some prefix edges cross architecture or clouds rather than fully resolving, the column reads as stacked episodes, and the row crop trims parts of the pagoda at its right edge. The column's jade dragon is a carved relief and its courtyard sunrise is less explicit than the row's; the border's cloud detail is subtle at game size.
