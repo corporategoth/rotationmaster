@@ -94,6 +94,11 @@ local ART_THEMES = {
         tall = { 'deathknight-t1', 'deathknight-t2', 'deathknight-t3', 'deathknight-t4', 'deathknight-t5' },
         border = 'deathknight-border',
     },
+    DEMONHUNTER = {
+        wide = { 'demonhunter-w1', 'demonhunter-w2', 'demonhunter-w3', 'demonhunter-w4', 'demonhunter-w5' },
+        tall = { 'demonhunter-t1', 'demonhunter-t2', 'demonhunter-t3', 'demonhunter-t4', 'demonhunter-t5' },
+        border = 'demonhunter-border',
+    },
 }
 
 -- The painting for a class that has none of its own (nil until it is made).
