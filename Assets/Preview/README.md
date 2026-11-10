@@ -95,3 +95,33 @@ The row was edited once, using its original output as input:
 Scripted edits: crop the 2172 × 724 edited row output to `(0, 143, 2170, 577)` and the 724 × 2172 column output to `(145, 0, 579, 2170)`, in exclusive-right/bottom coordinates; multiply RGB by 0.65 with rounding. These 2170 × 434 and 434 × 2170 crops are the saved native-pixel masters. Slice each into five 434 × 434 squares and downscale each with Lanczos to 256 × 256; export opaque RGBA PNGs and uncompressed 32-bit TGAs. Draw the indigo stone, silver rail, violet inlay, star corner and gem stud atlas with Pillow, using a constant rail profile and transparent unused atlas space. Assemble the QA windows at 64 pixels per slot with 6-pixel rails, reflected corners and studs at slot boundaries, using real condition PNGs; light each active slot's rail and a stud only when both neighboring slots are active. Enlarge the assembled windows 2× with Lanczos. The full sheet displays the two masters at native crop size. The original outputs, edited row output and masters are retained in `source/generated/`.
 
 The architecture supports the sequence and the four sigils are distinct, but some prefix endings cut through architectural details instead of resolving at a complete wall, and the vertical version reads as stacked architectural levels more than a single perspective. The generated arcane effects retain visible painted halos even after the subdued exposure adjustment.
+
+## Rogue: a night heist
+
+| Cell | Story |
+| --- | --- |
+| 1 | Rain-soaked alley and a single lit window. |
+| 2 | Rooftops, chimneys and grappling rope. |
+| 3 | Ornate vault and lockpicks. |
+| 4 | Moonlit balcony overlooking a guard and lantern. |
+| 5 | Open empty chest, dagger, smoking lanterns and an escape across rooftops at first light. |
+
+Created with the built-in image generation tool. Exact initial row prompt:
+
+> Use case: illustration-story. Create one continuous wide World of Warcraft inspired Rogue class-hall loading-screen painting, rich sharp detail across the entire canvas. Compose the central horizontal band for a 5:1 crop: five consecutive square chapters left to right, smoothly connected by architecture: (1) rain-soaked alley with a single lit window; (2) rooftops, chimneys and grappling rope; (3) ornate vault door with lockpicks glinting; (4) moonlit balcony with a guard's lantern far below; (5) payoff: opened EMPTY chest, dagger stuck in a beam, escape route over rooftops at first light, four smoking lanterns left behind. Place each whole key object within its respective fifth and central band. Natural walls and pillars resolve chapter boundaries, yet continuous scene, no panels. Rogue heist, black leather, brass studs and chain, deep blue night, wet cobbles, dull poison green and warm window light. Dark subdued soft contrast, no bloom, no blurred patches or blank centers, no text, no recognizable faces.
+
+Exact initial column prompt:
+
+> Use case: illustration-story. Create one continuous upright tall World of Warcraft inspired Rogue class-hall loading-screen painting, rich sharp detail throughout. Compose all key subjects within the CENTRAL 20% of image width for a very narrow 1:5 crop. Five consecutive square chapters top to bottom smoothly connected by architecture: (1) rain-soaked alley with a single lit window; (2) rooftops, chimneys and grappling rope; (3) ornate vault door with lockpicks glinting; (4) moonlit balcony with guard's lantern far below; (5) payoff: opened EMPTY chest, dagger stuck in a beam, escape route over rooftops at first light, four smoking lanterns left behind. Keep each whole subject within its respective fifth and central narrow strip. Natural walls and pillars resolve transitions, no panels. Rogue night heist, black leather, brass studs and chain, deep blue night, wet cobbles, dull poison green and warm window light. Dark subdued soft contrast, no bloom, no blurred patches or blank centers, no text, no recognizable faces.
+
+The row and column were each edited once using their respective original as input. Exact row edit prompt:
+
+> Edit this wide Rogue heist painting. Keep its rich continuous scenes and storytelling. For an extremely wide central crop, fit the COMPLETE dagger in beam, whole opened empty chest, and four smoking lanterns within the central 55% of image height, entirely in the rightmost fifth. Move dagger lower and make it smaller as needed. Keep the entire lock and lockpicks visible centrally, the lit alley window, rooftop grappling rope and guard with lantern. Full sharp detail, no text, dark subdued lighting.
+
+Exact column edit prompt:
+
+> Edit this tall Rogue heist painting. The image will be cropped to its CENTRAL 40% WIDTH only. Recompose all five chapters so every important object is fully inside this central 40%: alley lit window; rooftop rope; vault and lockpicks; balcony and guard lantern; and at bottom a complete OPEN EMPTY CHEST with a DAGGER STUCK IN A BEAM beside it, a compact row of FOUR smoking lanterns and escape rooftops at first light. Make objects small enough to fit, especially entire chest, dagger and all four lanterns. Keep single continuous vertical setting, detailed dark muted fantasy painting, no text.
+
+Scripted edits: crop the 2172 × 724 row output to `(0, 145, 2170, 579)` and the 724 × 2172 column output to `(145, 0, 579, 2170)`, in exclusive-right/bottom coordinates; multiply RGB by 0.65 with rounding. These native-pixel crops are the 2170 × 434 and 434 × 2170 masters. Slice each master into five 434 × 434 squares and downscale each with Lanczos to 256 × 256; export opaque RGBA PNG and uncompressed 32-bit TGA. Draw the stitched leather, brass, green inlay and bracket atlas with Pillow; rails repeat evenly at their endpoints and unused regions are transparent. A PIL assembler places 64-pixel painting cells inside the six-pixel border area, overlays real condition icon PNGs, lights rails for active slots and studs only when both adjacent slots are active, mirrors the four corners, and enlarges each window 2× with Lanczos. The full sheet presents both masters at native crop size. Original and edited outputs are retained in `source/generated/`.
+
+The heist and Rogue equipment read clearly, with detailed architecture and a recognizable empty-chest payoff. Prefix endings are imperfect: some cut figures or architecture, particularly the three-cell column, and the column reads as stacked architectural levels. The narrow column crop clips part of the dagger and outer lanterns, while the lanterns appear lit despite their smoke. The count motifs are not consistent; details become small in the actual 64-pixel windows.
