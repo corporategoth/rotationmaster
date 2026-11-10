@@ -74,6 +74,11 @@ local ART_THEMES = {
         tall = { 'hunter-t1', 'hunter-t2', 'hunter-t3', 'hunter-t4', 'hunter-t5' },
         border = 'hunter-border',
     },
+    DRUID = {
+        wide = { 'druid-w1', 'druid-w2', 'druid-w3', 'druid-w4', 'druid-w5' },
+        tall = { 'druid-t1', 'druid-t2', 'druid-t3', 'druid-t4', 'druid-t5' },
+        border = 'druid-border',
+    },
 }
 
 -- The painting for a class that has none of its own (nil until it is made).

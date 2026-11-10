@@ -199,3 +199,35 @@ Exact replacement column prompt:
 Scripted processing: kept both column attempts and the row output in `source/generated/`; cropped native pixels `(0,150,2170,584)` from the row and `(270,0,666,1980)` from the replacement column, multiplied RGB by 0.64, and saved these 2170×434 and 396×1980 masters. Sliced each master into five native square cells, resized each with Lanczos to 256×256, and exported matching opaque PNG and uncompressed RGBA32 TGA. No aspect-ratio scaling was applied. A PIL drawing built the transparent 256×64 atlas: stitched green leather rails with dim/lit green inlay, bone-toned horn corner and feather/peg studs; matching rail endpoints permit butt joins. A PIL assembler placed 64px cells and real condition icons inside an external 6px border, with per-slot rails, mirrored corners and joint studs matching `UI/preview.lua`; the game-scale sheet is enlarged 2× with Lanczos. The full sheet places the two masters at 100%.
 
 Review limitations: prefix edges sometimes cut through open landscape; the column is composed as vertically stacked vistas and its crop trims the feathered spear, while the row crop also clips its tip. The generator did not reliably render exactly four distinct feathers. The border's material details are subtle at game scale.
+
+## Druid: a turn of the seasons
+
+| Cell | Story |
+| --- | --- |
+| 1 | Moonlit grove and antlered stone circle. |
+| 2 | Waking roots and spring blossom. |
+| 3 | A bear beside a misty stream. |
+| 4 | The great tree in summer gold. |
+| 5 | Four seasonal trees beneath a crescent moon. |
+
+Generated with the built-in image generation tool. Exact prompts:
+
+**Row:**
+
+> Use case: illustration-story. Create a wide horizontal continuous World of Warcraft inspired druid class-hall loading screen painting, rich finely detailed dark tapestry, no text. Compose five equal consecutive square chapters across the central horizontal band, designed to crop to 5:1: 1 moonlit grove and antlered stone circle, 2 waking roots and spring blossom, 3 misty stream and unmistakable bear silhouette, 4 a magnificent summer-gold great tree, 5 four distinct trees side by side for spring summer autumn winter under crescent moon. Continuous landscape and natural tree or rock boundaries at each fifth; last fifth complete. Dark bark, living green, moon gold, mist blue; quiet low contrast, no bloom, no empty or blurred patches, edge-to-edge detail, no faces.
+
+**First column:**
+
+> Use case: illustration-story. Create a tall vertical continuous World of Warcraft inspired druid class-hall loading screen painting, upright top-to-bottom journey, rich finely detailed dark tapestry, no text. Compose five equal consecutive square chapters across the central vertical band, designed to crop to 1:5: 1 moonlit grove and antlered stone circle, 2 waking roots and spring blossom, 3 misty stream and unmistakable bear silhouette, 4 a magnificent summer-gold great tree, 5 four distinct trees side by side for spring summer autumn winter under crescent moon. Continuous landscape and natural tree or rock boundaries at each fifth; last fifth complete. Dark bark, living green, moon gold, mist blue; quiet low contrast, no bloom, no empty or blurred patches, edge-to-edge detail, no faces.
+
+**Second column attempt:**
+
+> Use case: illustration-story. Tall upright druid fantasy game painting, a continuous journey from top to bottom in five equal chapters. CRITICAL composition: all important subjects must fit INSIDE THE CENTRAL 40 PERCENT of image width, because both left and right sides will be cropped away; extend only background out to the sides. First chapter antlered standing stone circle in moonlit grove; second waking roots and spring blossoms; third a bear beside a misty stream; fourth great summer-gold tree; fifth all FOUR small distinctly different spring, summer, autumn, and winter trees tightly grouped side by side under a crescent moon, all four inside the central 40 percent. Flowing natural forest scenery, detailed dark bark, living green, moon gold and mist blue, muted, soft contrast, no bright glow, no text, no blank areas, intricate WoW class-hall painting.
+
+**Final column:**
+
+> A tall continuous fantasy druid painting for a very narrow vertical crop. All story elements MUST fit in the CENTRAL 25% of the picture width; the rest is expendable background. At the top a moonlit antlered stone circle, then spring roots and pink blossoms, then a bear at a stream, then a golden great tree. At the bottom, exactly FOUR MINIATURE TREES packed together extremely close inside the central 25% of the image: one pink spring tree, one green summer tree, one orange autumn tree, one white winter tree, all four fully visible next to each other and crescent moon above. The tiny trees together should occupy less than one quarter of the total image width. Rich intricate dark World of Warcraft druid class hall painting, flowing forest, muted bark, green, gold and mist blue, no words, no bloom, no empty spots.
+
+**Processing:** Pillow cropped the row original at (0, 92, 2170, 526) and the final column at (145, 0, 579, 2170), in native pixels. Each exact-ratio master was uniformly darkened to 68% per channel, sliced into 434-pixel squares, and each slice resized to 256 pixels with Lanczos; no aspect-ratio deformation. Original generations and cropped masters are retained in `source/generated/`. The border atlas was drawn procedurally as repeatable bark and green-vine rails, mirrored antler joints, and dim/lit leaf-and-moon studs; unused pixels are transparent. The QA assembler applies the same per-slot rails, mirrored corners and neighbour-dependent studs as the Shaman reference; it renders at 64 pixels per slot with 6-pixel border and scales the composite 2x using Lanczos. QA uses actual Conditions icons.
+
+**Review:** The row reads continuously and retains all four seasonal trees. The column has all four trees and a recognizable Druid journey, though the scenes stack vertically and the gold tree has a residual illuminated center; some prefix cuts pass through foliage or water rather than resolving completely. The corner's antler detail is subtle at game size.
