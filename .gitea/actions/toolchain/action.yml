@@ -1,7 +1,7 @@
 # Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 
 # The tools every Rotation Master job needs: Lua 5.1 and LuaJIT (the two interpreters the suite runs on),
-# zip (the packager), and the pinned WoW static checker (downloaded and checksum-verified by tools/setup_lint.py).
+# zip (the packager), Pillow (the preview-art test reads the paintings), and the pinned WoW static checker (downloaded and checksum-verified by tools/setup_lint.py).
 #
 # Assumes a Debian or Ubuntu runner image (the ubuntu-latest label, docker.gitea.com/runner-images) with apt
 # and network access, running as root or with sudo. Nothing is cached: the install is a few seconds and the
@@ -28,7 +28,7 @@ runs:
           SUDO="sudo"
         fi
         $SUDO apt-get update -qq
-        $SUDO apt-get install -y -qq --no-install-recommends lua5.1 lua-bitop luajit zip unzip jq curl git ca-certificates python3 python3-venv
+        $SUDO apt-get install -y -qq --no-install-recommends lua5.1 lua-bitop luajit zip unzip jq curl git ca-certificates python3 python3-venv python3-pil
         lua5.1 -v
         lua5.1 -e 'assert(require("bit"))'
         luac5.1 -v
