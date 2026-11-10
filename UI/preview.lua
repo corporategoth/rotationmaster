@@ -99,6 +99,11 @@ local ART_THEMES = {
         tall = { 'demonhunter-t1', 'demonhunter-t2', 'demonhunter-t3', 'demonhunter-t4', 'demonhunter-t5' },
         border = 'demonhunter-border',
     },
+    EVOKER = {
+        wide = { 'evoker-w1', 'evoker-w2', 'evoker-w3', 'evoker-w4', 'evoker-w5' },
+        tall = { 'evoker-t1', 'evoker-t2', 'evoker-t3', 'evoker-t4', 'evoker-t5' },
+        border = 'evoker-border',
+    },
 }
 
 -- The painting for a class that has none of its own (nil until it is made).
