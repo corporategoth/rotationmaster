@@ -59,6 +59,11 @@ local ART_THEMES = {
         tall = { 'rogue-t1', 'rogue-t2', 'rogue-t3', 'rogue-t4', 'rogue-t5' },
         border = 'rogue-border',
     },
+    PALADIN = {
+        wide = { 'paladin-w1', 'paladin-w2', 'paladin-w3', 'paladin-w4', 'paladin-w5' },
+        tall = { 'paladin-t1', 'paladin-t2', 'paladin-t3', 'paladin-t4', 'paladin-t5' },
+        border = 'paladin-border',
+    },
 }
 
 -- The painting for a class that has none of its own (nil until it is made).
