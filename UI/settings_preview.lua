@@ -548,6 +548,8 @@ function addon:BuildPreviewSettings(p)
         selected = selected or learned[1]
         self.forecastLearnedSelection = selected.id
 
+        p:ExemptFromUnsaved('forecast_spell')
+
         p:Choice('forecast_spell', L['Spell'], selected.id, choices, function(value)
             self.forecastLearnedSelection = value
             p:Draw()

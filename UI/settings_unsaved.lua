@@ -540,6 +540,11 @@ function addon:InstallSettingsUnsaved(p)
         -- @param ... any  The constructor's arguments (key, caption, value, ...).
         -- @return table  The control the original constructor returned.
         p[method] = function(self, ...)
+            -- A control that is not a setting (a list that only picks what to look at) is never marked and never saved.
+            if self.unsavedExempt and self.unsavedExempt[(...)] then
+                return original(self, ...)
+            end
+
             local args = { ... }
             local count = select("#", ...)
             local callback = args[index]
@@ -566,6 +571,14 @@ function addon:InstallSettingsUnsaved(p)
             binding.caption = args[2]
             return control
         end
+    end
+
+    -- Declares that a control is not a setting: it is not compared with the saved value, so it gets no changed marker and
+    -- does not enable Apply. Call before the control is built, on every draw.
+    -- @param key string  The control's field key.
+    function p:ExemptFromUnsaved(key)
+        self.unsavedExempt = self.unsavedExempt or {}
+        self.unsavedExempt[key] = true
     end
 
     local draw = p.Draw

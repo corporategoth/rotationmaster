@@ -511,6 +511,8 @@ function addon:BuildGeneralSettings(p)
 
         local rowY = p.y
 
+        p:ExemptFromUnsaved('diagnostic')
+
         local pick = p:Choice('diagnostic', L['Diagnostics'], chosen.key, choices, function(value)
             self.diagnosticSelection = value
             p:Draw()

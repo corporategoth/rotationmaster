@@ -866,4 +866,19 @@ test('the spell list has icons, and a spell can be ignored from now on and learn
     assert(not a.Forecast:IsIgnored(2001))
 end)
 
+test('the diagnostics and forecast spell lists are not settings: no changed marker, and Apply stays off', function()
+    local env, a, p = fixture({ page = 'General' })
+    a.RunCPUProfileAction = a.RunCPUProfileAction or function() end
+    a.RunSecretsDiagnostic = function() end
+    a.RunTalentDiagnostic = function() end
+    p:Draw()
+    p.fields.diagnostic:Click()
+    local rows = p.menu.entries or {}
+    assert(#rows > 1)
+    p.menu.changed(rows[#rows].value, rows[#rows].text)
+    assert(not p.fields.diagnostic.rmUnsaved, 'no pink marker on the diagnostics list')
+    assert(not p:IsSettingsDraftDirty() and not p.fields.apply:IsEnabled(), 'nothing to apply')
+    assert(a.db.profile.diagnostic == nil, 'nothing is saved')
+end)
+
 finish()
