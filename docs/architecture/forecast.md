@@ -32,7 +32,8 @@ when that is in the past.
 | --- | --- |
 | `GetSpellCooldown`, `IsSpellReady` | shifted as above; a predicted spell with a base cooldown (`GetSpellBaseCooldown`) is on it from its cast. A hidden (secret) time is passed through unshifted. |
 | `GetSpellCharges` | uses of the spell so far taken off the current charges |
-| `IsSpellUsable`, `GetUnitPowerObservation` | the player's power with predicted costs (`C_Spell.GetSpellPowerCost`) spent and regeneration added (mana from `GetManaRegen`, energy 10 per second); a spell short of power now is usable when regeneration covers it, and the reverse |
+| `GetItemCooldown` (and so `IsItemReady`) | an item a predicted step uses is on its cooldown from then, so a potion or trinket is not predicted twice; a cooldown already running is shifted like a spell's. The cooldown's length is the longest seen running (saved on the spell the item casts, `cooldown`), and, for an item never seen on cooldown, once for the window, at 5% of the confidence |
+| `IsSpellUsable`, `GetUnitPowerObservation` | the player's power with predicted costs (`C_Spell.GetSpellPowerCost`) spent, what the predicted spells give (rage from Charge, focus from a builder) added, and regeneration added (mana from `GetManaRegen`, energy 10 per second); a spell short of power now is usable when regeneration covers it, and the reverse |
 | `GetUnitFlagObservation` | the player is in combat once a predicted spell that starts it has been cast (one the game's spell tables aim at an enemy, or one known to do damage; no client has an API that says whether a spell is harmful), so a rotation's out-of-combat branch (a pull such as Charge, then Stop) does not end every later slot |
 | `GetUnitPointPowerObservation`, `GetPlayerComboPointObservation` | the player's points of a resource (combo points, holy power, chi, soul shards, ...) with what the predicted spells do to them: a builder adds the points it gives, a finisher spends every point there is; never more than the maximum |
 | `GetAuraByIndex` | the real list aged to the projected time, then the auras the predicted spells are known to apply, written as the unit's own auras |
@@ -61,28 +62,51 @@ What a cast leaves is taken from, in this order:
    are recorded in the file, and `tools/check --static` runs `--check` to prove nobody edited the rows. A spell that applies several
    auras (a buff and a debuff) applies each, and one that stacks (Sunder Armor, to five) adds a stack to the count already there, up to
    the most it stacks to, so a condition on the number of stacks reads what it will be. The same rows say how many points of a point
-   resource a spell gives (a combo point from Sinister Strike) which spells are finishers (every point is spent) and which are aimed at an enemy (casting one starts combat, which is how a pull such as Charge puts the later slots in combat); A spell the tables do not list (many Retail spells apply their aura through a spell the
-   tables here do not link) falls through to the next source. A spell watched leaving no aura is never given one;
+   resource a spell gives (a combo point from Sinister Strike) which spells are finishers (every point is spent) and which are aimed at an enemy (casting one starts combat, which is how a pull such as Charge puts the later slots in combat). The same rows
+   carry the amount of a primary resource a spell gives (rage, focus, energy, runic power, ...), its costs (below) and its school. Where a
+   spell is a hit and its aura is a separate spell of the same name (Rend, Corruption), the aura is linked by name when exactly one
+   spell of that name and class applies one; where that is ambiguous (Retail's Rend has dozens) nothing is guessed. A spell the tables
+   do not list falls through to the next source. A spell watched leaving no aura is never given one;
 3. the rotation: a step that casts a spell only while that spell's own buff or debuff is missing or running out (a `BUFF`, `DEBUFF`,
    `BUFF_REMAIN` or `DEBUFF_REMAIN` test naming the spell, or a spell of the same name, on the step's conditions) is the upkeep step
    for it, so casting it is projected to apply that aura, on the unit the test names, for 30 seconds, at a 5% cost to the
    confidence.
 
-Without these, an upkeep step such as Rend or Battle Shout would be predicted again straight after its own cast. A cast's chance of
-failing (a miss, a resist) and the chance of a proc are not modeled: the tables hold no per-cast chance to read, and
-`SpellAuraOptions.ProcChance` is the rate of a proc, not of the cast applying its own aura.
+Without these, an upkeep step such as Rend or Battle Shout would be predicted again straight after its own cast.
+
+**Chances are guesses, and only the confidence pays for them.** The tables hold no per-cast chance (`SpellAuraOptions.ProcChance` is
+the rate of a proc, not of the cast applying its own aura), so a chance is worked out two ways:
+
+* *How often an aura follows a cast, seen here.* For a spell's first twenty casts every aura that is new or refreshed after the cast is
+  counted (`seen[aura].n` over `casts`, at most six auras a spell). The one seen most is what the spell applies; an aura seen after
+  only some casts is a proc. An aura seen after at least half the casts (counted over at least two) is projected, and costs
+  `0.5 + 0.5 x chance` of the confidence (an aura seen after 7 casts in 10 costs 15%); one seen less often is not projected, since
+  the likelier outcome is that it is not there. Records saved by an earlier version, which kept one aura and no count, are taken as
+  certain.
+* *Whether the cast lands.* Not on Retail: a spell the tables aim at an enemy (or known to do damage) has a chance to miss from the
+  player's and the target's level (a level the game does not show is taken as three above) less the player's hit (`GetHitModifier` or
+  `GetSpellHitModifier`, and `GetCombatRatingBonus` for the hit rating, where the client has them); the base is the Classic-era table
+  (physical 5, 5.5, 6 and 8 percent, magical 4, 5, 6 and 17 at 0 to 3 levels above). Half of a miss changes what follows, so a
+  chance of 6% costs 3% of the confidence. The spell's school decides which table (physical or not).
 
 Costs are read live (`C_Spell.GetSpellPowerCost`) on every pass. Where the game hides them (in combat on a restricted client) the last
 readable answer for that spell is used, because nothing that sets a cost (gear, talents, level, maximum mana, which is what a cost
 given as a percentage is a share of) can change in combat, and every readable read replaces it. The rotation's spells are read
-ahead of time, at most every five seconds and never in combat, so a spell first cast in combat already has an answer. A spell whose
-cost was never readable is not guessed at; it costs confidence like any resource the pass does not project.
+ahead of time, at most every five seconds and never in combat, so a spell first cast in combat already has an answer.
+
+A spell whose cost was never readable falls back to the game's tables: its flat cost plus its percentage of the player's *base
+mana*. The game does not say the base mana, so it is worked out from any live read of a spell whose table row has a percentage
+(`(cost - flat) / percent`), saved with the level it was read at (`forecast.base`) and dropped when the level changes, so it follows a
+level-up and is replaced by the next readable read; gear, talents and auras that change a cost are not in the table, which is why a cost
+taken this way is an estimate and takes 3% off the confidence. A percentage cost whose base mana is not yet known is left out. A cost
+that cannot be found at all costs confidence like any resource the pass does not project.
 
 ## Confidence
 
 Slot confidence starts at 1 and each predicted step multiplies it by 0.9, by 0.9 again when it repeats the previous spell, by 0.95
-for a spell with a cast time (it can be interrupted or moved away from), and by 0.88 for a cost in a resource the pass does not
-project. With prediction tracking on, the measured hit rate of that slot (over all rotations, once 20 predictions have been
+for a spell with a cast time (it can be interrupted or moved away from), by 0.88 for a cost in a resource the pass does not
+project, by 0.97 for a cost taken from the tables, by 0.95 for an aura assumed from the rotation and for an item whose cooldown has
+not been seen, by `0.5 + 0.5 x chance` for an aura seen after only some casts, and by half the chance to miss. With prediction tracking on, the measured hit rate of that slot (over all rotations, once 20 predictions have been
 checked) is averaged with it. The preview icon fades with it (opacity 0.4 to 1) unless General > Forecast > "Fade predictions that are
 less certain" is off; the first icon never fades. Each predicted icon also says, over its middle, how many seconds after the
 first spell it would be cast ("+3.5s"), and, at its foot, the confidence as a percentage. The fade, the percentage and the seconds are three options (General > Forecast: "Fade
@@ -106,7 +130,7 @@ highlight. See [metrics](metrics.md).
 
 ## Tests
 
-`tests/forecast.lua` (each projected reader with numbers, the pass loop, confidence, restoration), `tests/forecast_events.lua`
+`tests/forecast.lua` (each projected reader with numbers, items, gains, estimated costs, chances and misses, the pass loop, confidence, restoration), `tests/forecast_events.lua`
 (learning and its limits), `tests/forecast_engine.lua` (the real executor, conditions and preview window on both engines),
 `tests/metrics.lua` (prediction accuracy). No real client has run this; the projections follow the documented return shapes of
 the readers, `GetSpellBaseCooldown` returning milliseconds and the global cooldown flag, `C_Spell.GetSpellPowerCost`, and

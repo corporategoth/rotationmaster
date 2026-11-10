@@ -136,7 +136,7 @@ python3 tools/locales.py check
 | `tools/generate_builtin_sources.py`, `tools/collect_builtin_sources.lua`, `tools/public_helpers.lua` | `Data/builtin_sources.lua` and the public helper documentation |
 | `tools/generate_integration_projects.py`, `tools/integration_projects.json` | The supported-addon link catalog |
 | `tools/export_talent_trees.py` | Talent tree names for the website |
-| `tools/generate_spell_effects.py` | `Data/spell_effects_forever.lua`, `Data/spell_effects_retail.lua` (what a cast leaves, from the game's spell tables; `--fetch` downloads them, `--check` is offline) |
+| `tools/generate_spell_effects.py` | `Data/spell_effects_forever.lua`, `Data/spell_effects_retail.lua` (what a cast leaves, gives, costs and is aimed at, from the game's spell tables; `--fetch` downloads them, `--check` is offline) |
 | `tools/builtin_names.py`, `tools/builtin_names_overrides.py`, `tools/builtin_modules.lua` | Built In names; the offline view of the load-on-demand modules |
 | `tools/generate_client_api.py` | Per-client API manifests for the fixtures |
 | `tools/generate_control_icons.py` | Control textures (rsvg-convert and ImageMagick) |

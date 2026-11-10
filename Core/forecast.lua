@@ -20,6 +20,14 @@ local MAX_SPELLS = 160
 local BASE_GCD, MIN_STEP = 1.5, 0.05
 -- Per-step confidence before anything specific is known, and its penalties.
 local STEP_CONFIDENCE, CAST_TIME_PENALTY, REPEAT_PENALTY, UNMODELED_PENALTY = 0.9, 0.95, 0.9, 0.88
+-- What a guess costs: a cost taken from the game's tables instead of read, an item whose cooldown has never been seen, and the
+-- share of a possible miss that would change what follows (a miss does not always change the next step).
+local ESTIMATE_PENALTY, ITEM_PENALTY, MISS_WEIGHT = 0.97, 0.95, 0.5
+-- An item whose cooldown is not known is taken as used once in the window the forecast looks at.
+local UNKNOWN_ITEM_COOLDOWN = 600
+-- An aura a cast is only sometimes seen to leave is projected when it is seen at least this often; below it, the likelier
+-- outcome (not there) is the projection. The casts it is counted over are never fewer than MIN_CASTS.
+local PROC_FLOOR, MIN_CASTS = 0.5, 2
 local WAIT_DECAY = 0.97
 
 -- The projection in force while a pass runs, and the originals it replaced.
@@ -150,14 +158,102 @@ end
 local costCache, warmedAt = {}, nil
 local WARM_EVERY = 5
 
+local MANA = 0
+local calibrated = {}
+
+-- The player's level.
+-- @return number|nil  The level; nil when it cannot be read.
+local function playerLevel()
+    local read = type(platform.GetUnitLevelObservation) == 'function' and platform:GetUnitLevelObservation('player')
+
+    return type(read) == 'table' and read.exists and number(read.level) or nil
+end
+
+-- The player's base mana, which a cost given as a percentage is a share of. The game does not say it; it is worked out from a
+-- cost read live for a spell whose table row has a percentage (and kept per level, because it changes with nothing else that
+-- gear or talents do), so a change of level starts it over.
+-- @return number|nil  The base mana; nil when no spell has shown it yet at this level.
+local function baseMana()
+    local level = playerLevel()
+
+    if not level then
+        return nil
+    end
+    if calibrated.level == level and calibrated.mana then
+        return calibrated.mana
+    end
+
+    local saved = store()
+    local base = saved and saved.base
+
+    if type(base) == 'table' and base.level == level and number(base.mana) then
+        calibrated.level, calibrated.mana = level, base.mana
+        return base.mana
+    end
+end
+
+-- Learns the base mana from a cost read live, when the game's tables give that spell's cost as a percentage of it.
+-- @param spell number  The spell id.
+-- @param list table  The costs just read, a list of { type, cost }.
+local function calibrate(spell, list)
+    local effects = forecast:Effects(spell)
+    local row = effects and effects.costs[MANA]
+    local level = playerLevel()
+
+    if not row or row.percent <= 0 or not level then
+        return
+    end
+
+    for _, entry in ipairs(list) do
+        if entry.type == MANA and entry.cost > row.flat then
+            local mana = (entry.cost - row.flat) / row.percent * 100
+
+            if calibrated.level ~= level or math.abs((calibrated.mana or 0) - mana) > 1 then
+                calibrated.level, calibrated.mana = level, mana
+
+                local saved = store()
+
+                if saved then
+                    saved.base = { level = level, mana = mana }
+                end
+            end
+        end
+    end
+end
+
+-- What the game's tables say a spell costs, for a spell whose cost was never readable: the flat amount plus its percentage of
+-- the base mana (left out while the base mana is not known). A guess: gear, talents and auras that change a cost are not in it.
+-- @param spell number  The spell id.
+-- @return table|nil  A list of { type, cost, estimated = true }; nil when the tables say nothing.
+local function estimatedCosts(spell)
+    local effects = forecast:Effects(spell)
+    local out
+
+    for kind, row in pairs(effects and effects.costs or {}) do
+        local cost = row.flat
+
+        if row.percent > 0 then
+            local base = kind == MANA and baseMana() or nil
+            cost = base and cost + base * row.percent / 100 or nil
+        end
+
+        if cost and cost > 0 then
+            out = out or {}
+            out[#out + 1] = { type = kind, cost = cost, estimated = true }
+        end
+    end
+
+    return out
+end
+
 -- The power costs of a spell.
 -- @param spell number  The spell id.
--- @return table  A list of { type, cost }; empty when none or unreadable and never read.
+-- @return table  A list of { type, cost, estimated }; empty when none, or unreadable and never read and not in the tables.
 local function costs(spell)
     local reader = C_Spell and C_Spell.GetSpellPowerCost
 
     if type(reader) ~= 'function' then
-        return costCache[spell] or {}
+        return costCache[spell] or estimatedCosts(spell) or {}
     end
 
     local ok, list = pcall(reader, spell)
@@ -179,11 +275,12 @@ local function costs(spell)
 
         if not hidden then
             costCache[spell] = out
+            calibrate(spell, out)
             return out
         end
     end
 
-    return costCache[spell] or {}
+    return costCache[spell] or estimatedCosts(spell) or {}
 end
 
 -- The seconds the player is busy after pressing a spell: its cast time, or the global cooldown, whichever is longer.
@@ -381,6 +478,63 @@ function wrappers.GetSpellCharges(self, spell)
     end
 
     return out
+end
+
+-- Remembers how long an item's cooldown is, from a cooldown seen running, on the spell it casts: the tables do not list it.
+-- @param item number|string  The item.
+-- @param duration number  The cooldown's length in seconds.
+local function learnItemCooldown(item, duration)
+    local id = platform:GetItemID(item)
+
+    if not id then
+        return
+    end
+
+    local spell = state.itemSpell[id]
+
+    if spell == nil then
+        local use = platform:GetItemUseSpell(id)
+        spell = use and use.spellID or false
+        state.itemSpell[id] = spell
+    end
+
+    local entry = spell and forecast:Known(spell, true)
+
+    -- The longest seen: a cooldown shared with another item (a second trinket) is shorter than the item's own.
+    if entry and (entry.cooldown or 0) < duration - 0.5 then
+        entry.cooldown = duration
+    end
+end
+
+-- Reads an item's cooldown as it will be at the projected time: an item the predicted steps use is on its cooldown from then.
+-- @param self table  The platform.
+-- @param item number|string  The item.
+-- @return table|nil  { startTime, duration, isEnabled }, as the real reader returns it.
+-- @return string|nil  The reason code when the first return is nil.
+function wrappers.GetItemCooldown(self, item)
+    local record, why = originals.GetItemCooldown(self, item)
+    local id = self:GetItemID(item)
+    local used = id and state.items[id]
+
+    if used then
+        return { startTime = state.now + used.at - state.t, duration = used.cooldown, isEnabled = true }
+    end
+
+    if type(record) == 'table' then
+        local start, duration = number(record.startTime), number(record.duration)
+
+        if start and duration and duration > 0 then
+            if duration > 2.5 and start > 0 then
+                learnItemCooldown(item, duration)
+            end
+
+            local out = copy(record)
+            out.startTime = start - state.t
+            return out
+        end
+    end
+
+    return record, why
 end
 
 -- The current value of one of the player's power types at the projected time.
@@ -726,6 +880,8 @@ local function newState(now)
         now = now,
         t = 0,
         cast = {},
+        items = {},
+        itemSpell = {},
         uses = {},
         spent = {},
         regen = regeneration(),
@@ -796,8 +952,9 @@ end
 -- @param spell number  The spell id.
 -- @return table|nil  { auras = list of { unit ('target' or 'player'), aura, duration (seconds; 0 until removed), stacks (the most
 --   it stacks to; nil when it does not) }, points = { [powerType] = points gained }, finisher = the point power type it spends
---   all of, or nil, harmful = true when it is aimed at an enemy }; nil when the tables say nothing about the spell (or this
---   client has none).
+--   all of, or nil, harmful = true when it is aimed at an enemy, school = its school mask, gains = { [powerType] = amount of a
+--   primary resource it gives }, costs = { [powerType] = { flat, percent (of base mana) } } }; nil when the tables say nothing
+--   about the spell (or this client has none).
 function forecast:Effects(spell)
     if effectRows == nil then
         effectRows = {}
@@ -807,15 +964,20 @@ function forecast:Effects(spell)
 
         if type(data) == 'table' and type(data.rows) == 'string' then
             for id, list in data.rows:gmatch('(%d+)=([^;]+)') do
-                local entry = { auras = {}, points = {} }
+                local entry = { auras = {}, points = {}, gains = {}, costs = {} }
 
-                for kind, first, second, third in list:gmatch('(%a):(%d+):?(%d*):?(%d*)') do
+                for kind, first, second, third in list:gmatch('(%a):([%d%.]+):?([%d%.]*):?([%d%.]*)') do
                     if kind == 'g' then
                         entry.points[tonumber(first)] = (entry.points[tonumber(first)] or 0) + (tonumber(second) or 1)
+                    elseif kind == 'e' then
+                        entry.gains[tonumber(first)] = (entry.gains[tonumber(first)] or 0) + (tonumber(second) or 0)
+                    elseif kind == 'c' then
+                        entry.costs[tonumber(first)] = { flat = tonumber(second) or 0, percent = tonumber(third) or 0 }
                     elseif kind == 'f' then
                         entry.finisher = tonumber(first)
                     elseif kind == 'h' then
                         entry.harmful = true
+                        entry.school = tonumber(first)
                     else
                         entry.auras[#entry.auras + 1] = {
                             unit = kind == 't' and 'target' or 'player',
@@ -948,6 +1110,72 @@ local function inferApplies(spell)
     return found
 end
 
+-- Finds the item a rotation step uses to cast a spell: the item the rotation names for that spell.
+-- @param spell number  The spell id (the spell an item casts when used).
+-- @return number|nil  The item id; nil when no item step of the rotation casts that spell.
+local function itemOf(spell)
+    local found
+
+    -- Walks a list of steps, into branches too.
+    -- @param list table|nil  The steps.
+    local function walk(list)
+        for _, step in ipairs(list or {}) do
+            if found then
+                return
+            end
+
+            if step.type == 'branch' then
+                walk(step.onTrue or step.ontrue)
+                walk(step.onFalse or step.onfalse)
+            elseif step.type == 'item' and step.action ~= nil and not step.disabled then
+                local ok, spellIds, itemIds = pcall(addon.GetSpellIds, addon, step)
+
+                for index, id in ipairs(ok and spellIds or {}) do
+                    if id == spell and type(itemIds) == 'table' and type(itemIds[index]) == 'number' then
+                        found = itemIds[index]
+                        return
+                    end
+                end
+            end
+        end
+    end
+
+    walk(state and state.rot and state.rot.rotation or state and state.rot)
+    return found
+end
+
+-- Lists the auras a spell was seen to leave on this client that it leaves often enough to project.
+-- @param known table  What was learned of the spell.
+-- @return table|nil  A list of { unit, aura, duration, chance }, sorted by aura; nil when the spell has not been watched.
+local function learnedAuras(known)
+    local list = {}
+
+    if type(known.seen) == 'table' then
+        local casts = math.max(known.casts or 0, MIN_CASTS)
+
+        for aura, row in pairs(known.seen) do
+            local chance = math.min(1, (row.n or 0) / casts)
+
+            if chance >= PROC_FLOOR then
+                list[#list + 1] = { unit = row.unit, aura = aura, duration = row.duration, chance = chance }
+            end
+        end
+
+        table.sort(list, function(a, b)
+            return a.aura < b.aura
+        end)
+
+        return list
+    end
+
+    -- Saved by a version that kept one aura and never asked how often.
+    if known.applies and known.applies.aura then
+        return { known.applies }
+    end
+
+    return nil
+end
+
 -- Tells whether casting a spell would start combat with the target: the game's tables aim it at an enemy, or it is known to do
 -- damage.
 -- @param spell number  The spell id.
@@ -964,15 +1192,90 @@ local function startsCombat(spell)
     return effects ~= nil and effects.harmful == true
 end
 
+-- Percent chance for an attack to miss a target of 0 to 3 levels above the player, before the player's hit (Classic-era values;
+-- a guess, used only to take a little confidence).
+local MELEE_MISS, SPELL_MISS = { 5, 5.5, 6, 8 }, { 4, 5, 6, 17 }
+
+-- Adds up the player's hit bonuses (talents and auras, and gear's hit rating) for physical or magical attacks, in percent.
+-- @param physical boolean  True for melee and ranged attacks, false for spells.
+-- @return number  The bonus; 0 when the client does not say.
+local function hitBonus(physical)
+    local total = 0
+    local rating = physical and CR_HIT_MELEE or CR_HIT_SPELL
+
+    for _, read in ipairs({
+        { physical and GetHitModifier or (not physical and GetSpellHitModifier or nil) },
+        { GetCombatRatingBonus, rating },
+    }) do
+        if type(read[1]) == 'function' and (read[2] ~= nil or read[1] ~= GetCombatRatingBonus) then
+            local ok, value = pcall(read[1], read[2])
+            total = total + (ok and number(value) or 0)
+        end
+    end
+
+    return total
+end
+
+-- Estimates the chance that a spell cast at the target now misses it: from the player's and the target's level and the hit the
+-- player has. Retail has no hit chance to speak of, and a spell the tables do not aim at an enemy cannot miss.
+-- @param effects table|nil  What the tables say of the spell.
+-- @param known table|nil  What was learned of the spell.
+-- @return number  The chance, 0 to 1.
+local function missChance(effects, known)
+    local family = type(platform.GetClientFamily) == 'function' and platform:GetClientFamily() or 'unknown'
+
+    if family == 'retail' or family == 'unknown' or not ((effects and effects.harmful) or (known and known.damage)) then
+        return 0
+    end
+    if type(platform.GetUnitLevelObservation) ~= 'function' or type(platform.GetUnitFlagObservation) ~= 'function' then
+        return 0
+    end
+
+    local mine, theirs = playerLevel(), platform:GetUnitLevelObservation('target')
+    local enemy = platform:GetUnitFlagObservation('target', 'enemy')
+
+    if not mine or enemy ~= true or type(theirs) ~= 'table' then
+        return 0
+    end
+
+    -- A level the game does not show (a skull) is taken as three above.
+    local level = theirs.exists and number(theirs.level) or mine + 3
+
+    local base = ((effects and effects.school or 1) == 1 and MELEE_MISS or SPELL_MISS)[math.max(0, math.min(
+        3,
+        level - mine
+    ))
+        + 1]
+
+    return math.max(0, base - hitBonus((effects and effects.school or 1) == 1)) / 100
+end
+
 -- Applies a spell cast at the projected time to the state: its cooldown, cost, charges, auras and health effects, and
 -- moves the projected time to when the player can act again.
--- @param spell number  The spell id.
+-- @param spell number  The spell id (for an item, the spell it casts when used).
+-- @param itemId number|nil  The item id when the step uses an item.
 -- @return number  A confidence factor for the assumptions this made (1 when nothing was assumed).
-local function apply(spell)
+local function apply(spell, itemId)
     local factor = 1
     local cooldown = baseCooldown(spell)
     local length = stepLength(spell)
     local info = platform:GetSpellInfo(spell)
+    local known = forecast:Known(spell)
+
+    if itemId then
+        -- An item is on its cooldown from its use; the spell tables do not know an item's cooldown, so it is what was last seen
+        -- of it, or (never seen) once for the window the forecast looks at.
+        if cooldown <= 0 then
+            cooldown = known and known.cooldown or 0
+        end
+
+        if cooldown <= 0 then
+            cooldown = UNKNOWN_ITEM_COOLDOWN
+            factor = factor * ITEM_PENALTY
+        end
+
+        state.items[itemId] = { at = state.t, cooldown = cooldown }
+    end
 
     if cooldown > 0 then
         -- Every rank of the spell is on that cooldown, not only the one that was picked: the rotation may name another.
@@ -1002,10 +1305,10 @@ local function apply(spell)
 
         if state.power == nil or state.power[entry.type] == nil then
             factor = factor * UNMODELED_PENALTY
+        elseif entry.estimated then
+            factor = factor * ESTIMATE_PENALTY
         end
     end
-
-    local known = forecast:Known(spell)
 
     if known then
         if known.damage then
@@ -1016,14 +1319,17 @@ local function apply(spell)
         end
     end
 
-    -- What the cast leaves behind, from the most to the least certain source: what was seen of this spell on this client, what
-    -- the game's own tables say, and (a guess, which costs a little confidence) what the rotation's upkeep step implies.
+    -- What the cast leaves behind, from the most to the least certain source: what was seen of this spell on this client (the
+    -- auras seen often enough; one seen less often is a proc, a guess that is not projected), what the game's own tables say,
+    -- and (a guess, which costs a little confidence) what the rotation's upkeep step implies.
     local applied
     local effects = forecast:Effects(spell)
+    local seen = known and learnedAuras(known)
+    local watched = seen ~= nil and (known.casts or 0) >= 5
 
-    if known and known.applies and known.applies.aura then
-        applied = { known.applies }
-    elseif not (known and (known.none or 0) >= 5) then
+    if seen and #seen > 0 then
+        applied = seen
+    elseif not watched and not (known and (known.none or 0) >= 5) then
         applied = effects and #effects.auras > 0 and effects.auras or nil
 
         if not applied then
@@ -1040,6 +1346,11 @@ local function apply(spell)
         local name = platform:GetSpellInfo(applies.aura)
         local duration = applies.duration or 0
         local most = applies.stacks
+
+        -- An aura seen after only some casts is projected when it is the likelier outcome, at a cost to the confidence.
+        if applies.chance and applies.chance < 1 then
+            factor = factor * (0.5 + 0.5 * applies.chance)
+        end
 
         -- What was seen on this client does not say how far an aura stacks; the game's tables do.
         if not most and effects then
@@ -1087,6 +1398,16 @@ local function apply(spell)
         end
     end
 
+    -- A resource the cast gives (rage from Charge, focus from a builder) is power the later steps can spend.
+    for kind, gained in pairs(effects and effects.gains or {}) do
+        state.spent[kind] = (state.spent[kind] or 0) - gained
+    end
+
+    local miss = missChance(effects, known)
+
+    if miss > 0 then
+        factor = factor * (1 - miss * MISS_WEIGHT)
+    end
     if info and (number(info.castTime) or 0) > 0 then
         factor = factor * CAST_TIME_PENALTY
     end
@@ -1253,7 +1574,7 @@ function forecast:Wait(rot, count, stationary)
             end
 
             local cast = state.t
-            confidence = confidence * STEP_CONFIDENCE * apply(pick.spell) * WAIT_DECAY ^ waited
+            confidence = confidence * STEP_CONFIDENCE * apply(pick.spell, pick.item) * WAIT_DECAY ^ waited
 
             out[#out + 1] = {
                 spell = pick.spell,
@@ -1308,7 +1629,7 @@ function forecast:Run(rot, first, count, remaining)
             state.t = remaining - stepLength(first)
         end
 
-        local confidence = state.confidence * apply(first)
+        local confidence = state.confidence * apply(first, itemOf(first))
         local previous = first
         local ceiling = 1
         forecast.lastWaited = 0
@@ -1328,7 +1649,7 @@ function forecast:Run(rot, first, count, remaining)
             end
 
             local cast = state.t
-            local factor = apply(pick.spell)
+            local factor = apply(pick.spell, pick.item)
             confidence = confidence * factor
             local measured = addon.Metrics and addon.Metrics.PredictionRate and addon.Metrics:PredictionRate(slot + 1)
             local shown = measured and (confidence + measured) / 2 or confidence

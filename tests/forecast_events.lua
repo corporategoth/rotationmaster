@@ -202,4 +202,40 @@ test('what is known is bounded and can be forgotten', function()
     assert(f.addon.Forecast:Known(1) == nil)
 end)
 
+test('how often each aura follows a cast is counted, so a proc is told from what the spell applies', function()
+    local f = client()
+    f.addon.db.profile.forecast = true
+    f.addon:ApplyForecastSettings()
+    f.world.names = { [172] = 'Corruption' }
+    local own = { id = 172900, name = 'Corruption', duration = 18, expires = 118 }
+    local proc = { id = 555, name = 'Proc', duration = 8, expires = 108 }
+
+    -- Four casts: the spell's own aura after every one, a proc after only the second.
+    for cast = 1, 4 do
+        f.world.auras.target = {}
+        f.fire('UNIT_SPELLCAST_SENT', 'player', nil, 'guid', 172)
+        f.world.auras.target = cast == 2 and { own, proc } or { own }
+        f.fire('UNIT_SPELLCAST_SUCCEEDED', 'player', 'guid', 172)
+    end
+
+    local known = f.addon.Forecast:Known(172)
+    assert(known.casts == 4 and known.seen[172900].n == 4 and known.seen[555].n == 1)
+    assert(known.applies.aura == 172900 and known.applies.n == 4, 'the aura seen most is the spell\'s own')
+
+    -- Watching goes on until twenty casts, so a chance has something to be counted over.
+    f.world.auras.target = {}
+    f.fire('UNIT_SPELLCAST_SENT', 'player', nil, 'guid', 172)
+    assert(f.world.scans > 0)
+
+    for _ = 1, 16 do
+        f.world.auras.target = {}
+        f.fire('UNIT_SPELLCAST_SENT', 'player', nil, 'guid', 172)
+        f.fire('UNIT_SPELLCAST_SUCCEEDED', 'player', 'guid', 172)
+    end
+
+    local scans = f.world.scans
+    f.fire('UNIT_SPELLCAST_SENT', 'player', nil, 'guid', 172)
+    assert(known.casts >= 20 and f.world.scans == scans, 'twenty casts settle it')
+end)
+
 finish()

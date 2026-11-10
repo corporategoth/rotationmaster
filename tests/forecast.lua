@@ -695,4 +695,210 @@ test('the measured hit rate of earlier forecasts is blended into the confidence'
     assert(math.abs(blended - (plain + 0.1) / 2) < 1e-9)
 end)
 
+test('the tables give the resources a spell gains and costs and its school, read from the generated rows', function()
+    local f, a, platform = client()
+
+    platform.GetClientFamily = function() return 'forever' end
+    a.SpellEffectData = { forever = { rows = '500=e:1:20,c:1:30:0,h:32;501=c:0:5:2.5' } }
+    a.Forecast:ResetEffects()
+
+    local row = a.Forecast:Effects(500)
+    assert(row.gains[1] == 20 and row.costs[1].flat == 30 and row.costs[1].percent == 0)
+    assert(row.harmful == true and row.school == 32)
+    assert(a.Forecast:Effects(501).costs[0].flat == 5 and a.Forecast:Effects(501).costs[0].percent == 2.5)
+end)
+
+test('a resource a spell gives is there for the steps after it, and regeneration still adds to it', function()
+    local f, a, platform = client()
+    local seen = {}
+
+    platform.GetClientFamily = function() return 'forever' end
+    a.SpellEffectData = { forever = { rows = '500=e:0:50' } }
+    a.Forecast:ResetEffects()
+
+    function a:EvaluateRotationSequence()
+        seen[#seen + 1] = platform:GetUnitPowerObservation('player', 'mana').current
+        return { status = 'complete' }
+    end
+
+    a.Forecast:Run({ {} }, 500, 1)
+    assert(math.abs(seen[1] - (100 + 50 + 5 * 1.5)) < 1e-9, tostring(seen[1]))
+end)
+
+test(
+    'a cost the game will not say is taken from the tables, a percentage of the base mana learned from a spell that can be read',
+    function()
+        local f, a, platform = client()
+        local seen = {}
+        local level = 60
+
+        platform.GetClientFamily = function() return 'forever' end
+        platform.GetUnitLevelObservation = function() return { exists = true, level = level } end
+        a.SpellEffectData = { forever = { rows = '500=c:0:20:0;501=c:0:0:10;502=c:0:5:2' } }
+        a.Forecast:ResetEffects()
+
+        -- The game hides the costs of 500 and 501 (secret numbers) and shows 502's.
+        f.env.C_Spell.GetSpellPowerCost = function(spell)
+            if spell == 502 then
+                return f.world.cost[502] and { { type = MANA, cost = f.world.cost[502] } } or {}
+            end
+
+            return { { type = MANA, cost = 'secret' } }
+        end
+
+        function a:EvaluateRotationSequence(body, _, visit)
+            seen[#seen + 1] = platform:GetUnitPowerObservation('player', 'mana').current
+            visit(body[1], 1)
+            return { status = 'selected' }
+        end
+
+        -- A flat cost needs no base mana: 100 less 20, plus a second and a half of regeneration.
+        local slots = a.Forecast:Run({ { spell = B, action = true } }, 500, 1)
+        assert(math.abs(seen[1] - (100 - 20 + 7.5)) < 1e-9, tostring(seen[1]))
+        assert(math.abs(slots[1].confidence - 0.9 * 0.97) < 1e-9, 'a guessed cost costs a little confidence')
+
+        -- A percentage cannot be worked out until a spell with one has been read: 25 mana is 5 and 2% of 1000.
+        seen = {}
+        a.Forecast:Run({ {} }, 501, 1)
+        assert(math.abs(seen[1] - (100 + 7.5)) < 1e-9, 'no base mana known yet: nothing is spent')
+
+        f.world.cost[502] = 25
+        a.Forecast:Run({ {} }, 502, 1)
+        f.world.cost[502] = nil
+        seen = {}
+        a.Forecast:Run({ {} }, 501, 1)
+        assert(math.abs(seen[1] - (100 - 100 + 7.5)) < 1e-9, 'ten percent of 1000 base mana: ' .. tostring(seen[1]))
+        assert(a.db.global.forecast.base.mana == 1000 and a.db.global.forecast.base.level == 60)
+
+        -- A new level starts it over.
+        level = 61
+        seen = {}
+        a.Forecast:Run({ {} }, 501, 1)
+        assert(math.abs(seen[1] - (100 + 7.5)) < 1e-9, 'a different level: the base mana is not known')
+    end
+)
+
+test(
+    'an item the steps use is on its cooldown afterwards, so it is not predicted again, and its cooldown is learned',
+    function()
+        local f, a, platform = client()
+        local USE, ITEM = 1500, 9001
+        local itemCooldown = { startTime = 0, duration = 0, isEnabled = true }
+
+        platform.GetItemID = function(_, item) return item end
+        platform.GetItemUseSpell = function() return { name = 'Potion', spellID = USE } end
+        platform.GetItemCooldown = function() return itemCooldown end
+
+        platform.IsItemReady = function(self, item, now)
+            local row = self:GetItemCooldown(item)
+            return row.duration == 0 or row.startTime + row.duration <= now
+        end
+
+        function a:GetSpellIds(step)
+            return { step.spell }, { step.item }
+        end
+
+        function a:NewActionReadiness(now)
+            return function(kind, id, item)
+                if kind == 'item' then
+                    return platform:IsItemReady(item, now) == true
+                end
+
+                return platform:IsSpellReady(id, now) and platform:IsSpellUsable(id) == true
+            end
+        end
+
+        local rot = { { type = 'item', spell = USE, item = ITEM, action = true }, { spell = B, action = true } }
+
+        -- Never seen: used once for the window, at a small cost in confidence.
+        local slots = a.Forecast:Run(rot, USE, 2)
+        assert(slots[1] and slots[1].spell == B and slots[2] and slots[2].spell == B, 'the item is not predicted again')
+        assert(math.abs(slots[1].confidence - 0.95 * 0.9) < 1e-9, tostring(slots[1].confidence))
+
+        -- Without the cast, the same item step is first.
+        slots = a.Forecast:Run(rot, B, 1)
+        assert(slots[1].spell == USE)
+
+        -- Seen cooling down for two minutes: remembered, and no longer a guess.
+        itemCooldown = { startTime = 95, duration = 120, isEnabled = true }
+        a.Forecast:Run(rot, B, 1)
+        assert(a.Forecast:Known(USE).cooldown == 120)
+        itemCooldown = { startTime = 0, duration = 0, isEnabled = true }
+        slots = a.Forecast:Run(rot, USE, 1)
+
+        assert(math.abs(slots[1].confidence - 0.9) < 1e-9, 'a known cooldown is no guess: ' .. slots[1].confidence)
+
+        assert(platform:GetItemCooldown(ITEM).duration == 0, 'the real reader is back')
+    end
+)
+
+test(
+    'an aura seen after only some casts is projected when it is the likelier outcome, and then costs confidence',
+    function()
+        local f, a, platform = client()
+        local seen
+
+        function a:EvaluateRotationSequence(body, _, visit)
+            seen = platform:GetAuraByIndex('target', 1, 'HARMFUL')
+            visit(body[1], 1)
+            return { status = 'selected' }
+        end
+
+        local entry = a.Forecast:Known(500, true)
+        entry.casts, entry.seen = 10, { [900] = { unit = 'target', duration = 10, n = 3 } }
+        a.Forecast:Run({ {} }, 500, 1)
+        assert(seen == nil, 'three in ten is a proc, not what the spell applies')
+
+        entry.seen[900].n = 7
+        local slots = a.Forecast:Run({ { spell = B, action = true } }, 500, 1)
+        assert(seen and seen.spellID == 900, 'seven in ten is the likelier outcome')
+        assert(math.abs(slots[1].confidence - 0.85 * 0.9) < 1e-9, tostring(slots[1].confidence))
+
+        entry.seen[900].n = 10
+        slots = a.Forecast:Run({ { spell = B, action = true } }, 500, 1)
+        assert(math.abs(slots[1].confidence - 0.9) < 1e-9, 'every cast: no cost')
+
+        -- A single sighting is taken at the least number of casts, so it counts.
+        entry.casts, entry.seen[900].n = 1, 1
+        a.Forecast:Run({ {} }, 500, 1)
+        assert(seen and seen.spellID == 900)
+    end
+)
+
+test('the chance of a miss, from the levels and the hit the player has, costs a share of the confidence', function()
+    local f, a, platform = client()
+    local flags = function(_, _, kind) return kind == 'enemy' end
+
+    platform.GetClientFamily = function() return 'forever' end
+    platform.GetUnitFlagObservation = flags
+
+    platform.GetUnitLevelObservation = function(_, unit)
+        return { exists = true, level = unit == 'player' and 60 or 63 }
+    end
+
+    e = f.env
+    e.GetHitModifier = function() return 2 end
+    a.SpellEffectData = { forever = { rows = '500=h:1;501=h:32' } }
+    a.Forecast:ResetEffects()
+
+    -- Physical: 8% at three levels above, less 2% of hit, half of it costs confidence.
+    local slots = a.Forecast:Run({ { spell = B, action = true } }, 500, 1)
+    assert(math.abs(slots[1].confidence - 0.9 * (1 - 0.06 * 0.5)) < 1e-9, tostring(slots[1].confidence))
+
+    -- A spell: 17%, less the spell hit and the rating.
+    e.GetSpellHitModifier = function() return 6 end
+    e.GetCombatRatingBonus = function() return 4 end
+    e.CR_HIT_SPELL = 8
+    slots = a.Forecast:Run({ { spell = B, action = true } }, 501, 1)
+    assert(math.abs(slots[1].confidence - 0.9 * (1 - 0.07 * 0.5)) < 1e-9, tostring(slots[1].confidence))
+
+    -- Not aimed at an enemy, or no enemy to miss, or Retail: nothing.
+    assert(math.abs(a.Forecast:Run({ { spell = B, action = true } }, C, 1)[1].confidence - 0.9) < 1e-9)
+    platform.GetUnitFlagObservation = function() return false end
+    assert(math.abs(a.Forecast:Run({ { spell = B, action = true } }, 500, 1)[1].confidence - 0.9) < 1e-9)
+    platform.GetUnitFlagObservation = flags
+    platform.GetClientFamily = function() return 'retail' end
+    assert(math.abs(a.Forecast:Run({ { spell = B, action = true } }, 500, 1)[1].confidence - 0.9) < 1e-9)
+end)
+
 finish()

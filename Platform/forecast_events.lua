@@ -2,7 +2,9 @@
 
 -- Teaches addon.Forecast (Core/forecast.lua) what the player's spells do, from watching them being cast, while the
 -- forecast switch (profile.forecast) is on:
---   * the aura a spell leaves on the target or the player (the auras before the cast against the auras shortly after it);
+--   * the aura a spell leaves on the target or the player (the auras before the cast against the auras shortly after it),
+--     and how often, over its first twenty casts, so a proc is told from what the spell applies;
+--   * how long an item's cooldown is (core/forecast.lua notes it as it reads the cooldown);
 --   * the damage a spell does and the healing it does to the player, as a running average, from the combat log (not on
 --     Retail and Forever, which hide it).
 -- Everything learned is a few numbers per spell in RotationMasterDB.global.forecast, capped at 160 spells. With the switch
@@ -17,9 +19,10 @@ local frame, playerGUID
 local running = false
 local pending = {}
 
--- A spell whose aura was seen this many times is taken as known; one that left none this many times is taken as leaving
--- none. Both stop the aura scans for that spell.
-local CONFIRMED, NONE = 3, 5
+-- A spell is watched for this many casts, after which what it leaves is known and how often (a chance: a proc, or a miss, shows
+-- up as an aura seen after only some of the casts); one that left nothing this many times is taken as leaving nothing. Both
+-- stop the aura scans for that spell. At most MAX_SEEN auras are kept for a spell.
+local SAMPLE, NONE, MAX_SEEN = 20, 5, 6
 local SETTLE = 0.35
 local ALPHA = 0.25
 
@@ -46,7 +49,7 @@ end
 local function before(spell)
     local known = forecast:Known(spell)
 
-    if known and ((known.applies and (known.applies.n or 0) >= CONFIRMED) or (known.none or 0) >= NONE) then
+    if known and ((known.casts or 0) >= SAMPLE or ((known.none or 0) >= NONE and next(known.seen or {}) == nil)) then
         return
     end
 
@@ -79,7 +82,7 @@ local function after(spell)
     scan('player', 'HELPFUL', now.player)
     local name = platform:GetSpellInfo(spell)
     name = name and name.name
-    local best
+    local fresh, any = {}, false
 
     for _, unit in ipairs({ 'target', 'player' }) do
         for aura, record in pairs(now[unit]) do
@@ -87,11 +90,14 @@ local function after(spell)
 
             if not was or record.expiration > was.expiration + 0.5 then
                 local info = platform:GetSpellInfo(aura)
-                local named = info and info.name == name
 
-                if not best or named and not best.named then
-                    best = { unit = unit, aura = aura, duration = record.duration, named = named }
-                end
+                fresh[aura] = {
+                    unit = unit,
+                    duration = record.duration,
+                    named = info ~= nil and info.name == name,
+                }
+
+                any = true
             end
         end
     end
@@ -102,15 +108,43 @@ local function after(spell)
         return
     end
 
-    if best then
-        local same = entry.applies and entry.applies.aura == best.aura and entry.applies.unit == best.unit
+    -- Every aura that is new or refreshed after a cast is counted; how many of the casts it followed is its chance, so an aura
+    -- that follows every cast is what the spell applies and one that follows some is a proc. The one seen most (the spell's own
+    -- name breaking a tie) is the spell's aura.
+    entry.casts = (entry.casts or 0) + 1
 
-        entry.applies = {
-            unit = best.unit,
-            aura = best.aura,
-            duration = best.duration,
-            n = same and (entry.applies.n or 0) + 1 or 1,
-        }
+    if any then
+        entry.seen = entry.seen or {}
+    end
+
+    for aura, row in pairs(fresh) do
+        local kept = entry.seen[aura]
+
+        if kept then
+            kept.n, kept.unit, kept.duration, kept.named = kept.n + 1, row.unit, row.duration, row.named
+        else
+            local count = 0
+
+            for _ in pairs(entry.seen) do
+                count = count + 1
+            end
+
+            if count < MAX_SEEN then
+                entry.seen[aura] = { unit = row.unit, duration = row.duration, n = 1, named = row.named }
+            end
+        end
+    end
+
+    if any then
+        local best, bestAura
+
+        for aura, row in pairs(entry.seen) do
+            if not best or row.n > best.n or (row.n == best.n and row.named and not best.named) then
+                best, bestAura = row, aura
+            end
+        end
+
+        entry.applies = { unit = best.unit, aura = bestAura, duration = best.duration, n = best.n }
     else
         entry.none = (entry.none or 0) + 1
     end
