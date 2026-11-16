@@ -721,7 +721,7 @@ test('the forecast report lists what was learned per spell, a proc marked, and s
     local empty = table.concat(a:BuildForecastLearned(), '\n')
     assert(empty:find('Nothing has been learned yet', 1, true))
 
-    a.db.global.forecast = {
+    a.db.char.forecast = {
         version = 1,
         base = { level = 60, mana = 1000 },
         spells = {
@@ -784,7 +784,7 @@ test(
         a.Platform.GetClientFamily = function() return 'forever' end
         a.Forecast:ResetEffects()
 
-        a.db.global.forecast = {
+        a.db.char.forecast = {
             version = 1,
             base = { level = 60, mana = 1000 },
             spells = {
@@ -808,13 +808,13 @@ test(
         f.forecast_forget_spell:Click()
 
         assert(
-            a.db.global.forecast.spells[1003] == nil and a.db.global.forecast.spells[1004] ~= nil,
+            a.db.char.forecast.spells[1003] == nil and a.db.char.forecast.spells[1004] ~= nil,
             'only that spell is forgotten'
         )
 
-        assert(a.db.global.forecast.spells[1001] ~= nil, 'the others are kept')
+        assert(a.db.char.forecast.spells[1001] ~= nil, 'the others are kept')
 
-        a.db.global.forecast.spells[1004] = nil
+        a.db.char.forecast.spells[1004] = nil
         p:Draw()
 
         assert(
@@ -831,7 +831,7 @@ test('the spell list has icons, and a spell can be ignored from now on and learn
     env.load('Core/forecast.lua')
     a.Platform.GetSpellInfo = function(_, id) return { name = 'Spell ' .. id, iconID = 130000 + id } end
 
-    a.db.global.forecast = {
+    a.db.char.forecast = {
         version = 1,
         spells = { [2001] = { casts = 20, damage = 12 }, [2002] = { casts = 20, heal = 3 } },
     }
@@ -848,7 +848,7 @@ test('the spell list has icons, and a spell can be ignored from now on and learn
     assert(icons['Spell 2001'] == 132001 and icons['Spell 2002'] == 132002, 'each spell shows its icon')
 
     p.fields.forecast_ignore_spell:Click()
-    assert(a.Forecast:IsIgnored(2001) and a.db.global.forecast.spells[2001] == nil)
+    assert(a.Forecast:IsIgnored(2001) and a.db.char.forecast.spells[2001] == nil)
     p:Draw()
 
     -- It stays in the list, marked, with a way back.

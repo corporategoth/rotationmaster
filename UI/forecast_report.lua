@@ -124,7 +124,7 @@ end
 -- @return table[]  A list of { id, name, icon, lines, casts, ignored }, sorted by name; the spells told to be ignored are
 --   listed too (so they can be learned again), with an explanation as their line; empty when there is none.
 function addon:GetForecastLearnedSpells()
-    local saved = addon.db and addon.db.global and addon.db.global.forecast
+    local saved = addon.db and addon.db.char and addon.db.char.forecast
     local spells = type(saved) == 'table' and type(saved.spells) == 'table' and saved.spells or {}
     local list = {}
 
@@ -171,7 +171,7 @@ end
 -- Returns the base mana the forecast worked out for the player's level.
 -- @return string|nil  A line saying it; nil when none was worked out.
 function addon:GetForecastLearnedBase()
-    local saved = addon.db and addon.db.global and addon.db.global.forecast
+    local saved = addon.db and addon.db.char and addon.db.char.forecast
     local base = type(saved) == 'table' and saved.base
 
     if type(base) == 'table' and type(base.level) == 'number' and type(base.mana) == 'number' then

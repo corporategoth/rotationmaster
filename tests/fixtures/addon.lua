@@ -42,7 +42,7 @@ function F.new(product, expansion, class, options)
     env.UnitClass = function() return class or 'Shaman', class or 'SHAMAN' end
     env.GetTime = function() return 100 end
     local addon = {help_funcs = {}, longtermCache = {}, unitsInRange = {}, currentSpec = 0,
-                   db = {profile = {}, global = {}}, definitions = {}}
+                   db = {profile = {}, global = {}, char = {}}, definitions = {}}
     local translations = {}
     local L = setmetatable({}, {
         __index = function(_, key) return translations[key] or key end,

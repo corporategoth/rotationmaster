@@ -48,20 +48,20 @@ function forecast:NoteCast(spell, at)
     end
 end
 
--- Returns the saved per-spell facts the forecast has learned, creating the table.
+-- Returns the saved per-spell facts the forecast has learned for this character, creating the table.
 -- @return table|nil  { version, spells = { [id] = { damage, heal, applies = { unit, aura, duration } } } }.
 local function store()
     local db = addon.db
 
-    if not db or not db.global then
+    if not db or not db.char then
         return nil
     end
 
-    local saved = db.global.forecast
+    local saved = db.char.forecast
 
     if type(saved) ~= 'table' or saved.version ~= 1 or type(saved.spells) ~= 'table' then
         saved = { version = 1, spells = {} }
-        db.global.forecast = saved
+        db.char.forecast = saved
     end
 
     return saved
@@ -146,8 +146,8 @@ end
 function forecast:Clear()
     local db = addon.db
 
-    if db and db.global then
-        db.global.forecast = nil
+    if db and db.char then
+        db.char.forecast = nil
     end
 end
 

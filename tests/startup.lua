@@ -896,7 +896,7 @@ end)
 -- Global keys have no transfer schema. These are the ones the code writes that the AceDB defaults leave out because the
 -- absence means something (diagnosticCacheBypass is read as `~= false`, evaluator nil is the lean engine), with a value as
 -- the code stores it. talent_popup_provider is the documented hand-set knob in UI/talent_popup.lua.
-local globalChoices={workbenchSidebarWidth=320,diagnosticCacheBypass=false,evaluator='standard',talent_popup_provider='blizzard',metrics={version=1,rotations={},order={}},forecast={version=1,spells={}}}
+local globalChoices={workbenchSidebarWidth=320,diagnosticCacheBypass=false,evaluator='standard',talent_popup_provider='blizzard'}
 test('every global key shipped code writes is known to boot validation and survives /rm repair',function()
     local _,probe=bootWithMessages()
     local written=writtenKeys('global')
@@ -909,6 +909,16 @@ test('every global key shipped code writes is known to boot validation and survi
     env.LibStub('AceConsole-3.0').GetArgs=function(_,text) local word,after=text:match('^(%S*)()');return word~='' and word or nil,after end
     a.print=function() end;a.warn=function() end;a:HandleCommand('repair')
     for key,value in pairs(globalChoices) do assert(a.db.sv.global[key]==value,'/rm repair changed global.'..key) end
+end)
+
+-- 2.1.0 saved the metrics and the forecast for every character together; each character keeps its own now, so the shared
+-- copy is dropped at boot and a character's own is only type-checked.
+test('the metrics and the forecast shared by every character are dropped, and a character keeps its own',function()
+    local mine={version=1,rotations={},order={}}
+    local env,a=bootWithMessages({RotationMasterDB={profiles={Default={version=1}},global={legacyBodyUpgrade='1:0',metrics={version=1,rotations={},order={}},forecast={version=1,spells={}}},
+        char={['Me - Realm']={metrics=mine,forecast={version=1,spells={}}}}}})
+    assert(a.db.sv.global.metrics==nil and a.db.sv.global.forecast==nil,'the shared copies were kept')
+    for _,data in pairs(a.db.sv.char) do if data.metrics then assert(data.metrics==mine or type(data.metrics)=='table','a character\'s own metrics were lost') end end
 end)
 
 -- A declared default must read like an absent marker: an old profile without any marker is migrated and seeded once, and a

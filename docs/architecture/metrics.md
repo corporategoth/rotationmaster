@@ -39,8 +39,8 @@ Only during a fight (combat), under the rotation that was advising. A cast count
   followed casts, in a ring of the last 40 per rotation. The report compares output in fights that followed the advice less than
   60 percent, 60 to 85 and 85 or more of casts, each tier shown only with three or more fights.
 
-Saved in `RotationMasterDB.global.metrics` (`version`, `order`, `rotations`), bounded: 24 rotations (the least recently added
-is dropped), 64 advised spells each, 40 fights each. Nothing identifies a character, a realm, a target or a guild.
+Saved per character, in `RotationMasterDB.char[<character>].metrics` (so a character's report holds only its own fights; 2.1.0 kept every character's together, and that shared copy is dropped at boot) (`version`, `order`, `rotations`), bounded: 24 rotations (the least recently added
+is dropped), 64 advised spells each, 40 fights each. Nothing names a target or a guild.
 
 ## Reading and exporting (`UI/metrics_report.lua`)
 

@@ -45,6 +45,7 @@ local function page()
 
     a.db.profile = { metrics_adherence = true }
     a.db.global = a.db.global or {}
+    a.db.char = a.db.char or {}
     f.load('Analytics/metrics.lua')
     f.load('UI/metrics_report.lua')
 

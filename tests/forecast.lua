@@ -92,7 +92,7 @@ local function client()
         return row and { exists = true, current = row.current, maximum = row.maximum } or { exists = false }
     end
 
-    a.db = { global = {}, profile = {} }
+    a.db = { global = {}, char = {}, profile = {} }
     f.load('Core/forecast.lua')
 
     -- Stubs for the executor, the conditions and the bars: the steps in world.steps are tried in order.
@@ -768,7 +768,7 @@ test(
         seen = {}
         a.Forecast:Run({ {} }, 501, 1)
         assert(math.abs(seen[1] - (100 - 100 + 7.5)) < 1e-9, 'ten percent of 1000 base mana: ' .. tostring(seen[1]))
-        assert(a.db.global.forecast.base.mana == 1000 and a.db.global.forecast.base.level == 60)
+        assert(a.db.char.forecast.base.mana == 1000 and a.db.char.forecast.base.level == 60)
 
         -- A new level starts it over.
         level = 61
@@ -927,6 +927,19 @@ test('the Forever table has the racial that gives an aura, as Walk on Air does',
 
     local row = a.Forecast:Effects(1259416)
     assert(row and row.auras[1] and row.auras[1].aura == 1259416 and row.auras[1].unit == 'player')
+end)
+
+test('what the forecast learned is kept for the character that learned it', function()
+    local f, a = client()
+    a.db.global.forecast = { version = 1, spells = { [700] = { damage = 5 } } }
+    a.Forecast:Known(500, true).damage = 10
+
+    assert(a.db.char.forecast.spells[500] and a.db.global.forecast.spells[500] == nil, 'saved under the character')
+    assert(a.Forecast:Known(700) == nil, 'nothing learned together for every character is used')
+
+    -- Another character logs in: AceDB gives it its own table.
+    a.db.char = {}
+    assert(a.Forecast:Known(500) == nil, 'a spell the other character cast is not known to this one')
 end)
 
 finish()

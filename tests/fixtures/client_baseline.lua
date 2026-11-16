@@ -82,7 +82,7 @@ persistent = once(
     persistent,
     '    assert(addon:RegisterDefaultRotation(envelope()))',
     [[    -- Reuse the native support loader without changing any shared fixture.
-    addon.db={profile={},global={}}
+    addon.db={profile={},global={},char={}}
     dofile('tests/fixtures/native_ui.lua')(env)
     local helpers=assert(loadstring('local addon,load=...\n'..support,'@client-baseline-native-support'))
     setfenv(helpers,env);helpers(addon,load)

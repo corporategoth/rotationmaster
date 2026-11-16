@@ -1108,6 +1108,11 @@ function addon:init()
     upgradeSavedBodies()
     upgradeBindingSlots()
 
+    -- 2.1.0 kept the metrics and the forecast for every character together; they cannot be told apart now, and a
+    -- report or a forecast mixing characters is wrong, so each character starts its own.
+    addon.db.global.metrics = nil
+    addon.db.global.forecast = nil
+
     addon.db.char.version = CHAR_VERSION
 
     -- Stamp the profile only after the upgrades ran: 3 marks a profile that has the scoped rotation store,

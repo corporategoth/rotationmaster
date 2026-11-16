@@ -1041,6 +1041,9 @@ function addon:validate(template, fix)
     char_template.rotations = {}
     char_template.itemsets = {}
     char_template.announces = {}
+    -- This character's metrics and forecast (Analytics/metrics.lua, Core/forecast.lua), type-checked like the global ones were.
+    char_template.metrics = {}
+    char_template.forecast = {}
 
     for char, data in pairs(DB.char) do
         validate_basic("char:" .. char, data, char_template, fix)

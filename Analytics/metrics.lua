@@ -3,10 +3,10 @@
 -- addon.Metrics: how closely the player follows a rotation's advice, how long they take to act on it, what they cast
 -- instead, and how much damage and healing a fight produced. Pure bookkeeping: no WoW API, no frames, no events, no
 -- allocation per call after the first record of a spell (docs/architecture/metrics.md). Platform/metrics_events.lua feeds
--- it; UI/metrics_report.lua shows and exports it. The numbers live in RotationMasterDB.global.metrics, bounded: at most
+-- it; UI/metrics_report.lua shows and exports it. The numbers live in RotationMasterDB.char[<character>].metrics (each character keeps its own), bounded: at most
 -- MAX_ROTATIONS rotations, MAX_SPELLS advised spells each, MAX_DEVIATIONS replacements per spell, RING fights per
 -- rotation, and the last RECENT fights each in full (what a report of the last fight, this instance or the last half
--- hour is made of). Nothing here identifies a character, a target or a realm.
+-- hour is made of). Nothing here names a target; the character is the key of the table it is saved under.
 -- Loaded from RotationMaster.toc after Analytics/capture.lua.
 
 local _, addon = ...
@@ -45,15 +45,15 @@ local MAX_PENDING, MAX_SLOT = 4, 5
 local function store()
     local db = addon.db
 
-    if not db or not db.global then
+    if not db or not db.char then
         return nil
     end
 
-    local saved = db.global.metrics
+    local saved = db.char.metrics
 
     if type(saved) ~= 'table' or saved.version ~= VERSION or type(saved.rotations) ~= 'table' then
         saved = { version = VERSION, rotations = {}, order = {} }
-        db.global.metrics = saved
+        db.char.metrics = saved
     end
 
     return saved
@@ -688,8 +688,8 @@ end
 function metrics:Clear()
     local db = addon.db
 
-    if db and db.global then
-        db.global.metrics = nil
+    if db and db.char then
+        db.char.metrics = nil
     end
 
     self:Reset()

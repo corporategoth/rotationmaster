@@ -45,7 +45,7 @@ conditions seeing real, unshifted values and the confidence says so.
 
 ## What the forecast learns (`Platform/forecast_events.lua`)
 
-While the switch is on, per spell, saved in `RotationMasterDB.global.forecast` (at most 160 spells): the aura a spell leaves on the
+While the switch is on, per spell, saved per character in `RotationMasterDB.char[<character>].forecast` (at most 160 spells; what another character learned is never used, so a spell this character cannot cast is never forecast, and 2.1.0's shared copy is dropped at boot): the aura a spell leaves on the
 target or the player (the auras before the cast, on `UNIT_SPELLCAST_SENT`, against 0.35 seconds after `UNIT_SPELLCAST_SUCCEEDED`; settled
 after three matching sightings or five empty looks, after which the spell is not scanned again), and the damage it does and the
 healing it does to the player (a running average, from the combat log; not on Retail and Forever). Nothing is registered with the

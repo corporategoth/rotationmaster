@@ -8,7 +8,7 @@ local test, finish = F.suite()
 
 local function fresh()
     local f = F.new(5, 1, 'MAGE')
-    f.addon.db = { global = {}, profile = {} }
+    f.addon.db = { global = {}, char = {}, profile = {} }
     f.load('Analytics/metrics.lua')
     return f.addon.Metrics, f
 end
@@ -154,7 +154,7 @@ test('the saved table is bounded', function()
         fight(m, 'rot' .. n, { { advice = FIREBALL, at = 101 }, { cast = FIREBALL, at = 102 } })
     end
 
-    local saved = f.addon.db.global.metrics
+    local saved = f.addon.db.char.metrics
 
     assert(
         #saved.order == 24 and saved.rotations.rot1 == nil and saved.rotations.rot30,
@@ -174,14 +174,14 @@ test('the saved table is bounded', function()
 
     local count = 0
 
-    for _ in pairs(f.addon.db.global.metrics.rotations.wide.spells) do
+    for _ in pairs(f.addon.db.char.metrics.rotations.wide.spells) do
         count = count + 1
     end
 
     assert(count == 64, count)
     local replaced = 0
 
-    for _ in pairs(f.addon.db.global.metrics.rotations.wide.spells[1].replaced) do
+    for _ in pairs(f.addon.db.char.metrics.rotations.wide.spells[1].replaced) do
         replaced = replaced + 1
     end
 
@@ -191,7 +191,7 @@ test('the saved table is bounded', function()
         fight(m, 'long', { { advice = FIREBALL, at = 101 }, { cast = FIREBALL, at = 102 } })
     end
 
-    assert(#f.addon.db.global.metrics.rotations.long.ring == 40)
+    assert(#f.addon.db.char.metrics.rotations.long.ring == 40)
     assert(#m:Report().rotations[1].fightList <= 40)
 end)
 
@@ -292,7 +292,7 @@ end)
 
 test('only the last fights are kept in full, each stamped with where and what it was', function()
     local m, _, f = history()
-    local saved = f.addon.db.global.metrics
+    local saved = f.addon.db.char.metrics
 
     assert(
         #saved.recent == 4 and saved.recent[2].instanceName == 'Molten Core' and saved.recent[2].encounter == 'Lucifron'
@@ -408,6 +408,29 @@ test('the hit rate over twenty checked predictions feeds the forecast', function
     end
 
     assert(math.abs(m:PredictionRate(2) - 20 / 25) < 1e-9)
+end)
+
+test('each character has its own record: another character\'s fights are not in this one\'s report', function()
+    local m, f = fresh()
+    fight(m, 'wide', { { advice = FIREBALL, at = 101 }, { cast = FIREBALL, at = 102 } })
+    assert(f.addon.db.char.metrics.rotations.wide, 'saved under the character')
+    assert(f.addon.db.global.metrics == nil, 'not with every character')
+
+    -- Another character logs in: its own table, and the running state starts over with the session.
+    f.addon.db.char = {}
+    m:Reset()
+    fight(m, 'other', { { advice = BLINK, at = 101 }, { cast = BLINK, at = 102 } })
+    local saved = f.addon.db.char.metrics
+    local names = {}
+
+    for id in pairs(saved.rotations) do
+        names[#names + 1] = id
+    end
+
+    assert(
+        saved.rotations.other and saved.rotations.wide == nil,
+        'the first character\'s rotation is not here: ' .. table.concat(names, ',')
+    )
 end)
 
 finish()

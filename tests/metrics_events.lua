@@ -74,7 +74,7 @@ local function client(product)
         end
     end
 
-    f.addon.db = { global = {}, profile = { enable = true } }
+    f.addon.db = { global = {}, char = {}, profile = { enable = true } }
 
     f.addon.SetUIScript = function(_, frame, event, fn)
         frame.scripts[event] = fn

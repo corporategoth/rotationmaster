@@ -7,7 +7,7 @@
 --   * how long an item's cooldown is (core/forecast.lua notes it as it reads the cooldown);
 --   * the damage a spell does and the healing it does to the player, as a running average, from the combat log (not on
 --     Retail and Forever, which hide it).
--- Everything learned is a few numbers per spell in RotationMasterDB.global.forecast, capped at 160 spells. With the switch
+-- Everything learned is a few numbers per spell in RotationMasterDB.char[<character>].forecast, capped at 160 spells. With the switch
 -- off no frame, event or timer exists. Loaded from the Platform section of RotationMaster.toc after
 -- Platform/metrics_events.lua.
 

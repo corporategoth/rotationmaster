@@ -53,7 +53,7 @@ local function client(product)
         frame.scripts[event] = fn
     end
 
-    a.db = { global = {}, profile = { enable = true } }
+    a.db = { global = {}, char = {}, profile = { enable = true } }
     local platform = a.Platform
 
     function platform:GetAuraByIndex(unit, index)
@@ -193,7 +193,7 @@ test('what is known is bounded and can be forgotten', function()
 
     local count = 0
 
-    for _ in pairs(f.addon.db.global.forecast.spells) do
+    for _ in pairs(f.addon.db.char.forecast.spells) do
         count = count + 1
     end
 
